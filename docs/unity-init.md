@@ -43,8 +43,8 @@ constrains.
 
 | Decision | Value | ADR |
 |---|---|---|
-| Render pipeline | **URP** `17.0.1` | [ADR-0002](./adrs/0002-pipeline-de-rendu-urp.md) |
-| Input architecture | **Input System** `1.12.0`, legacy Input Manager disabled | [ADR-0003](./adrs/0003-architecture-des-entrees-input-system.md) |
+| Render pipeline | **URP** `17.3.0` | [ADR-0002](./adrs/0002-pipeline-de-rendu-urp.md) |
+| Input architecture | **Input System** `1.20.0`, legacy Input Manager disabled | [ADR-0003](./adrs/0003-architecture-des-entrees-input-system.md) |
 
 Two more decisions can wait, but must be made deliberately rather than by
 accident — see the `unity-localization` and `unity-project-config` skills:
