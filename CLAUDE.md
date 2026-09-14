@@ -68,7 +68,9 @@ Never work directly on `main`. One branch per coherent change:
 
 `feat|fix|refactor|docs|test|chore/<ticket>-<description>` — e.g. `feat/FUN-123-player-movement`
 
-Conventional Commits: `type(scope): description`, types `feat` `fix` `refactor` `test` `docs` `chore` `perf` `build` `ci`.
+Conventional Commits: `type(scope): description`, types `feat` `fix` `refactor` `test` `docs` `chore` `perf` `build` `ci` `art` `net`.
+
+`art` (3D assets, textures, audio) and `net` (networking) come from the Spécifications Techniques §7. They are commit types only — branch prefixes are unchanged.
 
 **Never credit Claude or any AI.** No `Co-authored-by: Claude`, no AI mention in commit messages or PR descriptions. Use the developer's configured Git identity.
 
