@@ -3,8 +3,8 @@
 # the only authority for "the project compiles" and "the tests pass"
 # (CLAUDE.md, Honesty about verification).
 #
-# Requires these repository secrets before it can run:
-#   UNITY_LICENSE, UNITY_EMAIL, UNITY_PASSWORD
+# Requires a Unity licence in the repository secrets before it can run, as
+# either UNITY_EMAIL + UNITY_PASSWORD (personal seat) or UNITY_LICENSE (a .ulf).
 name: Unity tests
 
 on:
@@ -37,6 +37,27 @@ jobs:
       matrix:
         testMode: [editmode, playmode]
     steps:
+      # Without credentials the runner still downloads the 5.6 GB editor image
+      # before failing, three minutes later, on a message buried under a node
+      # stack trace. Fail here instead, in seconds, naming what is missing.
+      # The two strategies below are the ones this workflow passes through;
+      # game-ci also supports UNITY_SERIAL and a licensing server, neither of
+      # which is wired up here.
+      - name: Check the Unity credentials are configured
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        run: |
+          if [ -n "$UNITY_LICENSE" ]; then
+            exit 0
+          fi
+          if [ -n "$UNITY_EMAIL" ] && [ -n "$UNITY_PASSWORD" ]; then
+            exit 0
+          fi
+          echo "::error::No Unity licence configured. Add either UNITY_EMAIL + UNITY_PASSWORD (personal seat) or UNITY_LICENSE (a .ulf) as repository secrets. See https://game.ci/docs/github/getting-started"
+          exit 1
+
       - uses: actions/checkout@v4
         with:
           lfs: true
