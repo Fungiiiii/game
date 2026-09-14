@@ -212,11 +212,42 @@ Prefer EditMode; see the `unity-testing` skill for the split.
 
 [`.github/workflows/unity-tests.yml`](../.github/workflows/unity-tests.yml)
 skips itself until `ProjectSettings/ProjectVersion.txt` exists. Once it does,
-the workflow needs three repository secrets:
+it needs a Unity licence in the secrets, and nothing else will make it run.
 
-`UNITY_LICENSE` · `UNITY_EMAIL` · `UNITY_PASSWORD`
+game-ci accepts several activation strategies. Its CLI (`v0.1.63`, the version
+the action pulls) lists these when none is configured:
 
-Add them in GitHub repository settings. **Never commit them** — see `CLAUDE.md`.
+| Secrets | Seat |
+|---|---|
+| `UNITY_EMAIL` + `UNITY_PASSWORD` | Personal (free) |
+| `UNITY_EMAIL` + `UNITY_PASSWORD` + `UNITY_SERIAL` | Pro / Plus |
+| `UNITY_LICENSE`, the contents of a `.ulf` | Enterprise / Industry |
+
+The workflow currently passes through `UNITY_LICENSE`, `UNITY_EMAIL` and
+`UNITY_PASSWORD`. A Pro seat would also need `UNITY_SERIAL` added to the `env:`
+block of the test step — it is not wired up.
+
+The published documentation at <https://game.ci/docs/github/activation>
+disagrees with the CLI: it asks for `UNITY_LICENSE` *and* the email and
+password for a Personal seat. The CLI message is the one that matches the
+version actually running. If a Personal seat refuses to activate on email and
+password alone, the `.ulf` route is the fallback.
+
+**Use an account created for the project, never a personal one.** Anyone who
+can push a workflow to this repository can make it print a secret, so the
+credential should be a project asset, not somebody's Unity identity — and a
+project account can be rotated without asking a person to change their own
+password.
+
+`Fungiiiii` is a GitHub organization, so these belong at organization level
+(Settings → Secrets and variables → Actions), scoped to this repository: set
+once, rotated in one place, usable by every repository of the org. Repository
+secrets behave identically but have to be repeated per repository. Either way,
+**never commit them** — see `CLAUDE.md`.
+
+One trap: GitHub does not expose secrets to workflows triggered by a pull
+request from a **fork**. Work on branches of this repository, or these tests
+cannot run at all.
 
 Also worth configuring at the same time, since local hooks only protect the
 clone they were installed in: branch protection on `main`, requiring a PR and
