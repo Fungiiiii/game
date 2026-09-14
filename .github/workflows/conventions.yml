@@ -1,0 +1,90 @@
+# Repository conventions, enforced server-side.
+#
+# The same checks run locally via .githooks (see scripts/setup.sh), but local
+# hooks are opt-in per clone and can be skipped with --no-verify. This workflow
+# is the actual enforcement point.
+name: Conventions
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  language:
+    name: Source code is English
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check changed files
+        run: |
+          mapfile -t files < <(git diff --name-only --diff-filter=ACM \
+            "origin/${{ github.base_ref }}...HEAD")
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No changed files." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          ./scripts/check-language.sh "${files[@]}"
+
+  localization:
+    name: No hardcoded player-facing text
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check changed files
+        run: |
+          mapfile -t files < <(git diff --name-only --diff-filter=ACM \
+            "origin/${{ github.base_ref }}...HEAD")
+          if [ ${#files[@]} -eq 0 ]; then exit 0; fi
+          ./scripts/check-localization.sh "${files[@]}"
+
+  commit-messages:
+    name: Conventional Commits
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check every commit in the PR
+        run: |
+          failed=0
+          for sha in $(git rev-list "origin/${{ github.base_ref }}..HEAD"); do
+            git log -1 --format=%B "$sha" > /tmp/msg
+            if ! ./scripts/check-commit-message.sh /tmp/msg; then
+              echo "  ^ in commit $(git log -1 --format='%h %s' "$sha")" >&2
+              failed=1
+            fi
+          done
+          exit $failed
+
+  adr-location:
+    name: ADRs live in docs/adrs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check ADR naming
+        run: |
+          failed=0
+          for f in docs/adrs/*.md; do
+            [ -e "$f" ] || continue
+            base=$(basename "$f")
+            if ! [[ "$base" =~ ^[0-9]{4}-[a-z0-9-]+\.md$ ]]; then
+              echo "Bad ADR filename: $f (expected NNNN-titre-en-kebab-case.md)" >&2
+              failed=1
+            fi
+          done
+          dupes=$(ls docs/adrs/ 2>/dev/null | grep -oE '^[0-9]{4}' | sort | uniq -d)
+          if [ -n "$dupes" ]; then
+            echo "Duplicate ADR numbers: $dupes" >&2
+            failed=1
+          fi
+          exit $failed

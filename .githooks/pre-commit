@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Local fast feedback. The same checks run in CI, where they cannot be skipped.
+root="$(git rev-parse --show-toplevel)"
+status=0
+"$root/scripts/check-language.sh"     || status=1
+"$root/scripts/check-localization.sh" || status=1
+exit $status
