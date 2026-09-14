@@ -159,14 +159,14 @@ Assets/
 ```
 
 `ArtSource/` is outside `Assets/` on purpose: Unity imports everything inside
-`Assets/`, and importing `.blend` requires Blender on every machine including
-CI. See [`docs/art-pipeline.md`](./art-pipeline.md).
+`Assets/`, and importing `.blend` requires Blender on every machine that
+imports the project. See [`docs/art-pipeline.md`](./art-pipeline.md).
 
 Rules from the `unity-project-config` skill that apply here:
 
 - Editor code lives in an Editor assembly. **Runtime must never reference
-  `UnityEditor`** — a runtime build that does will fail, often only at build
-  time on the CI machine.
+  `UnityEditor`** — a runtime build that does will fail, and often only at
+  build time, long after the code was written.
 - No circular dependencies between assemblies.
 - Namespaces follow the assembly structure, not folder depth.
 
@@ -192,7 +192,7 @@ Cinemachine, any networking package.
 ## 7. Analyzers
 
 Install `Microsoft.Unity.Analyzers` — the DLL has to be in the project for
-command-line and CI compilation, even though Rider and Visual Studio bundle it.
+command-line compilation, even though Rider and Visual Studio bundle it.
 
 Full procedure, including the verification step that catches a silently
 unloaded analyzer: [`docs/linting.md`](./linting.md).
@@ -202,7 +202,7 @@ unloaded analyzer: [`docs/linting.md`](./linting.md).
 ## 8. Tests
 
 Create both test assemblies immediately, each with at least one passing test.
-An empty test project and a broken test runner look identical in CI.
+An empty test project and a broken test runner look identical from the outside.
 
 Prefer EditMode; see the `unity-testing` skill for the split.
 
@@ -210,9 +210,27 @@ Prefer EditMode; see the `unity-testing` skill for the split.
 
 ## 9. CI
 
-[`.github/workflows/unity-tests.yml`](../.github/workflows/unity-tests.yml)
-skips itself until `ProjectSettings/ProjectVersion.txt` exists. Once it does,
-it needs a Unity licence in the secrets, and nothing else will make it run.
+**CI does not run Unity, and that is a decision, not an omission.**
+See [ADR-0004](./adrs/0004-verification-unity-hors-ci.md).
+
+What runs on a pull request:
+
+| Workflow | Runs on | What it proves |
+|---|---|---|
+| [`conventions.yml`](../.github/workflows/conventions.yml) | every PR | commit messages, English-only source, the `scripts/` checks |
+| [`unity-tests.yml`](../.github/workflows/unity-tests.yml) | manual only | nothing, until someone starts it by hand |
+
+So **no automated check compiles this project or runs a single test.** That
+authority sits on the developers' machines, and nowhere else. Before opening a
+PR, run both test modes locally — the headless command is in the
+`unity-testing` skill — and say in the PR what you ran and what you did not.
+
+### If a licence is ever added
+
+`unity-tests.yml` is kept working for that day. It already carries the two
+fixes the first run cost us: the disk cleanup, without which the 5.6 GB editor
+image cannot be pulled at all, and a credentials check, without which a
+missing licence surfaces three minutes later as an unreadable stack trace.
 
 game-ci accepts several activation strategies. Its CLI (`v0.1.63`, the version
 the action pulls) lists these when none is configured:
@@ -223,31 +241,33 @@ the action pulls) lists these when none is configured:
 | `UNITY_EMAIL` + `UNITY_PASSWORD` + `UNITY_SERIAL` | Pro / Plus |
 | `UNITY_LICENSE`, the contents of a `.ulf` | Enterprise / Industry |
 
-The workflow currently passes through `UNITY_LICENSE`, `UNITY_EMAIL` and
-`UNITY_PASSWORD`. A Pro seat would also need `UNITY_SERIAL` added to the `env:`
-block of the test step — it is not wired up.
+The workflow passes through `UNITY_LICENSE`, `UNITY_EMAIL` and
+`UNITY_PASSWORD`. A Pro seat would also need `UNITY_SERIAL` in the `env:` block
+of the test step — it is not wired up.
 
 The published documentation at <https://game.ci/docs/github/activation>
 disagrees with the CLI: it asks for `UNITY_LICENSE` *and* the email and
-password for a Personal seat. The CLI message is the one that matches the
-version actually running. If a Personal seat refuses to activate on email and
-password alone, the `.ulf` route is the fallback.
+password for a Personal seat. The CLI message matches the version that
+actually runs. If a Personal seat refuses to activate on email and password
+alone, the `.ulf` route is the fallback.
 
-**Use an account created for the project, never a personal one.** Anyone who
-can push a workflow to this repository can make it print a secret, so the
-credential should be a project asset, not somebody's Unity identity — and a
-project account can be rotated without asking a person to change their own
-password.
+Three things to know before putting anything in there:
 
-`Fungiiiii` is a GitHub organization, so these belong at organization level
-(Settings → Secrets and variables → Actions), scoped to this repository: set
-once, rotated in one place, usable by every repository of the org. Repository
-secrets behave identically but have to be repeated per repository. Either way,
-**never commit them** — see `CLAUDE.md`.
+- **Never a personal Unity account.** Anyone who can push a workflow to this
+  repository can make it print a secret; the masking in the logs is trivially
+  defeated. The credential must be a project asset, rotatable without asking a
+  person to change their own password.
+- `Fungiiiii` is a GitHub organization, so secrets belong at organization level
+  (Settings → Secrets and variables → Actions), scoped to this repository.
+  Repository secrets behave identically but have to be repeated per repository.
+  Either way, **never commit them** — see `CLAUDE.md`.
+- GitHub sends no secret to a workflow triggered by a pull request from a
+  **fork**. Work on branches of this repository.
 
-One trap: GitHub does not expose secrets to workflows triggered by a pull
-request from a **fork**. Work on branches of this repository, or these tests
-cannot run at all.
+Running Unity in CI also costs money here: the organization is on the Free
+plan — 2 000 Actions minutes a month — and this repository is private, so those
+minutes are metered. Measured on the runs that failed: 2 min 15 s for the image
+pull alone, in a job that never started the editor.
 
 Also worth configuring at the same time, since local hooks only protect the
 clone they were installed in: branch protection on `main`, requiring a PR and

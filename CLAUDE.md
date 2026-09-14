@@ -98,7 +98,9 @@ Never commit passwords, tokens, API keys, certificates or credentials — includ
   -testResults results.xml -logFile unity.log
 ```
 
-**Batch mode has returned exit code 0 with failing compilation.** Never trust the exit code: read the log and the results XML. Other environments — cloud agents, CI containers — have no Editor at all, and there CI is the only authority (see `.github/workflows/`).
+**Batch mode has returned exit code 0 with failing compilation.** Never trust the exit code: read the log and the results XML.
+
+**CI does not run Unity** — see ADR-0004. `.github/workflows/` enforces the repository conventions and nothing more; no workflow compiles the project or runs a test on a pull request. So where no Editor is available — cloud agents, CI containers — **nothing at all can be claimed about compilation or tests**. There is no second authority to fall back on. Say what was not verified, and ask the developer to run it.
 
 Never claim that tests passed, the project compiles, gameplay was validated, documentation was updated, an ADR exists, a PR was created, or Atlassian was consulted — unless it actually happened. Always state explicitly what was not verified and why.
 

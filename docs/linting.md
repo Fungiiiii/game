@@ -36,7 +36,7 @@ version 1.27.0, labelled `RoslynAnalyzer`, with every platform disabled in its
 importer so it never ships inside a build.
 
 Rider and Visual Studio bundle these analyzers, so an IDE user already sees the
-diagnostics. Command-line and CI compilation do **not**: the analyzer has to be
+diagnostics. Command-line compilation does **not**: the analyzer has to be
 in the project.
 
 The GitHub releases carry no downloadable asset — the analyzer is published on
@@ -75,7 +75,7 @@ So both files are required, and they serve different readers:
 | File | Read by | Effect |
 |---|---|---|
 | `.editorconfig` | Rider, Visual Studio | Squiggles while typing |
-| `Assets/Default.ruleset` | Unity's compiler, therefore CI | Breaks the build |
+| `Assets/Default.ruleset` | Unity's compiler | Breaks the build |
 
 **Any change to a severity must be made in both files.** This duplication is
 accepted technical debt: nothing enforces that they agree. Generating one from

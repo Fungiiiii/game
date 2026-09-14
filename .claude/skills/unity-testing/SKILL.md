@@ -47,4 +47,6 @@ Check whether an Editor is present before assuming either way. On the maintainer
 
 Use `-testPlatform PlayMode` for the other mode. Batch mode has returned exit code 0 with failing compilation, so read `results.xml` and the log — never the exit code alone.
 
-Where no Editor exists (cloud agents, CI containers), ask the developer or rely on CI. Never report a test result that was not actually observed; state explicitly which tests were written but not executed.
+**CI is not a fallback.** ADR-0004 keeps Unity out of CI: no workflow compiles the project or runs a test on a pull request. Where no Editor exists (cloud agents, CI containers), there is nothing to rely on — ask the developer to run the tests and report what they saw.
+
+Never report a test result that was not actually observed; state explicitly which tests were written but not executed, and on which machine the ones you do report were run.

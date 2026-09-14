@@ -1,14 +1,22 @@
-# Compilation and test verification for Fungiiiii.
-# Where no Editor is available — cloud agents, CI containers — this workflow is
-# the only authority for "the project compiles" and "the tests pass"
-# (CLAUDE.md, Honesty about verification).
+# Dormant by design. This workflow does NOT run on pull requests.
 #
-# Requires a Unity licence in the repository secrets before it can run, as
-# either UNITY_EMAIL + UNITY_PASSWORD (personal seat) or UNITY_LICENSE (a .ulf).
+# ADR-0004 keeps Unity out of CI: compilation and tests are verified on the
+# developers' own machines, and nothing here gates a pull request. See
+# docs/adrs/0004-verification-unity-hors-ci.md for why, and what would reopen
+# the decision.
+#
+# It is kept, working, for the day a licence exists — it already carries the
+# two fixes that cost a PR to find: the runner runs out of disk pulling the
+# 5.6 GB editor image, and the failure when no licence is configured is
+# otherwise unreadable.
+#
+# To run it by hand, from the Actions tab, a Unity licence must first exist in
+# the secrets: either UNITY_EMAIL + UNITY_PASSWORD (personal seat) or
+# UNITY_LICENSE (a .ulf). Read docs/unity-init.md, section CI, before adding
+# any — a personal Unity account is the wrong thing to put there.
 name: Unity tests
 
 on:
-  pull_request:
   workflow_dispatch:
 
 jobs:
