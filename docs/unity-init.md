@@ -4,9 +4,16 @@ Everything to do once, when the Unity project is first created in this
 repository. Follow it in order — several steps are much harder to fix after the
 first commit than before it.
 
-The repository currently contains no Unity project. `ProjectSettings/ProjectVersion.txt`
-does not exist yet, which is why `CLAUDE.md` cannot yet point at an authoritative
-Unity version.
+> **Done.** The Unity project was created on 2026-09-14 with Unity
+> `6000.3.21f1`, from the official 3D Cross-Platform (URP) template. This
+> document is kept as the record of what was decided and why, and as the
+> reference for anyone rebuilding the project or reviewing those choices.
+> Steps that produced a lasting rule now live where that rule is enforced —
+> analyzer setup in [`docs/linting.md`](./linting.md), the two open decisions
+> in [`docs/adrs/`](./adrs).
+
+`ProjectSettings/ProjectVersion.txt` is now present and authoritative:
+`6000.3.21f1`.
 
 ---
 
@@ -27,15 +34,17 @@ and alternatives that were actually weighed — which are not in this repository
 Either link the Atlassian page from an ADR, or write the ADR from what the team
 remembers. Do not reconstruct it from guesses.
 
-### Still open
+### Decided at creation
 
-Both are baked in at creation time and expensive to reverse. **Write the ADRs
-first** — see the `adr` skill and [`docs/adrs/`](./adrs).
+Both were baked in at creation time and are expensive to reverse. Both were
+already settled in the Spécifications Techniques on Atlassian; the ADRs bring
+that decision into the repository, where it is reviewed alongside the code it
+constrains.
 
-| Decision | Why it is an ADR | Notes |
+| Decision | Value | ADR |
 |---|---|---|
-| Render pipeline | Affects every shader, material, light and scene | URP, HDRP or Built-in. Changing later means reauthoring every material. URP is the usual default for a 3D project targeting more than one platform |
-| Input architecture | `CLAUDE.md` requires named actions, not raw key checks | Input System package vs legacy Input Manager |
+| Render pipeline | **URP** `17.0.1` | [ADR-0002](./adrs/0002-pipeline-de-rendu-urp.md) |
+| Input architecture | **Input System** `1.12.0`, legacy Input Manager disabled | [ADR-0003](./adrs/0003-architecture-des-entrees-input-system.md) |
 
 Two more decisions can wait, but must be made deliberately rather than by
 accident — see the `unity-localization` and `unity-project-config` skills:

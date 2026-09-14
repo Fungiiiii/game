@@ -1,0 +1,14 @@
+{
+    "name": "Fungiiiii.Runtime",
+    "rootNamespace": "Fungiiiii",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

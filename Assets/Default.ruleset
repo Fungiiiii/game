@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Analyzer severities for Unity's own compilation.
+
+  Unity does NOT pass .editorconfig to Roslyn: verified on 6000.3.21f1, the
+  generated response file contains -analyzer: but no /analyzerconfig:. The
+  severities in .editorconfig are therefore honoured by Rider and Visual
+  Studio only, and were silently inert in the Editor and in CI. Unity does
+  pass -ruleset: for this file, which is why it exists.
+
+  These values MUST mirror the dotnet_diagnostic.* lines in .editorconfig.
+  Mapping: error -> Error, warning -> Warning, suggestion -> Info, none -> None.
+  See docs/linting.md.
+-->
+<RuleSet Name="Fungiiiii" Description="Bug-only linting. See docs/linting.md." ToolsVersion="16.0">
+  <Rules AnalyzerId="Microsoft.Unity.Analyzers" RuleNamespace="Microsoft.Unity.Analyzers">
+    <Rule Id="UNT0001" Action="Info" />
+    <Rule Id="UNT0002" Action="Info" />
+    <Rule Id="UNT0003" Action="Error" />  <!-- Usage of non-generic GetComponent -->
+    <Rule Id="UNT0004" Action="Error" />  <!-- Time.fixedDeltaTime used with Update -->
+    <Rule Id="UNT0006" Action="Error" />  <!-- Incorrect message signature -->
+    <Rule Id="UNT0007" Action="Error" />  <!-- Null coalescing on Unity objects -->
+    <Rule Id="UNT0008" Action="Error" />  <!-- Null propagation on Unity objects -->
+    <Rule Id="UNT0009" Action="Error" />  <!-- Missing static constructor with InitializeOnLoad -->
+    <Rule Id="UNT0010" Action="Error" />  <!-- Component instance creation with new -->
+    <Rule Id="UNT0011" Action="Error" />  <!-- ScriptableObject instance creation with new -->
+    <Rule Id="UNT0012" Action="Error" />  <!-- Unused coroutine return value -->
+    <Rule Id="UNT0013" Action="Error" />  <!-- Invalid or redundant SerializeField attribute -->
+    <Rule Id="UNT0014" Action="Error" />  <!-- GetComponent with non-Component/non-Interface type -->
+    <Rule Id="UNT0015" Action="Error" />  <!-- Incorrect signature with InitializeOnLoadMethod etc. -->
+    <Rule Id="UNT0016" Action="Error" />  <!-- Unsafe way to get the method name -->
+    <Rule Id="UNT0017" Action="Info" />
+    <Rule Id="UNT0018" Action="Info" />
+    <Rule Id="UNT0019" Action="Info" />
+    <Rule Id="UNT0020" Action="Error" />  <!-- MenuItem attribute used on non-static method -->
+    <Rule Id="UNT0022" Action="Info" />
+    <Rule Id="UNT0023" Action="Error" />  <!-- Coalescing assignment on Unity objects -->
+    <Rule Id="UNT0024" Action="Info" />
+    <Rule Id="UNT0025" Action="Error" />  <!-- Input.GetKey overloads with KeyCode argument -->
+    <Rule Id="UNT0026" Action="Info" />
+    <Rule Id="UNT0027" Action="Error" />  <!-- Do not call PropertyDrawer.OnGUI() -->
+    <Rule Id="UNT0028" Action="Info" />
+    <Rule Id="UNT0029" Action="Error" />  <!-- Pattern matching with null on Unity objects -->
+    <Rule Id="UNT0030" Action="Error" />  <!-- Calling Destroy/DestroyImmediate on a Transform -->
+    <Rule Id="UNT0031" Action="Error" />  <!-- Asset operations in LoadAttribute method -->
+    <Rule Id="UNT0032" Action="Info" />
+    <Rule Id="UNT0033" Action="Error" />  <!-- Incorrect message case -->
+    <Rule Id="UNT0034" Action="None" />  <!-- A Vector3 can be converted into a Vector2 -->
+    <Rule Id="UNT0035" Action="None" />  <!-- A Vector2 can be converted into a Vector3 -->
+    <Rule Id="UNT0036" Action="Info" />
+    <Rule Id="UNT0037" Action="Info" />
+    <Rule Id="UNT0038" Action="Info" />
+    <Rule Id="UNT0039" Action="None" />  <!-- Use RequireComponent when self-invoking GetComponent -->
+    <Rule Id="UNT0040" Action="Error" />  <!-- GameObject.isStatic is editor-only -->
+    <Rule Id="UNT0041" Action="Warning" />  <!-- Use Animator.StringToHash — required by unity-runtime-code -->
+    <Rule Id="UNT0042" Action="Info" />
+    <Rule Id="UNT0043" Action="Error" />  <!-- Possible typo in conditional compilation symbol -->
+    <Rule Id="UNT0044" Action="Info" />
+    <Rule Id="UNT0045" Action="Info" />
+    <Rule Id="UNT0046" Action="Info" />
+  </Rules>
+</RuleSet>

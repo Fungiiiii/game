@@ -16,7 +16,7 @@ Read and write project documentation through the Atlassian MCP. **If the Atlassi
 
 `ProjectSettings/ProjectVersion.txt` is authoritative for the Unity version. Never upgrade Unity or unrelated packages as part of another task.
 
-**There is no Unity project in the repository yet.** If the task is to create it, follow `docs/unity-init.md` — order matters, and several steps are far harder to fix after the first commit. Blender sources live in `ArtSource/`, outside `Assets/`; see `docs/art-pipeline.md`.
+The Unity project lives at the repository root — `Assets/`, `Packages/`, `ProjectSettings/`. It was created from the 3D Cross-Platform (URP) template; [`docs/unity-init.md`](docs/unity-init.md) records how, and why each choice was made. Blender sources live in `ArtSource/`, outside `Assets/`; see `docs/art-pipeline.md`.
 
 Never invent project, gameplay or architecture rules that could be verified. An accepted ADR beats conflicting documentation unless explicitly superseded. If authoritative sources conflict, report the conflict instead of silently picking one.
 
@@ -88,7 +88,15 @@ Never commit passwords, tokens, API keys, certificates or credentials — includ
 
 ## Honesty about verification
 
-**Unity is not installed in this environment** — the project cannot be compiled, and EditMode/PlayMode tests cannot be run locally. Compilation and tests are verified by CI (see `.github/workflows/`) and by the developer.
+**Check whether an Editor is actually available before claiming anything about compilation or tests.** Unity `6000.3.21f1` is installed on the maintainer's Windows machine, where the project can be compiled and tested headlessly:
+
+```bash
+"C:/Program Files/Unity/Hub/Editor/6000.3.21f1/Editor/Unity.exe" -batchmode -nographics \
+  -runTests -projectPath . -testPlatform EditMode \
+  -testResults results.xml -logFile unity.log
+```
+
+**Batch mode has returned exit code 0 with failing compilation.** Never trust the exit code: read the log and the results XML. Other environments — cloud agents, CI containers — have no Editor at all, and there CI is the only authority (see `.github/workflows/`).
 
 Never claim that tests passed, the project compiles, gameplay was validated, documentation was updated, an ADR exists, a PR was created, or Atlassian was consulted — unless it actually happened. Always state explicitly what was not verified and why.
 
