@@ -1,0 +1,57 @@
+# Compilation and test verification for Fungiiiii.
+# Unity cannot be run from the agent environment — CI is the authority
+# for "the project compiles" and "the tests pass" (CLAUDE.md, Honesty).
+#
+# Requires these repository secrets before it can run:
+#   UNITY_LICENSE, UNITY_EMAIL, UNITY_PASSWORD
+name: Unity tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  guard:
+    # Skips cleanly until the Unity project actually exists in the repo.
+    runs-on: ubuntu-latest
+    outputs:
+      has_project: ${{ steps.check.outputs.has_project }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        run: |
+          if [ -f ProjectSettings/ProjectVersion.txt ]; then
+            echo "has_project=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_project=false" >> "$GITHUB_OUTPUT"
+            echo "No ProjectSettings/ProjectVersion.txt yet — skipping Unity tests." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  tests:
+    needs: guard
+    if: needs.guard.outputs.has_project == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        testMode: [editmode, playmode]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-${{ matrix.testMode }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: Library-${{ matrix.testMode }}-
+
+      - uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          testMode: ${{ matrix.testMode }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: ${{ matrix.testMode }} results
