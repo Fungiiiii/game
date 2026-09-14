@@ -1,6 +1,7 @@
 # Compilation and test verification for Fungiiiii.
-# Unity cannot be run from the agent environment — CI is the authority
-# for "the project compiles" and "the tests pass" (CLAUDE.md, Honesty).
+# Where no Editor is available — cloud agents, CI containers — this workflow is
+# the only authority for "the project compiles" and "the tests pass"
+# (CLAUDE.md, Honesty about verification).
 #
 # Requires these repository secrets before it can run:
 #   UNITY_LICENSE, UNITY_EMAIL, UNITY_PASSWORD
@@ -45,6 +46,23 @@ jobs:
           path: Library
           key: Library-${{ matrix.testMode }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
           restore-keys: Library-${{ matrix.testMode }}-
+
+      # The editor image is 5.6 GB compressed and several times that once its
+      # layers are extracted. A GitHub-hosted runner ships with roughly 20 GB
+      # free on /, where Docker also stores images, so the pull runs out of
+      # space mid-layer: "failed to register layer: no space left on device".
+      # None of the toolchains removed here are used by a Unity test run.
+      # Sizes are printed so a future failure shows how much room there was.
+      - name: Free disk space for the editor image
+        run: |
+          df -h /
+          sudo rm -rf \
+            /usr/local/lib/android \
+            /opt/hostedtoolcache \
+            /usr/share/dotnet \
+            /usr/share/swift \
+            /opt/ghc
+          df -h /
 
       - uses: game-ci/unity-test-runner@v4
         env:
