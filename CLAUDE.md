@@ -16,7 +16,7 @@ Read and write project documentation through the Atlassian MCP. **If the Atlassi
 
 `ProjectSettings/ProjectVersion.txt` is authoritative for the Unity version. Never upgrade Unity or unrelated packages as part of another task.
 
-**There is no Unity project in the repository yet.** If the task is to create it, follow `docs/unity-init.md` — order matters, and several steps are far harder to fix after the first commit. Blender sources live in `ArtSource/`, outside `Assets/`; see `docs/art-pipeline.md`.
+The Unity project lives at the repository root — `Assets/`, `Packages/`, `ProjectSettings/`. It was created from the 3D Cross-Platform (URP) template; [`docs/unity-init.md`](docs/unity-init.md) records how, and why each choice was made. Blender sources live in `ArtSource/`, outside `Assets/`; see `docs/art-pipeline.md`.
 
 Never invent project, gameplay or architecture rules that could be verified. An accepted ADR beats conflicting documentation unless explicitly superseded. If authoritative sources conflict, report the conflict instead of silently picking one.
 
@@ -68,7 +68,9 @@ Never work directly on `main`. One branch per coherent change:
 
 `feat|fix|refactor|docs|test|chore/<ticket>-<description>` — e.g. `feat/FUN-123-player-movement`
 
-Conventional Commits: `type(scope): description`, types `feat` `fix` `refactor` `test` `docs` `chore` `perf` `build` `ci`.
+Conventional Commits: `type(scope): description`, types `feat` `fix` `refactor` `test` `docs` `chore` `perf` `build` `ci` `art` `net`.
+
+`art` (3D assets, textures, audio) and `net` (networking) come from the Spécifications Techniques §7. They are commit types only — branch prefixes are unchanged.
 
 **Never credit Claude or any AI.** No `Co-authored-by: Claude`, no AI mention in commit messages or PR descriptions. Use the developer's configured Git identity.
 
@@ -88,7 +90,17 @@ Never commit passwords, tokens, API keys, certificates or credentials — includ
 
 ## Honesty about verification
 
-**Unity is not installed in this environment** — the project cannot be compiled, and EditMode/PlayMode tests cannot be run locally. Compilation and tests are verified by CI (see `.github/workflows/`) and by the developer.
+**Check whether an Editor is actually available before claiming anything about compilation or tests.** Unity `6000.3.21f1` is installed on the maintainer's Windows machine, where the project can be compiled and tested headlessly:
+
+```bash
+"C:/Program Files/Unity/Hub/Editor/6000.3.21f1/Editor/Unity.exe" -batchmode -nographics \
+  -runTests -projectPath . -testPlatform EditMode \
+  -testResults results.xml -logFile unity.log
+```
+
+**Batch mode has returned exit code 0 with failing compilation.** Never trust the exit code: read the log and the results XML.
+
+**CI does not run Unity** — see ADR-0004. `.github/workflows/` enforces the repository conventions and nothing more; no workflow compiles the project or runs a test on a pull request. So where no Editor is available — cloud agents, CI containers — **nothing at all can be claimed about compilation or tests**. There is no second authority to fall back on. Say what was not verified, and ask the developer to run it.
 
 Never claim that tests passed, the project compiles, gameplay was validated, documentation was updated, an ADR exists, a PR was created, or Atlassian was consulted — unless it actually happened. Always state explicitly what was not verified and why.
 

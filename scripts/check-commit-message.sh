@@ -12,7 +12,7 @@ if grep -qE '^(Merge|Revert|fixup!|squash!)' <<<"$subject"; then
   exit 0
 fi
 
-types='feat|fix|refactor|test|docs|chore|perf|build|ci'
+types='feat|fix|refactor|test|docs|chore|perf|build|ci|art|net'
 
 if ! grep -qE "^($types)(\([a-z0-9._-]+\))?!?: .+" <<<"$subject"; then
   cat >&2 <<MSG
@@ -20,7 +20,7 @@ Conventional Commits required (CLAUDE.md).
 
   Got:      $subject
   Expected: type(scope): description
-  Types:    feat fix refactor test docs chore perf build ci
+  Types:    feat fix refactor test docs chore perf build ci art net
 
   Examples: feat(movement): add player sprint
             fix(physics): prevent player clipping through ramps

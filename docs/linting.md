@@ -2,7 +2,10 @@
 
 The linter is deliberately limited to rules that catch **bugs**. Style and
 "code quality" opinions are left advisory: they belong in review, not in a
-build failure. Severities live in [`.editorconfig`](../.editorconfig).
+build failure. Severities live in **two** files that must stay in sync —
+[`.editorconfig`](../.editorconfig) for the IDEs and
+[`Assets/Default.ruleset`](../Assets/Default.ruleset) for Unity itself. The
+Installation section below explains why both are needed.
 
 ## Microsoft.Unity.Analyzers
 
@@ -28,24 +31,55 @@ and `UNT0039` are **off** — `UNT0039` pushes `[RequireComponent]`, which the
 
 ## Installation
 
-**Not yet installed** — there is no Unity project in this repository.
+**Installed.** `Assets/Plugins/Analyzers/Microsoft.Unity.Analyzers.dll`,
+version 1.27.0, labelled `RoslynAnalyzer`, with every platform disabled in its
+importer so it never ships inside a build.
 
 Rider and Visual Studio bundle these analyzers, so an IDE user already sees the
-diagnostics. Command-line and CI compilation do **not**: the analyzer has to be
+diagnostics. Command-line compilation does **not**: the analyzer has to be
 in the project.
 
-When the Unity project exists:
+The GitHub releases carry no downloadable asset — the analyzer is published on
+NuGet. To update it:
 
-1. Download `Microsoft.Unity.Analyzers.dll` from the
-   [releases](https://github.com/microsoft/Microsoft.Unity.Analyzers/releases).
-2. Place it under `Assets/` (a `Assets/Plugins/Analyzers/` folder keeps it tidy).
-3. Select it in the Project window and give the asset the label
-   **`RoslynAnalyzer`**. Unity only loads analyzers carrying that label.
-4. Verify a diagnostic fires — write `private void update() { }` in a
-   MonoBehaviour and confirm UNT0033 appears in the Console.
+1. Download the package from
+   `https://api.nuget.org/v3-flatcontainer/microsoft.unity.analyzers/<version>/microsoft.unity.analyzers.<version>.nupkg`
+   and extract `analyzers/dotnet/cs/Microsoft.Unity.Analyzers.dll` from it.
+2. Replace the DLL under `Assets/Plugins/Analyzers/`.
+3. Keep the asset label **`RoslynAnalyzer`**. Unity only loads analyzers
+   carrying that label — and without it Unity imports the DLL as an
+   auto-referenced managed plugin, whose bundled `Vector2` and `Vector3` then
+   collide with `UnityEngine.CoreModule` and fail every assembly with CS0433.
+4. Keep every platform unchecked in the importer. An analyzer is a compile-time
+   tool and must not be included in builds.
+5. Verify a diagnostic fires — write `private void update() { }` in a
+   MonoBehaviour and confirm UNT0033 appears, **as an error**.
 
-Step 4 is the one that matters: an analyzer that is present but not loaded
+Step 5 is the one that matters: an analyzer that is present but not loaded
 produces no errors and looks exactly like a clean codebase.
+
+### Why severities are duplicated
+
+Unity does **not** pass `.editorconfig` to Roslyn. Verified on Unity
+`6000.3.21f1`: the generated response file under `Library/Bee/artifacts/`
+contains `-analyzer:` for the DLL, but no `/analyzerconfig:` — at any path,
+including inside `Assets/`. With severities declared only in `.editorconfig`,
+a lowercase `update` was reported as `warning UNT0033` and the build passed,
+even though `.editorconfig` marks that rule as an error.
+
+Unity does pass `-ruleset:` for `Assets/Default.ruleset`. With the same rule
+declared there, the same code produced `error UNT0033` and compilation failed.
+
+So both files are required, and they serve different readers:
+
+| File | Read by | Effect |
+|---|---|---|
+| `.editorconfig` | Rider, Visual Studio | Squiggles while typing |
+| `Assets/Default.ruleset` | Unity's compiler | Breaks the build |
+
+**Any change to a severity must be made in both files.** This duplication is
+accepted technical debt: nothing enforces that they agree. Generating one from
+the other, and checking it in CI, is the obvious follow-up.
 
 ## What is deliberately not enabled
 

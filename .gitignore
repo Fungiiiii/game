@@ -34,6 +34,7 @@ crashlytics-build.properties
 *.csproj
 *.unityproj
 *.sln
+*.slnx
 *.suo
 *.tmp
 *.user
@@ -53,3 +54,11 @@ crashlytics-build.properties
 # OS
 .DS_Store
 Thumbs.db
+
+# Git LFS hooks. scripts/setup.sh points core.hooksPath at .githooks/, which is
+# version controlled, so `git lfs install --local` writes these generated hooks
+# into a tracked directory. They are per-clone, like everything setup.sh does.
+/.githooks/post-checkout
+/.githooks/post-commit
+/.githooks/post-merge
+/.githooks/pre-push

@@ -37,4 +37,16 @@ Normal MonoBehaviour gameplay can use Unity time APIs (`Time.deltaTime`) directl
 
 ## Running tests
 
-Unity is **not installed in this environment** — tests cannot be run locally. Either ask the developer to run them, or rely on CI. Never report a test result that was not actually observed; state explicitly which tests were written but not executed.
+Check whether an Editor is present before assuming either way. On the maintainer's Windows machine Unity `6000.3.21f1` is installed, and both modes run headlessly:
+
+```bash
+"C:/Program Files/Unity/Hub/Editor/6000.3.21f1/Editor/Unity.exe" -batchmode -nographics \
+  -runTests -projectPath . -testPlatform EditMode \
+  -testResults results.xml -logFile unity.log
+```
+
+Use `-testPlatform PlayMode` for the other mode. Batch mode has returned exit code 0 with failing compilation, so read `results.xml` and the log — never the exit code alone.
+
+**CI is not a fallback.** ADR-0004 keeps Unity out of CI: no workflow compiles the project or runs a test on a pull request. Where no Editor exists (cloud agents, CI containers), there is nothing to rely on — ask the developer to run the tests and report what they saw.
+
+Never report a test result that was not actually observed; state explicitly which tests were written but not executed, and on which machine the ones you do report were run.

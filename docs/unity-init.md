@@ -4,9 +4,16 @@ Everything to do once, when the Unity project is first created in this
 repository. Follow it in order — several steps are much harder to fix after the
 first commit than before it.
 
-The repository currently contains no Unity project. `ProjectSettings/ProjectVersion.txt`
-does not exist yet, which is why `CLAUDE.md` cannot yet point at an authoritative
-Unity version.
+> **Done.** The Unity project was created on 2026-09-14 with Unity
+> `6000.3.21f1`, from the official 3D Cross-Platform (URP) template. This
+> document is kept as the record of what was decided and why, and as the
+> reference for anyone rebuilding the project or reviewing those choices.
+> Steps that produced a lasting rule now live where that rule is enforced —
+> analyzer setup in [`docs/linting.md`](./linting.md), the two open decisions
+> in [`docs/adrs/`](./adrs).
+
+`ProjectSettings/ProjectVersion.txt` is now present and authoritative:
+`6000.3.21f1`.
 
 ---
 
@@ -27,15 +34,17 @@ and alternatives that were actually weighed — which are not in this repository
 Either link the Atlassian page from an ADR, or write the ADR from what the team
 remembers. Do not reconstruct it from guesses.
 
-### Still open
+### Decided at creation
 
-Both are baked in at creation time and expensive to reverse. **Write the ADRs
-first** — see the `adr` skill and [`docs/adrs/`](./adrs).
+Both were baked in at creation time and are expensive to reverse. Both were
+already settled in the Spécifications Techniques on Atlassian; the ADRs bring
+that decision into the repository, where it is reviewed alongside the code it
+constrains.
 
-| Decision | Why it is an ADR | Notes |
+| Decision | Value | ADR |
 |---|---|---|
-| Render pipeline | Affects every shader, material, light and scene | URP, HDRP or Built-in. Changing later means reauthoring every material. URP is the usual default for a 3D project targeting more than one platform |
-| Input architecture | `CLAUDE.md` requires named actions, not raw key checks | Input System package vs legacy Input Manager |
+| Render pipeline | **URP** `17.3.0` | [ADR-0002](./adrs/0002-pipeline-de-rendu-urp.md) |
+| Input architecture | **Input System** `1.20.0`, legacy Input Manager disabled | [ADR-0003](./adrs/0003-architecture-des-entrees-input-system.md) |
 
 Two more decisions can wait, but must be made deliberately rather than by
 accident — see the `unity-localization` and `unity-project-config` skills:
@@ -150,14 +159,14 @@ Assets/
 ```
 
 `ArtSource/` is outside `Assets/` on purpose: Unity imports everything inside
-`Assets/`, and importing `.blend` requires Blender on every machine including
-CI. See [`docs/art-pipeline.md`](./art-pipeline.md).
+`Assets/`, and importing `.blend` requires Blender on every machine that
+imports the project. See [`docs/art-pipeline.md`](./art-pipeline.md).
 
 Rules from the `unity-project-config` skill that apply here:
 
 - Editor code lives in an Editor assembly. **Runtime must never reference
-  `UnityEditor`** — a runtime build that does will fail, often only at build
-  time on the CI machine.
+  `UnityEditor`** — a runtime build that does will fail, and often only at
+  build time, long after the code was written.
 - No circular dependencies between assemblies.
 - Namespaces follow the assembly structure, not folder depth.
 
@@ -183,7 +192,7 @@ Cinemachine, any networking package.
 ## 7. Analyzers
 
 Install `Microsoft.Unity.Analyzers` — the DLL has to be in the project for
-command-line and CI compilation, even though Rider and Visual Studio bundle it.
+command-line compilation, even though Rider and Visual Studio bundle it.
 
 Full procedure, including the verification step that catches a silently
 unloaded analyzer: [`docs/linting.md`](./linting.md).
@@ -193,7 +202,7 @@ unloaded analyzer: [`docs/linting.md`](./linting.md).
 ## 8. Tests
 
 Create both test assemblies immediately, each with at least one passing test.
-An empty test project and a broken test runner look identical in CI.
+An empty test project and a broken test runner look identical from the outside.
 
 Prefer EditMode; see the `unity-testing` skill for the split.
 
@@ -201,13 +210,64 @@ Prefer EditMode; see the `unity-testing` skill for the split.
 
 ## 9. CI
 
-[`.github/workflows/unity-tests.yml`](../.github/workflows/unity-tests.yml)
-skips itself until `ProjectSettings/ProjectVersion.txt` exists. Once it does,
-the workflow needs three repository secrets:
+**CI does not run Unity, and that is a decision, not an omission.**
+See [ADR-0004](./adrs/0004-verification-unity-hors-ci.md).
 
-`UNITY_LICENSE` · `UNITY_EMAIL` · `UNITY_PASSWORD`
+What runs on a pull request:
 
-Add them in GitHub repository settings. **Never commit them** — see `CLAUDE.md`.
+| Workflow | Runs on | What it proves |
+|---|---|---|
+| [`conventions.yml`](../.github/workflows/conventions.yml) | every PR | commit messages, English-only source, the `scripts/` checks |
+| [`unity-tests.yml`](../.github/workflows/unity-tests.yml) | manual only | nothing, until someone starts it by hand |
+
+So **no automated check compiles this project or runs a single test.** That
+authority sits on the developers' machines, and nowhere else. Before opening a
+PR, run both test modes locally — the headless command is in the
+`unity-testing` skill — and say in the PR what you ran and what you did not.
+
+### If a licence is ever added
+
+`unity-tests.yml` is kept working for that day. It already carries the two
+fixes the first run cost us: the disk cleanup, without which the 5.6 GB editor
+image cannot be pulled at all, and a credentials check, without which a
+missing licence surfaces three minutes later as an unreadable stack trace.
+
+game-ci accepts several activation strategies. Its CLI (`v0.1.63`, the version
+the action pulls) lists these when none is configured:
+
+| Secrets | Seat |
+|---|---|
+| `UNITY_EMAIL` + `UNITY_PASSWORD` | Personal (free) |
+| `UNITY_EMAIL` + `UNITY_PASSWORD` + `UNITY_SERIAL` | Pro / Plus |
+| `UNITY_LICENSE`, the contents of a `.ulf` | Enterprise / Industry |
+
+The workflow passes through `UNITY_LICENSE`, `UNITY_EMAIL` and
+`UNITY_PASSWORD`. A Pro seat would also need `UNITY_SERIAL` in the `env:` block
+of the test step — it is not wired up.
+
+The published documentation at <https://game.ci/docs/github/activation>
+disagrees with the CLI: it asks for `UNITY_LICENSE` *and* the email and
+password for a Personal seat. The CLI message matches the version that
+actually runs. If a Personal seat refuses to activate on email and password
+alone, the `.ulf` route is the fallback.
+
+Three things to know before putting anything in there:
+
+- **Never a personal Unity account.** Anyone who can push a workflow to this
+  repository can make it print a secret; the masking in the logs is trivially
+  defeated. The credential must be a project asset, rotatable without asking a
+  person to change their own password.
+- `Fungiiiii` is a GitHub organization, so secrets belong at organization level
+  (Settings → Secrets and variables → Actions), scoped to this repository.
+  Repository secrets behave identically but have to be repeated per repository.
+  Either way, **never commit them** — see `CLAUDE.md`.
+- GitHub sends no secret to a workflow triggered by a pull request from a
+  **fork**. Work on branches of this repository.
+
+Running Unity in CI also costs money here: the organization is on the Free
+plan — 2 000 Actions minutes a month — and this repository is private, so those
+minutes are metered. Measured on the runs that failed: 2 min 15 s for the image
+pull alone, in a job that never started the editor.
 
 Also worth configuring at the same time, since local hooks only protect the
 clone they were installed in: branch protection on `main`, requiring a PR and
