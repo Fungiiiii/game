@@ -215,6 +215,53 @@ namespace Fungiiiii.Inventory
         }
 
         /// <summary>
+        /// Takes up to the requested amount from one slot and returns the item definition.
+        /// This is used by cursor-style inventory interactions such as split stacks.
+        /// </summary>
+        public int TakeFromSlot(int index, int quantity, out InventoryItemDefinition item)
+        {
+            ValidateIndex(index);
+            if (quantity <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(quantity), "The quantity must be positive.");
+            }
+
+            SlotData slot = slots[index];
+            if (slot.IsEmpty)
+            {
+                item = default;
+                return 0;
+            }
+
+            item = new InventoryItemDefinition(slot.ItemId, slot.Color, slot.MaxStackSize);
+            int taken = Math.Min(quantity, slot.Quantity);
+            slot.Quantity -= taken;
+            slots[index] = slot.Quantity > 0 ? slot : default;
+            Changed?.Invoke();
+            return taken;
+        }
+
+        /// <summary>
+        /// Places as many items as fit in one slot and returns the amount placed.
+        /// </summary>
+        public int AddToSlot(int index, InventoryItemDefinition item, int quantity)
+        {
+            ValidateIndex(index);
+            if (quantity <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(quantity), "The quantity must be positive.");
+            }
+
+            int added = AddToSlot(index, item, quantity, item.MaxStackSize);
+            if (added > 0)
+            {
+                Changed?.Invoke();
+            }
+
+            return added;
+        }
+
+        /// <summary>
         /// Moves an item to an empty slot, merges compatible stacks, or swaps two slots.
         /// Returns false when the source is empty or both indexes are identical.
         /// </summary>
@@ -262,6 +309,11 @@ namespace Fungiiiii.Inventory
 
         private int AddToSlot(int index, InventoryItemDefinition item, int quantity, int maxStackSize)
         {
+            if (!slots[index].IsEmpty && !AreCompatible(slots[index], item))
+            {
+                return 0;
+            }
+
             int capacity = maxStackSize - slots[index].Quantity;
             int added = Math.Min(quantity, capacity);
             if (added <= 0)
@@ -301,6 +353,13 @@ namespace Fungiiiii.Inventory
             return left.ItemId == right.ItemId &&
                    left.MaxStackSize == right.MaxStackSize &&
                    left.Color == right.Color;
+        }
+
+        private static bool AreCompatible(SlotData slot, InventoryItemDefinition item)
+        {
+            return slot.ItemId == item.Id &&
+                   slot.MaxStackSize == item.MaxStackSize &&
+                   slot.Color == item.Color;
         }
 
         private struct SlotData

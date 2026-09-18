@@ -1,13 +1,15 @@
 using Fungiiiii.Inventory;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 
 namespace Fungiiiii.UI
 {
     /// <summary>
     /// Builds a Minecraft-inspired inventory: a 3-column by 4-row item panel and a
-    /// three-slot quick bar. Slots support drag-and-drop moves, stack merges and swaps.
+    /// three-slot quick bar. Slots support cursor pickup, stack splitting, drag
+    /// distribution, stack merges and swaps.
     /// </summary>
     public sealed class InventoryDemoController : MonoBehaviour
     {
@@ -36,9 +38,16 @@ namespace Fungiiiii.UI
         private SlotView[] slotViews;
         private RectTransform dragLayer;
         private GameObject dragGhost;
+        private UnityEngine.UI.Text dragGhostCount;
+        private InventoryItemDefinition carriedItem;
+        private int carriedQuantity;
         private int dragSourceIndex = -1;
+        private int lastDistributionIndex = -1;
+        private bool isDistributing;
 
         public PlayerInventory Inventory => inventory;
+
+        private bool IsCarrying => carriedQuantity > 0;
 
         private void Awake()
         {
@@ -48,6 +57,14 @@ namespace Fungiiiii.UI
             BuildUi();
             inventory.Changed += RefreshUi;
             SeedDemoItems();
+        }
+
+        private void Update()
+        {
+            if (IsCarrying && Mouse.current != null)
+            {
+                UpdateDragGhost(Mouse.current.position.ReadValue(), null);
+            }
         }
 
         private void OnDestroy()
@@ -124,7 +141,7 @@ namespace Fungiiiii.UI
             border.transform.SetAsFirstSibling();
 
             CreateLabel("InventoryTitle", panel.transform, "INVENTORY", 30, TitleColor, TextAnchor.MiddleCenter, new Vector2(0f, 276f), new Vector2(500f, 48f));
-            CreateLabel("InventorySubtitle", panel.transform, "DRAG ITEMS TO MOVE, MERGE OR SWAP", 14, new Color(0.7f, 0.73f, 0.76f, 1f), TextAnchor.MiddleCenter, new Vector2(0f, 242f), new Vector2(500f, 28f));
+            CreateLabel("InventorySubtitle", panel.transform, "CLICK TO PICK UP  /  RIGHT CLICK TO SPLIT", 14, new Color(0.7f, 0.73f, 0.76f, 1f), TextAnchor.MiddleCenter, new Vector2(0f, 242f), new Vector2(500f, 28f));
 
             GameObject gridObject = CreateUiObject("InventoryGrid_3x4", panel.transform);
             RectTransform gridRect = gridObject.GetComponent<RectTransform>();
@@ -195,7 +212,89 @@ namespace Fungiiiii.UI
             return new SlotView(itemImage, countText);
         }
 
+        internal void ClickSlot(int index, PointerEventData eventData)
+        {
+            if (eventData.button == PointerEventData.InputButton.Right)
+            {
+                HandleRightClick(index, eventData);
+                return;
+            }
+
+            if (eventData.button == PointerEventData.InputButton.Left)
+            {
+                HandleLeftClick(index, eventData);
+            }
+        }
+
         internal void BeginSlotDrag(int index, PointerEventData eventData)
+        {
+            if (IsCarrying)
+            {
+                return;
+            }
+
+            InventorySlot slot = inventory.GetSlot(index);
+            if (slot.IsEmpty)
+            {
+                return;
+            }
+
+            carriedQuantity = inventory.TakeFromSlot(index, slot.Quantity, out carriedItem);
+            dragSourceIndex = index;
+            lastDistributionIndex = -1;
+            isDistributing = true;
+            CreateDragGhost(eventData.position, eventData.pressEventCamera);
+        }
+
+        internal void UpdateSlotDrag(PointerEventData eventData)
+        {
+            UpdateDragGhost(eventData.position, eventData.pressEventCamera);
+        }
+
+        internal void EnterSlotDrag(int index)
+        {
+            if (!isDistributing || !IsCarrying || index == dragSourceIndex || index == lastDistributionIndex)
+            {
+                return;
+            }
+
+            if (TryPlaceOne(index))
+            {
+                lastDistributionIndex = index;
+            }
+        }
+
+        internal void EndSlotDrag()
+        {
+            isDistributing = false;
+            dragSourceIndex = -1;
+            lastDistributionIndex = -1;
+            RefreshDragGhost();
+        }
+
+        private void HandleLeftClick(int index, PointerEventData eventData)
+        {
+            if (!IsCarrying)
+            {
+                PickUpAll(index, eventData);
+                return;
+            }
+
+            DropCarried(index, false, eventData);
+        }
+
+        private void HandleRightClick(int index, PointerEventData eventData)
+        {
+            if (!IsCarrying)
+            {
+                PickUpHalf(index, eventData);
+                return;
+            }
+
+            DropCarried(index, true, eventData);
+        }
+
+        private void PickUpAll(int index, PointerEventData eventData)
         {
             InventorySlot slot = inventory.GetSlot(index);
             if (slot.IsEmpty)
@@ -203,41 +302,109 @@ namespace Fungiiiii.UI
                 return;
             }
 
+            carriedQuantity = inventory.TakeFromSlot(index, slot.Quantity, out carriedItem);
+            CreateDragGhost(eventData.position, eventData.pressEventCamera);
+        }
+
+        private void PickUpHalf(int index, PointerEventData eventData)
+        {
+            InventorySlot slot = inventory.GetSlot(index);
+            if (slot.IsEmpty)
+            {
+                return;
+            }
+
+            int halfQuantity = Mathf.CeilToInt(slot.Quantity / 2f);
+            carriedQuantity = inventory.TakeFromSlot(index, halfQuantity, out carriedItem);
+            CreateDragGhost(eventData.position, eventData.pressEventCamera);
+        }
+
+        private void DropCarried(int index, bool oneOnly, PointerEventData eventData)
+        {
+            if (!IsCarrying)
+            {
+                return;
+            }
+
+            InventorySlot target = inventory.GetSlot(index);
+            if (target.IsEmpty || IsCompatible(target, carriedItem))
+            {
+                int requestedQuantity = oneOnly ? 1 : carriedQuantity;
+                int added = inventory.AddToSlot(index, carriedItem, requestedQuantity);
+                carriedQuantity -= added;
+                UpdateDragGhost(eventData.position, eventData.pressEventCamera);
+                RefreshDragGhost();
+                return;
+            }
+
+            // A left click on a different item swaps the carried stack and the target stack.
+            if (oneOnly)
+            {
+                return;
+            }
+
+            InventoryItemDefinition targetItem;
+            int targetQuantity = inventory.TakeFromSlot(index, target.Quantity, out targetItem);
+            int addedToTarget = inventory.AddToSlot(index, carriedItem, carriedQuantity);
+            if (addedToTarget != carriedQuantity)
+            {
+                inventory.AddToSlot(index, targetItem, targetQuantity);
+                return;
+            }
+
+            carriedItem = targetItem;
+            carriedQuantity = targetQuantity;
+            UpdateDragGhost(eventData.position, eventData.pressEventCamera);
+            RefreshDragGhost();
+        }
+
+        private bool TryPlaceOne(int index)
+        {
+            InventorySlot target = inventory.GetSlot(index);
+            if (!target.IsEmpty && !IsCompatible(target, carriedItem))
+            {
+                return false;
+            }
+
+            int added = inventory.AddToSlot(index, carriedItem, 1);
+            if (added <= 0)
+            {
+                return false;
+            }
+
+            carriedQuantity -= added;
+            RefreshDragGhost();
+            return true;
+        }
+
+        private void CreateDragGhost(Vector2 screenPosition, Camera eventCamera)
+        {
             DestroyDragGhost();
-            dragSourceIndex = index;
             dragGhost = CreateUiObject("DraggedItem", dragLayer);
 
             UnityEngine.UI.Image ghostImage = dragGhost.AddComponent<UnityEngine.UI.Image>();
             ghostImage.sprite = GetUiSprite();
-            ghostImage.color = new Color(slot.Color.r, slot.Color.g, slot.Color.b, 0.78f);
+            ghostImage.color = new Color(carriedItem.Color.r, carriedItem.Color.g, carriedItem.Color.b, 0.78f);
             ghostImage.raycastTarget = false;
 
+            GameObject quantityObject = CreateUiObject("Quantity", dragGhost.transform);
+            dragGhostCount = quantityObject.AddComponent<UnityEngine.UI.Text>();
+            dragGhostCount.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            dragGhostCount.fontSize = 20;
+            dragGhostCount.fontStyle = FontStyle.Bold;
+            dragGhostCount.alignment = TextAnchor.LowerRight;
+            dragGhostCount.color = Color.white;
+            dragGhostCount.raycastTarget = false;
+            SetRect(quantityObject.GetComponent<RectTransform>(), Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(-12f, -8f), new Vector2(-5f, -5f));
+
             RectTransform ghostRect = dragGhost.GetComponent<RectTransform>();
-            SetRect(ghostRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(52f, 52f), Vector2.zero);
+            SetRect(ghostRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(58f, 58f), Vector2.zero);
             dragGhost.transform.SetAsLastSibling();
-            UpdateDragGhost(eventData);
+            UpdateDragGhost(screenPosition, eventCamera);
+            RefreshDragGhost();
         }
 
-        internal void UpdateSlotDrag(PointerEventData eventData)
-        {
-            UpdateDragGhost(eventData);
-        }
-
-        internal void DropSlot(int targetIndex)
-        {
-            if (dragSourceIndex >= 0)
-            {
-                inventory.MoveOrSwap(dragSourceIndex, targetIndex);
-            }
-        }
-
-        internal void EndSlotDrag()
-        {
-            DestroyDragGhost();
-            dragSourceIndex = -1;
-        }
-
-        private void UpdateDragGhost(PointerEventData eventData)
+        private void UpdateDragGhost(Vector2 screenPosition, Camera eventCamera)
         {
             if (dragGhost == null || dragLayer == null)
             {
@@ -246,10 +413,25 @@ namespace Fungiiiii.UI
 
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 dragLayer,
-                eventData.position,
-                eventData.pressEventCamera,
+                screenPosition,
+                eventCamera,
                 out Vector2 localPosition);
             dragGhost.GetComponent<RectTransform>().anchoredPosition = localPosition;
+        }
+
+        private void RefreshDragGhost()
+        {
+            if (!IsCarrying)
+            {
+                carriedItem = default;
+                DestroyDragGhost();
+                return;
+            }
+
+            if (dragGhostCount != null)
+            {
+                dragGhostCount.text = carriedQuantity.ToString();
+            }
         }
 
         private void DestroyDragGhost()
@@ -259,6 +441,8 @@ namespace Fungiiiii.UI
                 Destroy(dragGhost);
                 dragGhost = null;
             }
+
+            dragGhostCount = null;
         }
 
         private void RefreshUi()
@@ -272,6 +456,13 @@ namespace Fungiiiii.UI
             {
                 slotViews[i].Set(inventory.GetSlot(i));
             }
+        }
+
+        private static bool IsCompatible(InventorySlot slot, InventoryItemDefinition item)
+        {
+            return slot.ItemId == item.Id &&
+                   slot.MaxStackSize == item.MaxStackSize &&
+                   slot.Color == item.Color;
         }
 
         private static GameObject CreateUiObject(string name, Transform parent)
@@ -369,7 +560,12 @@ namespace Fungiiiii.UI
         }
     }
 
-    internal sealed class InventorySlotDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IDropHandler, IEndDragHandler
+    internal sealed class InventorySlotDragHandler : MonoBehaviour,
+        IBeginDragHandler,
+        IDragHandler,
+        IEndDragHandler,
+        IPointerEnterHandler,
+        IPointerClickHandler
     {
         private InventoryDemoController owner;
         private int index;
@@ -390,14 +586,19 @@ namespace Fungiiiii.UI
             owner?.UpdateSlotDrag(eventData);
         }
 
-        public void OnDrop(PointerEventData eventData)
-        {
-            owner?.DropSlot(index);
-        }
-
         public void OnEndDrag(PointerEventData eventData)
         {
             owner?.EndSlotDrag();
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            owner?.EnterSlotDrag(index);
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            owner?.ClickSlot(index, eventData);
         }
     }
 }

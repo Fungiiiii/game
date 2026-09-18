@@ -65,6 +65,23 @@ namespace Fungiiiii.Tests.EditMode
         }
 
         [Test]
+        public void TakeAndAddToSlot_SupportSplitStackInteractions()
+        {
+            var inventory = new PlayerInventory(3);
+            InventoryItemDefinition item = CreateItem();
+            inventory.Add(item, 5);
+
+            int taken = inventory.TakeFromSlot(0, 3, out InventoryItemDefinition carriedItem);
+            int placed = inventory.AddToSlot(1, carriedItem, 1);
+
+            Assert.That(taken, Is.EqualTo(3));
+            Assert.That(placed, Is.EqualTo(1));
+            Assert.That(inventory.GetSlot(0).Quantity, Is.EqualTo(2));
+            Assert.That(inventory.GetSlot(1).Quantity, Is.EqualTo(1));
+            Assert.That(inventory.Count(item.Id), Is.EqualTo(3));
+        }
+
+        [Test]
         public void Changed_IsRaisedOncePerSuccessfulOperation()
         {
             var inventory = new PlayerInventory(2);
