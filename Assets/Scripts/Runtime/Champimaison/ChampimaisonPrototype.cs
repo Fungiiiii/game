@@ -408,10 +408,16 @@ namespace Fungiiiii.Champimaison
     {
         private const string PrototypeScenePath = "Assets/Scenes/Prototype/ChampimaisonScene.unity";
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void CreatePrototype()
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void RegisterSceneLoadHandler()
         {
-            if (SceneManager.GetActiveScene().path != PrototypeScenePath)
+            SceneManager.sceneLoaded -= CreatePrototypeForScene;
+            SceneManager.sceneLoaded += CreatePrototypeForScene;
+        }
+
+        private static void CreatePrototypeForScene(Scene scene, LoadSceneMode mode)
+        {
+            if (scene.path != PrototypeScenePath)
             {
                 return;
             }

@@ -2,7 +2,11 @@ using System.Collections;
 using Fungiiiii.Champimaison;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
+#if UNITY_EDITOR
+using UnityEditor.SceneManagement;
+#endif
 
 namespace Fungiiiii.Tests.PlayMode
 {
@@ -39,6 +43,18 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(prototype.State.Tier, Is.EqualTo(ChampimaisonTier.Tier1));
 
             Object.Destroy(subject);
+        }
+
+        [UnityTest]
+        public IEnumerator ChampimaisonPrototypeScene_BootstrapsPrototype()
+        {
+            AsyncOperation load = EditorSceneManager.LoadSceneAsyncInPlayMode(
+                "Assets/Scenes/Prototype/ChampimaisonScene.unity",
+                new LoadSceneParameters(LoadSceneMode.Single));
+            yield return load;
+            yield return null;
+
+            Assert.That(Object.FindFirstObjectByType<ChampimaisonPrototype>(), Is.Not.Null);
         }
     }
 }
