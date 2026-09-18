@@ -5,16 +5,22 @@ using UnityEngine.InputSystem;
 namespace Fungiiiii.UI
 {
     /// <summary>
-    /// Creates the HUD prototype in the existing sample scene without changing the scene asset.
+    /// Creates the HUD prototype only in the dedicated prototype scene.
     /// </summary>
     internal static class VitalsHudPrototypeInstaller
     {
-        private const string SampleScenePath = "Assets/Scenes/SampleScene.unity";
+        private const string PrototypeScenePath = "Assets/Scenes/Prototype/HUDScene.unity";
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void InstallInSampleScene()
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void RegisterSceneLoadHandler()
         {
-            if (Application.isBatchMode || SceneManager.GetActiveScene().path != SampleScenePath)
+            SceneManager.sceneLoaded -= InstallInPrototypeScene;
+            SceneManager.sceneLoaded += InstallInPrototypeScene;
+        }
+
+        private static void InstallInPrototypeScene(Scene scene, LoadSceneMode mode)
+        {
+            if (scene.path != PrototypeScenePath)
             {
                 return;
             }
