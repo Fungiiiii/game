@@ -39,9 +39,9 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator SampleScene_BootstrapsInventoryController()
+        public IEnumerator InventoryPrototypeScene_BootstrapsInventoryController()
         {
-            AsyncOperation load = SceneManager.LoadSceneAsync("SampleScene");
+            AsyncOperation load = SceneManager.LoadSceneAsync("Assets/Scenes/Prototype/InventaireScene.unity");
             yield return load;
 
             InventoryDemoController controller = Object.FindFirstObjectByType<InventoryDemoController>();
