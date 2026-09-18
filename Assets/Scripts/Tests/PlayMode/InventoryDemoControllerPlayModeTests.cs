@@ -3,6 +3,9 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
+#if UNITY_EDITOR
+using UnityEditor.SceneManagement;
+#endif
 using System.Collections;
 
 namespace Fungiiiii.Tests.PlayMode
@@ -41,7 +44,9 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator InventoryPrototypeScene_BootstrapsInventoryController()
         {
-            AsyncOperation load = SceneManager.LoadSceneAsync("Assets/Scenes/Prototype/InventaireScene.unity");
+            AsyncOperation load = EditorSceneManager.LoadSceneAsyncInPlayMode(
+                "Assets/Scenes/Prototype/InventaireScene.unity",
+                new LoadSceneParameters(LoadSceneMode.Single));
             yield return load;
 
             InventoryDemoController controller = Object.FindFirstObjectByType<InventoryDemoController>();
