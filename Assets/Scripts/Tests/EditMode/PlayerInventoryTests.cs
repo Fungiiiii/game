@@ -82,6 +82,20 @@ namespace Fungiiiii.Tests.EditMode
         }
 
         [Test]
+        public void StackAll_ConsolidatesCompatibleStacksIntoThePreferredSlot()
+        {
+            var inventory = new PlayerInventory(3);
+            InventoryItemDefinition item = CreateItem();
+            inventory.Add(item, 5);
+            inventory.TakeFromSlot(0, 2, out InventoryItemDefinition carriedItem);
+            inventory.AddToSlot(1, carriedItem, 2);
+
+            Assert.That(inventory.StackAll(item.Id, 1), Is.True);
+            Assert.That(inventory.GetSlot(0).IsEmpty, Is.True);
+            Assert.That(inventory.GetSlot(1).Quantity, Is.EqualTo(5));
+        }
+
+        [Test]
         public void Changed_IsRaisedOncePerSuccessfulOperation()
         {
             var inventory = new PlayerInventory(2);

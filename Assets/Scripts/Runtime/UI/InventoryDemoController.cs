@@ -1,3 +1,4 @@
+using System.Collections;
 using Fungiiiii.Inventory;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -31,6 +32,7 @@ namespace Fungiiiii.UI
         private static readonly Color SlotColor = new Color(0.12f, 0.14f, 0.16f, 1f);
         private static readonly Color HotbarSlotColor = new Color(0.16f, 0.18f, 0.2f, 1f);
         private static readonly Color TitleColor = new Color(0.93f, 0.89f, 0.74f, 1f);
+        private const float DoubleClickWindowSeconds = 0.22f;
 
         private static Sprite uiSprite;
 
@@ -41,9 +43,10 @@ namespace Fungiiiii.UI
         private UnityEngine.UI.Text dragGhostCount;
         private InventoryItemDefinition carriedItem;
         private int carriedQuantity;
-        private int dragSourceIndex = -1;
-        private int lastDistributionIndex = -1;
-        private bool isDistributing;
+        private Coroutine pendingLeftClick;
+        private int pendingLeftClickIndex = -1;
+        private Vector2 pendingLeftClickPosition;
+        private Camera pendingLeftClickCamera;
 
         public PlayerInventory Inventory => inventory;
 
@@ -69,6 +72,8 @@ namespace Fungiiiii.UI
 
         private void OnDestroy()
         {
+            CancelPendingLeftClick();
+
             if (inventory != null)
             {
                 inventory.Changed -= RefreshUi;
@@ -141,7 +146,7 @@ namespace Fungiiiii.UI
             border.transform.SetAsFirstSibling();
 
             CreateLabel("InventoryTitle", panel.transform, "INVENTORY", 30, TitleColor, TextAnchor.MiddleCenter, new Vector2(0f, 276f), new Vector2(500f, 48f));
-            CreateLabel("InventorySubtitle", panel.transform, "CLICK TO PICK UP  /  RIGHT CLICK TO SPLIT", 14, new Color(0.7f, 0.73f, 0.76f, 1f), TextAnchor.MiddleCenter, new Vector2(0f, 242f), new Vector2(500f, 28f));
+            CreateLabel("InventorySubtitle", panel.transform, "LEFT CLICK PICK UP  /  RIGHT CLICK SPLIT  /  DOUBLE CLICK STACK", 13, new Color(0.7f, 0.73f, 0.76f, 1f), TextAnchor.MiddleCenter, new Vector2(0f, 242f), new Vector2(520f, 28f));
 
             GameObject gridObject = CreateUiObject("InventoryGrid_3x4", panel.transform);
             RectTransform gridRect = gridObject.GetComponent<RectTransform>();
@@ -216,85 +221,95 @@ namespace Fungiiiii.UI
         {
             if (eventData.button == PointerEventData.InputButton.Right)
             {
-                HandleRightClick(index, eventData);
+                CancelPendingLeftClick();
+                HandleRightClick(index, eventData.position, eventData.pressEventCamera);
                 return;
             }
 
             if (eventData.button == PointerEventData.InputButton.Left)
             {
-                HandleLeftClick(index, eventData);
+                if (eventData.clickCount >= 2)
+                {
+                    CancelPendingLeftClick();
+                    HandleDoubleClick(index, eventData);
+                    return;
+                }
+
+                ScheduleSingleLeftClick(index, eventData);
             }
         }
 
-        internal void BeginSlotDrag(int index, PointerEventData eventData)
+        private void ScheduleSingleLeftClick(int index, PointerEventData eventData)
+        {
+            CancelPendingLeftClick();
+            pendingLeftClickIndex = index;
+            pendingLeftClickPosition = eventData.position;
+            pendingLeftClickCamera = eventData.pressEventCamera;
+            pendingLeftClick = StartCoroutine(ExecuteSingleLeftClick());
+        }
+
+        private IEnumerator ExecuteSingleLeftClick()
+        {
+            yield return new WaitForSeconds(DoubleClickWindowSeconds);
+
+            if (pendingLeftClickIndex >= 0)
+            {
+                HandleLeftClick(pendingLeftClickIndex, pendingLeftClickPosition, pendingLeftClickCamera);
+            }
+
+            pendingLeftClick = null;
+            pendingLeftClickIndex = -1;
+        }
+
+        private void CancelPendingLeftClick()
+        {
+            if (pendingLeftClick != null)
+            {
+                StopCoroutine(pendingLeftClick);
+                pendingLeftClick = null;
+            }
+
+            pendingLeftClickIndex = -1;
+        }
+
+        private void HandleDoubleClick(int index, PointerEventData eventData)
         {
             if (IsCarrying)
             {
+                HandleLeftClick(index, eventData.position, eventData.pressEventCamera);
                 return;
             }
 
             InventorySlot slot = inventory.GetSlot(index);
-            if (slot.IsEmpty)
+            if (!slot.IsEmpty)
             {
-                return;
-            }
-
-            carriedQuantity = inventory.TakeFromSlot(index, slot.Quantity, out carriedItem);
-            dragSourceIndex = index;
-            lastDistributionIndex = -1;
-            isDistributing = true;
-            CreateDragGhost(eventData.position, eventData.pressEventCamera);
-        }
-
-        internal void UpdateSlotDrag(PointerEventData eventData)
-        {
-            UpdateDragGhost(eventData.position, eventData.pressEventCamera);
-        }
-
-        internal void EnterSlotDrag(int index)
-        {
-            if (!isDistributing || !IsCarrying || index == dragSourceIndex || index == lastDistributionIndex)
-            {
-                return;
-            }
-
-            if (TryPlaceOne(index))
-            {
-                lastDistributionIndex = index;
+                inventory.StackAll(slot.ItemId, index);
             }
         }
 
-        internal void EndSlotDrag()
-        {
-            isDistributing = false;
-            dragSourceIndex = -1;
-            lastDistributionIndex = -1;
-            RefreshDragGhost();
-        }
-
-        private void HandleLeftClick(int index, PointerEventData eventData)
+        private void HandleLeftClick(int index, Vector2 screenPosition, Camera eventCamera)
         {
             if (!IsCarrying)
             {
-                PickUpAll(index, eventData);
+                PickUpAll(index, screenPosition, eventCamera);
                 return;
             }
 
-            DropCarried(index, false, eventData);
+            DropCarried(index, false, screenPosition, eventCamera);
         }
 
-        private void HandleRightClick(int index, PointerEventData eventData)
+        private void HandleRightClick(int index, Vector2 screenPosition, Camera eventCamera)
         {
             if (!IsCarrying)
             {
-                PickUpHalf(index, eventData);
+                PickUpHalf(index, screenPosition, eventCamera);
                 return;
             }
 
-            DropCarried(index, true, eventData);
+            DropCarried(index, true, screenPosition, eventCamera);
         }
 
-        private void PickUpAll(int index, PointerEventData eventData)
+        private void PickUpAll(int index, Vector2 screenPosition, Camera eventCamera)
         {
             InventorySlot slot = inventory.GetSlot(index);
             if (slot.IsEmpty)
@@ -303,10 +318,10 @@ namespace Fungiiiii.UI
             }
 
             carriedQuantity = inventory.TakeFromSlot(index, slot.Quantity, out carriedItem);
-            CreateDragGhost(eventData.position, eventData.pressEventCamera);
+            CreateDragGhost(screenPosition, eventCamera);
         }
 
-        private void PickUpHalf(int index, PointerEventData eventData)
+        private void PickUpHalf(int index, Vector2 screenPosition, Camera eventCamera)
         {
             InventorySlot slot = inventory.GetSlot(index);
             if (slot.IsEmpty)
@@ -316,10 +331,10 @@ namespace Fungiiiii.UI
 
             int halfQuantity = Mathf.CeilToInt(slot.Quantity / 2f);
             carriedQuantity = inventory.TakeFromSlot(index, halfQuantity, out carriedItem);
-            CreateDragGhost(eventData.position, eventData.pressEventCamera);
+            CreateDragGhost(screenPosition, eventCamera);
         }
 
-        private void DropCarried(int index, bool oneOnly, PointerEventData eventData)
+        private void DropCarried(int index, bool oneOnly, Vector2 screenPosition, Camera eventCamera)
         {
             if (!IsCarrying)
             {
@@ -332,7 +347,7 @@ namespace Fungiiiii.UI
                 int requestedQuantity = oneOnly ? 1 : carriedQuantity;
                 int added = inventory.AddToSlot(index, carriedItem, requestedQuantity);
                 carriedQuantity -= added;
-                UpdateDragGhost(eventData.position, eventData.pressEventCamera);
+                UpdateDragGhost(screenPosition, eventCamera);
                 RefreshDragGhost();
                 return;
             }
@@ -354,27 +369,8 @@ namespace Fungiiiii.UI
 
             carriedItem = targetItem;
             carriedQuantity = targetQuantity;
-            UpdateDragGhost(eventData.position, eventData.pressEventCamera);
+            UpdateDragGhost(screenPosition, eventCamera);
             RefreshDragGhost();
-        }
-
-        private bool TryPlaceOne(int index)
-        {
-            InventorySlot target = inventory.GetSlot(index);
-            if (!target.IsEmpty && !IsCompatible(target, carriedItem))
-            {
-                return false;
-            }
-
-            int added = inventory.AddToSlot(index, carriedItem, 1);
-            if (added <= 0)
-            {
-                return false;
-            }
-
-            carriedQuantity -= added;
-            RefreshDragGhost();
-            return true;
         }
 
         private void CreateDragGhost(Vector2 screenPosition, Camera eventCamera)
@@ -560,12 +556,7 @@ namespace Fungiiiii.UI
         }
     }
 
-    internal sealed class InventorySlotDragHandler : MonoBehaviour,
-        IBeginDragHandler,
-        IDragHandler,
-        IEndDragHandler,
-        IPointerEnterHandler,
-        IPointerClickHandler
+    internal sealed class InventorySlotDragHandler : MonoBehaviour, IPointerClickHandler
     {
         private InventoryDemoController owner;
         private int index;
@@ -574,26 +565,6 @@ namespace Fungiiiii.UI
         {
             owner = controller;
             index = slotIndex;
-        }
-
-        public void OnBeginDrag(PointerEventData eventData)
-        {
-            owner?.BeginSlotDrag(index, eventData);
-        }
-
-        public void OnDrag(PointerEventData eventData)
-        {
-            owner?.UpdateSlotDrag(eventData);
-        }
-
-        public void OnEndDrag(PointerEventData eventData)
-        {
-            owner?.EndSlotDrag();
-        }
-
-        public void OnPointerEnter(PointerEventData eventData)
-        {
-            owner?.EnterSlotDrag(index);
         }
 
         public void OnPointerClick(PointerEventData eventData)

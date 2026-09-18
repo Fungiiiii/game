@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Fungiiiii.Inventory
@@ -259,6 +260,73 @@ namespace Fungiiiii.Inventory
             }
 
             return added;
+        }
+
+        /// <summary>
+        /// Consolidates compatible stacks of one item into the fewest possible slots,
+        /// preferring the slot that was double-clicked.
+        /// </summary>
+        public bool StackAll(string itemId, int preferredSlot)
+        {
+            ValidateItemId(itemId);
+            ValidateIndex(preferredSlot);
+
+            var matchingIndexes = new List<int>();
+            var hasDefinition = false;
+            InventoryItemDefinition definition = default;
+            int totalQuantity = 0;
+
+            for (int i = 0; i < slots.Length; i++)
+            {
+                SlotData slot = slots[i];
+                if (slot.IsEmpty || slot.ItemId != itemId)
+                {
+                    continue;
+                }
+
+                if (!hasDefinition)
+                {
+                    definition = new InventoryItemDefinition(slot.ItemId, slot.Color, slot.MaxStackSize);
+                    hasDefinition = true;
+                }
+
+                if (!AreCompatible(slot, definition))
+                {
+                    continue;
+                }
+
+                matchingIndexes.Add(i);
+                totalQuantity += slot.Quantity;
+            }
+
+            if (matchingIndexes.Count <= 1)
+            {
+                return false;
+            }
+
+            if (matchingIndexes.Remove(preferredSlot))
+            {
+                matchingIndexes.Insert(0, preferredSlot);
+            }
+
+            foreach (int index in matchingIndexes)
+            {
+                slots[index] = default;
+            }
+
+            int remaining = totalQuantity;
+            foreach (int index in matchingIndexes)
+            {
+                int quantity = Math.Min(remaining, definition.MaxStackSize);
+                slots[index].ItemId = definition.Id;
+                slots[index].Color = definition.Color;
+                slots[index].MaxStackSize = definition.MaxStackSize;
+                slots[index].Quantity = quantity;
+                remaining -= quantity;
+            }
+
+            Changed?.Invoke();
+            return true;
         }
 
         /// <summary>
