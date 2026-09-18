@@ -1,9 +1,10 @@
 using System.Collections;
+using Fungiiiii.Capture;
+using Fungiiiii.Champimaison;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
-using Fungiiiii.Capture;
 #if UNITY_EDITOR
 using UnityEditor.SceneManagement;
 #endif
@@ -29,6 +30,35 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator ChampimaisonPrototype_ExposesThePlantAndUpgradeFlow()
+        {
+            var subject = new GameObject(nameof(ChampimaisonPrototype_ExposesThePlantAndUpgradeFlow));
+            ChampimaisonPrototype prototype = subject.AddComponent<ChampimaisonPrototype>();
+
+            yield return null;
+
+            Assert.That(prototype.State.Tier, Is.EqualTo(ChampimaisonTier.Empty));
+            Assert.That(prototype.TryPlantSeed(), Is.True);
+            Assert.That(prototype.State.Tier, Is.EqualTo(ChampimaisonTier.Tier0));
+            Assert.That(prototype.TryUpgradeToTier1(), Is.True);
+            Assert.That(prototype.State.Tier, Is.EqualTo(ChampimaisonTier.Tier1));
+
+            Object.Destroy(subject);
+        }
+
+        [UnityTest]
+        public IEnumerator ChampimaisonPrototypeScene_BootstrapsPrototype()
+        {
+            AsyncOperation load = EditorSceneManager.LoadSceneAsyncInPlayMode(
+                "Assets/Scenes/Prototype/ChampimaisonScene.unity",
+                new LoadSceneParameters(LoadSceneMode.Single));
+            yield return load;
+            yield return null;
+
+            Assert.That(Object.FindFirstObjectByType<ChampimaisonPrototype>(), Is.Not.Null);
+        }
+
+        [UnityTest]
         public IEnumerator CapturePrototypeScene_BootstrapsCapturePrototypeGeometry()
         {
             AsyncOperation load = EditorSceneManager.LoadSceneAsyncInPlayMode(
@@ -36,6 +66,7 @@ namespace Fungiiiii.Tests.PlayMode
                 new LoadSceneParameters(LoadSceneMode.Single));
 
             yield return load;
+            yield return null;
 
             Assert.That(Object.FindFirstObjectByType<MushroomCaptureDemo>(), Is.Not.Null);
             Assert.That(GameObject.Find("Mushroom Placeholder"), Is.Not.Null);
