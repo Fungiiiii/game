@@ -1,7 +1,12 @@
 using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
+using Fungiiiii.Capture;
+#if UNITY_EDITOR
+using UnityEditor.SceneManagement;
+#endif
 
 namespace Fungiiiii.Tests.PlayMode
 {
@@ -21,6 +26,21 @@ namespace Fungiiiii.Tests.PlayMode
 
             Assert.That(subject, Is.Not.Null, "The PlayMode runner did not reach the next frame.");
             Object.Destroy(subject);
+        }
+
+        [UnityTest]
+        public IEnumerator CapturePrototypeScene_BootstrapsCapturePrototypeGeometry()
+        {
+            AsyncOperation load = EditorSceneManager.LoadSceneAsyncInPlayMode(
+                "Assets/Scenes/Prototype/CaptureChampignonScene.unity",
+                new LoadSceneParameters(LoadSceneMode.Single));
+
+            yield return load;
+
+            Assert.That(Object.FindFirstObjectByType<MushroomCaptureDemo>(), Is.Not.Null);
+            Assert.That(GameObject.Find("Mushroom Placeholder"), Is.Not.Null);
+            Assert.That(GameObject.Find("Mushroom Cap"), Is.Not.Null);
+            Assert.That(GameObject.Find("State Color Marker"), Is.Not.Null);
         }
     }
 }
