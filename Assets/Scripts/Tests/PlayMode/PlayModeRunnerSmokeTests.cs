@@ -1,7 +1,9 @@
 using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
+using Fungiiiii.Capture;
 
 namespace Fungiiiii.Tests.PlayMode
 {
@@ -21,6 +23,19 @@ namespace Fungiiiii.Tests.PlayMode
 
             Assert.That(subject, Is.Not.Null, "The PlayMode runner did not reach the next frame.");
             Object.Destroy(subject);
+        }
+
+        [UnityTest]
+        public IEnumerator SampleScene_BootstrapsCapturePrototypeGeometry()
+        {
+            SceneManager.LoadScene("SampleScene");
+
+            yield return null;
+
+            Assert.That(Object.FindFirstObjectByType<MushroomCaptureDemo>(), Is.Not.Null);
+            Assert.That(GameObject.Find("Mushroom Placeholder"), Is.Not.Null);
+            Assert.That(GameObject.Find("Mushroom Cap"), Is.Not.Null);
+            Assert.That(GameObject.Find("State Color Marker"), Is.Not.Null);
         }
     }
 }
