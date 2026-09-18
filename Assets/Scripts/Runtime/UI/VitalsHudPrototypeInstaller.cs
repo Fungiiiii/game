@@ -39,6 +39,8 @@ namespace Fungiiiii.UI
     /// </summary>
     internal sealed class VitalsHudPrototypeControls : MonoBehaviour
     {
+        private const float PoisonStepPercentage = 10f;
+
         private PlayerVitals _model;
 
         public void Initialize(PlayerVitals model)
@@ -53,6 +55,8 @@ namespace Fungiiiii.UI
                 return;
             }
 
+            _model.TickPoisonDamage(Time.deltaTime);
+
             if (Keyboard.current.hKey.wasPressedThisFrame)
             {
                 _model.SetHealth(_model.Current.Health - 20f);
@@ -65,19 +69,19 @@ namespace Fungiiiii.UI
 
             if (Keyboard.current.pKey.wasPressedThisFrame)
             {
-                _model.SetPoisoned(true);
+                _model.SetPoisonPercentage(_model.PoisonPercentage + PoisonStepPercentage);
             }
 
             if (Keyboard.current.oKey.wasPressedThisFrame)
             {
-                _model.SetPoisoned(false);
+                _model.SetPoisonPercentage(_model.PoisonPercentage - PoisonStepPercentage);
             }
 
             if (Keyboard.current.rKey.wasPressedThisFrame)
             {
                 _model.SetHealth(_model.MaxHealth);
                 _model.SetStamina(_model.MaxStamina);
-                _model.SetPoisoned(false);
+                _model.SetPoisonPercentage(0f);
             }
         }
     }

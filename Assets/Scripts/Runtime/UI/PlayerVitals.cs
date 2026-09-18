@@ -8,9 +8,14 @@ namespace Fungiiiii.UI
     /// </summary>
     public sealed class PlayerVitals
     {
+        public const float MaxPoisonPercentage = 100f;
+        public const float PoisonDamageThresholdPercentage = 50f;
+        public const float PoisonDamageAtThresholdPercentageOfMaxHealthPerSecond = 0.2f;
+        public const float PoisonDamageAtMaximumPercentageOfMaxHealthPerSecond = 10f;
+
         private float _health;
         private float _stamina;
-        private bool _isPoisoned;
+        private float _poisonPercentage;
 
         public PlayerVitals(float maxHealth, float maxStamina)
         {
@@ -41,7 +46,16 @@ namespace Fungiiiii.UI
             MaxHealth,
             _stamina,
             MaxStamina,
-            _isPoisoned);
+            _poisonPercentage);
+
+        public float PoisonPercentage => _poisonPercentage;
+
+        public bool IsPoisoned => _poisonPercentage > 0f;
+
+        /// <summary>
+        /// Current poison damage in health points per second.
+        /// </summary>
+        public float PoisonDamagePerSecond => MaxHealth * CalculatePoisonDamageRate(_poisonPercentage) / 100f;
 
         public void SetHealth(float value)
         {
@@ -67,15 +81,60 @@ namespace Fungiiiii.UI
             RaiseChanged();
         }
 
-        public void SetPoisoned(bool value)
+        public void SetPoisonPercentage(float value)
         {
-            if (_isPoisoned == value)
+            var clampedValue = Mathf.Clamp(value, 0f, MaxPoisonPercentage);
+            if (Mathf.Approximately(_poisonPercentage, clampedValue))
             {
                 return;
             }
 
-            _isPoisoned = value;
+            _poisonPercentage = clampedValue;
             RaiseChanged();
+        }
+
+        /// <summary>
+        /// Compatibility helper for callers that still need an on/off poison state.
+        /// New gameplay code should use SetPoisonPercentage instead.
+        /// </summary>
+        public void SetPoisoned(bool value)
+        {
+            SetPoisonPercentage(value ? MaxPoisonPercentage : 0f);
+        }
+
+        /// <summary>
+        /// Applies the current poison damage for a simulation step.
+        /// Poison starts damaging health at 50% and follows an exponential curve up to 100%.
+        /// </summary>
+        public void TickPoisonDamage(float deltaTime)
+        {
+            if (deltaTime <= 0f || PoisonDamagePerSecond <= 0f || _health <= 0f)
+            {
+                return;
+            }
+
+            SetHealth(_health - PoisonDamagePerSecond * deltaTime);
+        }
+
+        /// <summary>
+        /// Returns poison damage as a percentage of max health per second.
+        /// The curve is 0 below 50%, 0.2% at 50%, and 10% at 100%.
+        /// </summary>
+        public static float CalculatePoisonDamageRate(float poisonPercentage)
+        {
+            var clampedValue = Mathf.Clamp(poisonPercentage, 0f, MaxPoisonPercentage);
+            if (clampedValue < PoisonDamageThresholdPercentage)
+            {
+                return 0f;
+            }
+
+            var curvePosition = Mathf.InverseLerp(
+                PoisonDamageThresholdPercentage,
+                MaxPoisonPercentage,
+                clampedValue);
+            var damageRangeMultiplier = PoisonDamageAtMaximumPercentageOfMaxHealthPerSecond /
+                                        PoisonDamageAtThresholdPercentageOfMaxHealthPerSecond;
+            return PoisonDamageAtThresholdPercentageOfMaxHealthPerSecond * Mathf.Pow(damageRangeMultiplier, curvePosition);
         }
 
         private void RaiseChanged()
@@ -91,13 +150,13 @@ namespace Fungiiiii.UI
             float maxHealth,
             float stamina,
             float maxStamina,
-            bool isPoisoned)
+            float poisonPercentage)
         {
             Health = health;
             MaxHealth = maxHealth;
             Stamina = stamina;
             MaxStamina = maxStamina;
-            IsPoisoned = isPoisoned;
+            PoisonPercentage = poisonPercentage;
         }
 
         public float Health { get; }
@@ -108,7 +167,11 @@ namespace Fungiiiii.UI
 
         public float MaxStamina { get; }
 
-        public bool IsPoisoned { get; }
+        public float PoisonPercentage { get; }
+
+        public bool IsPoisoned => PoisonPercentage > 0f;
+
+        public float PoisonNormalized => PoisonPercentage / PlayerVitals.MaxPoisonPercentage;
 
         public float HealthNormalized => Health / MaxHealth;
 

@@ -9,9 +9,9 @@ namespace Fungiiiii.Tests.PlayMode
     public sealed class VitalsHudPlayModeTests
     {
         [UnityTest]
-        public IEnumerator PoisonBar_IsHiddenUntilTheModelIsPoisoned()
+        public IEnumerator PoisonBar_ReflectsThePoisonPercentage()
         {
-            var root = new GameObject(nameof(PoisonBar_IsHiddenUntilTheModelIsPoisoned));
+            var root = new GameObject(nameof(PoisonBar_ReflectsThePoisonPercentage));
             var model = new PlayerVitals(100f, 100f);
             var hud = root.AddComponent<VitalsHud>();
             hud.Initialize(model);
@@ -22,11 +22,12 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(hud.StaminaBarVisible, Is.True);
             Assert.That(hud.PoisonBarVisible, Is.False);
 
-            model.SetPoisoned(true);
+            model.SetPoisonPercentage(25f);
             yield return null;
             Assert.That(hud.PoisonBarVisible, Is.True);
+            Assert.That(hud.PoisonPercentage, Is.EqualTo(25f).Within(0.01f));
 
-            model.SetPoisoned(false);
+            model.SetPoisonPercentage(0f);
             yield return null;
             Assert.That(hud.PoisonBarVisible, Is.False);
 

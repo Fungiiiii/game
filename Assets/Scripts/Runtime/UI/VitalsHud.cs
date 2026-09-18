@@ -29,6 +29,10 @@ namespace Fungiiiii.UI
 
         public bool PoisonBarVisible => _poisonBar != null && _poisonBar.activeSelf;
 
+        public float PoisonPercentage => _poisonFill == null
+            ? 0f
+            : _poisonFill.rectTransform.anchorMax.x * PlayerVitals.MaxPoisonPercentage;
+
         public void Initialize(PlayerVitals model)
         {
             if (model == null)
@@ -153,7 +157,7 @@ namespace Fungiiiii.UI
         {
             SetFill(_healthFill, snapshot.HealthNormalized);
             SetFill(_staminaFill, snapshot.StaminaNormalized);
-            SetFill(_poisonFill, snapshot.IsPoisoned ? 1f : 0f);
+            SetFill(_poisonFill, snapshot.PoisonNormalized);
 
             if (_poisonBar != null)
             {
