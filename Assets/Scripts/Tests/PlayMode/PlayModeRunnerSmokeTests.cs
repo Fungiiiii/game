@@ -4,6 +4,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 using Fungiiiii.Capture;
+#if UNITY_EDITOR
+using UnityEditor.SceneManagement;
+#endif
 
 namespace Fungiiiii.Tests.PlayMode
 {
@@ -26,11 +29,13 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator SampleScene_BootstrapsCapturePrototypeGeometry()
+        public IEnumerator CapturePrototypeScene_BootstrapsCapturePrototypeGeometry()
         {
-            SceneManager.LoadScene("SampleScene");
+            AsyncOperation load = EditorSceneManager.LoadSceneAsyncInPlayMode(
+                "Assets/Scenes/Prototype/CaptureChampignonScene.unity",
+                new LoadSceneParameters(LoadSceneMode.Single));
 
-            yield return null;
+            yield return load;
 
             Assert.That(Object.FindFirstObjectByType<MushroomCaptureDemo>(), Is.Not.Null);
             Assert.That(GameObject.Find("Mushroom Placeholder"), Is.Not.Null);
