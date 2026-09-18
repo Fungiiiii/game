@@ -2,7 +2,11 @@ using System.Collections;
 using Fungiiiii.Runtime.AI;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
+#if UNITY_EDITOR
+using UnityEditor.SceneManagement;
+#endif
 
 namespace Fungiiiii.Tests.PlayMode
 {
@@ -11,6 +15,10 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator RuntimeBootstrapCreatesMovingPatrolAgent()
         {
+            AsyncOperation load = EditorSceneManager.LoadSceneAsyncInPlayMode(
+                "Assets/Scenes/Prototype/MouvementIAChampignonScene.unity",
+                new LoadSceneParameters(LoadSceneMode.Single));
+            yield return load;
             yield return null;
 
             var demoRoot = GameObject.Find("Generic Patrol Demo");

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Fungiiiii.Runtime.AI
 {
@@ -9,6 +10,7 @@ namespace Fungiiiii.Runtime.AI
     internal sealed class GenericPatrolDemoBootstrap : MonoBehaviour
     {
         private const string DemoRootName = "Generic Patrol Demo";
+        private const string PrototypeScenePath = "Assets/Scenes/Prototype/MouvementIAChampignonScene.unity";
 
         private static readonly Vector3[] Route =
         {
@@ -18,9 +20,20 @@ namespace Fungiiiii.Runtime.AI
             new(-4f, 0.5f, 2.5f)
         };
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        private static void CreateDemoAfterSceneLoad()
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        private static void RegisterSceneLoadHandler()
         {
+            SceneManager.sceneLoaded -= CreateDemoForScene;
+            SceneManager.sceneLoaded += CreateDemoForScene;
+        }
+
+        private static void CreateDemoForScene(Scene scene, LoadSceneMode mode)
+        {
+            if (scene.path != PrototypeScenePath)
+            {
+                return;
+            }
+
             if (GameObject.Find(DemoRootName) != null)
             {
                 return;
