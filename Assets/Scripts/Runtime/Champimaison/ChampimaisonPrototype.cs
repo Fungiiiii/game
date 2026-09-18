@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.Events;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 namespace Fungiiiii.Champimaison
 {
@@ -405,9 +406,16 @@ namespace Fungiiiii.Champimaison
 
     internal static class ChampimaisonPrototypeBootstrap
     {
+        private const string PrototypeScenePath = "Assets/Scenes/Prototype/ChampimaisonScene.unity";
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void CreatePrototype()
         {
+            if (SceneManager.GetActiveScene().path != PrototypeScenePath)
+            {
+                return;
+            }
+
             if (Object.FindFirstObjectByType<ChampimaisonPrototype>() != null)
             {
                 return;
