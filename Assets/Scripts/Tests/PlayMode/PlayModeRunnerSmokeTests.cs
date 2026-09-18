@@ -1,4 +1,5 @@
 using System.Collections;
+using Fungiiiii.Capture;
 using Fungiiiii.Champimaison;
 using NUnit.Framework;
 using UnityEngine;
@@ -55,6 +56,22 @@ namespace Fungiiiii.Tests.PlayMode
             yield return null;
 
             Assert.That(Object.FindFirstObjectByType<ChampimaisonPrototype>(), Is.Not.Null);
+        }
+
+        [UnityTest]
+        public IEnumerator CapturePrototypeScene_BootstrapsCapturePrototypeGeometry()
+        {
+            AsyncOperation load = EditorSceneManager.LoadSceneAsyncInPlayMode(
+                "Assets/Scenes/Prototype/CaptureChampignonScene.unity",
+                new LoadSceneParameters(LoadSceneMode.Single));
+
+            yield return load;
+            yield return null;
+
+            Assert.That(Object.FindFirstObjectByType<MushroomCaptureDemo>(), Is.Not.Null);
+            Assert.That(GameObject.Find("Mushroom Placeholder"), Is.Not.Null);
+            Assert.That(GameObject.Find("Mushroom Cap"), Is.Not.Null);
+            Assert.That(GameObject.Find("State Color Marker"), Is.Not.Null);
         }
     }
 }
