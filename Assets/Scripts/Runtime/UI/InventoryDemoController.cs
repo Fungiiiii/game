@@ -1,4 +1,3 @@
-using System;
 using Fungiiiii.Inventory;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -7,35 +6,48 @@ using UnityEngine.InputSystem.UI;
 namespace Fungiiiii.UI
 {
     /// <summary>
-    /// Builds a deliberately small color-coded inventory UI for the POC scene.
-    /// The plus/minus controls keep the placeholder independent of localized labels.
+    /// Builds a Minecraft-inspired inventory: a 3-column by 4-row item panel and a
+    /// three-slot quick bar. Slots support drag-and-drop moves, stack merges and swaps.
     /// </summary>
     public sealed class InventoryDemoController : MonoBehaviour
     {
-        [SerializeField] private int slotCount = 6;
-        [SerializeField] private int demoMaxStackSize = 5;
-        [SerializeField] private Color demoItemColor = new Color(0.95f, 0.52f, 0.18f, 1f);
+        public const int MainColumnCount = 3;
+        public const int MainRowCount = 4;
+        public const int MainSlotCount = MainColumnCount * MainRowCount;
+        public const int HotbarSlotCount = 3;
+        public const int TotalSlotCount = MainSlotCount + HotbarSlotCount;
 
-        private const string DemoItemId = "demo_mushroom";
+        [SerializeField] private int demoMaxStackSize = 5;
+
+        private const string DemoMushroomId = "demo_mushroom";
+        private const string DemoHerbId = "demo_herb";
+        private const string DemoSporeId = "demo_spore";
+        private const string DemoCrystalId = "demo_crystal";
+
+        private static readonly Color PanelColor = new Color(0.035f, 0.045f, 0.055f, 0.98f);
+        private static readonly Color PanelBorderColor = new Color(0.24f, 0.27f, 0.3f, 1f);
+        private static readonly Color SlotColor = new Color(0.12f, 0.14f, 0.16f, 1f);
+        private static readonly Color HotbarSlotColor = new Color(0.16f, 0.18f, 0.2f, 1f);
+        private static readonly Color TitleColor = new Color(0.93f, 0.89f, 0.74f, 1f);
+
+        private static Sprite uiSprite;
 
         private PlayerInventory inventory;
         private SlotView[] slotViews;
-        private InventoryItemDefinition demoItem;
-        private static Sprite uiSprite;
+        private RectTransform dragLayer;
+        private GameObject dragGhost;
+        private int dragSourceIndex = -1;
 
         public PlayerInventory Inventory => inventory;
 
         private void Awake()
         {
-            inventory = new PlayerInventory(slotCount);
-            demoItem = new InventoryItemDefinition(DemoItemId, demoItemColor, demoMaxStackSize);
+            inventory = new PlayerInventory(TotalSlotCount);
 
             CreateEventSystemIfNeeded();
             BuildUi();
             inventory.Changed += RefreshUi;
-
-            // Start with one item so the stack slot is immediately visible in the POC.
-            inventory.Add(demoItem, 1);
+            SeedDemoItems();
         }
 
         private void OnDestroy()
@@ -44,23 +56,43 @@ namespace Fungiiiii.UI
             {
                 inventory.Changed -= RefreshUi;
             }
+
+            DestroyDragGhost();
         }
 
-        private void AddDemoItem()
+        private void SeedDemoItems()
         {
-            inventory.Add(demoItem, 1);
-        }
+            InventoryItemDefinition mushroom = new InventoryItemDefinition(
+                DemoMushroomId,
+                new Color(0.95f, 0.52f, 0.18f, 1f),
+                demoMaxStackSize);
+            InventoryItemDefinition herb = new InventoryItemDefinition(
+                DemoHerbId,
+                new Color(0.25f, 0.78f, 0.35f, 1f),
+                10);
+            InventoryItemDefinition spore = new InventoryItemDefinition(
+                DemoSporeId,
+                new Color(0.55f, 0.35f, 0.92f, 1f),
+                16);
+            InventoryItemDefinition crystal = new InventoryItemDefinition(
+                DemoCrystalId,
+                new Color(0.25f, 0.75f, 0.95f, 1f),
+                4);
 
-        private void RemoveDemoItem()
-        {
-            inventory.Remove(DemoItemId, 1);
+            inventory.Add(mushroom, 6);
+            inventory.Add(herb, 3);
+            inventory.Add(spore, 8);
+            inventory.Add(crystal, 2);
+
+            // Put three sample items in the quick bar so the move flow is visible immediately.
+            inventory.MoveOrSwap(0, MainSlotCount);
+            inventory.MoveOrSwap(2, MainSlotCount + 1);
+            inventory.MoveOrSwap(3, MainSlotCount + 2);
         }
 
         private void BuildUi()
         {
-            GameObject canvasObject = new GameObject("InventoryCanvas");
-            canvasObject.transform.SetParent(transform, false);
-
+            GameObject canvasObject = CreateUiObject("InventoryCanvas", transform);
             Canvas canvas = canvasObject.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.sortingOrder = 100;
@@ -72,100 +104,161 @@ namespace Fungiiiii.UI
             scaler.matchWidthOrHeight = 0.5f;
             canvasObject.AddComponent<UnityEngine.UI.GraphicRaycaster>();
 
+            dragLayer = canvasObject.GetComponent<RectTransform>();
+
             GameObject panel = CreateUiObject("InventoryPanel", canvasObject.transform);
             UnityEngine.UI.Image panelImage = panel.AddComponent<UnityEngine.UI.Image>();
             panelImage.sprite = GetUiSprite();
-            panelImage.color = new Color(0.035f, 0.06f, 0.075f, 0.96f);
+            panelImage.color = PanelColor;
             panelImage.raycastTarget = false;
             RectTransform panelRect = panel.GetComponent<RectTransform>();
-            SetRect(panelRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(560f, 360f), Vector2.zero);
+            SetRect(panelRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(560f, 640f), Vector2.zero);
 
-            GameObject slotsObject = CreateUiObject("InventorySlots", panel.transform);
-            RectTransform slotsRect = slotsObject.GetComponent<RectTransform>();
-            SetRect(slotsRect, new Vector2(0.5f, 0.62f), new Vector2(0.5f, 0.62f), new Vector2(0.5f, 0.5f), new Vector2(440f, 220f), Vector2.zero);
-            UnityEngine.UI.GridLayoutGroup grid = slotsObject.AddComponent<UnityEngine.UI.GridLayoutGroup>();
-            grid.cellSize = new Vector2(128f, 96f);
-            grid.spacing = new Vector2(12f, 12f);
+            GameObject border = CreateUiObject("InventoryPanelBorder", panel.transform);
+            UnityEngine.UI.Image borderImage = border.AddComponent<UnityEngine.UI.Image>();
+            borderImage.sprite = GetUiSprite();
+            borderImage.color = PanelBorderColor;
+            borderImage.raycastTarget = false;
+            RectTransform borderRect = border.GetComponent<RectTransform>();
+            SetRect(borderRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(536f, 616f), Vector2.zero);
+            border.transform.SetAsFirstSibling();
+
+            CreateLabel("InventoryTitle", panel.transform, "INVENTORY", 30, TitleColor, TextAnchor.MiddleCenter, new Vector2(0f, 276f), new Vector2(500f, 48f));
+            CreateLabel("InventorySubtitle", panel.transform, "DRAG ITEMS TO MOVE, MERGE OR SWAP", 14, new Color(0.7f, 0.73f, 0.76f, 1f), TextAnchor.MiddleCenter, new Vector2(0f, 242f), new Vector2(500f, 28f));
+
+            GameObject gridObject = CreateUiObject("InventoryGrid_3x4", panel.transform);
+            RectTransform gridRect = gridObject.GetComponent<RectTransform>();
+            SetRect(gridRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(390f, 350f), new Vector2(0f, 55f));
+            UnityEngine.UI.GridLayoutGroup grid = gridObject.AddComponent<UnityEngine.UI.GridLayoutGroup>();
+            grid.cellSize = new Vector2(116f, 76f);
+            grid.spacing = new Vector2(10f, 10f);
             grid.constraint = UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount;
-            grid.constraintCount = 3;
+            grid.constraintCount = MainColumnCount;
             grid.childAlignment = TextAnchor.MiddleCenter;
 
-            slotViews = new SlotView[inventory.SlotCount];
-            for (int i = 0; i < slotViews.Length; i++)
+            slotViews = new SlotView[TotalSlotCount];
+            for (int i = 0; i < MainSlotCount; i++)
             {
-                slotViews[i] = CreateSlotView(slotsObject.transform, i);
+                slotViews[i] = CreateSlotView(gridObject.transform, i, false);
             }
 
-            GameObject controls = CreateUiObject("InventoryControls", panel.transform);
-            RectTransform controlsRect = controls.GetComponent<RectTransform>();
-            SetRect(controlsRect, new Vector2(0.5f, 0.12f), new Vector2(0.5f, 0.12f), new Vector2(0.5f, 0.5f), new Vector2(240f, 72f), Vector2.zero);
-            UnityEngine.UI.HorizontalLayoutGroup controlsLayout = controls.AddComponent<UnityEngine.UI.HorizontalLayoutGroup>();
-            controlsLayout.spacing = 24f;
-            controlsLayout.childAlignment = TextAnchor.MiddleCenter;
-            controlsLayout.childControlWidth = false;
-            controlsLayout.childControlHeight = false;
-            controlsLayout.childForceExpandWidth = false;
-            controlsLayout.childForceExpandHeight = false;
+            CreateLabel("HotbarTitle", panel.transform, "QUICK BAR", 18, TitleColor, TextAnchor.MiddleCenter, new Vector2(0f, -142f), new Vector2(500f, 34f));
 
-            CreateControlButton(controls.transform, "+", new Color(0.13f, 0.58f, 0.31f, 1f), AddDemoItem);
-            CreateControlButton(controls.transform, "−", new Color(0.67f, 0.18f, 0.18f, 1f), RemoveDemoItem);
+            GameObject hotbarObject = CreateUiObject("Hotbar_3Slots", panel.transform);
+            RectTransform hotbarRect = hotbarObject.GetComponent<RectTransform>();
+            SetRect(hotbarRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(390f, 92f), new Vector2(0f, -214f));
+            UnityEngine.UI.GridLayoutGroup hotbarGrid = hotbarObject.AddComponent<UnityEngine.UI.GridLayoutGroup>();
+            hotbarGrid.cellSize = new Vector2(116f, 76f);
+            hotbarGrid.spacing = new Vector2(10f, 10f);
+            hotbarGrid.constraint = UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount;
+            hotbarGrid.constraintCount = HotbarSlotCount;
+            hotbarGrid.childAlignment = TextAnchor.MiddleCenter;
+
+            for (int i = 0; i < HotbarSlotCount; i++)
+            {
+                int slotIndex = MainSlotCount + i;
+                slotViews[slotIndex] = CreateSlotView(hotbarObject.transform, slotIndex, true);
+            }
 
             RefreshUi();
         }
 
-        private SlotView CreateSlotView(Transform parent, int index)
+        private SlotView CreateSlotView(Transform parent, int index, bool hotbar)
         {
             GameObject slot = CreateUiObject($"InventorySlot_{index}", parent);
             UnityEngine.UI.Image background = slot.AddComponent<UnityEngine.UI.Image>();
             background.sprite = GetUiSprite();
-            background.color = new Color(0.10f, 0.15f, 0.17f, 1f);
-            background.raycastTarget = false;
+            background.color = hotbar ? HotbarSlotColor : SlotColor;
+            background.raycastTarget = true;
+
+            InventorySlotDragHandler dragHandler = slot.AddComponent<InventorySlotDragHandler>();
+            dragHandler.Initialize(this, index);
 
             GameObject item = CreateUiObject("ItemColor", slot.transform);
             UnityEngine.UI.Image itemImage = item.AddComponent<UnityEngine.UI.Image>();
             itemImage.sprite = GetUiSprite();
             itemImage.raycastTarget = false;
             RectTransform itemRect = item.GetComponent<RectTransform>();
-            SetRect(itemRect, new Vector2(0.5f, 0.52f), new Vector2(0.5f, 0.52f), new Vector2(0.5f, 0.5f), new Vector2(64f, 52f), Vector2.zero);
+            SetRect(itemRect, new Vector2(0.5f, 0.52f), new Vector2(0.5f, 0.52f), new Vector2(0.5f, 0.5f), new Vector2(52f, 52f), Vector2.zero);
 
             GameObject count = CreateUiObject("Quantity", slot.transform);
             UnityEngine.UI.Text countText = count.AddComponent<UnityEngine.UI.Text>();
             countText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            countText.fontSize = 28;
+            countText.fontSize = 22;
             countText.fontStyle = FontStyle.Bold;
             countText.alignment = TextAnchor.LowerRight;
             countText.color = Color.white;
             countText.raycastTarget = false;
             RectTransform countRect = count.GetComponent<RectTransform>();
-            SetRect(countRect, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(-16f, -12f), new Vector2(-8f, -8f));
+            SetRect(countRect, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(-14f, -10f), new Vector2(-6f, -6f));
 
             return new SlotView(itemImage, countText);
         }
 
-        private void CreateControlButton(Transform parent, string icon, Color color, Action callback)
+        internal void BeginSlotDrag(int index, PointerEventData eventData)
         {
-            GameObject buttonObject = CreateUiObject($"Control_{icon}", parent);
-            RectTransform buttonRect = buttonObject.GetComponent<RectTransform>();
-            buttonRect.sizeDelta = new Vector2(88f, 64f);
+            InventorySlot slot = inventory.GetSlot(index);
+            if (slot.IsEmpty)
+            {
+                return;
+            }
 
-            UnityEngine.UI.Image image = buttonObject.AddComponent<UnityEngine.UI.Image>();
-            image.sprite = GetUiSprite();
-            image.color = color;
-            UnityEngine.UI.Button button = buttonObject.AddComponent<UnityEngine.UI.Button>();
-            button.targetGraphic = image;
-            button.onClick.AddListener(() => callback());
+            DestroyDragGhost();
+            dragSourceIndex = index;
+            dragGhost = CreateUiObject("DraggedItem", dragLayer);
 
-            GameObject labelObject = CreateUiObject("Icon", buttonObject.transform);
-            UnityEngine.UI.Text label = labelObject.AddComponent<UnityEngine.UI.Text>();
-            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            label.fontSize = 38;
-            label.fontStyle = FontStyle.Bold;
-            label.alignment = TextAnchor.MiddleCenter;
-            label.color = Color.white;
-            label.text = icon;
-            label.raycastTarget = false;
-            RectTransform labelRect = labelObject.GetComponent<RectTransform>();
-            SetRect(labelRect, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+            UnityEngine.UI.Image ghostImage = dragGhost.AddComponent<UnityEngine.UI.Image>();
+            ghostImage.sprite = GetUiSprite();
+            ghostImage.color = new Color(slot.Color.r, slot.Color.g, slot.Color.b, 0.78f);
+            ghostImage.raycastTarget = false;
+
+            RectTransform ghostRect = dragGhost.GetComponent<RectTransform>();
+            SetRect(ghostRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(52f, 52f), Vector2.zero);
+            dragGhost.transform.SetAsLastSibling();
+            UpdateDragGhost(eventData);
+        }
+
+        internal void UpdateSlotDrag(PointerEventData eventData)
+        {
+            UpdateDragGhost(eventData);
+        }
+
+        internal void DropSlot(int targetIndex)
+        {
+            if (dragSourceIndex >= 0)
+            {
+                inventory.MoveOrSwap(dragSourceIndex, targetIndex);
+            }
+        }
+
+        internal void EndSlotDrag()
+        {
+            DestroyDragGhost();
+            dragSourceIndex = -1;
+        }
+
+        private void UpdateDragGhost(PointerEventData eventData)
+        {
+            if (dragGhost == null || dragLayer == null)
+            {
+                return;
+            }
+
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                dragLayer,
+                eventData.position,
+                eventData.pressEventCamera,
+                out Vector2 localPosition);
+            dragGhost.GetComponent<RectTransform>().anchoredPosition = localPosition;
+        }
+
+        private void DestroyDragGhost()
+        {
+            if (dragGhost != null)
+            {
+                Destroy(dragGhost);
+                dragGhost = null;
+            }
         }
 
         private void RefreshUi()
@@ -177,8 +270,7 @@ namespace Fungiiiii.UI
 
             for (int i = 0; i < slotViews.Length; i++)
             {
-                InventorySlot slot = inventory.GetSlot(i);
-                slotViews[i].Set(slot);
+                slotViews[i].Set(inventory.GetSlot(i));
             }
         }
 
@@ -187,6 +279,29 @@ namespace Fungiiiii.UI
             GameObject created = new GameObject(name, typeof(RectTransform));
             created.transform.SetParent(parent, false);
             return created;
+        }
+
+        private static UnityEngine.UI.Text CreateLabel(
+            string name,
+            Transform parent,
+            string value,
+            int fontSize,
+            Color color,
+            TextAnchor alignment,
+            Vector2 position,
+            Vector2 size)
+        {
+            GameObject labelObject = CreateUiObject(name, parent);
+            UnityEngine.UI.Text label = labelObject.AddComponent<UnityEngine.UI.Text>();
+            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            label.fontSize = fontSize;
+            label.fontStyle = FontStyle.Bold;
+            label.alignment = alignment;
+            label.color = color;
+            label.text = value;
+            label.raycastTarget = false;
+            SetRect(label.GetComponent<RectTransform>(), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), size, position);
+            return label;
         }
 
         private static Sprite GetUiSprite()
@@ -251,6 +366,38 @@ namespace Fungiiiii.UI
                 itemImage.color = slot.Color;
                 countText.text = slot.IsEmpty ? string.Empty : slot.Quantity.ToString();
             }
+        }
+    }
+
+    internal sealed class InventorySlotDragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IDropHandler, IEndDragHandler
+    {
+        private InventoryDemoController owner;
+        private int index;
+
+        public void Initialize(InventoryDemoController controller, int slotIndex)
+        {
+            owner = controller;
+            index = slotIndex;
+        }
+
+        public void OnBeginDrag(PointerEventData eventData)
+        {
+            owner?.BeginSlotDrag(index, eventData);
+        }
+
+        public void OnDrag(PointerEventData eventData)
+        {
+            owner?.UpdateSlotDrag(eventData);
+        }
+
+        public void OnDrop(PointerEventData eventData)
+        {
+            owner?.DropSlot(index);
+        }
+
+        public void OnEndDrag(PointerEventData eventData)
+        {
+            owner?.EndSlotDrag();
         }
     }
 }

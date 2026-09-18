@@ -214,6 +214,52 @@ namespace Fungiiiii.Inventory
             return removedTotal;
         }
 
+        /// <summary>
+        /// Moves an item to an empty slot, merges compatible stacks, or swaps two slots.
+        /// Returns false when the source is empty or both indexes are identical.
+        /// </summary>
+        public bool MoveOrSwap(int fromIndex, int toIndex)
+        {
+            ValidateIndex(fromIndex);
+            ValidateIndex(toIndex);
+
+            if (fromIndex == toIndex || slots[fromIndex].IsEmpty)
+            {
+                return false;
+            }
+
+            SlotData source = slots[fromIndex];
+            SlotData destination = slots[toIndex];
+
+            if (destination.IsEmpty)
+            {
+                slots[toIndex] = source;
+                slots[fromIndex] = default;
+                Changed?.Invoke();
+                return true;
+            }
+
+            if (AreCompatible(source, destination))
+            {
+                int availableCapacity = destination.MaxStackSize - destination.Quantity;
+                if (availableCapacity > 0)
+                {
+                    int transferred = Math.Min(source.Quantity, availableCapacity);
+                    destination.Quantity += transferred;
+                    source.Quantity -= transferred;
+                    slots[toIndex] = destination;
+                    slots[fromIndex] = source.Quantity > 0 ? source : default;
+                    Changed?.Invoke();
+                    return true;
+                }
+            }
+
+            slots[fromIndex] = destination;
+            slots[toIndex] = source;
+            Changed?.Invoke();
+            return true;
+        }
+
         private int AddToSlot(int index, InventoryItemDefinition item, int quantity, int maxStackSize)
         {
             int capacity = maxStackSize - slots[index].Quantity;
@@ -240,6 +286,21 @@ namespace Fungiiiii.Inventory
             {
                 throw new ArgumentException("An inventory item id is required.", nameof(itemId));
             }
+        }
+
+        private void ValidateIndex(int index)
+        {
+            if (index < 0 || index >= slots.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
+        }
+
+        private static bool AreCompatible(SlotData left, SlotData right)
+        {
+            return left.ItemId == right.ItemId &&
+                   left.MaxStackSize == right.MaxStackSize &&
+                   left.Color == right.Color;
         }
 
         private struct SlotData

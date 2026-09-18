@@ -47,6 +47,24 @@ namespace Fungiiiii.Tests.EditMode
         }
 
         [Test]
+        public void MoveOrSwap_MovesToEmptySlotAndSwapsOccupiedSlots()
+        {
+            var inventory = new PlayerInventory(3);
+            InventoryItemDefinition item = CreateItem();
+            InventoryItemDefinition other = new InventoryItemDefinition("other_item", Color.cyan, 5);
+            inventory.Add(item, 2);
+            inventory.Add(other, 1);
+
+            Assert.That(inventory.MoveOrSwap(0, 2), Is.True);
+            Assert.That(inventory.GetSlot(0).IsEmpty, Is.True);
+            Assert.That(inventory.GetSlot(2).ItemId, Is.EqualTo(item.Id));
+
+            Assert.That(inventory.MoveOrSwap(1, 2), Is.True);
+            Assert.That(inventory.GetSlot(1).ItemId, Is.EqualTo(item.Id));
+            Assert.That(inventory.GetSlot(2).ItemId, Is.EqualTo(other.Id));
+        }
+
+        [Test]
         public void Changed_IsRaisedOncePerSuccessfulOperation()
         {
             var inventory = new PlayerInventory(2);
