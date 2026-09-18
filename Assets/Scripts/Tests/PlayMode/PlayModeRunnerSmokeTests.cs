@@ -1,4 +1,5 @@
 using System.Collections;
+using Fungiiiii.Champimaison;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -20,6 +21,23 @@ namespace Fungiiiii.Tests.PlayMode
             yield return null;
 
             Assert.That(subject, Is.Not.Null, "The PlayMode runner did not reach the next frame.");
+            Object.Destroy(subject);
+        }
+
+        [UnityTest]
+        public IEnumerator ChampimaisonPrototype_ExposesThePlantAndUpgradeFlow()
+        {
+            var subject = new GameObject(nameof(ChampimaisonPrototype_ExposesThePlantAndUpgradeFlow));
+            ChampimaisonPrototype prototype = subject.AddComponent<ChampimaisonPrototype>();
+
+            yield return null;
+
+            Assert.That(prototype.State.Tier, Is.EqualTo(ChampimaisonTier.Empty));
+            Assert.That(prototype.TryPlantSeed(), Is.True);
+            Assert.That(prototype.State.Tier, Is.EqualTo(ChampimaisonTier.Tier0));
+            Assert.That(prototype.TryUpgradeToTier1(), Is.True);
+            Assert.That(prototype.State.Tier, Is.EqualTo(ChampimaisonTier.Tier1));
+
             Object.Destroy(subject);
         }
     }
