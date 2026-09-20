@@ -61,6 +61,38 @@ namespace Fungiiiii.Tests.EditMode
         }
 
         [Test]
+        public void WalkSpeedIsUsedWhenNeitherSprintingNorCrouching()
+        {
+            var speed = PlayerMovementCalculator.SelectSpeed(false, false, 4f, 7f, 1.8f);
+
+            Assert.That(speed, Is.EqualTo(4f).Within(Tolerance));
+        }
+
+        [Test]
+        public void SprintSpeedIsUsedWhenSprinting()
+        {
+            var speed = PlayerMovementCalculator.SelectSpeed(true, false, 4f, 7f, 1.8f);
+
+            Assert.That(speed, Is.EqualTo(7f).Within(Tolerance));
+        }
+
+        [Test]
+        public void CrouchSpeedIsUsedWhenCrouching()
+        {
+            var speed = PlayerMovementCalculator.SelectSpeed(false, true, 4f, 7f, 1.8f);
+
+            Assert.That(speed, Is.EqualTo(1.8f).Within(Tolerance));
+        }
+
+        [Test]
+        public void CrouchingWinsOverAHeldSprint()
+        {
+            var speed = PlayerMovementCalculator.SelectSpeed(true, true, 4f, 7f, 1.8f);
+
+            Assert.That(speed, Is.EqualTo(1.8f).Within(Tolerance));
+        }
+
+        [Test]
         public void GravityAccumulatesWhileAirborne()
         {
             var velocity = PlayerMovementCalculator.ApplyGravity(0f, false, -10f, 2f, 0.5f);

@@ -15,11 +15,27 @@ namespace Fungiiiii.Runtime.Player
         private static readonly Vector3 CameraOffset = new(0f, 9f, -9f);
         private static readonly Vector3 PlayerStartPosition = new(0f, 1.2f, 0f);
 
+        /// <summary>
+        /// Height of the gap under the lintel. Above the crouched capsule (1.2 m) and
+        /// below the standing one (2 m), so the wall can only be crossed crouched.
+        /// </summary>
+        private const float LowPassageClearance = 1.4f;
+
+        private const float LowPassageZ = 8f;
+        private const float LowPassageHalfWidth = 2f;
+        private const float LowPassageReach = 10f;
+
+        /// <summary>
+        /// The lintel is kept thin, and the side walls no taller than the gap, so the
+        /// wall blocks the player without hiding them from the overhead camera.
+        /// </summary>
+        private const float LowPassageLintelThickness = 0.5f;
+
         private static readonly Vector3[] ObstaclePositions =
         {
             new(-3.5f, 0.75f, 3f),
             new(3.5f, 0.75f, 3f),
-            new(0f, 0.75f, 6f),
+            new(7f, 0.75f, 4f),
             new(-6f, 0.75f, -2f),
             new(6f, 0.75f, -2f)
         };
@@ -64,6 +80,8 @@ namespace Fungiiiii.Runtime.Player
                 CreateObstacle(root, position, obstacleMaterial);
             }
 
+            CreateLowPassage(root, obstacleMaterial, CreateMaterial("Prototype Lintel Material", new Color(0.72f, 0.24f, 0.2f)));
+
             playerTransform = CreatePlayer(root, playerMaterial);
 
             demoCamera = ConfigureCamera();
@@ -102,20 +120,71 @@ namespace Fungiiiii.Runtime.Player
             ApplyMaterial(obstacle, material);
         }
 
+        /// <summary>
+        /// Builds a wall with a single opening too low to walk through, so crouching can
+        /// be verified against collision rather than by eye.
+        /// </summary>
+        private static void CreateLowPassage(Transform parent, Material wallMaterial, Material lintelMaterial)
+        {
+            var sideWallWidth = LowPassageReach - LowPassageHalfWidth;
+            var sideWallCentre = LowPassageHalfWidth + sideWallWidth * 0.5f;
+
+            CreateBlock(
+                parent,
+                "Low Passage Wall (Left)",
+                new Vector3(-sideWallCentre, LowPassageClearance * 0.5f, LowPassageZ),
+                new Vector3(sideWallWidth, LowPassageClearance, 1f),
+                wallMaterial);
+
+            CreateBlock(
+                parent,
+                "Low Passage Wall (Right)",
+                new Vector3(sideWallCentre, LowPassageClearance * 0.5f, LowPassageZ),
+                new Vector3(sideWallWidth, LowPassageClearance, 1f),
+                wallMaterial);
+
+            CreateBlock(
+                parent,
+                "Low Passage Lintel (Crouch To Pass)",
+                new Vector3(0f, LowPassageClearance + LowPassageLintelThickness * 0.5f, LowPassageZ),
+                new Vector3(LowPassageHalfWidth * 2f, LowPassageLintelThickness, 1f),
+                lintelMaterial);
+        }
+
+        private static void CreateBlock(
+            Transform parent,
+            string blockName,
+            Vector3 position,
+            Vector3 scale,
+            Material material)
+        {
+            var block = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            block.name = blockName;
+            block.transform.SetParent(parent, false);
+            block.transform.position = position;
+            block.transform.localScale = scale;
+            ApplyMaterial(block, material);
+        }
+
         private static Transform CreatePlayer(Transform parent, Material material)
         {
-            var playerObject = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            playerObject.name = "Player (Capsule Placeholder)";
+            var playerObject = new GameObject("Player");
             playerObject.transform.SetParent(parent, false);
             playerObject.transform.position = PlayerStartPosition;
-            ApplyMaterial(playerObject, material);
+
+            // The mesh lives on a child so crouching can squash it without scaling the
+            // CharacterController along with it.
+            var visual = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            visual.name = "Player Visual (Capsule Placeholder)";
+            visual.transform.SetParent(playerObject.transform, false);
+            ApplyMaterial(visual, material);
 
             // The CharacterController brings its own capsule; the primitive's collider
             // would fight with it.
-            var primitiveCollider = playerObject.GetComponent<Collider>();
-            if (primitiveCollider != null)
+            var visualCollider = visual.GetComponent<Collider>();
+            if (visualCollider != null)
             {
-                Destroy(primitiveCollider);
+                Destroy(visualCollider);
             }
 
             var controller = playerObject.AddComponent<CharacterController>();
@@ -127,7 +196,7 @@ namespace Fungiiiii.Runtime.Player
 
             var reader = playerObject.AddComponent<PlayerInputReader>();
             var motor = playerObject.AddComponent<PlayerMotor>();
-            motor.SetInputReader(reader);
+            motor.Initialise(reader, visual.transform);
 
             return playerObject.transform;
         }

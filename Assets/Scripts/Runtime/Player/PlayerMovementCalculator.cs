@@ -43,6 +43,27 @@ namespace Fungiiiii.Runtime.Player
         }
 
         /// <summary>
+        /// Picks the ground speed for the current stance.
+        ///
+        /// Crouching wins over sprinting: sneaking up on a shy mushroom must not be
+        /// cancelled by a sprint key that is still held down.
+        /// </summary>
+        public static float SelectSpeed(
+            bool isSprinting,
+            bool isCrouching,
+            float walkSpeed,
+            float sprintSpeed,
+            float crouchSpeed)
+        {
+            if (isCrouching)
+            {
+                return crouchSpeed;
+            }
+
+            return isSprinting ? sprintSpeed : walkSpeed;
+        }
+
+        /// <summary>
         /// Integrates gravity for a single step and returns the new vertical velocity.
         ///
         /// While grounded the velocity is clamped to a small downward value instead of
