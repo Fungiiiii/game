@@ -13,6 +13,16 @@ Anne-Charlotte validates QA on pushed work: for each task moved to
 what the task asked for and follows project documentation, then records the
 result — filing a ticket when something doesn't match.
 
+## When
+
+**This is a pre-merge gate, not a retroactive review.** A PR does not get
+merged until Anne-Charlotte has validated it — either with a "Conforms"
+comment on the ClickUp task, or after any subtask/linked task raised below
+has been resolved and re-checked. The PR's human-reviewer requirement in
+`CLAUDE.md` ("every change goes through a PR with at least one human
+reviewer") is satisfied by this QA validation for tasks that go through
+Product Reviewing.
+
 ## What gets checked, per push
 
 1. **Traceability** — the PR links the ClickUp task; the task has a clear
@@ -32,7 +42,11 @@ result — filing a ticket when something doesn't match.
    hardcoded player-facing text, no unrelated changes, no secrets) is
    honestly filled in, not just ticked. The `ship-it` skill's self-review
    questions are the reference for what "well executed" means on this
-   project.
+   project. Because CI does not run Unity (ADR-0004), compilation and
+   test results are **not** taken on the developer's word alone:
+   Anne-Charlotte opens the branch in Unity `6000.3.21f1` herself and
+   re-verifies (project compiles, no new Console errors, EditMode/
+   PlayMode tests pass) before recording the outcome.
 
 ## Outcome, per push
 
@@ -48,6 +62,9 @@ result — filing a ticket when something doesn't match.
   available statuses, custom fields, and whether "comment for pass /
   subtask for incomplete / linked task for discrepancy" matches how the
   team already works.
+- Since this is a merge gate, confirm how "not yet validated" is made
+  visible/enforced on the PR and the ClickUp task (e.g. a status, a label,
+  branch protection) so a merge cannot slip through before her comment.
 - This draft was written without an active Atlassian/ClickUp MCP
   connection in the authoring session — nothing here has been checked
   against the current Confluence documentation structure either.
