@@ -63,6 +63,7 @@ namespace Fungiiiii.Tests.PlayMode
             PoisonPrototypeController controller = Object.FindFirstObjectByType<PoisonPrototypeController>();
             Assert.That(controller, Is.Not.Null);
             Assert.That(controller.IsPoisonVisible, Is.False);
+            Assert.That(Camera.main, Is.Not.Null);
         }
 #endif
     }
