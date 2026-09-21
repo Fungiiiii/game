@@ -40,5 +40,5 @@ verification checklist.
   through the localization system.
 - Never work directly on `main`.
 - Linting catches bugs only — see [`docs/linting.md`](./docs/linting.md).
-- 3D assets ship as exported `.fbx`; `.blend` sources stay in `ArtSource/` —
-  see [`docs/art-pipeline.md`](./docs/art-pipeline.md).
+- 3D assets ship as exported `.fbx`. `.blend` sources never enter this
+  repository — see [`docs/art-pipeline.md`](./docs/art-pipeline.md).

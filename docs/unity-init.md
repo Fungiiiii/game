@@ -136,11 +136,6 @@ Create assembly definitions from the start. Adding them to an existing codebase
 means untangling every accidental dependency at once.
 
 ```text
-ArtSource/          .blend sources — OUTSIDE Assets/, never imported by Unity
-  Characters/
-  Props/
-  Environment/
-
 Assets/
   Scripts/
     Runtime/        Fungiiiii.Runtime.asmdef
@@ -158,9 +153,11 @@ Assets/
   Settings/
 ```
 
-`ArtSource/` is outside `Assets/` on purpose: Unity imports everything inside
-`Assets/`, and importing `.blend` requires Blender on every machine that
-imports the project. See [`docs/art-pipeline.md`](./art-pipeline.md).
+`Art/` holds **exported** assets only. `.blend` sources never enter the
+repository at all: Unity imports everything inside `Assets/`, and importing
+`.blend` would require Blender on every machine that opens the project. See
+[`docs/art-pipeline.md`](./art-pipeline.md) and
+[ADR-0005](./adrs/0005-pipeline-et-nommage-des-assets-3d.md).
 
 Rules from the `unity-project-config` skill that apply here:
 
