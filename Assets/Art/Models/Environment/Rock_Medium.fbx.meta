@@ -3,7 +3,12 @@ guid: 00185d297c9fbe5488cc163d9f3e0b22
 ModelImporter:
   serializedVersion: 24300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Fungi_Palette
+    second: {fileID: 2100000, guid: 4f8015b89819208438e3bea0fc6b20a8, type: 2}
   materials:
     materialImportMode: 0
     materialName: 0
@@ -104,7 +109,7 @@ ModelImporter:
   avatarSetup: 0
   addHumanoidExtraRootOnlyWhenUsingAvatar: 1
   importBlendShapeDeformPercent: 1
-  remapMaterialsIfMaterialImportModeIsNone: 0
+  remapMaterialsIfMaterialImportModeIsNone: 1
   additionalBone: 0
   userData: 
   assetBundleName: 
