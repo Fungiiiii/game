@@ -15,7 +15,7 @@ namespace Fungiiiii.UI
         private Slider poisonSlider;
         private GameObject poisonContainer;
 
-        public bool IsPoisonVisible => poisonContainer != null && poisonContainer.activeSelf;
+        public bool IsPoisonVisible => poisonContainer != null && poisonContainer.activeInHierarchy;
 
         public float PoisonPercentage => poisonSlider == null ? 0f : poisonSlider.value;
 
@@ -43,8 +43,20 @@ namespace Fungiiiii.UI
             poisonContainer = container;
             poisonSlider.minValue = 0f;
             poisonSlider.maxValue = PoisonState.MaxIntensity;
+            if (isActiveAndEnabled) poisonState.Changed += Refresh;
+            Refresh(poisonState.Current);
+        }
+
+        private void OnEnable()
+        {
+            if (poisonState == null) return;
             poisonState.Changed += Refresh;
             Refresh(poisonState.Current);
+        }
+
+        private void OnDisable()
+        {
+            if (poisonState != null) poisonState.Changed -= Refresh;
         }
 
         private void OnDestroy()
@@ -71,7 +83,7 @@ namespace Fungiiiii.UI
                 return;
             }
 
-            poisonSlider.value = snapshot.Intensity;
+            poisonSlider.SetValueWithoutNotify(snapshot.Intensity);
             poisonContainer.SetActive(snapshot.IsActive);
         }
     }

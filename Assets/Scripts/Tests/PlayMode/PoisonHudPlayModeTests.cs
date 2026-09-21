@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using Fungiiiii.Survival;
 using NUnit.Framework;
 using UnityEngine;
@@ -12,10 +13,26 @@ namespace Fungiiiii.Tests.PlayMode
 {
     public sealed class PoisonHudPlayModeTests
     {
+        private readonly List<GameObject> roots = new List<GameObject>();
+        private Scene loadedScene;
+
+        [UnityTearDown]
+        public IEnumerator Cleanup()
+        {
+            foreach (GameObject root in roots)
+                if (root != null) Object.Destroy(root);
+            roots.Clear();
+            if (loadedScene.IsValid() && loadedScene.isLoaded)
+                yield return SceneManager.UnloadSceneAsync(loadedScene);
+            loadedScene = default;
+            yield return null;
+        }
+
         [UnityTest]
         public IEnumerator PoisonHud_ReflectsApplicationAndHidesAtZero()
         {
             GameObject root = new GameObject(nameof(PoisonHud_ReflectsApplicationAndHidesAtZero));
+            roots.Add(root);
             PoisonPrototypeController controller = root.AddComponent<PoisonPrototypeController>();
 
             yield return null;
@@ -39,6 +56,7 @@ namespace Fungiiiii.Tests.PlayMode
         public IEnumerator PoisonPrototype_DealsDamageOnlyAfterThreshold()
         {
             GameObject root = new GameObject(nameof(PoisonPrototype_DealsDamageOnlyAfterThreshold));
+            roots.Add(root);
             PoisonPrototypeController controller = root.AddComponent<PoisonPrototypeController>();
 
             yield return null;
@@ -56,14 +74,24 @@ namespace Fungiiiii.Tests.PlayMode
         {
             AsyncOperation load = EditorSceneManager.LoadSceneAsyncInPlayMode(
                 "Assets/Scenes/Prototype/PoisonScene.unity",
-                new LoadSceneParameters(LoadSceneMode.Single));
+                new LoadSceneParameters(LoadSceneMode.Additive));
             yield return load;
+            loadedScene = SceneManager.GetSceneByPath("Assets/Scenes/Prototype/PoisonScene.unity");
             yield return null;
 
-            PoisonPrototypeController controller = Object.FindFirstObjectByType<PoisonPrototypeController>();
+            PoisonPrototypeController controller = null;
+            Camera camera = null;
+            foreach (GameObject sceneRoot in loadedScene.GetRootGameObjects())
+            {
+                if (controller == null) controller = sceneRoot.GetComponentInChildren<PoisonPrototypeController>();
+                if (camera == null) camera = sceneRoot.GetComponentInChildren<Camera>();
+            }
             Assert.That(controller, Is.Not.Null);
             Assert.That(controller.IsPoisonVisible, Is.False);
-            Assert.That(Camera.main, Is.Not.Null);
+            Assert.That(camera, Is.Not.Null);
+            Assert.That(camera.isActiveAndEnabled, Is.True);
+            Assert.That(camera.targetTexture, Is.Null);
+            Assert.That(camera.targetDisplay, Is.Zero);
         }
 #endif
     }

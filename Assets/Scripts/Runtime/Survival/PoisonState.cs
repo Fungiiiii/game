@@ -17,6 +17,7 @@ namespace Fungiiiii.Survival
 
         public PoisonState(float maxHealth)
         {
+            EnsureFinite(maxHealth, nameof(maxHealth));
             if (maxHealth <= 0f)
             {
                 throw new ArgumentOutOfRangeException(nameof(maxHealth), "Max health must be greater than zero.");
@@ -51,7 +52,7 @@ namespace Fungiiiii.Survival
                 return false;
             }
 
-            return SetIntensity(intensity + amount);
+            return SetIntensity(intensity + Math.Min(amount, MaxIntensity - intensity));
         }
 
         /// <summary>
@@ -72,7 +73,7 @@ namespace Fungiiiii.Survival
         {
             EnsureFinite(value, nameof(value));
             float clampedValue = Clamp(value, 0f, MaxIntensity);
-            if (Math.Abs(intensity - clampedValue) < 0.0001f)
+            if (intensity == clampedValue)
             {
                 return false;
             }
@@ -92,12 +93,14 @@ namespace Fungiiiii.Survival
         /// </summary>
         public float TickDamage(float deltaTime)
         {
+            EnsureFinite(deltaTime, nameof(deltaTime));
             if (deltaTime <= 0f || !IsActive)
             {
                 return 0f;
             }
 
-            return DamagePerSecond * deltaTime;
+            // Saturate large finite steps without producing infinity.
+            return (float)Math.Min((double)DamagePerSecond * deltaTime, float.MaxValue);
         }
 
         /// <summary>
@@ -106,6 +109,7 @@ namespace Fungiiiii.Survival
         /// </summary>
         public static float CalculateDamageRate(float poisonIntensity)
         {
+            EnsureFinite(poisonIntensity, nameof(poisonIntensity));
             float clampedValue = Clamp(poisonIntensity, 0f, MaxIntensity);
             if (clampedValue < DamageThreshold)
             {
@@ -119,12 +123,13 @@ namespace Fungiiiii.Survival
 
         public static float CalculateDamagePerSecond(float poisonIntensity, float maxHealth)
         {
+            EnsureFinite(maxHealth, nameof(maxHealth));
             if (maxHealth <= 0f)
             {
                 throw new ArgumentOutOfRangeException(nameof(maxHealth), "Max health must be greater than zero.");
             }
 
-            return maxHealth * CalculateDamageRate(poisonIntensity) / 100f;
+            return maxHealth * (CalculateDamageRate(poisonIntensity) / 100f);
         }
 
         private static float Clamp(float value, float minimum, float maximum)
@@ -136,7 +141,7 @@ namespace Fungiiiii.Survival
         {
             if (float.IsNaN(value) || float.IsInfinity(value))
             {
-                throw new ArgumentOutOfRangeException(parameterName, "Poison intensity must be finite.");
+                throw new ArgumentOutOfRangeException(parameterName, "Value must be finite.");
             }
         }
 
