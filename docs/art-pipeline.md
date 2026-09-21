@@ -1,91 +1,251 @@
 # Art pipeline — Blender to Unity
 
-3D assets are authored in **Blender**. This describes how they reach Unity.
+How to get a model from Blender into the game. Day-to-day reference.
 
-## The decision: export FBX, do not commit `.blend` into `Assets/`
+The decisions behind these rules live in
+[ADR-0005](./adrs/0005-pipeline-et-nommage-des-assets-3d.md). If this file and
+the ADR disagree, the ADR wins — and this file is the one to fix.
 
-Unity can import `.blend` files directly, but it does so by **launching Blender
-in the background** to convert the file to FBX. That has consequences that are
-easy to miss until they break a build:
+## The five rules
 
-- **Blender must be installed on every machine that opens the project** —
-  including the CI runner. Without it, the import simply fails.
-- The conversion is slow on first import, and re-runs whenever the file changes.
-- It breaks across Blender versions. "Blender could not convert the .blend file
-  to FBX file" is a recurring failure after Blender major releases.
-- You get no control over export settings, because you are not the one
-  exporting.
+1. **No `.blend` in this repository.** Sources stay on your machine.
+2. **Export settings match the table in this file.** Check with the cube.
+3. **Models import rotated -90° on X.** That is accepted. Nest a character
+   under a parent.
+4. **Name the asset, not its state.** `Rock_Small_01`, never `Rock_final_v3`.
+5. **A palette colour never moves.** You only ever add new ones.
 
-Unity's own documentation recommends exporting to FBX rather than using native
-application formats in production.
-
-**So:**
+## Where things live
 
 ```text
-ArtSource/          .blend sources — outside Assets/, Unity never touches them
-  Characters/
-  Props/
-  Environment/
-
 Assets/
   Art/
-    Models/         exported .fbx — this is what Unity imports
-    Textures/
-    Materials/
+    Models/<Domain>/<Name>.fbx           exported models
+    Textures/Palette.png                 the shared palette
+    Textures/<Domain>/<Name>_<Map>.png   dedicated textures — the exception
+    Materials/Palette.mat                the shared material
+  Prefabs/<Domain>/<Name>.prefab
 ```
 
-`ArtSource/` sits outside `Assets/` deliberately: anything inside `Assets/` gets
-imported, and `.blend` is exactly what we do not want imported.
+`<Domain>` is `Characters`, `Environment` or `Props`. Adding a fourth means
+amending ADR-0005.
 
-Both `.blend` and `.fbx` are tracked by Git LFS — see
-[`.gitattributes`](../.gitattributes). Blender's `.blend1` / `.blend2` backup
-files are ignored.
+### Why no `.blend` here
 
-## Export settings must be one shared preset
+This repository holds exported models only. Your sources stay local, and you
+back them up yourself. A pre-commit check rejects any `.blend`.
 
-The single most common Blender-to-Unity problem is a model arriving rotated 90°
-on X, or at 100× or 0.01× the intended scale. The cause is always the same:
-**Blender is Z-up, Unity is Y-up**, and the two disagree on unit scaling, so
-every artist's export settings produce a slightly different result.
+This is a trade, not an oversight. It buys a light clone and an untouched LFS
+quota. It costs the ability to ever re-edit an asset if your local sources are
+lost. ADR-0005 records it as accepted debt. It also names what reopens the
+decision: **a second person modelling.**
 
-Do not solve this per-asset by rotating the mesh in Unity or in the prefab. That
-hides the problem and it comes back on the next export.
+## Exporting from Blender
 
-Instead, agree **one** FBX export configuration, save it as a Blender export
-preset, commit the preset to `ArtSource/`, and have everyone use it. Then verify
-once, with a reference cube:
+This table is authoritative. Blender remembers the settings of your last
+export, so you type them once, not before every export.
+
+**No export preset is committed.** ADR-0005 explains why: nothing in this
+repository can install one, check that it is installed, or notice when it has
+drifted. The reference cube below is the check that actually works.
+
+| Section | Setting | Value |
+|---|---|---|
+| Top | Path Mode | `Auto` |
+| Include | Limit to → Selected Objects | on |
+| Include | Object Types | `Armature`, `Mesh` |
+| Include | Custom Properties | off |
+| Transform | Scale | `1.00` |
+| Transform | Apply Scalings | `FBX All` |
+| Transform | Forward / Up | `-Z Forward` / `Y Up` |
+| Transform | Apply Unit | on |
+| Transform | Use Space Transform | on |
+| Transform | **Apply Transform** | **off — always** |
+| Geometry | Smoothing | `Face` |
+| Geometry | Apply Modifiers | on |
+| Geometry | Loose Edges | off |
+| Geometry | Tangent Space | off |
+| Geometry | Triangulate Faces | off |
+| Armature | Primary / Secondary Bone Axis | `Y` / `X` |
+| Armature | Armature FBXNode Type | `Null` |
+| Armature | Only Deform Bones | off |
+| Armature | Add Leaf Bones | off |
+| Bake Animation | — | off |
+
+### The ones worth knowing
+
+**Apply Transform — off, always.** The option is experimental and breaks
+armatures. Leaving it off is what produces the accepted -90° on X in Unity —
+see *Orientation* below.
+
+**Smoothing — `Face`.** Blender's default is `Normals Only`. It drops smoothing
+information, and you get shading artefacts in Unity.
+
+**Apply Modifiers — watch out.** Modifiers apply at their *viewport* level, not
+their render level. A Subsurf set to 1 in the viewport and 3 in render exports
+at 1.
+
+**Only Deform Bones — off.** Turning it on drops the root bone, which deforms
+no vertex. The hierarchy breaks with it. The cost of leaving it off: IK and
+control bones come across too.
+
+**Triangulate Faces — off.** Unity triangulates on import, and the mesh stays
+editable.
+
+**Selected Objects — on.** One logical asset per file. Never export a whole
+scene and split it in Unity.
+
+## Importing into Unity
+
+Export settings are only half the job. The Unity importer decides as much about
+final scale and orientation as Blender does.
+
+So the import side is pinned by committed Presets, not by memory.
+
+### Static props — the project default
+
+`ModelImporter_StaticProp` is the **Default Preset** for the ModelImporter. Any
+FBX you drop into `Assets/` already arrives correct.
+
+| Tab | Setting | Value | Why |
+|---|---|---|---|
+| Model | Bake Axis Conversion | **off** | Leaving it off is what produces the accepted -90° on X. See *Orientation* below. |
+| Rig | Animation Type | `None` | A static prop needs no rig. `Generic` here would generate an Avatar for every rock. |
+| Materials | Material Creation Mode | `None` | Everything shares `Palette.mat`. |
+
+### Rigged characters
+
+Apply `ModelImporter_RiggedCharacter` **by hand**, then *Apply*.
+
+One difference: **Rig → Animation Type: `Generic`**. The creatures are not
+humanoid, so `Humanoid` and its retargeting buy nothing.
+
+> This step cannot be automatic. Unity's Default Preset is global per importer
+> type. ADR-0005 accepts the manual step rather than writing an
+> AssetPostprocessor.
+>
+> **Imported a character and it has no Animator? This is the step you
+> skipped.**
+
+### The palette texture
+
+Its settings are applied by hand. A default preset for textures would also hit
+UI sprites, which want the opposite.
+
+| Setting | Value | Why |
+|---|---|---|
+| Filter Mode | `Point` | |
+| Wrap Mode | `Clamp` | |
+| Generate Mip Maps | **off** | Mips blend neighbouring swatches. Distant geometry picks up colours that are not its own. |
+| Compression | `None` | A palette is a handful of exact colours. Lossy compression shifts them. |
+
+## Naming
+
+English. ASCII. PascalCase. Segments separated by `_`.
+
+```text
+<Name>[_<Variant>][_NN]
+```
+
+`Rock_Small_01` · `MushroomCap_Large` · `TreePine_01`
+
+The rule applies to four things at once:
+
+| What | Example |
+|---|---|
+| The FBX file | `Assets/Art/Models/Environment/Rock_Small_01.fbx` |
+| **The object inside Blender** | `Rock_Small_01` |
+| The material | `Palette.mat` — shared. A dedicated one takes the model's name. |
+| The prefab | `Assets/Prefabs/Environment/Rock_Small_01.prefab` |
+
+**The Blender object name matters.** It becomes the GameObject name on import.
+A `.blend` full of `Cube.001` gives you a Unity hierarchy full of `Cube.001`.
+
+Other rules:
+
+- `NN` is two digits. It only separates interchangeable variations.
+- Name what the thing **is**. Not what it looks like today.
+- **Never name a state.** No `_final`, `_v3`, `_new`, `_old`, `_test`, `_OK`,
+  `_copy`. Git already records versions.
+
+`scripts/check-art-assets.sh` enforces all of this on commit.
+
+### Animations
+
+Not exported yet. When they arrive, each clip ships in its own file:
+
+```text
+Assets/Art/Models/Characters/PlayerMushroom.fbx
+Assets/Art/Models/Characters/PlayerMushroom@Idle.fbx
+Assets/Art/Models/Characters/PlayerMushroom@Walk.fbx
+```
+
+Unity picks these up automatically for the rig of the same name.
+
+Turning `Bake Animation` on is part of that change, not of this one.
+
+## The palette
+
+One `Assets/Art/Textures/Palette.png`. One `Palette.mat`. Every model's UVs
+point at swatches on it.
+
+That is what removes UV unwrapping from the workflow, and keeps the whole set
+on a single material.
+
+**The rule that matters: a colour never moves. You only ever append.**
+
+The grid is frozen the day the palette is created. Moving a swatch, reordering
+the grid or resizing the image invalidates the UVs of every model already
+exported.
+
+Every asset in the game changes colour. And the diff that caused it contains a
+single `.png`. Adding a colour in free space is safe. Anything else is not.
+
+<!-- Fill in when Palette.png enters the repository: -->
+<!-- Grid: N x N swatches, image WxH px, one swatch = P px -->
+
+Author materials in Unity, against URP
+([ADR-0002](./adrs/0002-pipeline-de-rendu-urp.md)). Do not rely on materials
+coming across from Blender. The two use different shading models, and the
+render pipeline decides what a material even is.
+
+## Verify once, with a reference cube
+
+Before trusting your settings, export a 1×1×1 cube at the origin. Then check
+in Unity:
 
 - 1 Blender unit imports as 1 Unity unit (1 metre)
-- the model's forward axis points along Unity's +Z
-- the transform in Unity shows rotation `(0, 0, 0)` and scale `(1, 1, 1)`
+- the Inspector shows scale `(1, 1, 1)`
 
-If a freshly imported model needs a correction in the Inspector, the preset is
-wrong — fix the preset, not the asset.
+**Rotation is not part of this check.** The cube arrives rotated -90° on X,
+like everything else, and that is expected.
 
-## Naming and organisation
+**If the scale is wrong, your export settings are wrong. Fix the settings, not
+the asset.** Rescaling in Unity hides the problem, and it comes back on the
+next export.
 
-Asset names are **English**, like everything else outside `docs/adrs/` — see
-`CLAUDE.md`. Name by what the thing is, not by what it looks like today:
-`MushroomCap_Large`, not `Champignon_final_v3_OK`.
+## Orientation
 
-One exported FBX per logical asset. Do not export an entire scene as one FBX and
-split it in Unity.
+Models import with a **-90° rotation on X** on their root. This is the default
+behaviour of the Blender-to-Unity chain, and ADR-0005 accepts it rather than
+correcting it.
 
-## Materials and textures
+On a static prop it costs nothing. You place it in a scene and never touch it
+again.
 
-Do not rely on materials coming across from Blender. Blender and Unity use
-different shading models, and the render pipeline (URP/HDRP/Built-in) decides
-what a material even is. Author materials in Unity, against the project's
-pipeline.
-
-Textures are imported separately and referenced by Unity materials. Keep them in
-`Assets/Art/Textures/`, not embedded in the FBX.
+On a character it matters: the imported root's `forward` points down, not
+forward. **Nest a character under a parent GameObject** and let the parent
+carry movement and rotation. That is the structure a character ends up with
+anyway, once it has a controller.
 
 ## Before committing an art change
 
-- [ ] The `.fbx` is exported with the shared preset, not with ad-hoc settings
-- [ ] Import shows rotation `(0, 0, 0)` and scale `(1, 1, 1)` in Unity
-- [ ] The `.blend` source is in `ArtSource/`, not in `Assets/`
-- [ ] `git lfs status` shows both files tracked by LFS
-- [ ] Names are English and describe the asset
-- [ ] No `.blend1` / `.blend2` backup files staged
+- [ ] Export settings match the table above
+- [ ] `Apply Transform` was off
+- [ ] Inspector shows scale `(1, 1, 1)` — the -90° on X is expected
+- [ ] A character got `ModelImporter_RiggedCharacter` applied
+- [ ] No `.blend` staged
+- [ ] Names are English, PascalCase, and describe the asset — not its state
+- [ ] The Blender object name matches the file name
+- [ ] The palette was appended to, never reordered or resized
+- [ ] `git lfs status` shows the `.fbx` and `.png` tracked

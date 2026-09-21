@@ -4,4 +4,5 @@ root="$(git rev-parse --show-toplevel)"
 status=0
 "$root/scripts/check-language.sh"     || status=1
 "$root/scripts/check-localization.sh" || status=1
+"$root/scripts/check-art-assets.sh"   || status=1
 exit $status

@@ -52,7 +52,7 @@ Do not place a global system independently in several scenes where it could prod
 
 Before adding an asset, determine ownership, license, source, import settings, target-platform impact and memory impact. Do not commit unnecessary or duplicated source files.
 
-3D assets are authored in **Blender** and reach Unity as exported `.fbx`. `.blend` sources live in `ArtSource/`, outside `Assets/` — see `docs/art-pipeline.md` before touching models, and never fix an import by rotating or rescaling in the Inspector.
+3D assets are authored in **Blender** and reach Unity as exported `.fbx`. `.blend` sources never enter this repository — see `docs/art-pipeline.md` and ADR-0005 before touching models, and never fix an import by rotating or rescaling in the Inspector. Naming, folder and palette rules are enforced by `scripts/check-art-assets.sh`.
 
 ## Diff review — mandatory before committing
 

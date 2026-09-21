@@ -20,7 +20,7 @@ Read and write project documentation through the Atlassian MCP. Task management 
 
 `ProjectSettings/ProjectVersion.txt` is authoritative for the Unity version. Never upgrade Unity or unrelated packages as part of another task.
 
-The Unity project lives at the repository root — `Assets/`, `Packages/`, `ProjectSettings/`. It was created from the 3D Cross-Platform (URP) template; [`docs/unity-init.md`](docs/unity-init.md) records how, and why each choice was made. Blender sources live in `ArtSource/`, outside `Assets/`; see `docs/art-pipeline.md`.
+The Unity project lives at the repository root — `Assets/`, `Packages/`, `ProjectSettings/`. It was created from the 3D Cross-Platform (URP) template; [`docs/unity-init.md`](docs/unity-init.md) records how, and why each choice was made. 3D assets are authored in Blender and reach the repository as exported `.fbx` only — `.blend` sources never enter it (ADR-0005); see `docs/art-pipeline.md`.
 
 Never invent project, gameplay or architecture rules that could be verified. An accepted ADR beats conflicting documentation unless explicitly superseded.
 

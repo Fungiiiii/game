@@ -43,6 +43,21 @@ jobs:
           if [ ${#files[@]} -eq 0 ]; then exit 0; fi
           ./scripts/check-localization.sh "${files[@]}"
 
+  art-assets:
+    name: Art assets follow ADR-0005
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check changed files
+        run: |
+          mapfile -t files < <(git diff --name-only --diff-filter=ACM \
+            "origin/${{ github.base_ref }}...HEAD")
+          if [ ${#files[@]} -eq 0 ]; then exit 0; fi
+          ./scripts/check-art-assets.sh "${files[@]}"
+
   commit-messages:
     name: Conventional Commits
     runs-on: ubuntu-latest
