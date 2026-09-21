@@ -141,7 +141,13 @@ namespace Fungiiiii.Runtime.AI
 
         private static Material CreateMaterial(string materialName, Color color)
         {
-            var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
+            // Null coalescing is not usable here: Unity overloads ==, but not ??, so a
+            // destroyed object would slip through instead of falling back (UNT0007).
+            var shader = Shader.Find("Universal Render Pipeline/Lit");
+            if (shader == null)
+            {
+                shader = Shader.Find("Standard");
+            }
             var material = new Material(shader)
             {
                 name = materialName,

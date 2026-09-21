@@ -569,7 +569,11 @@ namespace Fungiiiii.UI
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            owner?.ClickSlot(index, eventData);
+            // Null propagation bypasses Unity's overloaded == (UNT0008).
+            if (owner != null)
+            {
+                owner.ClickSlot(index, eventData);
+            }
         }
     }
 }
