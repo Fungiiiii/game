@@ -177,13 +177,29 @@ La ligne `*.blend filter=lfs` de `.gitattributes` est **conservée comme
 filet** : un `.blend` committé par accident irait au moins en LFS. Un contrôle
 automatique le refuse de toute façon.
 
-### 2. Un seul preset d'export Blender
+### 2. Les réglages d'export font autorité dans le mode d'emploi
 
-Il est committé dans [`tools/blender/`](../../tools/blender/). Un preset est de
-la configuration, pas de l'art : il est versionné même si les sources ne le
-sont pas.
+Ils sont consignés dans [`docs/art-pipeline.md`](../art-pipeline.md), à un seul
+endroit.
 
-Le fichier fait autorité. `docs/art-pipeline.md` en donne la lecture humaine.
+**Aucun preset Blender n'est committé.** Un preset ne sert que s'il est
+installé dans Blender. Or rien dans ce dépôt ne peut l'installer, ni vérifier
+qu'il l'est, ni détecter qu'il a dérivé. Son chemin d'installation dépend en
+plus de la version de Blender : une mise à jour le fait disparaître en silence.
+
+Blender mémorise par ailleurs les réglages du dernier export. Ils se saisissent
+une fois, pas à chaque export.
+
+Pour une personne sur une machine, un preset committé est donc un fichier que
+rien n'exécute et que rien ne vérifie. Il duplique la table du mode d'emploi
+sans rien garantir de plus.
+
+**Le contrôle réel est le cube de référence**, décrit dans le mode d'emploi. Il
+détecte un mauvais export quelle que soit l'origine des réglages, et ne demande
+aucune installation.
+
+Cette décision se rouvre au même déclencheur que le point 1 : une deuxième
+personne, ou une deuxième machine, qui exporte.
 
 ### 3. `Apply Transform` reste décoché, pour tous les objets
 
@@ -193,8 +209,8 @@ La conversion d'axes se fait **une seule fois, côté Unity**, par
 `Bake Axis Conversion`. Empiler les deux mécanismes expose à une double
 conversion.
 
-N'en garder qu'un supprime la classe de bug entière. Et rend enfin vraie la
-promesse d'un preset unique.
+N'en garder qu'un supprime la classe de bug entière. Et supprime du même coup
+l'embranchement riggé / statique qui existait dans les réglages employés.
 
 ### 4. Les réglages d'import Unity sont portés par des Presets committés
 
@@ -225,7 +241,6 @@ Assets/
     Textures/<Domaine>/<Nom>_<Map>.png   textures dédiées, l'exception
     Materials/Palette.mat                le matériau partagé
   Prefabs/<Domaine>/<Nom>.prefab
-tools/blender/                           preset d'export
 ```
 
 Les domaines sont `Characters`, `Environment` et `Props`. Il n'y en a pas
@@ -319,8 +334,6 @@ Les Presets et le système de Default Preset sont natifs à Unity. Aucun package
 n'est ajouté à [`Packages/manifest.json`](../../Packages/manifest.json). Aucun
 code runtime n'est introduit.
 
-Le preset Blender est un fichier de configuration. Sa seule dépendance est
-Blender, déjà outil d'autorité du pipeline.
 
 ## Conséquences
 
@@ -361,8 +374,6 @@ Blender, déjà outil d'autorité du pipeline.
   le mode d'emploi porte les valeurs et les procédures.** Une valeur qui change
   se corrige là-bas, sans toucher à cet ADR. Une décision qui change demande un
   nouvel ADR.
-- [`tools/blender/`](../../tools/blender/) — le preset d'export, qui fait
-  autorité sur les réglages.
 - [`scripts/check-art-assets.sh`](../../scripts/check-art-assets.sh) et
   [`.github/workflows/conventions.yml`](../../.github/workflows/conventions.yml)
   — l'application mécanique.
