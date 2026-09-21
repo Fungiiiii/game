@@ -68,5 +68,15 @@ namespace Fungiiiii.Tests.EditMode
         {
             Assert.That(() => new PoisonState(0f), Throws.TypeOf<System.ArgumentOutOfRangeException>());
         }
+
+        [Test]
+        public void NonFiniteIntensity_IsRejected()
+        {
+            PoisonState poison = new PoisonState(100f);
+
+            Assert.That(() => poison.SetIntensity(float.NaN), Throws.TypeOf<System.ArgumentOutOfRangeException>());
+            Assert.That(() => poison.Apply(float.PositiveInfinity), Throws.TypeOf<System.ArgumentOutOfRangeException>());
+            Assert.That(poison.Intensity, Is.EqualTo(0f));
+        }
     }
 }

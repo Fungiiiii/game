@@ -45,6 +45,7 @@ namespace Fungiiiii.Survival
         /// </summary>
         public bool Apply(float amount)
         {
+            EnsureFinite(amount, nameof(amount));
             if (amount <= 0f)
             {
                 return false;
@@ -58,6 +59,7 @@ namespace Fungiiiii.Survival
         /// </summary>
         public bool Remove(float amount)
         {
+            EnsureFinite(amount, nameof(amount));
             if (amount <= 0f)
             {
                 return false;
@@ -68,6 +70,7 @@ namespace Fungiiiii.Survival
 
         public bool SetIntensity(float value)
         {
+            EnsureFinite(value, nameof(value));
             float clampedValue = Clamp(value, 0f, MaxIntensity);
             if (Math.Abs(intensity - clampedValue) < 0.0001f)
             {
@@ -127,6 +130,14 @@ namespace Fungiiiii.Survival
         private static float Clamp(float value, float minimum, float maximum)
         {
             return Math.Min(Math.Max(value, minimum), maximum);
+        }
+
+        private static void EnsureFinite(float value, string parameterName)
+        {
+            if (float.IsNaN(value) || float.IsInfinity(value))
+            {
+                throw new ArgumentOutOfRangeException(parameterName, "Poison intensity must be finite.");
+            }
         }
 
         private static float Pow(float value, float exponent)
