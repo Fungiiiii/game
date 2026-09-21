@@ -1,29 +1,44 @@
 # QA validation process
 
-> **Status: draft.** This describes the process agreed on so far. It has not
-> yet been cross-checked against the live ClickUp "Product Reviewing" list
-> (statuses, custom fields) — see [Open points](#open-points). Nothing here
-> is written to Confluence or ClickUp until that check happens and the
-> developer approves it.
+> **Status: draft.** Checked against the live ClickUp list on 2026-09-21
+> (statuses, custom fields). **Not** checked against Confluence — no
+> Atlassian connection was available. Nothing here is written to Confluence
+> or ClickUp until the developer approves it — see
+> [Open points](#open-points).
 
 ## Role
 
 Anne-Charlotte validates QA on pushed work: for each task moved to
-**Product Reviewing** on ClickUp, she checks that the implementation matches
-what the task asked for and follows project documentation, then records the
-result — filing a ticket when something doesn't match.
+**`product reviewing`** on ClickUp, she checks that the implementation
+matches what the task asked for and follows project documentation, then
+records the result — raising a ticket when something doesn't match.
+
+## Workflow
+
+Tasks live in the ClickUp list "Liste de tâche Fungiiiii". The statuses are:
+
+`a traiter` → `en cours` → `product reviewing` → `Closed` (or `annulé`)
+
+`product reviewing` is a status of that list, not a list of its own. The
+list has no custom fields.
+
+**Only the project manager moves a task to `Closed`.** The QA validation is
+an input to that decision; it does not close anything itself.
 
 ## When
 
-**This is a pre-merge gate, not a retroactive review.** A PR does not get
-merged until Anne-Charlotte has validated it — either with a "Conforms"
-comment on the ClickUp task, or after any subtask/linked task raised below
-has been resolved and re-checked. The PR's human-reviewer requirement in
-`CLAUDE.md` ("every change goes through a PR with at least one human
-reviewer") is satisfied by this QA validation for tasks that go through
-Product Reviewing.
+**Validation happens while the task is in `product reviewing`, before the
+project manager closes it.** It is not tied to the PR merge: the code is
+often already merged when the task reaches review, and that is fine. A
+defect found on merged code is fixed by follow-up work (see
+[Outcome](#outcome-per-task)), not by blocking a merge.
 
-## What gets checked, per push
+QA validation does **not** replace the human PR review required by
+`CLAUDE.md` ("every change goes through a PR with at least one human
+reviewer"). The two are separate: the PR review happens on the PR, the QA
+validation happens on the ClickUp task.
+
+## What gets checked, per task
 
 1. **Traceability** — the PR links the ClickUp task; the task has a clear
    description / acceptance criteria.
@@ -44,30 +59,38 @@ Product Reviewing.
    questions are the reference for what "well executed" means on this
    project. Because CI does not run Unity (ADR-0004), compilation and
    test results are **not** taken on the developer's word alone:
-   Anne-Charlotte opens the branch in Unity `6000.3.21f1` herself and
-   re-verifies (project compiles, no new Console errors, EditMode/
-   PlayMode tests pass) before recording the outcome.
+   Anne-Charlotte opens the code in Unity `6000.3.21f1` herself (the
+   branch, or `main` once merged) and re-verifies (project compiles, no
+   new Console errors, EditMode/PlayMode tests pass) before recording the
+   outcome.
 
-## Outcome, per push
+## Outcome, per task
+
+In every case the task **stays in `product reviewing`** until the project
+manager closes it.
 
 | Result | Action |
 |---|---|
-| Conforms | Comment on the ClickUp task recording the validation |
-| Incomplete (task requirements not fully met) | Subtask under the task, explaining what's missing |
-| Discrepancy / bug (doesn't respect the request or the documentation) | New ClickUp task, linked to the original task and the PR, assigned to the developer |
+| Conforms | Comment "Conforms" on the ClickUp task recording the validation. The project manager can then close it |
+| Incomplete (task requirements not fully met) | QA comment on the task listing what is missing; optionally a subtask under the task (to confirm, see below) |
+| Discrepancy / bug (doesn't respect the request or the documentation) | QA comment on the task; new ClickUp task linked to the original task and the PR, assigned to the developer (to confirm, see below) |
+
+The QA task
+[[QA] Validation des tâches en product reviewing](https://app.clickup.com/t/12487v2aetg)
+expects three deliverables: the list of validated tasks, the list of tasks
+needing a correction or completion, and QA comments directly in ClickUp.
 
 ## Open points
 
-- Confirm this against the actual ClickUp "Product Reviewing" list:
-  available statuses, custom fields, and whether "comment for pass /
-  subtask for incomplete / linked task for discrepancy" matches how the
-  team already works.
-- Since this is a merge gate, confirm how "not yet validated" is made
-  visible/enforced on the PR and the ClickUp task (e.g. a status, a label,
-  branch protection) so a merge cannot slip through before her comment.
-- This draft was written without an active Atlassian/ClickUp MCP
-  connection in the authoring session — nothing here has been checked
-  against the current Confluence documentation structure either.
+- The task only asks for QA comments. Confirm with the team whether the
+  subtask (incomplete) and linked task (discrepancy) conventions above are
+  wanted, or whether comments alone are enough.
+- How does the project manager know a task has passed QA? Today, only the
+  "Conforms" comment. Confirm that is enough, or whether a tag or status is
+  wanted.
+- Nothing here has been checked against the current Confluence
+  documentation structure (no Atlassian MCP connection in the authoring
+  session).
 - Once confirmed, decide whether this process itself becomes a Confluence
   page (durable, team-facing) with this file kept only as the local
   pointer, per `CLAUDE.md`'s Confluence-vs-ClickUp split.
