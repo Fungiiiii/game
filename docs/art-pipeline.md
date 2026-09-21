@@ -10,8 +10,8 @@ the ADR disagree, the ADR wins — and this file is the one to fix.
 
 1. **No `.blend` in this repository.** Sources stay on your machine.
 2. **Export settings match the table in this file.** Check with the cube.
-3. **`Apply Transform` off in Blender. `Bake Axis Conversion` on in Unity.**
-   Never both.
+3. **Models import rotated -90° on X.** That is accepted. Nest a character
+   under a parent.
 4. **Name the asset, not its state.** `Rock_Small_01`, never `Rock_final_v3`.
 5. **A palette colour never moves.** You only ever add new ones.
 
@@ -74,9 +74,9 @@ drifted. The reference cube below is the check that actually works.
 
 ### The ones worth knowing
 
-**Apply Transform — off, always.** The axis conversion happens once, on the
-Unity side. Doing it in both places risks converting twice. The option is also
-experimental and breaks armatures.
+**Apply Transform — off, always.** The option is experimental and breaks
+armatures. Leaving it off is what produces the accepted -90° on X in Unity —
+see *Orientation* below.
 
 **Smoothing — `Face`.** Blender's default is `Normals Only`. It drops smoothing
 information, and you get shading artefacts in Unity.
@@ -109,7 +109,7 @@ FBX you drop into `Assets/` already arrives correct.
 
 | Tab | Setting | Value | Why |
 |---|---|---|---|
-| Model | Bake Axis Conversion | **on** | Unity converts Blender's axes itself, without touching the skeleton. Without it, models arrive rotated -90° on X. |
+| Model | Bake Axis Conversion | **off** | Leaving it off is what produces the accepted -90° on X. See *Orientation* below. |
 | Rig | Animation Type | `None` | A static prop needs no rig. `Generic` here would generate an Avatar for every rock. |
 | Materials | Material Creation Mode | `None` | Everything shares `Palette.mat`. |
 
@@ -215,18 +215,34 @@ Before trusting your settings, export a 1×1×1 cube at the origin. Then check
 in Unity:
 
 - 1 Blender unit imports as 1 Unity unit (1 metre)
-- the forward axis points along Unity's +Z
-- the Inspector shows rotation `(0, 0, 0)` and scale `(1, 1, 1)`
+- the Inspector shows scale `(1, 1, 1)`
 
-**If a fresh model needs a correction in the Inspector, your export settings
-are wrong. Fix the settings, not the asset.** Rotating or rescaling in Unity hides the
-problem, and it comes back on the next export.
+**Rotation is not part of this check.** The cube arrives rotated -90° on X,
+like everything else, and that is expected.
+
+**If the scale is wrong, your export settings are wrong. Fix the settings, not
+the asset.** Rescaling in Unity hides the problem, and it comes back on the
+next export.
+
+## Orientation
+
+Models import with a **-90° rotation on X** on their root. This is the default
+behaviour of the Blender-to-Unity chain, and ADR-0005 accepts it rather than
+correcting it.
+
+On a static prop it costs nothing. You place it in a scene and never touch it
+again.
+
+On a character it matters: the imported root's `forward` points down, not
+forward. **Nest a character under a parent GameObject** and let the parent
+carry movement and rotation. That is the structure a character ends up with
+anyway, once it has a controller.
 
 ## Before committing an art change
 
 - [ ] Export settings match the table above
-- [ ] `Apply Transform` was off, `Bake Axis Conversion` is on
-- [ ] Inspector shows rotation `(0, 0, 0)` and scale `(1, 1, 1)`
+- [ ] `Apply Transform` was off
+- [ ] Inspector shows scale `(1, 1, 1)` — the -90° on X is expected
 - [ ] A character got `ModelImporter_RiggedCharacter` applied
 - [ ] No `.blend` staged
 - [ ] Names are English, PascalCase, and describe the asset — not its state

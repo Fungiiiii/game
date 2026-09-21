@@ -201,16 +201,26 @@ aucune installation.
 Cette décision se rouvre au même déclencheur que le point 1 : une deuxième
 personne, ou une deuxième machine, qui exporte.
 
-### 3. `Apply Transform` reste décoché, pour tous les objets
+### 3. La rotation de -90° sur X est acceptée
 
-Riggés comme statiques.
+`Apply Transform` reste décoché dans Blender, pour tous les objets, riggés
+comme statiques. `Bake Axis Conversion` n'est pas activé côté Unity non plus.
 
-La conversion d'axes se fait **une seule fois, côté Unity**, par
-`Bake Axis Conversion`. Empiler les deux mécanismes expose à une double
-conversion.
+Conséquence assumée : **les modèles importés portent une rotation de -90° sur X
+sur leur racine.** C'est le comportement par défaut de la chaîne Blender vers
+Unity, et on ne le corrige pas.
 
-N'en garder qu'un supprime la classe de bug entière. Et supprime du même coup
-l'embranchement riggé / statique qui existait dans les réglages employés.
+Sur un prop statique, ça ne coûte rien. On le pose dans une scène et on n'y
+touche plus.
+
+Sur un personnage, la racine ne pointe plus vers l'avant d'Unity : le `forward`
+du transform importé vise le bas. **Un personnage est donc imbriqué sous un
+GameObject parent**, et c'est le parent qui porte le déplacement et la
+rotation.
+
+Ce qui ne change pas, c'est l'échelle. Une unité Blender doit rester un mètre
+Unity. C'est ce que le cube de référence vérifie, et c'est désormais tout ce
+qu'il vérifie.
 
 ### 4. Les réglages d'import Unity sont portés par des Presets committés
 
@@ -320,11 +330,14 @@ le rôle du point 7.
 dans la doc. Passer aux préfixes de type imposerait de corriger l'existant,
 pour un gain qui n'apparaît qu'à une échelle que le projet n'a pas.
 
-**Sur le point 3.** Il ne vient d'aucune alternative. Il vient d'un constat :
-deux mécanismes de conversion d'axes coexistaient dans la pratique. En
-supprimer un ne coûte rien. Et ça fait disparaître une classe de bugs
-difficiles à diagnostiquer, parce qu'ils ressemblent à un problème d'art alors
-que ce sont des réglages.
+**Sur le point 3.** Il ne vient d'aucune alternative, et il enregistre une
+pratique plutôt qu'il ne la décide. Le -90° est le comportement par défaut de
+la chaîne Blender vers Unity. `Bake Axis Conversion` le supprimerait, au prix
+d'un réglage d'import à garantir sur chaque asset. Sur un prop statique, le
+gain est nul. Sur un personnage, l'imbrication sous un parent règle le même
+problème par une convention de scène — et c'est la structure qu'un personnage
+finit par avoir dès qu'il a un contrôleur. La décision est donc d'assumer, pas
+de corriger.
 
 ## Dépendances
 
@@ -338,9 +351,9 @@ code runtime n'est introduit.
 ## Conséquences
 
 - **Positives :** dépôt léger et clonable ; quota LFS préservé ; un FBX déposé
-  dans `Assets/` arrive déjà bien réglé ; la conversion d'axes n'a plus qu'un
-  seul point d'application ; le nommage est appliqué par un script, pas par la
-  relecture ; `docs/art-pipeline.md` redevient exact.
+  dans `Assets/` arrive déjà bien réglé ; l'orientation importée est décidée et
+  écrite, plutôt que subie asset par asset ; le nommage est appliqué par un
+  script, pas par la relecture ; `docs/art-pipeline.md` redevient exact.
 - **Négatives :** aucune source protégée par le dépôt ; aucun lien vérifiable
   entre un FBX et sa source ; les personnages exigent un preset appliqué à la
   main, que rien ne rappelle ; la palette figée interdit une réorganisation
