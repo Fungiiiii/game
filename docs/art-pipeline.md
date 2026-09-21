@@ -25,6 +25,7 @@ Assets/
     Textures/<Domain>/<Name>_<Map>.png   dedicated textures — the exception
     Materials/Palette.mat                the shared material
   Prefabs/<Domain>/<Name>.prefab
+tools/palette/                           the palette generator
 ```
 
 `<Domain>` is `Characters`, `Environment` or `Props`. Adding a fourth means
@@ -201,8 +202,46 @@ exported.
 Every asset in the game changes colour. And the diff that caused it contains a
 single `.png`. Adding a colour in free space is safe. Anything else is not.
 
-<!-- Fill in when Palette.png enters the repository: -->
-<!-- Grid: N x N swatches, image WxH px, one swatch = P px -->
+### The grid
+
+| | |
+|---|---|
+| Image | 128 × 128 px |
+| Grid | 8 × 8 swatches |
+| One swatch | 16 × 16 px |
+| Used | 19 swatches |
+| Free | 45 swatches, drawn as a grey checker |
+
+Rows 0–4 are taken: body, face, mushroom and bulb, vegetation and wood, rock.
+Everything below row 4 is free space to append into.
+
+### Generating it
+
+`Palette.png` is not edited by hand. It is generated:
+
+```bash
+python tools/palette/generate_palette.py
+```
+
+[`tools/palette/generate_palette.py`](../tools/palette/generate_palette.py) is
+the real source of truth. Add a colour by adding an entry there, then re-run
+it. That is what makes "a colour never moves" checkable in a diff instead of
+being a promise.
+
+It also writes [`docs/palette-guide.png`](./palette-guide.png), a reference
+sheet showing every swatch with its name, its hex value and its UV coordinates.
+
+### UVs
+
+A UV points at the **centre** of a swatch:
+
+```text
+U = (col + 0.5) / 8
+V = 1 - (row + 0.5) / 8
+```
+
+Aiming at a swatch centre is what keeps neighbouring colours out of the sample,
+and it is why `Point` filtering and disabled mip maps are not optional.
 
 Author materials in Unity, against URP
 ([ADR-0002](./adrs/0002-pipeline-de-rendu-urp.md)). Do not rely on materials
