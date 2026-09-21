@@ -9,7 +9,7 @@ the ADR disagree, the ADR wins — and this file is the one to fix.
 ## The five rules
 
 1. **No `.blend` in this repository.** Sources stay on your machine.
-2. **Export with the committed preset.** Never with hand-typed settings.
+2. **Export settings match the table in this file.** Check with the cube.
 3. **`Apply Transform` off in Blender. `Bake Axis Conversion` on in Unity.**
    Never both.
 4. **Name the asset, not its state.** `Rock_Small_01`, never `Rock_final_v3`.
@@ -25,7 +25,6 @@ Assets/
     Textures/<Domain>/<Name>_<Map>.png   dedicated textures — the exception
     Materials/Palette.mat                the shared material
   Prefabs/<Domain>/<Name>.prefab
-tools/blender/                           the export preset
 ```
 
 `<Domain>` is `Characters`, `Environment` or `Props`. Adding a fourth means
@@ -43,13 +42,12 @@ decision: **a second person modelling.**
 
 ## Exporting from Blender
 
-Use the committed preset. Do not type these settings by hand.
+This table is authoritative. Blender remembers the settings of your last
+export, so you type them once, not before every export.
 
-Install it once — see [`tools/blender/README.md`](../tools/blender/README.md).
-It then shows up in the FBX exporter's **Operator Presets** dropdown.
-
-The preset file is authoritative. The table below is its human-readable
-version, with the reasoning for the settings that are not obvious.
+**No export preset is committed.** ADR-0005 explains why: nothing in this
+repository can install one, check that it is installed, or notice when it has
+drifted. The reference cube below is the check that actually works.
 
 | Section | Setting | Value |
 |---|---|---|
@@ -184,8 +182,7 @@ Assets/Art/Models/Characters/PlayerMushroom@Walk.fbx
 
 Unity picks these up automatically for the rig of the same name.
 
-Turning `Bake Animation` on in the export preset is part of that change, not of
-this one.
+Turning `Bake Animation` on is part of that change, not of this one.
 
 ## The palette
 
@@ -214,20 +211,20 @@ render pipeline decides what a material even is.
 
 ## Verify once, with a reference cube
 
-Before trusting the preset, export a 1×1×1 cube at the origin. Then check in
-Unity:
+Before trusting your settings, export a 1×1×1 cube at the origin. Then check
+in Unity:
 
 - 1 Blender unit imports as 1 Unity unit (1 metre)
 - the forward axis points along Unity's +Z
 - the Inspector shows rotation `(0, 0, 0)` and scale `(1, 1, 1)`
 
-**If a fresh model needs a correction in the Inspector, the preset is wrong.
-Fix the preset, not the asset.** Rotating or rescaling in Unity hides the
+**If a fresh model needs a correction in the Inspector, your export settings
+are wrong. Fix the settings, not the asset.** Rotating or rescaling in Unity hides the
 problem, and it comes back on the next export.
 
 ## Before committing an art change
 
-- [ ] Exported with the committed preset, not ad-hoc settings
+- [ ] Export settings match the table above
 - [ ] `Apply Transform` was off, `Bake Axis Conversion` is on
 - [ ] Inspector shows rotation `(0, 0, 0)` and scale `(1, 1, 1)`
 - [ ] A character got `ModelImporter_RiggedCharacter` applied
