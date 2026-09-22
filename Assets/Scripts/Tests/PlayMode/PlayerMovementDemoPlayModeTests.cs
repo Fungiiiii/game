@@ -13,7 +13,9 @@ namespace Fungiiiii.Tests.PlayMode
     public sealed class PlayerMovementDemoPlayModeTests
     {
         private const string ScenePath = "Assets/Scenes/Prototype/MouvementJoueurScene.unity";
-        private const string DemoRootName = "Player Movement Demo";
+        // The scene-placed bootstrap is the demo's only entry point, and builds the demo
+        // under itself.
+        private const string DemoRootName = "Player Movement Prototype Bootstrap";
         private const string PlayerName = "Player";
 
         private static IEnumerator LoadPrototypeScene()
@@ -51,6 +53,31 @@ namespace Fungiiiii.Tests.PlayMode
                 if (demoRoot != null)
                 {
                     Object.Destroy(demoRoot);
+                }
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator SceneLoadCreatesExactlyOnePlayer()
+        {
+            yield return LoadPrototypeScene();
+
+            var motors = Object.FindObjectsByType<PlayerMotor>(FindObjectsSortMode.None);
+            try
+            {
+                Assert.That(
+                    motors.Length,
+                    Is.EqualTo(1),
+                    "The demo was built more than once: every copy spawns a player reading the same keyboard.");
+            }
+            finally
+            {
+                foreach (var motor in motors)
+                {
+                    if (motor != null)
+                    {
+                        Object.Destroy(motor.transform.root.gameObject);
+                    }
                 }
             }
         }

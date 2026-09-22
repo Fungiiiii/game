@@ -1,17 +1,13 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace Fungiiiii.Runtime.Player
 {
     /// <summary>
-    /// Creates a self-contained primitive-only movement playground at runtime.
-    /// It keeps the prototype scene free of prototype-only serialized objects.
+    /// Builds a primitive-only movement playground at runtime from the bootstrap object
+    /// placed in the prototype scene, which is its only entry point.
     /// </summary>
     internal sealed class PlayerMovementDemoBootstrap : MonoBehaviour
     {
-        private const string DemoRootName = "Player Movement Demo";
-        private const string PrototypeScenePath = "Assets/Scenes/Prototype/MouvementJoueurScene.unity";
-
         private static readonly Vector3 CameraOffset = new(0f, 9f, -9f);
         private static readonly Vector3 PlayerStartPosition = new(0f, 1.2f, 0f);
 
@@ -42,29 +38,6 @@ namespace Fungiiiii.Runtime.Player
 
         private Transform playerTransform;
         private Camera demoCamera;
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        private static void RegisterSceneLoadHandler()
-        {
-            SceneManager.sceneLoaded -= CreateDemoForScene;
-            SceneManager.sceneLoaded += CreateDemoForScene;
-        }
-
-        private static void CreateDemoForScene(Scene scene, LoadSceneMode mode)
-        {
-            if (scene.path != PrototypeScenePath)
-            {
-                return;
-            }
-
-            if (GameObject.Find(DemoRootName) != null)
-            {
-                return;
-            }
-
-            var root = new GameObject(DemoRootName);
-            root.AddComponent<PlayerMovementDemoBootstrap>();
-        }
 
         private void Start()
         {
