@@ -1,15 +1,21 @@
+using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace Fungiiiii.Runtime.Player
 {
     /// <summary>
     /// Builds a primitive-only movement playground at runtime from the bootstrap object
     /// placed in the prototype scene, which is its only entry point.
+    ///
+    /// Players are not built here. Netcode for GameObjects spawns one from the serialized
+    /// player prefab for every client once a session starts: F1 starts a host, F2 joins
+    /// a host running on this machine.
     /// </summary>
     internal sealed class PlayerMovementDemoBootstrap : MonoBehaviour
     {
         private static readonly Vector3 CameraOffset = new(0f, 9f, -9f);
-        private static readonly Vector3 PlayerStartPosition = new(0f, 1.2f, 0f);
 
         /// <summary>
         /// Height of the gap under the lintel. Above the crouched capsule (1.2 m) and
@@ -36,15 +42,49 @@ namespace Fungiiiii.Runtime.Player
             new(6f, 0.75f, -2f)
         };
 
-        private Transform playerTransform;
+        [Tooltip("Networked player spawned for every client that joins the session.")]
+        [SerializeField]
+        private NetworkObject playerPrefab;
+
+        private InputAction startHostAction;
+        private InputAction startClientAction;
+        private Transform localPlayer;
         private Camera demoCamera;
+
+        private void Awake()
+        {
+            // Development shortcuts for this prototype, not player-facing controls.
+            startHostAction = new InputAction("StartHost", InputActionType.Button, "<Keyboard>/f1");
+            startClientAction = new InputAction("StartClient", InputActionType.Button, "<Keyboard>/f2");
+            startHostAction.performed += OnStartHostPerformed;
+            startClientAction.performed += OnStartClientPerformed;
+        }
+
+        private void OnEnable()
+        {
+            startHostAction.Enable();
+            startClientAction.Enable();
+        }
+
+        private void OnDisable()
+        {
+            startHostAction.Disable();
+            startClientAction.Disable();
+        }
+
+        private void OnDestroy()
+        {
+            startHostAction.performed -= OnStartHostPerformed;
+            startClientAction.performed -= OnStartClientPerformed;
+            startHostAction.Dispose();
+            startClientAction.Dispose();
+        }
 
         private void Start()
         {
             var root = transform;
             var groundMaterial = CreateMaterial("Prototype Ground Material", new Color(0.18f, 0.28f, 0.2f));
             var obstacleMaterial = CreateMaterial("Prototype Obstacle Material", new Color(0.35f, 0.3f, 0.26f));
-            var playerMaterial = CreateMaterial("Prototype Player Material", new Color(0.95f, 0.72f, 0.12f));
 
             CreateGround(root, groundMaterial);
 
@@ -55,23 +95,108 @@ namespace Fungiiiii.Runtime.Player
 
             CreateLowPassage(root, obstacleMaterial, CreateMaterial("Prototype Lintel Material", new Color(0.72f, 0.24f, 0.2f)));
 
-            playerTransform = CreatePlayer(root, playerMaterial);
-
             demoCamera = ConfigureCamera();
             ConfigureLight(root);
+            EnsureNetworkManager();
         }
 
         private void LateUpdate()
         {
-            if (playerTransform == null || demoCamera == null)
+            if (demoCamera == null)
             {
                 return;
             }
 
+            if (localPlayer == null)
+            {
+                localPlayer = FindLocalPlayer();
+                if (localPlayer == null)
+                {
+                    return;
+                }
+            }
+
             var cameraTransform = demoCamera.transform;
-            cameraTransform.position = playerTransform.position + CameraOffset;
+            cameraTransform.position = localPlayer.position + CameraOffset;
             cameraTransform.rotation =
-                Quaternion.LookRotation(playerTransform.position + Vector3.up - cameraTransform.position);
+                Quaternion.LookRotation(localPlayer.position + Vector3.up - cameraTransform.position);
+        }
+
+        private void OnStartHostPerformed(InputAction.CallbackContext context)
+        {
+            StartSession(asHost: true);
+        }
+
+        private void OnStartClientPerformed(InputAction.CallbackContext context)
+        {
+            StartSession(asHost: false);
+        }
+
+        private static void StartSession(bool asHost)
+        {
+            var manager = NetworkManager.Singleton;
+            if (manager == null || manager.IsListening)
+            {
+                return;
+            }
+
+            var started = asHost ? manager.StartHost() : manager.StartClient();
+            Debug.Log(asHost
+                ? $"Player movement prototype: host start {(started ? "succeeded" : "failed")}."
+                : $"Player movement prototype: client start {(started ? "succeeded" : "failed")}.");
+        }
+
+        private void EnsureNetworkManager()
+        {
+            // NetworkManager moves itself to DontDestroyOnLoad, so one can survive a reload
+            // of this scene. A second one would fight it for the singleton.
+            if (NetworkManager.Singleton != null)
+            {
+                return;
+            }
+
+            if (playerPrefab == null)
+            {
+                Debug.LogError("PlayerMovementDemoBootstrap has no player prefab assigned; networking is disabled.", this);
+                return;
+            }
+
+            // A freshly added NetworkManager has a null NetworkConfig, which its OnEnable
+            // reads, so the object stays inactive until the configuration is in place.
+            var managerObject = new GameObject("Network Manager");
+            managerObject.SetActive(false);
+
+            var transport = managerObject.AddComponent<UnityTransport>();
+            var manager = managerObject.AddComponent<NetworkManager>();
+            manager.NetworkConfig = new NetworkConfig
+            {
+                NetworkTransport = transport,
+                PlayerPrefab = playerPrefab.gameObject,
+
+                // Every peer already runs this single prototype scene and it holds no
+                // in-scene network objects, so there is nothing for the host to synchronise.
+                EnableSceneManagement = false
+            };
+
+            managerObject.SetActive(true);
+        }
+
+        private static Transform FindLocalPlayer()
+        {
+            var manager = NetworkManager.Singleton;
+            if (manager == null || !manager.IsClient)
+            {
+                return null;
+            }
+
+            var localClient = manager.LocalClient;
+            if (localClient == null)
+            {
+                return null;
+            }
+
+            var playerObject = localClient.PlayerObject;
+            return playerObject != null ? playerObject.transform : null;
         }
 
         private static void CreateGround(Transform parent, Material material)
@@ -139,41 +264,6 @@ namespace Fungiiiii.Runtime.Player
             ApplyMaterial(block, material);
         }
 
-        private static Transform CreatePlayer(Transform parent, Material material)
-        {
-            var playerObject = new GameObject("Player");
-            playerObject.transform.SetParent(parent, false);
-            playerObject.transform.position = PlayerStartPosition;
-
-            // The mesh lives on a child so crouching can squash it without scaling the
-            // CharacterController along with it.
-            var visual = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            visual.name = "Player Visual (Capsule Placeholder)";
-            visual.transform.SetParent(playerObject.transform, false);
-            ApplyMaterial(visual, material);
-
-            // The CharacterController brings its own capsule; the primitive's collider
-            // would fight with it.
-            var visualCollider = visual.GetComponent<Collider>();
-            if (visualCollider != null)
-            {
-                Destroy(visualCollider);
-            }
-
-            var controller = playerObject.AddComponent<CharacterController>();
-            controller.height = 2f;
-            controller.radius = 0.5f;
-            controller.center = Vector3.zero;
-            controller.slopeLimit = 45f;
-            controller.stepOffset = 0.3f;
-
-            var reader = playerObject.AddComponent<PlayerInputReader>();
-            var motor = playerObject.AddComponent<PlayerMotor>();
-            motor.Initialise(reader, visual.transform);
-
-            return playerObject.transform;
-        }
-
         private static Camera ConfigureCamera()
         {
             var demoCamera = Camera.main;
@@ -184,6 +274,9 @@ namespace Fungiiiii.Runtime.Player
                 demoCamera.tag = "MainCamera";
             }
 
+            // Framing used until a session starts and the local player exists to follow.
+            demoCamera.transform.position = CameraOffset;
+            demoCamera.transform.rotation = Quaternion.LookRotation(Vector3.up - CameraOffset);
             demoCamera.fieldOfView = 55f;
             demoCamera.nearClipPlane = 0.1f;
             demoCamera.farClipPlane = 100f;
