@@ -80,6 +80,62 @@ The QA task
 expects three deliverables: the list of validated tasks, the list of tasks
 needing a correction or completion, and QA comments directly in ClickUp.
 
+## Validation log
+
+Dated entries recording what was actually checked and found, per validation
+pass. This is the log referred to by "record the result" under
+[Role](#role) — the ClickUp comments are the record on each task, this is
+the record across a pass.
+
+### 2026-09-22 — Sprint prototypage `[ARCH]` tasks
+
+Scope: the 7 tasks tied to
+[[ARCH] Sprint prototypage — note de design](https://app.clickup.com/t/12487v2acwh),
+plus [PLAYER] Mouvement joueur.
+
+- **Compilation incident (already fixed).** Four PRs from Pol-Mattis (#4, #5,
+  #7, #8) reached `develop` without the project compiling — three analyzer
+  errors in `GenericPatrolDemoBootstrap`, `MushroomCaptureDemo` and
+  `InventoryDemoController`. Fixed inline in PR #9 (`b8f5a82`) and again as
+  its own PR #13 (`fix/unity-null-operators-develop`). Both merged. Verified
+  clean on `develop` HEAD (`d018074`) with a batch-mode recompile — no
+  `error CS`, clean exit.
+- **5 tasks validated Conforms**, technical and manual, each recorded with
+  its own ClickUp comment: inventory (#8), HUD (#6), Champimaison (#7),
+  mushroom AI movement (#4), mushroom capture (#5).
+  - Technical: 68/68 automated tests pass on `develop` (56 EditMode + 12
+    PlayMode), 0 failure, 0 exception in the logs.
+  - Manual: each prototype scene opened and played in the Editor
+    (`6000.3.21f1`) — behaviour matched what its PR described, no new
+    Console errors.
+  - Minor reporting note, not a defect: each of these 5 PRs reported an
+    EditMode/PlayMode count 2/1 tests higher than what's actually in that
+    class today. Likely explanation: two project-wide tests
+    (`ProjectSerializationSettingsTests`, the `GameObject_SurvivesAFrame`
+    PlayMode smoke test) counted against each feature instead of only the
+    tests that feature added. Worth a word with the author so future PRs
+    report only what they add.
+- **[PLAYER] Mouvement joueur (86c9mnqxm) — Incomplete.** The task asks for
+  `NetworkTransform` multiplayer sync; PR #9 explicitly ships local-only
+  movement ("Networking debt" in its Risks section). QA comment posted, and
+  completion subtask
+  [[PLAYER] Ajouter NetworkTransform multijoueur au mouvement du joueur](https://app.clickup.com/t/12487v2b0jr)
+  created, assigned to Benkerri Ilyes.
+- **Prototype poison (12487v29zj5) — not actioned.** Its own design note's
+  validation subtask is still open; PR #10 is correctly left unmerged
+  pending that approval, disclosed on the task by its author. No QA action
+  needed until the note is approved.
+- **Process finding, deferred by QA owner's call this cycle.** Four of
+  Pol-Mattis's five PRs (#4, #5, #7, #8) were merged into `develop` on
+  2026-09-18, 14:41–14:55 UTC — roughly 4h30 after the sprint design note
+  was created, and about 46h **before** its validation subtask closed
+  (2026-09-20 12:36 UTC). The task descriptions said "Validation en
+  attente, ne pas démarrer l'implémentation." This is the process deviation
+  `CLAUDE.md`'s "Feature design note" section asks to flag. Anne-Charlotte's
+  call: check these tasks for bugs regardless (see above — none found) and
+  leave the process question for a separate conversation rather than block
+  on it here.
+
 ## Open points
 
 - ~~The task only asks for QA comments. Confirm with the team whether the
