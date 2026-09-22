@@ -72,8 +72,8 @@ manager closes it.
 | Result | Action |
 |---|---|
 | Conforms | Comment "Conforms" on the ClickUp task recording the validation. The project manager can then close it |
-| Incomplete (task requirements not fully met) | QA comment on the task listing what is missing; optionally a subtask under the task (to confirm, see below) |
-| Discrepancy / bug (doesn't respect the request or the documentation) | QA comment on the task; new ClickUp task linked to the original task and the PR, assigned to the developer (to confirm, see below) |
+| Incomplete (task requirements not fully met) | QA comment on the task listing what is missing, **and a subtask under the task**, assigned to the developer, naming exactly what's missing. A completion subtask is not a new feature: it closes out work already scoped by the parent task, so it needs neither a design note nor a manager validation subtask (`CLAUDE.md`, "Feature design note") |
+| Discrepancy / bug (doesn't respect the request or the documentation) | QA comment on the task; new ClickUp task linked to the original task and the PR, assigned to the developer |
 
 The QA task
 [[QA] Validation des tâches en product reviewing](https://app.clickup.com/t/12487v2aetg)
@@ -82,9 +82,14 @@ needing a correction or completion, and QA comments directly in ClickUp.
 
 ## Open points
 
-- The task only asks for QA comments. Confirm with the team whether the
+- ~~The task only asks for QA comments. Confirm with the team whether the
   subtask (incomplete) and linked task (discrepancy) conventions above are
-  wanted, or whether comments alone are enough.
+  wanted, or whether comments alone are enough.~~ **Resolved 2026-09-22** by
+  Anne-Charlotte (QA owner): subtask for incomplete, linked task for
+  discrepancy, as reflected in the table above. First applied on
+  [[PLAYER] Mouvement joueur](https://app.clickup.com/t/86c9mnqxm) (missing
+  NetworkTransform). This is a working convention, not an architectural
+  decision — no ADR needed.
 - How does the project manager know a task has passed QA? Today, only the
   "Conforms" comment. Confirm that is enough, or whether a tag or status is
   wanted.
