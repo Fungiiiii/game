@@ -31,14 +31,18 @@ verification checklist.
 
 ## Conventions
 
+- **Workflow:** [`docs/workflow.md`](./docs/workflow.md) — ticket, design note,
+  branch, rebase, tests, PR, review. Git commands:
+  [`docs/git-cheatsheet.md`](./docs/git-cheatsheet.md).
 - **Code is English.** Identifiers, comments, tests, log messages, asset names,
-  branches, commits, PRs.
-- **ADRs are French** and live in [`docs/adrs/`](./docs/adrs). Start from
-  [`0000-template.md`](./docs/adrs/0000-template.md).
+  branches, commits. **Team docs are French**: `docs/` and PR descriptions.
+- **One doc per feature** in [`docs/features/`](./docs/features), with its
+  tests. Manual checks: [`docs/playbook-tests.md`](./docs/playbook-tests.md).
+- ADRs are no longer written; [`docs/adrs/`](./docs/adrs) is an archive.
 - Commits follow [Conventional Commits](https://www.conventionalcommits.org/).
 - **No player-facing string is hardcoded.** Everything the player reads goes
   through the localization system.
-- Never work directly on `main`.
+- Never work directly on `main` or `develop`. PRs target `develop`.
 - Linting catches bugs only — see [`docs/linting.md`](./docs/linting.md).
 - 3D assets ship as exported `.fbx`. `.blend` sources never enter this
   repository — see [`docs/art-pipeline.md`](./docs/art-pipeline.md).

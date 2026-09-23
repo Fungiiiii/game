@@ -46,7 +46,7 @@ Before modifying a scene, determine: scene ownership, additive loading, scene de
 
 Do not place a global system independently in several scenes where it could produce duplicates. Do not introduce `DontDestroyOnLoad` casually — persistent systems need documented ownership and lifecycle.
 
-**Scene transitions must be explicit**: loading state, unloading state, persistent objects, async loading, player state, save state, transition UI, failure handling. Never assume a specific scene is active unless the architecture guarantees it. Large scene-management changes require an ADR (see the `adr` skill).
+**Scene transitions must be explicit**: loading state, unloading state, persistent objects, async loading, player state, save state, transition UI, failure handling. Never assume a specific scene is active unless the architecture guarantees it. Large scene-management changes are validated in the design note and recorded in the *Décisions* section of the feature doc.
 
 ## Assets
 

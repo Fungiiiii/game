@@ -78,28 +78,30 @@ jobs:
           done
           exit $failed
 
-  adr-location:
-    name: ADRs live in docs/adrs
+  feature-doc:
+    name: Feature doc present and linked
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Check ADR naming
+      - name: Check docs/features
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_REF: ${{ github.base_ref }}
+        run: ./scripts/check-feature-doc.sh "$HEAD_REF" "origin/$BASE_REF"
+
+  main-from-develop:
+    name: PR to main comes from develop
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check source branch
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          failed=0
-          for f in docs/adrs/*.md; do
-            [ -e "$f" ] || continue
-            base=$(basename "$f")
-            if ! [[ "$base" =~ ^[0-9]{4}-[a-z0-9-]+\.md$ ]]; then
-              echo "Bad ADR filename: $f (expected NNNN-titre-en-kebab-case.md)" >&2
-              failed=1
-            fi
-          done
-          dupes=$(ls docs/adrs/ 2>/dev/null | grep -oE '^[0-9]{4}' | sort | uniq -d)
-          if [ -n "$dupes" ]; then
-            echo "Duplicate ADR numbers: $dupes" >&2
-            failed=1
+          if [ "$BASE_REF" = "main" ] && [ "$HEAD_REF" != "develop" ]; then
+            echo "Only develop is merged into main (docs/workflow.md). Target develop instead." >&2
+            exit 1
           fi
-          exit $failed

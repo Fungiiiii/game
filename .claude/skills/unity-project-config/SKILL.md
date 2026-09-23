@@ -11,7 +11,7 @@ Everything here has repo-wide blast radius. Inspect the diff before committing, 
 
 `ProjectSettings/ProjectVersion.txt` is authoritative. Never upgrade Unity as part of an unrelated task, and never without explicit authorization.
 
-A Unity upgrade requires its own branch and PR, plus validation of packages, scenes, prefabs and builds, a full test run, documentation, and an ADR when architecturally impactful.
+A Unity upgrade requires its own branch and PR, plus validation of packages, scenes, prefabs and builds, a full test run, and documentation — including the *Décisions* section of the feature doc when architecturally impactful.
 
 ## ProjectSettings
 
@@ -25,7 +25,7 @@ Never create or rename Unity layers and tags casually — they are referenced by
 
 ## Packages
 
-Before adding a package: verify no equivalent already exists, verify Unity-version compatibility, evaluate maintenance and platform support, evaluate the license, and justify the need. Significant packages require an ADR.
+Before adding a package: verify no equivalent already exists, verify Unity-version compatibility, evaluate maintenance and platform support, evaluate the license, and justify the need. Significant packages are a decision: validated in the design note, recorded in the *Décisions* section of the feature doc.
 
 Never upgrade unrelated packages as part of another feature. Changes to `Packages/manifest.json` and `Packages/packages-lock.json` must be intentional and reviewed.
 
@@ -43,10 +43,10 @@ Editor-only code belongs in an `Editor/` folder or a dedicated Editor `.asmdef`.
 
 Use the loading system already established by the project. Do not introduce `Resources.Load` as a general architecture unless explicitly approved. If Addressables is adopted, continue with it per project conventions.
 
-Do not mix loading systems without justification. Significant asset-loading decisions require an ADR.
+Do not mix loading systems without justification. Significant asset-loading decisions are validated in the design note and recorded in the *Décisions* section of the feature doc.
 
 ## Rendering
 
 Do not casually modify URP/HDRP settings, render pipeline assets, shaders, post-processing, lighting or quality settings — they affect the entire project across every scene and platform.
 
-Such changes require explicit review of the affected platforms and scenes. Major rendering architecture decisions require an ADR.
+Such changes require explicit review of the affected platforms and scenes. Major rendering architecture decisions are validated in the design note and recorded in the *Décisions* section of the feature doc.
