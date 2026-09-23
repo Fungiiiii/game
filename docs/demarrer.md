@@ -8,6 +8,8 @@ entier ; ensuite, [la cheat sheet git](./git-cheatsheet.md) suffit au quotidien.
 1. **Unity Hub**, puis l'éditeur **6000.3.21f1** — exactement cette version
    (elle est écrite dans `ProjectSettings/ProjectVersion.txt`).
 2. **Git** et **Git LFS** (les modèles 3D et les textures passent par LFS).
+   Et **jq** (`winget install jqlang.jq`) : les garde-fous de Claude en ont
+   besoin, sans lui Claude refuse toutes les commandes.
 3. Cloner le repo, puis une seule fois :
 
    ```bash
