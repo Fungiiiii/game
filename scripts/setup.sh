@@ -25,6 +25,15 @@ else
   echo "               Install git-lfs, then re-run this script."
 fi
 
+# --- jq (Claude Code hooks) -------------------------------------------------
+# .claude/hooks/ read their input with jq and refuse every command without it.
+if command -v jq >/dev/null 2>&1; then
+  echo "  jq           $(jq --version)"
+else
+  echo "  jq           NOT INSTALLED — Claude Code's guard hooks will block every command."
+  echo "               Windows: winget install jqlang.jq — then restart Claude Code."
+fi
+
 # --- Unity scene/prefab merge tool -----------------------------------------
 # .gitattributes routes Unity YAML through UnityYAMLMerge. Without the tool
 # configured here, those merges silently fall back to git's line-based merge,
