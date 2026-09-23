@@ -1,3 +1,4 @@
+using Fungiiiii.Survival;
 using UnityEngine;
 
 namespace Fungiiiii.UI
