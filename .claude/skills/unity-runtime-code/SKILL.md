@@ -28,7 +28,7 @@ private void OnEnable()  { service.OnSomething += HandleSomething; }
 private void OnDisable() { service.OnSomething -= HandleSomething; }
 ```
 
-Never assume lifecycle order between unrelated objects. Do not rely on Script Execution Order unless unavoidable — document it, and consider an ADR if significant.
+Never assume lifecycle order between unrelated objects. Do not rely on Script Execution Order unless unavoidable — document it in the *Décisions* section of the feature doc.
 
 ## Update loops
 
@@ -42,7 +42,7 @@ Physics work that depends on the physics timestep goes in `FixedUpdate`. Prefer 
 
 Changes to collision detection, Rigidbody settings, layers, physics materials or fixed timestep are gameplay-impacting.
 
-Before implementing or modifying movement, be explicit about: input source, movement ownership, physics vs non-physics, authoritative position, rotation behavior, collision behavior, animation coupling, multiplayer implications. Significant movement architecture requires an ADR. Do not duplicate movement logic across components without a documented reason.
+Before implementing or modifying movement, be explicit about: input source, movement ownership, physics vs non-physics, authoritative position, rotation behavior, collision behavior, animation coupling, multiplayer implications. Significant movement architecture is validated in the design note and recorded in the *Décisions* section of the feature doc. Do not duplicate movement logic across components without a documented reason.
 
 ## Input
 
@@ -75,7 +75,7 @@ Use `TryGetComponent` when absence is expected. Use `[RequireComponent(typeof(Ri
 
 ## Managers, singletons, static state
 
-Do not create a new `Manager` or `public static Something Instance` by default. Singletons bring hidden dependencies, lifecycle issues, scene coupling, testing pain and initialization-order problems. A global service requires architectural justification, documented ownership and lifecycle, and an ADR if significant.
+Do not create a new `Manager` or `public static Something Instance` by default. Singletons bring hidden dependencies, lifecycle issues, scene coupling, testing pain and initialization-order problems. A global service requires architectural justification, documented ownership and lifecycle, recorded in the *Décisions* section of the feature doc.
 
 Avoid mutable static state for gameplay — it interacts badly with Domain Reload settings, Play Mode options, tests and scene reloads. Never assume entering Play Mode resets static fields.
 

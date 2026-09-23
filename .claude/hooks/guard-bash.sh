@@ -13,17 +13,26 @@ deny() { echo "BLOCKED by .claude/hooks/guard-bash.sh — $1" >&2; exit 2; }
 # where rev-parse --abbrev-ref HEAD returns the literal "HEAD".
 branch=$(git -C "${CLAUDE_PROJECT_DIR:-.}" symbolic-ref --short -q HEAD 2>/dev/null || echo "")
 
-# Never work directly on main.
-if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
+# Never work directly on main or develop.
+if [ "$branch" = "main" ] || [ "$branch" = "master" ] || [ "$branch" = "develop" ]; then
   if grep -qE '(^|[;&|[:space:]])git[[:space:]]+(commit|push|merge|rebase)([[:space:]]|$)' <<<"$command"; then
-    deny "CLAUDE.md forbids working directly on '$branch'. Create a branch first:
-  git checkout -b <feat|fix|refactor|docs|test|chore>/<ticket>-<description>"
+    deny "CLAUDE.md forbids working directly on '$branch'. Create a branch from develop first:
+  git switch -c <feat|fix|refactor|docs|test|chore>/<ticket>-<description> origin/develop"
   fi
 fi
 
-# Destructive git operations need explicit human authorization.
-if grep -qE '(^|[;&|[:space:]])git[[:space:]]+push\b.*--force' <<<"$command"; then
-  deny "force push requires explicit human authorization (CLAUDE.md). Ask the developer."
+# Force push. After 'git rebase origin/develop', a feature branch is pushed
+# with --force-with-lease (docs/workflow.md). Anything else needs explicit
+# human authorization.
+if grep -qE '(^|[;&|[:space:]])git[[:space:]]+push\b' <<<"$command"; then
+  if grep -qE '[[:space:]](--force([[:space:]]|=|$)|-[a-zA-Z]*f[a-zA-Z]*([[:space:]]|$)|\+[^[:space:]]+)' <<<"$command"; then
+    deny "only 'git push --force-with-lease' on your own feature branch is allowed (CLAUDE.md). Plain --force, -f and +refspec need explicit human authorization."
+  fi
+  if grep -qE -- '--force-with-lease' <<<"$command"; then
+    if grep -qE '(^|[[:space:]:])(main|master|develop)([[:space:]]|$)' <<<"$command"; then
+      deny "force pushing to main or develop is never allowed."
+    fi
+  fi
 fi
 if grep -qE '(^|[;&|[:space:]])git[[:space:]]+reset\b.*--hard' <<<"$command"; then
   deny "destructive reset requires explicit human authorization (CLAUDE.md). Prefer 'git stash' or 'git restore'."

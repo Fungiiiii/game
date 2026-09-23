@@ -21,11 +21,11 @@ Read the complete diff — `git diff` and `git diff --staged`, including `.meta`
 - Are there missing references or missing scripts?
 - Are the tests sufficient? Does a bug fix have a regression test?
 - Are performance and allocation implications acceptable? Does anything allocate every frame?
-- Is documentation synchronized?
-- Is an ADR required? If so, is it in `docs/adrs/`, in French, with the next free number?
+- Is documentation synchronized? On a `feat/` branch, does `docs/features/<id>-<description>.md` list every behaviour, the decisions taken, and every test — automated and manual?
+- Does the feature doc cite, under *Docs précédents*, every older doc this branch changes — and does each of them link back under *Modifié par*? Run `scripts/check-feature-doc.sh <branch> origin/develop`.
 - Did I add an unnecessary package or ProjectSettings change?
 - Does any player-facing string reach the screen without the localization system?
-- Is everything except `docs/adrs/` written in English — identifiers, comments, test names, log messages, asset names?
+- Is the code written in English — identifiers, comments, test names, log messages, asset names? Are `docs/` and the PR description in French?
 - Is there any unrelated code in the diff?
 
 Fix what you find before going further.
@@ -40,16 +40,20 @@ Fix what you find before going further.
 - Prefab references valid, scenes valid
 - Serialization and `.meta` changes reviewed
 - Documentation updated
-- ADR created or updated in `docs/adrs/` when needed, and superseded ADRs relinked both ways
+- Feature doc written (`feat/`, or `fix/` changing documented behaviour), older docs linked both ways
+- Branch rebased on `origin/develop`, and the tests above run **after** the rebase
+- Manual tests of the feature doc and `docs/playbook-tests.md` replayed by the developer
 - No unrelated modifications
-- PR ready for human review
+- PR targets `develop` and is ready for a reviewer, who tests it in Unity before approving
 
 **If something could not be validated, say what and why.** Never claim a check ran when it did not.
 
 ## 3. Pull request
 
-Every change goes through a PR. No direct pushes to protected branches. At least one human reviewer. Claude never approves its own PR, and never credits an AI as author.
+Every change goes through a PR to `develop` — only Ilyes opens PRs from `develop` to `main`. No direct pushes to `develop` or `main`. At least one approval from another developer, who tests the branch in Unity; the approving reviewer merges. Claude never approves or merges its own PR, and never credits an AI as author.
+
+The description is written **in French**.
 
 `.github/pull_request_template.md` is inserted automatically by GitHub — fill it in rather than rewriting it:
 
-**Summary** (what changed) · **Why** · **Implementation** (important technical details) · **Unity impact** (scenes, prefabs, ScriptableObjects, ProjectSettings, packages, builds) · **Testing** (EditMode, PlayMode, manual — and what was not run) · **Documentation** · **ADR** (relative link to `docs/adrs/`, or `ADR not required — <reason>`) · **Risks** (potential regressions) · **Checklist**
+**Résumé** · **Ticket** (ClickUp task and closed validation subtask) · **Doc de la feature** · **Implémentation** · **Impact Unity** (scenes, prefabs, ScriptableObjects, ProjectSettings, packages) · **Tests** (automated, manual, playbook — and what was not run) · **Risques** · **Checklist**

@@ -1,55 +1,55 @@
-## Summary
+## Résumé
 
-<!-- What changed? -->
+<!-- Ce qui change, en deux ou trois phrases. -->
 
-## Why
+## Ticket
 
-<!-- Why is it required? Link the ticket. -->
+- ClickUp :
+- Note de design validée (sous-tâche fermée) :
 
-## Implementation
+## Doc de la feature
 
-<!-- Important technical details. -->
+<!-- Lien vers docs/features/<id>-<description>.md.
+     Fix/refactor/chore sans doc : dire pourquoi, et citer la doc d'origine s'il y en a une. -->
 
-## Unity impact
+## Implémentation
 
-<!-- Affected scenes, prefabs, ScriptableObjects, ProjectSettings, packages, builds. Write "none" if none. -->
+<!-- Les détails techniques utiles au reviewer. -->
 
-## Testing
+## Impact Unity
 
-- EditMode:
-- PlayMode:
-- Manual validation:
-- **Not verified (and why):**
+<!-- Scènes, prefabs, ScriptableObjects, ProjectSettings, packages touchés. « Aucun » sinon. -->
 
-## Documentation
+## Tests
 
-<!-- Atlassian pages created/updated, with links. -->
+<!-- Lancés APRÈS `git rebase origin/develop`. -->
 
-## ADR
+- Test Runner EditMode :
+- Test Runner PlayMode :
+- Playbook (tronc commun) :
+- Tests manuels de la doc :
+- **Non vérifié (et pourquoi) :**
 
-<!-- Relative link into docs/adrs/, or: ADR not required — <reason> -->
+## Risques
 
-## Risks
-
-<!-- Potential regressions. -->
+<!-- Régressions possibles, ce que le reviewer doit regarder de près. -->
 
 ## Checklist
 
-- [ ] Scope limited to the requested change
-- [ ] Unity project compiles
-- [ ] Unity Console has no new errors
-- [ ] EditMode tests pass
-- [ ] PlayMode tests pass where applicable
-- [ ] Manual gameplay validation performed where applicable
-- [ ] No broken prefab references, no missing scripts
-- [ ] Scene/prefab diffs reviewed
-- [ ] `.meta` changes reviewed
-- [ ] `ProjectSettings` changes reviewed
-- [ ] Package changes reviewed
-- [ ] Documentation updated
-- [ ] ADR created/updated in `docs/adrs/` when required
-- [ ] Everything outside `docs/adrs/` is in English
-- [ ] No hardcoded player-facing text
-- [ ] No secrets committed
-- [ ] No unrelated changes
-- [ ] Human reviewer assigned
+**Dev**
+
+- [ ] Branche rebasée sur `origin/develop`
+- [ ] Le projet compile, Console sans nouvelle erreur
+- [ ] EditMode et PlayMode verts
+- [ ] Playbook + tests manuels de la doc rejoués, colonne « OK » cochée dans la doc
+- [ ] Doc de la feature à jour, anciennes docs lues et liées dans les deux sens
+- [ ] Diffs de scènes, prefabs, `.meta`, `ProjectSettings` et packages relus
+- [ ] Code en anglais, aucun texte joueur en dur
+- [ ] Aucun secret, aucune modif hors sujet
+- [ ] Reviewer assigné
+
+**Reviewer**
+
+- [ ] Branche récupérée et lancée dans Unity
+- [ ] Test Runner vert chez moi
+- [ ] Playbook + tests manuels de la doc rejoués

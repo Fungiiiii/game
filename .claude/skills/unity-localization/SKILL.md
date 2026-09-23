@@ -17,9 +17,9 @@ The Unity Localization package (`com.unity.localization`) is **not currently ins
 grep -n 'com.unity.localization' Packages/manifest.json
 ```
 
-**Adopting it requires an ADR**, for a reason that is easy to miss: the Localization package is built on top of **Addressables** and stores localized assets as AssetBundles. Adding localization therefore also adopts Addressables as the asset-loading architecture — which `unity-project-config` already flags as an ADR-level decision. Decide both in one ADR, deliberately, rather than acquiring Addressables as a side effect.
+**Adopting it is a decision to validate through a design note**, for a reason that is easy to miss: the Localization package is built on top of **Addressables** and stores localized assets as AssetBundles. Adding localization therefore also adopts Addressables as the asset-loading architecture — which `unity-project-config` already flags as an architecture decision. Decide both together, deliberately, in one validated note recorded in the *Décisions* section of the feature doc, rather than acquiring Addressables as a side effect.
 
-Until that ADR is accepted, do not hand-roll a second localization mechanism to "get started". Raise the decision instead.
+Until that decision is validated, do not hand-roll a second localization mechanism to "get started". Raise the decision instead.
 
 ## What is localized, what is not
 
