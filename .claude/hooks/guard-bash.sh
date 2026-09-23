@@ -4,6 +4,19 @@
 # Exit 2 = block the call and show stderr to Claude.
 set -uo pipefail
 
+# Fail closed: without jq this hook cannot read the tool input, and an empty
+# input would otherwise be waved through. On Windows, winget puts jq in its
+# Links folder, which a process started before the install does not have on
+# PATH yet — look there before giving up.
+if ! command -v jq >/dev/null 2>&1 && [ -n "${LOCALAPPDATA:-}" ]; then
+  PATH="$PATH:$(cygpath -u "$LOCALAPPDATA" 2>/dev/null || echo "$LOCALAPPDATA")/Microsoft/WinGet/Links"
+fi
+if ! command -v jq >/dev/null 2>&1; then
+  echo "BLOCKED by $(basename "$0") — jq is not installed, so this guard cannot read the command.
+Install it (Windows: winget install jqlang.jq · macOS: brew install jq · Debian/Ubuntu: apt install jq), then restart Claude Code." >&2
+  exit 2
+fi
+
 command=$(jq -r '.tool_input.command // ""')
 [ -z "$command" ] && exit 0
 
