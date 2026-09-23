@@ -3,7 +3,7 @@
 - **Ticket ClickUp :** [12487v29zj5 — Prototype poison](https://app.clickup.com/t/12487v29zj5)
 - **Note de design :** [révision du 23/09/2026 dans le ticket parent](https://app.clickup.com/t/12487v29zj5) ; [validation](https://app.clickup.com/t/12487v2bcf8) au statut « validé sprint », mais non fermée au moment de l'implémentation
 - **Branche :** `feat/12487v29zj5-poison-test-bench`
-- **Auteur :** Quentin / Codex
+- **Auteur :** Quentin Legros
 - **Statut :** En cours — contrôle visuel dans l'éditeur restant
 
 ## Docs précédents
@@ -44,19 +44,19 @@ Cette scène est un **outil de développeur**, non une interface joueur de produ
 
 | Test | Mode | Couvre | Résultat |
 |---|---|---|---|
-| `PoisonTestBenchTests.ShortcutDispatcherAppliesRemovesPausesAndResets` | PlayMode | raccourcis, guide, mort et reset | À exécuter |
-| `PoisonTestBenchTests.ButtonsDriveAuthoritativeVitalsAndDiagnostics` | PlayMode | boutons, seuils, pause, antidote, HUD | À exécuter |
-| `PoisonTestBenchTests.DeathOffersRestartAndGuidePreservesPauseState` | PlayMode | mort, reprise, restauration de la pause | À exécuter |
-| `PoisonTestBenchTests.PoisonSceneBootstrapsTestBenchAndPlayerHud` | PlayMode | chargement de la scène et HUD partagé | À exécuter |
+| `PoisonTestBenchTests.ShortcutDispatcherAppliesRemovesPausesAndResets` | PlayMode | raccourcis, guide, mort et reset | ✅ |
+| `PoisonTestBenchTests.ButtonsDriveAuthoritativeVitalsAndDiagnostics` | PlayMode | boutons, seuils, pause, antidote, HUD | ✅ |
+| `PoisonTestBenchTests.DeathOffersRestartAndGuidePreservesPauseState` | PlayMode | mort, reprise, restauration de la pause | ✅ |
+| `PoisonTestBenchTests.PoisonSceneBootstrapsTestBenchAndPlayerHud` | PlayMode | chargement de la scène et HUD partagé | ✅ |
 
 ### Manuels (dans Unity)
 
 | # | Étapes | Résultat attendu | OK |
 |---|---|---|---|
 | 1 | Ouvrir `Assets/Scenes/Prototype/PoisonScene.unity`, Play, cliquer dans Game View. | Banc visible, diagnostics lisibles, HUD joueur en haut à gauche ; aucune erreur rouge dans la Console. | ☐ |
-| 2 | Cliquer 49 %, attendre une seconde ; puis 50 %, attendre une seconde. | À 49 % la santé reste stable ; à 50 % elle diminue et la jauge poison reste affichée. | ☐ |
-| 3 | Cliquer 100 %, observer les dégâts, puis « Clear poison ». | Dégâts rapides à 100 % ; l'antidote arrête les dégâts, masque la jauge et ne soigne pas. | ☐ |
-| 4 | Activer Pause, attendre, ouvrir/fermer le guide, reprendre. | Santé figée en pause ; le guide suspend temporairement et restaure correctement la pause précédente. | ☐ |
+| 2 | Cliquer 49 %, attendre une seconde ; puis 50 %, attendre une seconde. | À 49 % la santé reste stable ; à 50 % elle diminue et la jauge poison reste affichée. | ✅ |
+| 3 | Cliquer 100 %, observer les dégâts, puis « Clear poison ». | Dégâts rapides à 100 % ; l'antidote arrête les dégâts, masque la jauge et ne soigne pas. | ✅ |
+| 4 | Activer Pause, attendre, ouvrir/fermer le guide, reprendre. | Santé figée en pause ; le guide suspend temporairement et restaure correctement la pause précédente. | ✅ |
 | 5 | Utiliser P/O/R/Espace après avoir cliqué dans Game View. | Application, retrait, remise à zéro et pause conformes aux boutons. | ☐ |
 | 6 | Mettre 100 %, laisser mourir, cliquer sur le redémarrage. | Écran de mort visible ; le redémarrage restaure 100 PV, zéro poison et masque la jauge. | ☐ |
 
