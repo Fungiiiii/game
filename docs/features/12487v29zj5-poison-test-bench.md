@@ -3,8 +3,7 @@
 - **Ticket ClickUp :** [12487v29zj5 — Prototype poison](https://app.clickup.com/t/12487v29zj5)
 - **Note de design :** [révision du 23/09/2026 dans le ticket parent](https://app.clickup.com/t/12487v29zj5) ; [validation](https://app.clickup.com/t/12487v2bcf8) au statut « validé sprint », mais non fermée au moment de l'implémentation
 - **Branche :** `feat/12487v29zj5-poison-test-bench`
-- **Auteur :** Quentin Legros
-- **Statut :** En cours — contrôle visuel dans l'éditeur restant
+- **Statut :** En revue — scène et contrôles visuels vérifiés, vérifications manuelles restantes ci-dessous
 
 ## Docs précédents
 
@@ -62,6 +61,6 @@ Cette scène est un **outil de développeur**, non une interface joueur de produ
 
 ## Limitations connues
 
-La vérification visuelle et le clavier physique ne sont pas couverts par les tests headless ; ils restent requis avant fusion. La scène est un outil de prototype et ne doit pas être ajoutée à l'interface joueur de production.
+Les seuils, l'antidote, la pause et le guide ont été observés dans la Game View ; le fonctionnement des boutons a été confirmé manuellement. La Console, les raccourcis au clavier physique et le redémarrage après mort restent à contrôler avant fusion. La scène est un outil de prototype et ne doit pas être ajoutée à l'interface joueur de production.
 
 ## Modifié par
