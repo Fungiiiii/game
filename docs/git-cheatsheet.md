@@ -75,6 +75,9 @@ git rebase --abort
 Vers **`develop`**. Remplir le template : lien ClickUp, lien de la doc
 `docs/features/…`, résultats des tests, ce qui n'a pas été vérifié.
 
+Les labels se posent tout seuls. Seul `bloqué` se met à la main. Pas encore
+prêt ? Ouvrir la PR en **Draft**.
+
 ## 5. Reviewer : tester la PR
 
 ```bash

@@ -124,10 +124,29 @@ Règles :
 - si deux devs travaillent sur la même branche : `git merge origin/develop` au
   lieu de rebase, pour ne jamais réécrire le travail de l'autre.
 
+## Labels
+
+Les labels trient les PR. Presque tous se posent tout seuls
+(`.github/workflows/labels.yml`) ; la liste se gère dans GitHub, onglet *Labels*.
+
+| Famille | Labels | Posé par |
+|---|---|---|
+| Type | `feat` `fix` `art` `docs` `refactor` `test` `chore` `ci` `net` `perf` `build` | le workflow, d'après le préfixe du titre de la PR |
+| Zone à risque | `unity: scène` · `unity: prefab` · `unity: config` · `process` | le workflow, d'après les fichiers modifiés |
+| Statut | `PR empilée` | le workflow, quand la PR ne vise ni `develop` ni `main` |
+| Statut | `bloqué` | **à la main**, quand la PR attend autre chose |
+
+Le reviewer regarde les labels de zone en premier : une scène, un prefab ou
+une config Unity modifiés demandent un diff relu de près.
+
+Travail en cours : ouvrir la PR en **brouillon** (*Draft*) plutôt qu'un label.
+GitHub empêche de merger un brouillon.
+
 ## Réglages GitHub (avec GitHub Education)
 
 À activer par un admin une fois l'organisation passée sur le plan Team :
 
+- [x] **Labels** : créés, labels par défaut supprimés. Renommer un label de type ou de zone demande aussi de modifier `labels.yml` ou `labeler.yml`
 - [ ] **Branche par défaut** : `develop` (les nouvelles PR la visent d'office)
 - [ ] **Automatically delete head branches**
 - [ ] **Merge button** : merge commits uniquement (décocher squash et rebase)
