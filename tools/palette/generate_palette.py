@@ -44,6 +44,10 @@ PALETTE = {
     (4, 1): ("#827A7E", "Rock base"),
     (4, 2): ("#605A5E", "Rock shadow"),
     (4, 3): ("#413D3F", "Rock dark"),
+
+    # Sponge — the value gap is deliberate: it is what makes the holes read at distance
+    (5, 0): ("#9CC3DA", "Sponge"),
+    (5, 1): ("#35506B", "Sponge holes"),
 }
 
 # Rock variants — replace the four hex values on row 4 with one of these ramps:
