@@ -209,11 +209,11 @@ single `.png`. Adding a colour in free space is safe. Anything else is not.
 | Image | 128 × 128 px |
 | Grid | 8 × 8 swatches |
 | One swatch | 16 × 16 px |
-| Used | 19 swatches |
-| Free | 45 swatches, drawn as a grey checker |
+| Used | 21 swatches |
+| Free | 43 swatches, drawn as a grey checker |
 
-Rows 0–4 are taken: body, face, mushroom and bulb, vegetation and wood, rock.
-Everything below row 4 is free space to append into.
+Rows 0–5 are taken: body, face, mushroom and bulb, vegetation and wood, rock,
+sponge. Everything below row 5 is free space to append into.
 
 ### Generating it
 
