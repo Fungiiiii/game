@@ -127,7 +127,7 @@ Règles :
 ## Labels
 
 Les labels trient les PR. Presque tous se posent tout seuls
-(`.github/workflows/labels.yml`) ; la liste est dans `scripts/setup-labels.sh`.
+(`.github/workflows/labels.yml`) ; la liste se gère dans GitHub, onglet *Labels*.
 
 | Famille | Labels | Posé par |
 |---|---|---|
@@ -146,7 +146,7 @@ GitHub empêche de merger un brouillon.
 
 À activer par un admin une fois l'organisation passée sur le plan Team :
 
-- [x] **Labels** : créés par `scripts/setup-labels.sh` (déjà lancé). Pour changer la liste : modifier le script dans une PR, puis le relancer **sans** `--prune`
+- [x] **Labels** : créés, labels par défaut supprimés. Renommer un label de type ou de zone demande aussi de modifier `labels.yml` ou `labeler.yml`
 - [ ] **Branche par défaut** : `develop` (les nouvelles PR la visent d'office)
 - [ ] **Automatically delete head branches**
 - [ ] **Merge button** : merge commits uniquement (décocher squash et rebase)

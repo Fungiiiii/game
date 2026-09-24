@@ -1,5 +1,5 @@
 # Area labels, applied by .github/workflows/labels.yml from the files a pull
-# request changes. The labels themselves are created by scripts/setup-labels.sh.
+# request changes. The labels themselves are managed in GitHub (Issues > Labels).
 
 "unity: scène":
   - changed-files:
