@@ -1,0 +1,65 @@
+# Pull request labels — see docs/workflow.md, section "Labels".
+#
+# Not a gate: it only sorts pull requests. Kept apart from conventions.yml
+# because it is the only workflow that needs write access.
+#
+# pull_request, not pull_request_target: the repository is private and takes
+# no forks, so the token of a same-repository PR can already write labels,
+# without running a privileged workflow.
+name: Labels
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  area:
+    name: Area labels from changed files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/labeler@v5
+        with:
+          sync-labels: true
+
+  type:
+    name: Type label from the title
+    # The labeler rewrites the whole label set; running after it keeps the
+    # two jobs from overwriting each other.
+    needs: area
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply type and stacked labels
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          TITLE: ${{ github.event.pull_request.title }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          # Same types as scripts/check-commit-message.sh.
+          types='feat|fix|refactor|test|docs|chore|perf|build|ci|art|net'
+          type=$(grep -oE "^($types)(\([a-z0-9._-]+\))?!?: " <<<"$TITLE" | grep -oE "^($types)" || true)
+
+          current=$(gh api "repos/$REPO/issues/$PR/labels" --jq '.[].name')
+          has() { grep -qxF "$1" <<<"$current"; }
+          add() { has "$1" || gh api -X POST "repos/$REPO/issues/$PR/labels" -f "labels[]=$1" >/dev/null; }
+          remove() {
+            has "$1" || return 0
+            gh api -X DELETE "repos/$REPO/issues/$PR/labels/$(jq -rn --arg n "$1" '$n|@uri')" >/dev/null
+          }
+
+          for t in ${types//|/ }; do
+            if [ "$t" = "$type" ]; then add "$t"; else remove "$t"; fi
+          done
+          [ -z "$type" ] && echo "No Conventional Commits type in the title — no type label. See the Conventional Commits job."
+
+          if [ "$BASE_REF" = "develop" ] || [ "$BASE_REF" = "main" ]; then
+            remove "PR empilée"
+          else
+            add "PR empilée"
+          fi

@@ -189,4 +189,5 @@ Enforced mechanically, not by prose — do not re-implement these by hand:
 - `.githooks/pre-commit` + `.githooks/commit-msg` — local fast feedback; both delegate to `scripts/`
 - `scripts/check-feature-doc.sh` — a `feat/` branch ships its feature doc, and modified docs are linked both ways
 - `scripts/check-localization.sh` — flags hardcoded player-facing text once the Localization package is adopted
+- `.github/workflows/labels.yml` + `.github/labeler.yml` — label pull requests by type (from the title) and risk area (from the changed files); the label set lives in `scripts/setup-labels.sh`
 - `.github/workflows/conventions.yml` — runs the same `scripts/` checks in CI, where they cannot be skipped with `--no-verify`

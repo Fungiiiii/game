@@ -1,0 +1,26 @@
+# Area labels, applied by .github/workflows/labels.yml from the files a pull
+# request changes. The labels themselves are created by scripts/setup-labels.sh.
+
+"unity: scène":
+  - changed-files:
+      - any-glob-to-any-file: "**/*.unity"
+
+"unity: prefab":
+  - changed-files:
+      - any-glob-to-any-file: "**/*.prefab"
+
+"unity: config":
+  - changed-files:
+      - any-glob-to-any-file:
+          - "ProjectSettings/**"
+          - "Packages/**"
+
+process:
+  - changed-files:
+      - any-glob-to-any-file:
+          - "CLAUDE.md"
+          - "AGENTS.md"
+          - ".claude/**"
+          - ".github/**"
+          - ".githooks/**"
+          - "scripts/**"
