@@ -6,6 +6,9 @@
 #   scripts/setup-labels.sh            # create / update the labels below
 #   scripts/setup-labels.sh --prune    # also delete every label not listed
 #
+# --prune was for the one-off removal of GitHub's default labels. Do not use it
+# routinely: it also deletes labels created by hand and strips them from PRs.
+#
 # Needs the GitHub CLI (gh), authenticated with write access to the repository.
 set -uo pipefail
 

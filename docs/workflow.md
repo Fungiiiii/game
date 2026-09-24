@@ -146,7 +146,7 @@ GitHub empêche de merger un brouillon.
 
 À activer par un admin une fois l'organisation passée sur le plan Team :
 
-- [x] **Labels** : `scripts/setup-labels.sh --prune` (déjà lancé ; à relancer si la liste change)
+- [x] **Labels** : créés par `scripts/setup-labels.sh` (déjà lancé). Pour changer la liste : modifier le script dans une PR, puis le relancer **sans** `--prune`
 - [ ] **Branche par défaut** : `develop` (les nouvelles PR la visent d'office)
 - [ ] **Automatically delete head branches**
 - [ ] **Merge button** : merge commits uniquement (décocher squash et rebase)
