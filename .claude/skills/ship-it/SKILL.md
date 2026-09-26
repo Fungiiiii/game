@@ -33,8 +33,8 @@ Fix what you find before going further.
 ## 2. Definition of Done
 
 - Implementation complete
-- Unity project compiles — **not verifiable locally, Unity is not installed here**; state this explicitly
-- No new Unity Console errors — same caveat
+- Unity project compiles — verified with a headless run on a machine that has the Editor (see `CLAUDE.md`, "Honesty about verification"), reading the log and the results XML; where no Editor exists, state that it was not verified
+- No new Unity Console errors — a headless run does not show the Console when the scene is opened: say whether the developer checked it
 - Tests exist where relevant; EditMode and PlayMode tests pass where applicable — state which were written but not run
 - Manually validated where automated testing is insufficient
 - Prefab references valid, scenes valid

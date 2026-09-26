@@ -73,6 +73,8 @@ The Boy Scout Rule applies only to code the task already touches, and only when 
 
 **The note lives in a validation subtask on ClickUp.** The developer creates a subtask under the feature task, writes the note in it, and assigns it to the owners — **Joaquim and Hugo**. Closing it *is* the approval: dated, attributed and searchable, which is what makes this rule verifiable rather than declarative. Approval is a human act: only an owner's explicit go-ahead counts. Neither Claude nor any automated check can grant, infer or stand in for it. Claude may create the validation subtask; Claude never closes one. While it is open, the work stops at the note.
 
+When the design moves after the subtask is closed, the note is updated to match. An edit made by an owner counts as that owner's approval of the new version: it is not reported as unvalidated. A change made by anyone else goes back to an owner, who closes the subtask again.
+
 Once the feature ships, what was built is described in its feature doc — see [Feature docs](#feature-docs). The note is the plan; the feature doc is the record.
 
 ### Claude's part
@@ -96,7 +98,7 @@ A bug fix, a refactor or a chore is not a new feature and needs no note. When th
 Every `feat/` branch ships `docs/features/<id>-<description>.md` — the branch name without its prefix, from `docs/features/_template.md`. It lists every behaviour the feature has, the decisions taken, and the automated and manual tests that prove it. `docs/features/README.md` holds the rules; `scripts/check-feature-doc.sh` enforces them in CI.
 
 - **Before touching an existing feature, read its docs.** Search `docs/features/` for the feature, system and scene, and follow each doc's *Modifié par* chain to the current state. Do this before planning, not after.
-- **A change never rewrites an old doc.** The branch adds its own doc, links every doc it modifies under *Docs précédents*, and adds a line under *Modifié par* in each of them.
+- **A change never rewrites a doc already merged into `develop`.** A branch may rewrite its own doc freely until it merges. For a merged doc, the branch adds its own doc, links every doc it modifies under *Docs précédents*, and adds a line under *Modifié par* in each of them.
 - A `fix/` that changes documented behaviour gets a doc the same way. A fix that restores documented behaviour, a refactor, a test or a chore does not.
 - Manual tests are steps another developer can replay without asking. The shared checks every PR runs are in `docs/playbook-tests.md`.
 
