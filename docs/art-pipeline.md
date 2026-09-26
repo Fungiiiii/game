@@ -9,12 +9,12 @@ corriger.
 
 ## Les cinq règles
 
-1. **Aucun `.blend` dans ce dépôt.** Les sources restent sur ta machine.
-2. **Les réglages d'export correspondent au tableau de ce fichier.** Vérifie
+1. **Aucun `.blend` dans ce dépôt.** Les sources restent en local.
+2. **Les réglages d'export correspondent au tableau de ce fichier.** Vérifier
    avec le cube.
 3. **Les modèles s'importent avec une rotation de -90° sur X.** C'est accepté.
-   Place un personnage sous un parent.
-4. **Nomme l'asset, pas son état.** `Rock_Small_01`, jamais `Rock_final_v3`.
+   Placer un personnage sous un parent.
+4. **Nommer l'asset, pas son état.** `Rock_Small_01`, jamais `Rock_final_v3`.
 5. **Une couleur de la palette ne bouge jamais.** On ne fait qu'en ajouter.
 
 ## Où vivent les fichiers
@@ -35,18 +35,18 @@ impose d'amender l'ADR-0005.
 
 ### Pourquoi pas de `.blend` ici
 
-Ce dépôt ne contient que des modèles exportés. Tes sources restent en local, et
-tu les sauvegardes toi-même. Un contrôle pre-commit rejette tout `.blend`.
+Ce dépôt ne contient que des modèles exportés. Les sources restent en local, et
+chacun sauvegarde les siennes. Un contrôle pre-commit rejette tout `.blend`.
 
 C'est un compromis, pas un oubli. Il achète un clone léger et un quota LFS
-intact. Il coûte la possibilité de retoucher un asset un jour si tes sources
+intact. Il coûte la possibilité de retoucher un asset un jour si les sources
 locales sont perdues. L'ADR-0005 l'enregistre comme une dette acceptée. Elle
 nomme aussi ce qui rouvre la décision : **une deuxième personne qui modélise.**
 
 ## Exporter depuis Blender
 
-Ce tableau fait foi. Blender retient les réglages de ton dernier export, donc
-tu les saisis une fois, pas avant chaque export.
+Ce tableau fait foi. Blender retient les réglages du dernier export, donc
+ils se saisissent une fois, pas avant chaque export.
 
 **Aucun preset d'export n'est commité.** L'ADR-0005 explique pourquoi : rien
 dans ce dépôt ne peut en installer un, vérifier qu'il est installé, ni
@@ -97,8 +97,8 @@ off : les os d'IK et de contrôle passent aussi.
 **Triangulate Faces — off.** Unity triangule à l'import, et le mesh reste
 éditable.
 
-**Selected Objects — on.** Un asset logique par fichier. N'exporte jamais une
-scène entière pour la découper dans Unity.
+**Selected Objects — on.** Un asset logique par fichier. Ne jamais exporter
+une scène entière pour la découper dans Unity.
 
 ## Importer dans Unity
 
@@ -120,7 +120,7 @@ déposé dans `Assets/` arrive déjà correct.
 
 ### Personnages riggés
 
-Applique `ModelImporter_RiggedCharacter` **à la main**, puis *Apply*.
+Appliquer `ModelImporter_RiggedCharacter` **à la main**, puis *Apply*.
 
 Une différence : **Rig → Animation Type : `Generic`**. Les créatures ne sont
 pas humanoïdes, donc `Humanoid` et son retargeting n'apportent rien.
@@ -129,8 +129,8 @@ pas humanoïdes, donc `Humanoid` et son retargeting n'apportent rien.
 > global par type d'importeur. L'ADR-0005 accepte l'étape manuelle plutôt que
 > d'écrire un AssetPostprocessor.
 >
-> **Tu as importé un personnage et il n'a pas d'Animator ? C'est l'étape que
-> tu as sautée.**
+> **Un personnage importé n'a pas d'Animator ? C'est cette étape qui a été
+> sautée.**
 
 ### La texture de palette
 
@@ -171,8 +171,8 @@ Autres règles :
 
 - `NN` fait deux chiffres. Il ne sert qu'à distinguer des variantes
   interchangeables.
-- Nomme ce que la chose **est**. Pas ce à quoi elle ressemble aujourd'hui.
-- **Ne nomme jamais un état.** Pas de `_final`, `_v3`, `_new`, `_old`, `_test`,
+- Nommer ce que la chose **est**. Pas ce à quoi elle ressemble aujourd'hui.
+- **Ne jamais nommer un état.** Pas de `_final`, `_v3`, `_new`, `_old`, `_test`,
   `_OK`, `_copy`. Git enregistre déjà les versions.
 
 `scripts/check-art-assets.sh` fait respecter tout cela au commit.
@@ -254,15 +254,15 @@ Viser le centre d'une case est ce qui garde les couleurs voisines hors de
 l'échantillon, et c'est pour cela que le filtrage `Point` et la désactivation
 des mip maps ne sont pas optionnels.
 
-Crée les matériaux dans Unity, pour URP
-([ADR-0002](./adrs/0002-pipeline-de-rendu-urp.md)). Ne compte pas sur les
-matériaux venus de Blender. Les deux utilisent des modèles d'ombrage
+Créer les matériaux dans Unity, pour URP
+([ADR-0002](./adrs/0002-pipeline-de-rendu-urp.md)). Ne pas compter sur
+les matériaux venus de Blender. Les deux utilisent des modèles d'ombrage
 différents, et c'est le pipeline de rendu qui décide de ce qu'est un matériau.
 
 ## Vérifier une fois, avec un cube de référence
 
-Avant de faire confiance à tes réglages, exporte un cube de 1×1×1 à l'origine.
-Puis vérifie dans Unity :
+Avant de faire confiance aux réglages, exporter un cube de 1×1×1 à l'origine.
+Puis vérifier dans Unity :
 
 - 1 unité Blender s'importe en 1 unité Unity (1 mètre)
 - l'Inspector affiche une échelle de `(1, 1, 1)`
@@ -270,8 +270,8 @@ Puis vérifie dans Unity :
 **La rotation ne fait pas partie de cette vérification.** Le cube arrive avec
 une rotation de -90° sur X, comme tout le reste, et c'est attendu.
 
-**Si l'échelle est fausse, ce sont tes réglages d'export qui sont faux.
-Corrige les réglages, pas l'asset.** Redimensionner dans Unity masque le
+**Si l'échelle est fausse, ce sont les réglages d'export qui sont faux.
+Corriger les réglages, pas l'asset.** Redimensionner dans Unity masque le
 problème, et il revient à l'export suivant.
 
 ## Orientation
@@ -284,8 +284,8 @@ Sur un prop statique, cela ne coûte rien. On le place dans une scène et on n'y
 touche plus.
 
 Sur un personnage, cela compte : le `forward` de la racine importée pointe vers
-le bas, pas vers l'avant. **Place un personnage sous un GameObject parent** et
-laisse le parent porter le déplacement et la rotation. C'est la structure
+le bas, pas vers l'avant. **Placer un personnage sous un GameObject parent** et
+laisser le parent porter le déplacement et la rotation. C'est la structure
 qu'un personnage finit par avoir de toute façon, une fois qu'il a un
 contrôleur.
 
