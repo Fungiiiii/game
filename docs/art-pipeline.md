@@ -26,7 +26,7 @@ Assets/
     Textures/Palette.png                 the shared palette
     Textures/<Domain>/<Name>_<Map>.png   dedicated textures — the exception
     Materials/Palette.mat                the shared material
-  Prefabs/<Domain>/<Name>.prefab
+  Prefabs/<Domain>/PF_<Name>.prefab
 tools/palette/                           the palette generator
 ```
 
@@ -161,7 +161,7 @@ La règle s'applique à quatre choses à la fois :
 | Le fichier FBX | `Assets/Art/Models/Environment/Rock_Small_01.fbx` |
 | **L'objet dans Blender** | `Rock_Small_01` |
 | Le matériau | `Palette.mat` — partagé. Un matériau dédié prend le nom du modèle. |
-| Le prefab | `Assets/Prefabs/Environment/Rock_Small_01.prefab` |
+| Le prefab | `Assets/Prefabs/Environment/PF_Rock_Small_01.prefab` — le seul préfixe, voir plus bas |
 
 **Le nom de l'objet dans Blender compte.** Il devient le nom du GameObject à
 l'import. Un `.blend` plein de `Cube.001` donne une hiérarchie Unity pleine de
@@ -174,6 +174,12 @@ Autres règles :
 - Nommer ce que la chose **est**. Pas ce à quoi elle ressemble aujourd'hui.
 - **Ne jamais nommer un état.** Pas de `_final`, `_v3`, `_new`, `_old`, `_test`,
   `_OK`, `_copy`. Git enregistre déjà les versions.
+- **Les prefabs prennent `PF_`, les ScriptableObjects `SO_`**, comme le demande la
+  STD §6. Un prefab porte toujours le nom du modèle qu'il enveloppe : sans
+  préfixe, `Tree.fbx` et son prefab se confondent dans les sélecteurs, et placer
+  le FBX par erreur fait disparaître les colliders du prefab sans que personne ne
+  le voie. Les modèles, textures et matériaux restent sans préfixe. Décidé dans
+  [la doc de la Forêt mystique](./features/12487v2byt9-mystic-forest.md).
 
 `scripts/check-art-assets.sh` fait respecter tout cela au commit.
 
