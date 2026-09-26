@@ -1,21 +1,23 @@
-# Art pipeline — Blender to Unity
+# Pipeline art — de Blender à Unity
 
-How to get a model from Blender into the game. Day-to-day reference.
+Comment faire passer un modèle de Blender au jeu. Référence du quotidien.
 
-The decisions behind these rules live in
-[ADR-0005](./adrs/0005-pipeline-et-nommage-des-assets-3d.md). If this file and
-the ADR disagree, the ADR wins — and this file is the one to fix.
+Les décisions derrière ces règles sont dans
+[l'ADR-0005](./adrs/0005-pipeline-et-nommage-des-assets-3d.md). Si ce fichier
+et l'ADR se contredisent, l'ADR l'emporte — et c'est ce fichier qu'il faut
+corriger.
 
-## The five rules
+## Les cinq règles
 
-1. **No `.blend` in this repository.** Sources stay on your machine.
-2. **Export settings match the table in this file.** Check with the cube.
-3. **Models import rotated -90° on X.** That is accepted. Nest a character
-   under a parent.
-4. **Name the asset, not its state.** `Rock_Small_01`, never `Rock_final_v3`.
-5. **A palette colour never moves.** You only ever add new ones.
+1. **Aucun `.blend` dans ce dépôt.** Les sources restent sur ta machine.
+2. **Les réglages d'export correspondent au tableau de ce fichier.** Vérifie
+   avec le cube.
+3. **Les modèles s'importent avec une rotation de -90° sur X.** C'est accepté.
+   Place un personnage sous un parent.
+4. **Nomme l'asset, pas son état.** `Rock_Small_01`, jamais `Rock_final_v3`.
+5. **Une couleur de la palette ne bouge jamais.** On ne fait qu'en ajouter.
 
-## Where things live
+## Où vivent les fichiers
 
 ```text
 Assets/
@@ -28,29 +30,30 @@ Assets/
 tools/palette/                           the palette generator
 ```
 
-`<Domain>` is `Characters`, `Environment` or `Props`. Adding a fourth means
-amending ADR-0005.
+`<Domain>` vaut `Characters`, `Environment` ou `Props`. En ajouter un quatrième
+impose d'amender l'ADR-0005.
 
-### Why no `.blend` here
+### Pourquoi pas de `.blend` ici
 
-This repository holds exported models only. Your sources stay local, and you
-back them up yourself. A pre-commit check rejects any `.blend`.
+Ce dépôt ne contient que des modèles exportés. Tes sources restent en local, et
+tu les sauvegardes toi-même. Un contrôle pre-commit rejette tout `.blend`.
 
-This is a trade, not an oversight. It buys a light clone and an untouched LFS
-quota. It costs the ability to ever re-edit an asset if your local sources are
-lost. ADR-0005 records it as accepted debt. It also names what reopens the
-decision: **a second person modelling.**
+C'est un compromis, pas un oubli. Il achète un clone léger et un quota LFS
+intact. Il coûte la possibilité de retoucher un asset un jour si tes sources
+locales sont perdues. L'ADR-0005 l'enregistre comme une dette acceptée. Elle
+nomme aussi ce qui rouvre la décision : **une deuxième personne qui modélise.**
 
-## Exporting from Blender
+## Exporter depuis Blender
 
-This table is authoritative. Blender remembers the settings of your last
-export, so you type them once, not before every export.
+Ce tableau fait foi. Blender retient les réglages de ton dernier export, donc
+tu les saisis une fois, pas avant chaque export.
 
-**No export preset is committed.** ADR-0005 explains why: nothing in this
-repository can install one, check that it is installed, or notice when it has
-drifted. The reference cube below is the check that actually works.
+**Aucun preset d'export n'est commité.** L'ADR-0005 explique pourquoi : rien
+dans ce dépôt ne peut en installer un, vérifier qu'il est installé, ni
+remarquer qu'il a dérivé. Le cube de référence ci-dessous est la vérification
+qui marche vraiment.
 
-| Section | Setting | Value |
+| Section | Réglage | Valeur |
 |---|---|---|
 | Top | Path Mode | `Auto` |
 | Include | Limit to → Selected Objects | on |
@@ -61,7 +64,7 @@ drifted. The reference cube below is the check that actually works.
 | Transform | Forward / Up | `-Z Forward` / `Y Up` |
 | Transform | Apply Unit | on |
 | Transform | Use Space Transform | on |
-| Transform | **Apply Transform** | **off — always** |
+| Transform | **Apply Transform** | **off — toujours** |
 | Geometry | Smoothing | `Face` |
 | Geometry | Apply Modifiers | on |
 | Geometry | Loose Edges | off |
@@ -73,76 +76,77 @@ drifted. The reference cube below is the check that actually works.
 | Armature | Add Leaf Bones | off |
 | Bake Animation | — | off |
 
-### The ones worth knowing
+### Ceux qu'il faut connaître
 
-**Apply Transform — off, always.** The option is experimental and breaks
-armatures. Leaving it off is what produces the accepted -90° on X in Unity —
-see *Orientation* below.
+**Apply Transform — off, toujours.** L'option est expérimentale et casse les
+armatures. La laisser sur off est ce qui produit les -90° sur X acceptés dans
+Unity — voir *Orientation* ci-dessous.
 
-**Smoothing — `Face`.** Blender's default is `Normals Only`. It drops smoothing
-information, and you get shading artefacts in Unity.
+**Smoothing — `Face`.** La valeur par défaut de Blender est `Normals Only`.
+Elle perd l'information de lissage, et on obtient des artefacts d'ombrage dans
+Unity.
 
-**Apply Modifiers — watch out.** Modifiers apply at their *viewport* level, not
-their render level. A Subsurf set to 1 in the viewport and 3 in render exports
-at 1.
+**Apply Modifiers — attention.** Les modificateurs s'appliquent à leur niveau
+*viewport*, pas à leur niveau de rendu. Un Subsurf réglé à 1 dans le viewport
+et à 3 au rendu s'exporte à 1.
 
-**Only Deform Bones — off.** Turning it on drops the root bone, which deforms
-no vertex. The hierarchy breaks with it. The cost of leaving it off: IK and
-control bones come across too.
+**Only Deform Bones — off.** L'activer supprime l'os racine, qui ne déforme
+aucun vertex. La hiérarchie casse avec lui. Le prix à payer en le laissant sur
+off : les os d'IK et de contrôle passent aussi.
 
-**Triangulate Faces — off.** Unity triangulates on import, and the mesh stays
-editable.
+**Triangulate Faces — off.** Unity triangule à l'import, et le mesh reste
+éditable.
 
-**Selected Objects — on.** One logical asset per file. Never export a whole
-scene and split it in Unity.
+**Selected Objects — on.** Un asset logique par fichier. N'exporte jamais une
+scène entière pour la découper dans Unity.
 
-## Importing into Unity
+## Importer dans Unity
 
-Export settings are only half the job. The Unity importer decides as much about
-final scale and orientation as Blender does.
+Les réglages d'export ne sont que la moitié du travail. L'importeur de Unity
+décide autant que Blender de l'échelle et de l'orientation finales.
 
-So the import side is pinned by committed Presets, not by memory.
+Le côté import est donc figé par des Presets commités, pas par la mémoire.
 
-### Static props — the project default
+### Props statiques — le défaut du projet
 
-`ModelImporter_StaticProp` is the **Default Preset** for the ModelImporter. Any
-FBX you drop into `Assets/` already arrives correct.
+`ModelImporter_StaticProp` est le **Default Preset** du ModelImporter. Tout FBX
+déposé dans `Assets/` arrive déjà correct.
 
-| Tab | Setting | Value | Why |
+| Onglet | Réglage | Valeur | Pourquoi |
 |---|---|---|---|
-| Model | Bake Axis Conversion | **off** | Leaving it off is what produces the accepted -90° on X. See *Orientation* below. |
-| Rig | Animation Type | `None` | A static prop needs no rig. `Generic` here would generate an Avatar for every rock. |
-| Materials | Material Creation Mode | `None` | Everything shares `Palette.mat`. |
+| Model | Bake Axis Conversion | **off** | La laisser sur off est ce qui produit les -90° sur X acceptés. Voir *Orientation* ci-dessous. |
+| Rig | Animation Type | `None` | Un prop statique n'a pas besoin de rig. `Generic` ici générerait un Avatar pour chaque rocher. |
+| Materials | Material Creation Mode | `None` | Tout partage `Palette.mat`. |
 
-### Rigged characters
+### Personnages riggés
 
-Apply `ModelImporter_RiggedCharacter` **by hand**, then *Apply*.
+Applique `ModelImporter_RiggedCharacter` **à la main**, puis *Apply*.
 
-One difference: **Rig → Animation Type: `Generic`**. The creatures are not
-humanoid, so `Humanoid` and its retargeting buy nothing.
+Une différence : **Rig → Animation Type : `Generic`**. Les créatures ne sont
+pas humanoïdes, donc `Humanoid` et son retargeting n'apportent rien.
 
-> This step cannot be automatic. Unity's Default Preset is global per importer
-> type. ADR-0005 accepts the manual step rather than writing an
-> AssetPostprocessor.
+> Cette étape ne peut pas être automatique. Le Default Preset de Unity est
+> global par type d'importeur. L'ADR-0005 accepte l'étape manuelle plutôt que
+> d'écrire un AssetPostprocessor.
 >
-> **Imported a character and it has no Animator? This is the step you
-> skipped.**
+> **Tu as importé un personnage et il n'a pas d'Animator ? C'est l'étape que
+> tu as sautée.**
 
-### The palette texture
+### La texture de palette
 
-Its settings are applied by hand. A default preset for textures would also hit
-UI sprites, which want the opposite.
+Ses réglages s'appliquent à la main. Un preset par défaut pour les textures
+toucherait aussi les sprites d'UI, qui veulent l'inverse.
 
-| Setting | Value | Why |
+| Réglage | Valeur | Pourquoi |
 |---|---|---|
 | Filter Mode | `Point` | |
 | Wrap Mode | `Clamp` | |
-| Generate Mip Maps | **off** | Mips blend neighbouring swatches. Distant geometry picks up colours that are not its own. |
-| Compression | `None` | A palette is a handful of exact colours. Lossy compression shifts them. |
+| Generate Mip Maps | **off** | Les mips mélangent les cases voisines. La géométrie lointaine récupère des couleurs qui ne sont pas les siennes. |
+| Compression | `None` | Une palette, c'est une poignée de couleurs exactes. Une compression avec perte les décale. |
 
-## Naming
+## Nommage
 
-English. ASCII. PascalCase. Segments separated by `_`.
+Anglais. ASCII. PascalCase. Segments séparés par `_`.
 
 ```text
 <Name>[_<Variant>][_NN]
@@ -150,30 +154,33 @@ English. ASCII. PascalCase. Segments separated by `_`.
 
 `Rock_Small_01` · `MushroomCap_Large` · `TreePine_01`
 
-The rule applies to four things at once:
+La règle s'applique à quatre choses à la fois :
 
-| What | Example |
+| Quoi | Exemple |
 |---|---|
-| The FBX file | `Assets/Art/Models/Environment/Rock_Small_01.fbx` |
-| **The object inside Blender** | `Rock_Small_01` |
-| The material | `Palette.mat` — shared. A dedicated one takes the model's name. |
-| The prefab | `Assets/Prefabs/Environment/Rock_Small_01.prefab` |
+| Le fichier FBX | `Assets/Art/Models/Environment/Rock_Small_01.fbx` |
+| **L'objet dans Blender** | `Rock_Small_01` |
+| Le matériau | `Palette.mat` — partagé. Un matériau dédié prend le nom du modèle. |
+| Le prefab | `Assets/Prefabs/Environment/Rock_Small_01.prefab` |
 
-**The Blender object name matters.** It becomes the GameObject name on import.
-A `.blend` full of `Cube.001` gives you a Unity hierarchy full of `Cube.001`.
+**Le nom de l'objet dans Blender compte.** Il devient le nom du GameObject à
+l'import. Un `.blend` plein de `Cube.001` donne une hiérarchie Unity pleine de
+`Cube.001`.
 
-Other rules:
+Autres règles :
 
-- `NN` is two digits. It only separates interchangeable variations.
-- Name what the thing **is**. Not what it looks like today.
-- **Never name a state.** No `_final`, `_v3`, `_new`, `_old`, `_test`, `_OK`,
-  `_copy`. Git already records versions.
+- `NN` fait deux chiffres. Il ne sert qu'à distinguer des variantes
+  interchangeables.
+- Nomme ce que la chose **est**. Pas ce à quoi elle ressemble aujourd'hui.
+- **Ne nomme jamais un état.** Pas de `_final`, `_v3`, `_new`, `_old`, `_test`,
+  `_OK`, `_copy`. Git enregistre déjà les versions.
 
-`scripts/check-art-assets.sh` enforces all of this on commit.
+`scripts/check-art-assets.sh` fait respecter tout cela au commit.
 
 ### Animations
 
-Not exported yet. When they arrive, each clip ships in its own file:
+Pas encore exportées. Quand elles arriveront, chaque clip sera livré dans son
+propre fichier :
 
 ```text
 Assets/Art/Models/Characters/PlayerMushroom.fbx
@@ -181,110 +188,117 @@ Assets/Art/Models/Characters/PlayerMushroom@Idle.fbx
 Assets/Art/Models/Characters/PlayerMushroom@Walk.fbx
 ```
 
-Unity picks these up automatically for the rig of the same name.
+Unity les associe automatiquement au rig du même nom.
 
-Turning `Bake Animation` on is part of that change, not of this one.
+Activer `Bake Animation` fera partie de ce changement-là, pas de celui-ci.
 
-## The palette
+## La palette
 
-One `Assets/Art/Textures/Palette.png`. One `Palette.mat`. Every model's UVs
-point at swatches on it.
+Un seul `Assets/Art/Textures/Palette.png`. Un seul `Palette.mat`. Les UV de
+chaque modèle pointent vers des cases de cette palette.
 
-That is what removes UV unwrapping from the workflow, and keeps the whole set
-on a single material.
+C'est ce qui retire le dépliage d'UV du workflow, et garde tout l'ensemble sur
+un seul matériau.
 
-**The rule that matters: a colour never moves. You only ever append.**
+**La règle qui compte : une couleur ne bouge jamais. On ne fait qu'ajouter.**
 
-The grid is frozen the day the palette is created. Moving a swatch, reordering
-the grid or resizing the image invalidates the UVs of every model already
-exported.
+La grille est figée le jour où la palette est créée. Déplacer une case,
+réordonner la grille ou redimensionner l'image invalide les UV de tous les
+modèles déjà exportés.
 
-Every asset in the game changes colour. And the diff that caused it contains a
-single `.png`. Adding a colour in free space is safe. Anything else is not.
+Tous les assets du jeu changent de couleur. Et le diff responsable ne contient
+qu'un seul `.png`. Ajouter une couleur dans l'espace libre est sans risque.
+Tout le reste ne l'est pas.
 
-### The grid
+### La grille
 
 | | |
 |---|---|
 | Image | 128 × 128 px |
-| Grid | 8 × 8 swatches |
-| One swatch | 16 × 16 px |
-| Used | 19 swatches |
-| Free | 45 swatches, drawn as a grey checker |
+| Grille | 8 × 8 cases |
+| Une case | 16 × 16 px |
+| Utilisées | 19 cases |
+| Libres | 45 cases, dessinées en damier gris |
 
-Rows 0–4 are taken: body, face, mushroom and bulb, vegetation and wood, rock.
-Everything below row 4 is free space to append into.
+Les lignes 0 à 4 sont prises : corps, visage, champignon et bulbe, végétation
+et bois, roche. Tout ce qui est sous la ligne 4 est de l'espace libre où
+ajouter.
 
-### Generating it
+### La générer
 
-`Palette.png` is not edited by hand. It is generated:
+`Palette.png` ne s'édite pas à la main. Il est généré :
 
 ```bash
 python tools/palette/generate_palette.py
 ```
 
-[`tools/palette/generate_palette.py`](../tools/palette/generate_palette.py) is
-the real source of truth. Add a colour by adding an entry there, then re-run
-it. That is what makes "a colour never moves" checkable in a diff instead of
-being a promise.
+[`tools/palette/generate_palette.py`](../tools/palette/generate_palette.py)
+est la vraie source de vérité. On ajoute une couleur en y ajoutant une entrée,
+puis on le relance. C'est ce qui rend « une couleur ne bouge jamais »
+vérifiable dans un diff au lieu d'être une promesse.
 
-It also writes [`docs/palette-guide.png`](./palette-guide.png), a reference
-sheet showing every swatch with its name, its hex value and its UV coordinates.
+Il écrit aussi [`docs/palette-guide.png`](./palette-guide.png), une planche de
+référence qui montre chaque case avec son nom, sa valeur hexadécimale et ses
+coordonnées UV.
 
-### UVs
+### UV
 
-A UV points at the **centre** of a swatch:
+Un UV pointe vers le **centre** d'une case :
 
 ```text
 U = (col + 0.5) / 8
 V = 1 - (row + 0.5) / 8
 ```
 
-Aiming at a swatch centre is what keeps neighbouring colours out of the sample,
-and it is why `Point` filtering and disabled mip maps are not optional.
+Viser le centre d'une case est ce qui garde les couleurs voisines hors de
+l'échantillon, et c'est pour cela que le filtrage `Point` et la désactivation
+des mip maps ne sont pas optionnels.
 
-Author materials in Unity, against URP
-([ADR-0002](./adrs/0002-pipeline-de-rendu-urp.md)). Do not rely on materials
-coming across from Blender. The two use different shading models, and the
-render pipeline decides what a material even is.
+Crée les matériaux dans Unity, pour URP
+([ADR-0002](./adrs/0002-pipeline-de-rendu-urp.md)). Ne compte pas sur les
+matériaux venus de Blender. Les deux utilisent des modèles d'ombrage
+différents, et c'est le pipeline de rendu qui décide de ce qu'est un matériau.
 
-## Verify once, with a reference cube
+## Vérifier une fois, avec un cube de référence
 
-Before trusting your settings, export a 1×1×1 cube at the origin. Then check
-in Unity:
+Avant de faire confiance à tes réglages, exporte un cube de 1×1×1 à l'origine.
+Puis vérifie dans Unity :
 
-- 1 Blender unit imports as 1 Unity unit (1 metre)
-- the Inspector shows scale `(1, 1, 1)`
+- 1 unité Blender s'importe en 1 unité Unity (1 mètre)
+- l'Inspector affiche une échelle de `(1, 1, 1)`
 
-**Rotation is not part of this check.** The cube arrives rotated -90° on X,
-like everything else, and that is expected.
+**La rotation ne fait pas partie de cette vérification.** Le cube arrive avec
+une rotation de -90° sur X, comme tout le reste, et c'est attendu.
 
-**If the scale is wrong, your export settings are wrong. Fix the settings, not
-the asset.** Rescaling in Unity hides the problem, and it comes back on the
-next export.
+**Si l'échelle est fausse, ce sont tes réglages d'export qui sont faux.
+Corrige les réglages, pas l'asset.** Redimensionner dans Unity masque le
+problème, et il revient à l'export suivant.
 
 ## Orientation
 
-Models import with a **-90° rotation on X** on their root. This is the default
-behaviour of the Blender-to-Unity chain, and ADR-0005 accepts it rather than
-correcting it.
+Les modèles s'importent avec une **rotation de -90° sur X** sur leur racine.
+C'est le comportement par défaut de la chaîne Blender vers Unity, et l'ADR-0005
+l'accepte plutôt que de le corriger.
 
-On a static prop it costs nothing. You place it in a scene and never touch it
-again.
+Sur un prop statique, cela ne coûte rien. On le place dans une scène et on n'y
+touche plus.
 
-On a character it matters: the imported root's `forward` points down, not
-forward. **Nest a character under a parent GameObject** and let the parent
-carry movement and rotation. That is the structure a character ends up with
-anyway, once it has a controller.
+Sur un personnage, cela compte : le `forward` de la racine importée pointe vers
+le bas, pas vers l'avant. **Place un personnage sous un GameObject parent** et
+laisse le parent porter le déplacement et la rotation. C'est la structure
+qu'un personnage finit par avoir de toute façon, une fois qu'il a un
+contrôleur.
 
-## Before committing an art change
+## Avant de commiter un changement d'art
 
-- [ ] Export settings match the table above
-- [ ] `Apply Transform` was off
-- [ ] Inspector shows scale `(1, 1, 1)` — the -90° on X is expected
-- [ ] A character got `ModelImporter_RiggedCharacter` applied
-- [ ] No `.blend` staged
-- [ ] Names are English, PascalCase, and describe the asset — not its state
-- [ ] The Blender object name matches the file name
-- [ ] The palette was appended to, never reordered or resized
-- [ ] `git lfs status` shows the `.fbx` and `.png` tracked
+- [ ] Les réglages d'export correspondent au tableau ci-dessus
+- [ ] `Apply Transform` était sur off
+- [ ] L'Inspector affiche une échelle de `(1, 1, 1)` — les -90° sur X sont
+      attendus
+- [ ] Un personnage a reçu `ModelImporter_RiggedCharacter`
+- [ ] Aucun `.blend` indexé
+- [ ] Les noms sont en anglais, en PascalCase, et décrivent l'asset — pas son
+      état
+- [ ] Le nom de l'objet Blender correspond au nom du fichier
+- [ ] La palette a été complétée, jamais réordonnée ni redimensionnée
+- [ ] `git lfs status` montre les `.fbx` et `.png` suivis
