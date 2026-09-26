@@ -1,3 +1,4 @@
+using Fungiiiii.Survival;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.InputSystem;
@@ -56,38 +57,42 @@ namespace Fungiiiii.UI
 
         private void Update()
         {
-            if (_model == null || Keyboard.current == null)
+            if (_model == null)
             {
                 return;
             }
 
-            _model.TickPoisonDamage(Time.deltaTime);
+            _model.Tick(Time.deltaTime);
 
-            if (Keyboard.current.hKey.wasPressedThisFrame)
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard == null)
+            {
+                return;
+            }
+
+            if (keyboard.hKey.wasPressedThisFrame)
             {
                 _model.SetHealth(_model.Current.Health - 20f);
             }
 
-            if (Keyboard.current.sKey.wasPressedThisFrame)
+            if (keyboard.sKey.wasPressedThisFrame)
             {
                 _model.SetStamina(_model.Current.Stamina - 20f);
             }
 
-            if (Keyboard.current.pKey.wasPressedThisFrame)
+            if (keyboard.pKey.wasPressedThisFrame)
             {
-                _model.SetPoisonPercentage(_model.PoisonPercentage + PoisonStepPercentage);
+                _model.Poison.Apply(PoisonStepPercentage);
             }
 
-            if (Keyboard.current.oKey.wasPressedThisFrame)
+            if (keyboard.oKey.wasPressedThisFrame)
             {
-                _model.SetPoisonPercentage(_model.PoisonPercentage - PoisonStepPercentage);
+                _model.Poison.Remove(PoisonStepPercentage);
             }
 
-            if (Keyboard.current.rKey.wasPressedThisFrame)
+            if (keyboard.rKey.wasPressedThisFrame)
             {
-                _model.SetHealth(_model.MaxHealth);
-                _model.SetStamina(_model.MaxStamina);
-                _model.SetPoisonPercentage(0f);
+                _model.Reset();
             }
         }
     }
