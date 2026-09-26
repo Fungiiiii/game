@@ -54,6 +54,8 @@ Before adding an asset, determine ownership, license, source, import settings, t
 
 3D assets are authored in **Blender** and reach Unity as exported `.fbx`. `.blend` sources never enter this repository — see `docs/art-pipeline.md` and ADR-0005 before touching models, and never fix an import by rotating or rescaling in the Inspector. Naming, folder and palette rules are enforced by `scripts/check-art-assets.sh`.
 
+Some assets stay binary even with Force Text serialization — `TerrainData` is one. The `*.asset eol=lf` rule in `.gitattributes` would rewrite their bytes and corrupt them. Before committing a new `.asset`, check that it is text; if it is binary, give it an explicit Git LFS rule with `-text -eol` and verify it with `git check-attr`.
+
 ## Diff review — mandatory before committing
 
 For any `.unity`, `.prefab`, `.asset`, `.controller`, `.anim`, `.mat`, `.meta`, `ProjectSettings` or `Packages` file:

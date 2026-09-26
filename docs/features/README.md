@@ -32,7 +32,9 @@ Pas d'accent, pas d'espace. Partir de [`_template.md`](./_template.md).
 
 ## Modifier une feature existante
 
-On ne réécrit pas l'ancienne doc : elle décrit ce qui a été livré à l'époque.
+On ne réécrit pas une doc déjà fusionnée dans `develop` : elle décrit ce qui a été
+livré à l'époque. Tant que la branche n'est pas fusionnée, sa propre doc se
+réécrit librement.
 
 1. **Lire les docs existantes avant de coder.** Chercher dans `docs/features/`
    le nom de la feature, du système, de la scène. Lire aussi leur section
