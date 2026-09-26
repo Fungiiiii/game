@@ -217,12 +217,12 @@ Tout le reste ne l'est pas.
 | Image | 128 × 128 px |
 | Grille | 8 × 8 cases |
 | Une case | 16 × 16 px |
-| Utilisées | 19 cases |
-| Libres | 45 cases, dessinées en damier gris |
+| Utilisées | 21 cases |
+| Libres | 43 cases, dessinées en damier gris |
 
-Les lignes 0 à 4 sont prises : corps, visage, champignon et bulbe, végétation
-et bois, roche. Tout ce qui est sous la ligne 4 est de l'espace libre où
-ajouter.
+Les lignes 0 à 5 sont prises : corps, visage, champignon et bulbe, végétation
+et bois, roche, éponge. Tout ce qui est sous la ligne 5 est de l'espace libre
+où ajouter.
 
 ### La générer
 
