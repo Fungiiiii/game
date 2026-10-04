@@ -16,7 +16,7 @@ Docs: https://fungiiiii.atlassian.net/wiki/spaces/docs/overview?homepageId=95045
 
 Read and write project documentation through the Atlassian MCP. Task management lives in **ClickUp**, read and written through the ClickUp MCP. The split is not negotiable: Confluence is project documentation, ClickUp is the work being tracked.
 
-**If one of those MCPs is unavailable, only the work that actually depends on it stops.** Say plainly which source could not be read, and never substitute an assumption for it. Work whose contract lives in Confluence or ClickUp — a new feature, a behaviour change, anything needing the design note or the ticket — waits. Work that does not — a local bug fix, a refactor, a test, a build script — goes ahead, saying what could not be consulted. An outage is a reason to stop guessing, never a reason to stop coding.
+**If one of those MCPs is unavailable, the work does not stop — guessing does.** Say plainly which source could not be read, and never substitute an assumption for it. Whatever needs its content — the design note, the ticket's requirements, a documented contract — waits until it can be read; everything else goes ahead. The updates it should have received — the ticket, the documentation — are listed in the reply and made once the MCP is connected again.
 
 `ProjectSettings/ProjectVersion.txt` is authoritative for the Unity version. Never upgrade Unity or unrelated packages as part of another task.
 

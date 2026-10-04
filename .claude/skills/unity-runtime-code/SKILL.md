@@ -46,7 +46,7 @@ Before implementing or modifying movement, be explicit about: input source, move
 
 ## Input
 
-Use the input architecture already established by the project; do not mix architectures. If the Input System package is adopted, continue with it.
+The project uses the Input System package, and the legacy Input Manager is disabled (archived ADR-0003). Do not mix input architectures.
 
 Prefer named actions (`Move`, `Interact`, `Jump`) over raw key checks in gameplay code — this is what enables rebinding, controllers, accessibility, future platforms and automated testing.
 
@@ -116,10 +116,6 @@ Do not over-couple to the Animator without reason.
 Follow the project's existing UI technology — do not mix UI Toolkit and uGUI arbitrarily. Keep gameplay state separate from UI representation: UI must never be the source of truth for gameplay state, and domain logic must not be coupled to buttons, labels or specific GameObjects.
 
 ## Naming, namespaces, magic values
-
-Use the C# version supported by the project's Unity version. Prefer clear names, explicit ownership, small methods, immutable state and `readonly` where practical, and early returns. Avoid clever code that hurts readability.
-
-Avoid meaningless names (`Manager2`, `DataStuff`, `Helper`, `Utils`, `Thing`) unless the abstraction genuinely is that. Booleans reveal intent (`isGrounded`, `canMove`, `hasTarget`); methods describe actions (`Move()`, `ApplyDamage()`, `OpenInventory()`).
 
 Follow existing namespaces; never put production code in the global namespace if the project uses namespaces. Namespaces reflect architecture and domain, not directory depth. Do not rename namespace trees as part of unrelated work.
 

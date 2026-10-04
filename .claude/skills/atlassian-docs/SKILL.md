@@ -9,7 +9,7 @@ Space: https://fungiiiii.atlassian.net/wiki/spaces/docs/overview?homepageId=9504
 
 Atlassian is the official documentation source. Read and write it through the Atlassian MCP.
 
-**If the Atlassian MCP is not connected, say so and stop.** Do not substitute assumptions for documentation you could not read, and never claim documentation was consulted when it was not.
+**If the Atlassian MCP is not connected, say so: the work goes on, the guessing does not.** Nothing a page you could not read would say is assumed — what depends on it waits. The documentation update is made once the MCP is connected again. Never claim documentation was consulted when it was not. See `CLAUDE.md`, "Source of truth".
 
 Confluence holds the general project documentation — game design, architecture overview, specifications. The exact description of each shipped feature lives in `docs/features/` in the repository. Do not duplicate one into the other — each has exactly one home; link instead.
 
