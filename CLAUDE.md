@@ -20,7 +20,7 @@ Read and write project documentation through the Atlassian MCP. Task management 
 
 `ProjectSettings/ProjectVersion.txt` is authoritative for the Unity version. Never upgrade Unity or unrelated packages as part of another task.
 
-The Unity project lives at the repository root — `Assets/`, `Packages/`, `ProjectSettings/`. It was created from the 3D Cross-Platform (URP) template; [`docs/unity-init.md`](docs/unity-init.md) records how, and why each choice was made. 3D assets are authored in Blender and reach the repository as exported `.fbx` only — `.blend` sources never enter it (ADR-0005); see `docs/art-pipeline.md`.
+The Unity project lives at the repository root — `Assets/`, `Packages/`, `ProjectSettings/`. It was created from the 3D Cross-Platform (URP) template; [`docs/unity-init.md`](docs/unity-init.md) records how, and why each choice was made. 3D assets are authored in Blender and reach the repository as exported `.fbx` only — `.blend` sources never enter it (ADR-0005); see `docs/art-pipeline.md`. Visual game assets — 3D models, textures, materials, VFX, animations — are made by humans only: the Charte IA on Confluence forbids AI for anything that appears visually in the game. Claude may build placeholders, such as primitives, that are obviously temporary, never a model or texture meant to fit the game's art.
 
 Never invent project, gameplay or architecture rules that could be verified.
 

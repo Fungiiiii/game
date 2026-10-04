@@ -21,15 +21,15 @@ Documentation is part of the task, not a follow-up. Code and documentation must 
 
 ## Space hierarchy
 
-Adapt to what already exists — do not duplicate an existing section.
+The space is in French. Its entry point is the page **🍄 Fungiiiii! · Documentation V2**, whose summary lists the reference documents. V1 pages it marks as replaced are obsolete — never cite them. Update an existing document rather than adding a page next to it.
 
-- **Project Overview**
-- **Game Design** — Gameplay · Characters · Mechanics · Progression
-- **Architecture** — Game Architecture · Scene Architecture · Systems · Data Model · Save System · Input · Networking · Asset Management
-- **Unity** — Project Structure · Coding Conventions · Prefabs · Scenes · ScriptableObjects · Testing · Performance
-- **Development** — Getting Started · Git Workflow · Local Development · Debugging
-- **Build & Release** — Build Process · Environments · Platforms
-- **Templates** — Feature · Bug · Technical Documentation · Postmortem
+- **01 · Cadrage et Pilotage** — Note de Cadrage · Plan de Gestion de Projet · WBS et OBS · Charte d'Équipe · Analyse des Risques
+- **02 · Conception du Jeu** — Document de Game Design (GDD) · Spécifications Fonctionnelles (SFD) · Périmètre et MVP · Inventaire des Assets
+- **03 · Technique** — Spécifications Techniques (STD): stack, network architecture, data, asset pipeline, conventions, CI/CD, performance, security
+- **04 · Go-to-Market** — Étude de Marché · Plan Marketing et Contenu
+- **05 · Cadre et Rendus** — Charte IA · Contrat de Rendu · Formulaire Alpha Fermée
+
+Gameplay rules live in the GDD and the SFD; technical choices in the STD.
 
 ## Domains not yet decided
 
