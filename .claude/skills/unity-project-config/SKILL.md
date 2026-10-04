@@ -1,6 +1,6 @@
 ---
 name: unity-project-config
-description: Rules for project-level Unity configuration — ProjectSettings, Packages/manifest.json, adding or upgrading packages, layers and tags, assembly definitions, editor-only code, asset loading (Resources vs Addressables), and rendering configuration (URP/HDRP, shaders, lighting, quality). Use before changing anything outside Assets/ scripts, or when adding a dependency.
+description: Rules for project-level Unity configuration — ProjectSettings, Packages/manifest.json, adding or upgrading packages, layers and tags, assembly definitions, editor-only code, asset loading (Resources vs Addressables), and rendering configuration (URP, shaders, lighting, quality). Use before changing anything outside Assets/ scripts, or when adding a dependency.
 ---
 
 # Project configuration
@@ -47,6 +47,6 @@ Do not mix loading systems without justification. Significant asset-loading deci
 
 ## Rendering
 
-Do not casually modify URP/HDRP settings, render pipeline assets, shaders, post-processing, lighting or quality settings — they affect the entire project across every scene and platform.
+Do not casually modify URP settings, render pipeline assets, shaders, post-processing, lighting or quality settings — they affect the entire project across every scene and platform.
 
 Such changes require explicit review of the affected platforms and scenes. Major rendering architecture decisions are validated in the design note and recorded in the *Décisions* section of the feature doc.

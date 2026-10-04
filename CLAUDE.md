@@ -16,11 +16,11 @@ Docs: https://fungiiiii.atlassian.net/wiki/spaces/docs/overview?homepageId=95045
 
 Read and write project documentation through the Atlassian MCP. Task management lives in **ClickUp**, read and written through the ClickUp MCP. The split is not negotiable: Confluence is project documentation, ClickUp is the work being tracked.
 
-**If one of those MCPs is unavailable, only the work that actually depends on it stops.** Say plainly which source could not be read, and never substitute an assumption for it. Work whose contract lives in Confluence or ClickUp — a new feature, a behaviour change, anything needing the design note or the ticket — waits. Work that does not — a local bug fix, a refactor, a test, a build script — goes ahead, saying what could not be consulted. An outage is a reason to stop guessing, never a reason to stop coding.
+**If one of those MCPs is unavailable, the work does not stop — guessing does.** Say plainly which source could not be read, and never substitute an assumption for it. Whatever needs its content — the design note, the ticket's requirements, a documented contract — waits until it can be read; everything else goes ahead. The updates it should have received — the ticket, the documentation — are listed in the reply and made once the MCP is connected again.
 
 `ProjectSettings/ProjectVersion.txt` is authoritative for the Unity version. Never upgrade Unity or unrelated packages as part of another task.
 
-The Unity project lives at the repository root — `Assets/`, `Packages/`, `ProjectSettings/`. It was created from the 3D Cross-Platform (URP) template; [`docs/unity-init.md`](docs/unity-init.md) records how, and why each choice was made. 3D assets are authored in Blender and reach the repository as exported `.fbx` only — `.blend` sources never enter it (ADR-0005); see `docs/art-pipeline.md`.
+The Unity project lives at the repository root — `Assets/`, `Packages/`, `ProjectSettings/`. It was created from the 3D Cross-Platform (URP) template; [`docs/unity-init.md`](docs/unity-init.md) records how, and why each choice was made. 3D assets are authored in Blender and reach the repository as exported `.fbx` only — `.blend` sources never enter it (ADR-0005); see `docs/art-pipeline.md`. Visual game assets — 3D models, textures, materials, VFX, animations — are made by humans only: the Charte IA on Confluence forbids AI for anything that appears visually in the game. Claude may build placeholders, such as primitives, that are obviously temporary, never a model or texture meant to fit the game's art.
 
 Never invent project, gameplay or architecture rules that could be verified.
 

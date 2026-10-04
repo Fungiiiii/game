@@ -11,7 +11,7 @@ This is the counterpart to the English-only rule in `CLAUDE.md`. Source code is 
 
 ## Status in this project
 
-The Unity Localization package (`com.unity.localization`) is **not currently installed** — there is no Unity project in the repository yet. Check before assuming:
+The Unity Localization package (`com.unity.localization`) is **not currently installed**. Check before assuming:
 
 ```bash
 grep -n 'com.unity.localization' Packages/manifest.json
