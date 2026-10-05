@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Enforces ADR-0005 "Pipeline, nommage et organisation des assets 3D".
+# Enforces ADR-0005 "Pipeline, nommage et organisation des assets 3D", and the
+# PF_ prefix for prefabs from the STD §6, adopted in
+# docs/features/12487v2byt9-mystic-forest.md.
 #
 # Usage:
 #   scripts/check-art-assets.sh              # staged files (local pre-commit)
@@ -9,6 +11,8 @@
 #   1. Blender sources never enter this repository.
 #   2. Models and prefabs live under a known domain folder.
 #   3. Asset names describe the asset, not its state or its version.
+#   4. Prefabs are named PF_<Name>: a prefab always carries the name of the
+#      model it wraps, and without the prefix the two look identical in pickers.
 #
 # Naming is checked on the file name only. The object name *inside* the .blend
 # matters just as much — it becomes the GameObject name — but no script in this
@@ -80,6 +84,8 @@ for f in "${candidates[@]}"; do
     prefab)
       [[ "$path" =~ $prefab_re ]] ||
         fail "$f — prefabs live in Assets/Prefabs/<${domains//|/ | }>/"
+      [[ "$stem" == PF_* ]] ||
+        fail "$f — prefabs are named PF_<Name>, e.g. PF_Tree"
       ;;
   esac
 
@@ -106,7 +112,7 @@ Art assets must follow ADR-0005.
              models only, and your sources stay local.
 
   Location   Assets/Art/Models/<Domain>/<Name>.fbx
-             Assets/Prefabs/<Domain>/<Name>.prefab
+             Assets/Prefabs/<Domain>/PF_<Name>.prefab
              Domain is Characters, Environment or Props.
 
   Names      English, ASCII, PascalCase: <Name>[_<Variant>][_NN].
