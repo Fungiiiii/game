@@ -1,3 +1,4 @@
+using Fungiiiii.Survival;
 using UnityEngine;
 
 namespace Fungiiiii.UI
@@ -31,7 +32,7 @@ namespace Fungiiiii.UI
 
         public float PoisonPercentage => _poisonFill == null
             ? 0f
-            : _poisonFill.rectTransform.anchorMax.x * PlayerVitals.MaxPoisonPercentage;
+            : _poisonFill.rectTransform.anchorMax.x * PoisonState.MaxIntensity;
 
         public void Initialize(PlayerVitals model)
         {
