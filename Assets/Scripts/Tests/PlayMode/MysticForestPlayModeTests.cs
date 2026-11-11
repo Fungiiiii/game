@@ -26,7 +26,10 @@ namespace Fungiiiii.Tests.PlayMode
             int treePrototype = System.Array.FindIndex(data.treePrototypes, p => p.prefab.name == "PF_Tree");
             Assume.That(treePrototype, Is.GreaterThanOrEqualTo(0), "PF_Tree is not a tree prototype of the terrain");
 
-            TreeInstance tree = data.treeInstances.First(instance => instance.prototypeIndex == treePrototype);
+            // On flat ground, so the horizontal ray cannot meet a slope before the trunk
+            // (the forest has relief since the low poly rework).
+            TreeInstance tree = data.treeInstances.First(instance =>
+                instance.prototypeIndex == treePrototype && data.GetSteepness(instance.position.x, instance.position.z) < 3f);
             Vector3 trunk = Vector3.Scale(tree.position, data.size) + terrain.transform.position;
 
             bool hit = Physics.Raycast(trunk + new Vector3(-3f, 1.5f, 0f), Vector3.right, out RaycastHit info, 6f);
