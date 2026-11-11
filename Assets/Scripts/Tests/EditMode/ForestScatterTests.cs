@@ -74,5 +74,71 @@ namespace Fungiiiii.Tests.EditMode
                 Object.DestroyImmediate(gameObject);
             }
         }
+
+        [Test]
+        public void InnerHoleStaysEmptyAndLeavesTheRestUnchanged()
+        {
+            var gameObject = new GameObject("ForestScatterHoleTest");
+            try
+            {
+                var scatter = gameObject.AddComponent<ForestScatter>();
+                scatter.Configure(Area, MinDistance, 1f, 1f, rotate: true, newSeed: 5);
+                var hole = new Vector2(30f, 20f);
+                var full = scatter.ComputePlacements(null);
+
+                scatter.ConfigureLimits(hole, slope: 90f);
+                var ring = scatter.ComputePlacements(null);
+
+                Assert.That(ring, Is.Not.Empty);
+                Assert.That(ring.Count, Is.LessThan(full.Count));
+                foreach (var placement in ring)
+                {
+                    bool inHole = Mathf.Abs(placement.Position.x) < hole.x / 2f && Mathf.Abs(placement.Position.z) < hole.y / 2f;
+                    Assert.That(inHole, Is.False);
+                }
+
+                // The hole removes placements without reshuffling the others.
+                foreach (var placement in ring)
+                {
+                    Assert.That(full.Exists(p => p.Position == placement.Position && p.Yaw == placement.Yaw), Is.True);
+                }
+            }
+            finally
+            {
+                Object.DestroyImmediate(gameObject);
+            }
+        }
+
+        [Test]
+        public void PathCirclesCoverTheWholeCorridor()
+        {
+            var gameObject = new GameObject("ScatterExclusionPathTest");
+            try
+            {
+                var path = gameObject.AddComponent<ScatterExclusionPath>();
+                var corners = new[] { new Vector3(0f, 0f, 0f), new Vector3(30f, 0f, 0f), new Vector3(30f, 0f, 25f) };
+                path.Configure(corners, newRadius: 4f);
+
+                List<ExclusionCircle> circles = path.ToCircles();
+
+                // Any point within 3.5 m of the polyline is inside a circle.
+                for (int i = 0; i + 1 < corners.Length; i++)
+                {
+                    Vector3 along = (corners[i + 1] - corners[i]).normalized;
+                    Vector3 side = Vector3.Cross(Vector3.up, along);
+                    for (float t = 0f; t <= 1f; t += 0.01f)
+                    {
+                        Vector3 point = Vector3.Lerp(corners[i], corners[i + 1], t) + side * 3.5f;
+                        Assert.That(circles.Exists(circle => circle.Contains(point)), Is.True, $"gap at {point}");
+                    }
+                }
+
+                Assert.That(circles.Exists(circle => circle.Contains(new Vector3(15f, 0f, 10f))), Is.False, "the path is wider than its radius");
+            }
+            finally
+            {
+                Object.DestroyImmediate(gameObject);
+            }
+        }
     }
 }

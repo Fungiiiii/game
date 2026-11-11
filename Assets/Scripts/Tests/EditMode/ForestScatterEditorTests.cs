@@ -76,6 +76,9 @@ namespace Fungiiiii.Tests.EditMode
             }
         }
 
+        // Requirement changed with the low poly forest: a later layer now loses the
+        // instances that would grow into an earlier layer's, so only the first layer
+        // keeps every placement.
         [Test]
         public void EachLayerBecomesItsOwnPrototype()
         {
@@ -86,7 +89,69 @@ namespace Fungiiiii.Tests.EditMode
             TreeInstance[] instances = terrain.terrainData.treeInstances;
             Assert.That(terrain.terrainData.treePrototypes.Length, Is.EqualTo(2));
             Assert.That(instances.Count(i => i.prototypeIndex == 0), Is.EqualTo(trees.ComputePlacements(NoExclusions).Count));
-            Assert.That(instances.Count(i => i.prototypeIndex == 1), Is.EqualTo(rocks.ComputePlacements(NoExclusions).Count));
+            Assert.That(instances.Count(i => i.prototypeIndex == 1), Is.InRange(1, rocks.ComputePlacements(NoExclusions).Count));
+        }
+
+        [Test]
+        public void InstancesOfDifferentLayersNeverGrowIntoEachOther()
+        {
+            CreateLayer("Rocks", seed: 99);
+            CreateLayer("Bushes", seed: 1234);
+
+            TerrainForestGenerator.Generate(terrain, NoExclusions);
+
+            TreeInstance[] instances = terrain.terrainData.treeInstances;
+            float spacing = TerrainForestGenerator.CrossLayerSpacing(5f, 5f);
+            for (int i = 0; i < instances.Length; i++)
+            {
+                for (int j = i + 1; j < instances.Length; j++)
+                {
+                    if (instances[i].prototypeIndex == instances[j].prototypeIndex)
+                    {
+                        continue;
+                    }
+
+                    var a = new Vector2(instances[i].position.x, instances[i].position.z) * TerrainSize;
+                    var b = new Vector2(instances[j].position.x, instances[j].position.z) * TerrainSize;
+                    Assert.That(Vector2.Distance(a, b), Is.GreaterThanOrEqualTo(spacing - 0.001f));
+                }
+            }
+        }
+
+        [Test]
+        public void InstancesOnASlopeSinkSoNoSideFloats()
+        {
+            // A constant 20 degree slope rising along X, starting 5 m above the
+            // terrain's bottom so every foot has room to sink.
+            TerrainData data = terrain.terrainData;
+            int n = data.heightmapResolution;
+            const float floor = 5f;
+            float rise = TerrainSize * Mathf.Tan(20f * Mathf.Deg2Rad);
+            data.size = new Vector3(TerrainSize, floor + rise, TerrainSize);
+            var heights = new float[n, n];
+            for (int z = 0; z < n; z++)
+            {
+                for (int x = 0; x < n; x++)
+                {
+                    heights[z, x] = (floor + rise * x / (n - 1f)) / (floor + rise);
+                }
+            }
+
+            data.SetHeights(0, 0, heights);
+
+            TerrainForestGenerator.Generate(terrain, NoExclusions);
+
+            float footRadius = TerrainForestGenerator.FootRadius(prefab);
+            Assume.That(footRadius, Is.GreaterThan(0.1f));
+            foreach (TreeInstance instance in data.treeInstances)
+            {
+                float ground = data.GetInterpolatedHeight(instance.position.x, instance.position.z);
+                float foot = instance.position.y * data.size.y;
+                float expected = TerrainForestGenerator.SinkDepth(footRadius * instance.widthScale, 20f);
+                Assert.That(ground - foot, Is.EqualTo(expected).Within(0.05f));
+                Assert.That(ground - foot, Is.GreaterThan(footRadius * instance.widthScale * Mathf.Tan(20f * Mathf.Deg2Rad) - 0.01f),
+                    "the downhill edge of the foot floats above the ground");
+            }
         }
 
         [Test]
@@ -121,6 +186,34 @@ namespace Fungiiiii.Tests.EditMode
 
             Assert.That(Seed(), Is.EqualTo(OriginalSeed));
             Assert.That(Positions(), Is.EqualTo(before));
+        }
+
+        [Test]
+        public void NoInstanceOnGroundSteeperThanTheLayerAllows()
+        {
+            // A ramp along X: 0 m high on the left half, rising 30 m over the right half.
+            TerrainData data = terrain.terrainData;
+            int n = data.heightmapResolution;
+            var heights = new float[n, n];
+            for (int z = 0; z < n; z++)
+            {
+                for (int x = n / 2; x < n; x++)
+                {
+                    heights[z, x] = (x - n / 2f) / (n / 2f);
+                }
+            }
+
+            data.size = new Vector3(TerrainSize, 30f, TerrainSize);
+            data.SetHeights(0, 0, heights);
+            trees.ConfigureLimits(Vector2.zero, slope: 20f);
+
+            TerrainForestGenerator.Generate(terrain, NoExclusions);
+
+            Assert.That(data.treeInstances, Is.Not.Empty);
+            foreach (TreeInstance instance in data.treeInstances)
+            {
+                Assert.That(TerrainForestGenerator.Steepness(data, instance.position.x, instance.position.z), Is.LessThanOrEqualTo(20f));
+            }
         }
 
         private ForestScatter CreateLayer(string name, int seed)

@@ -35,7 +35,17 @@ namespace Fungiiiii.Runtime.World
         [SerializeField, Tooltip("Same seed, same layout. Change it for a different scatter.")]
         private int seed = 1;
 
+        [SerializeField, Tooltip("Empty rectangle (X, Z) in the middle of the area, in metres. Leave at 0 for none. Used for a ring of forest around the playable area.")]
+        private Vector2 innerHoleSize;
+
+        [SerializeField, Range(0f, 90f), Tooltip("No instance where the ground is steeper than this, in degrees. 90 places everywhere.")]
+        private float maxSlope = 90f;
+
         public GameObject Prefab => prefab;
+
+        public float MaxSlope => maxSlope;
+
+        public float MinDistance => minDistance;
 
         /// <summary>
         /// Where each instance goes, in world space. Y is left to the Terrain,
@@ -58,7 +68,7 @@ namespace Fungiiiii.Runtime.World
                 float yaw = (float)random.NextDouble() * 360f;
 
                 var position = origin + new Vector3(sample.x, 0f, sample.y);
-                if (IsExcluded(position, exclusions))
+                if (IsInHole(position) || IsExcluded(position, exclusions))
                 {
                     continue;
                 }
@@ -77,6 +87,18 @@ namespace Fungiiiii.Runtime.World
             maxScale = scaleMax;
             randomYRotation = rotate;
             seed = newSeed;
+        }
+
+        internal void ConfigureLimits(Vector2 holeSize, float slope)
+        {
+            innerHoleSize = holeSize;
+            maxSlope = slope;
+        }
+
+        private bool IsInHole(Vector3 position)
+        {
+            Vector3 offset = position - transform.position;
+            return Mathf.Abs(offset.x) < innerHoleSize.x * 0.5f && Mathf.Abs(offset.z) < innerHoleSize.y * 0.5f;
         }
 
         private static bool IsExcluded(Vector3 position, IReadOnlyList<ExclusionCircle> exclusions)
@@ -109,6 +131,10 @@ namespace Fungiiiii.Runtime.World
         {
             Gizmos.color = new Color(0.4f, 0.9f, 0.4f, 0.9f);
             Gizmos.DrawWireCube(transform.position, new Vector3(areaSize.x, 0.01f, areaSize.y));
+            if (innerHoleSize != Vector2.zero)
+            {
+                Gizmos.DrawWireCube(transform.position, new Vector3(innerHoleSize.x, 0.01f, innerHoleSize.y));
+            }
         }
 
         public readonly struct Placement
