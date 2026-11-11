@@ -5,6 +5,8 @@ namespace Fungiiiii.Runtime.World
     /// <summary>
     /// A circle on the ground where <see cref="ForestScatter"/> never places anything
     /// (spawn clearing, path, point of interest). Only the X/Z position matters.
+    /// The relief tool paints it with the clearing ground layer, and levels it when
+    /// <see cref="FlattenGround"/> is on.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class ScatterExclusionZone : MonoBehaviour
@@ -12,10 +14,19 @@ namespace Fungiiiii.Runtime.World
         [SerializeField, Min(0f), Tooltip("Radius of the empty area, in metres.")]
         private float radius = 8f;
 
+        [SerializeField, Tooltip("The relief tool levels the ground inside the circle, at the height of its centre.")]
+        private bool flattenGround;
+
         public float Radius
         {
             get => radius;
             set => radius = Mathf.Max(0f, value);
+        }
+
+        public bool FlattenGround
+        {
+            get => flattenGround;
+            set => flattenGround = value;
         }
 
         public ExclusionCircle ToCircle() => new ExclusionCircle(transform.position, radius);
