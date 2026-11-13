@@ -164,7 +164,7 @@ Tous ont l'origine au pied, l'échelle 1, un seul matériau `M_Fungi_Palette` re
 - **Bords nets des zones peintes** (0,75 m) : le low poly se lit avec des arêtes, pas des dégradés.
 - **Arbres dessinés jusqu'à 200 m**, juste avant la fin du brouillard. Les ombres restent à 80 m.
 - **Le Terrain de 1 km est gardé.** La zone jouable fait 600 m, entourée de 200 m de falaises et de forêt.
-- **Relief écrit par notre outil**, pas par Sylva : Sylva est trop réaliste pour ce jeu. (Hugo)
+- **Relief écrit par notre outil** : un générateur de terrain réaliste ne colle pas au style low poly du jeu. (Hugo)
 - **La pente max est limitée par axe à tan(40°)/√2.** C'est ce qui garantit qu'aucun triangle, quelle que soit sa diagonale, ne dépasse 40°.
 - **Hauteur de base 20 m.** Le sol reste au-dessus du fond du Terrain, où un arbre ne peut plus être enfoncé.
 - **Sol à facettes par Shader Graph** (cible Terrain Lit) : la normale de chaque pixel est celle de son triangle. (Hugo, 11/11)
@@ -176,7 +176,7 @@ Tous ont l'origine au pied, l'échelle 1, un seul matériau `M_Fungi_Palette` re
 - **La pente est mesurée sur les hauteurs**, pas avec `TerrainData.GetSteepness`, qui pouvait renvoyer une valeur périmée juste après `SetHeights`.
 - **`TreeBroad` n'est pas symétrique**, sinon la rotation aléatoire ne se voyait pas. (Hugo, 11/11)
 - **Champimaison : une clairière plate exclue de la répartition, plus un petit marqueur** `ChampimaisonSite` gardé dans le jeu.
-- **Joueur repris de `sylvatest-player`, posé dans la scène**, qui lit le clavier et la souris directement : c'est un joueur de test, pas le contrôleur du jeu. `minMoveDistance` à 0, sinon il n'était plus « au sol » à haut FPS.
+- **Joueur de test à la première personne, posé dans la scène** : sa position et son orientation sont le spawn. Il lit le clavier et la souris directement : c'est un joueur de test, pas le contrôleur du jeu. `minMoveDistance` à 0, sinon il n'était plus « au sol » à haut FPS.
 - **Un objet par chemin**, au lieu d'un cercle d'exclusion par segment.
 - Les décisions de la première version tiennent toujours : Terrain plutôt qu'objets, un calque par prototype, `LODGroup` à la racine, objets d'outil en `EditorOnly`, TerrainData en LFS, ombres à 80 m, `Palette.mat` mat, pas de reflets d'environnement.
 
@@ -237,7 +237,7 @@ Lancés en batchmode avec Unity 6000.3.21f1 sur la machine de Hugo (13/11). Log 
 ## Limitations connues
 
 - **FPS** : mesurés par Hugo le 13/11 sur RX 6800 XT + i5-12400F, jusqu'à 220 FPS. Le minimum n'a pas été relevé, ni une machine plus modeste.
-- Les captures sont rendues en batchmode : les spores y sont simulées à la main, et l'ambiance en mouvement n'a pas été vue en jeu.
+- Les captures sont rendues en batchmode : les spores y sont simulées à la main. L'ambiance en mouvement a été vue et validée en jeu par Hugo le 13/11.
 - Le Shader Graph du sol affiche à l'import des avertissements sur ses shaders `AddPass` et `BaseMapGen` introuvables. Sans effet visible avec 3 calques et `Basemap Distance` à 1000 m, mais non résolu.
 - La pente est limitée par axe, de façon prudente : en pratique, les pentes de la zone jouable restent plutôt sous 31° que sous 40°.
 - Le diff de la scène est gros : le `ParticleSystem` des spores occupe à lui seul des milliers de lignes de YAML, et les groupes `Clearings` et `Landmarks` ont été recréés.

@@ -4,10 +4,8 @@ using UnityEngine.InputSystem;
 namespace Fungiiiii.Runtime.Player
 {
     /// <summary>
-    /// Test-only first-person player, to walk through the Mystic Forest. Taken from
-    /// SylvaTestPlayerBootstrap (branch test/12487v2byt9-sylvatest-player), but placed
-    /// in the scene instead of spawning itself: its position and facing in the scene
-    /// are the spawn.
+    /// Test-only first-person player, to walk through the Mystic Forest. It is placed
+    /// in the scene: its position and facing in the scene are the spawn.
     ///
     /// Deliberately standalone and minimal: it reads devices directly instead of going
     /// through the shared input actions, and it is not the game's player controller.
