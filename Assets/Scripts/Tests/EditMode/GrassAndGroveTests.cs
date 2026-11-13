@@ -85,6 +85,34 @@ namespace Fungiiiii.Tests.EditMode
             }
         }
 
+        [Test]
+        public void HeightVariesApartFromWidthWithinItsShare()
+        {
+            var gameObject = new GameObject("HeightVariationTest");
+            try
+            {
+                var scatter = gameObject.AddComponent<ForestScatter>();
+                scatter.Configure(new Vector2(120f, 120f), 6f, 0.8f, 1.4f, rotate: true, newSeed: 3);
+                scatter.ConfigureHeightVariation(0.15f);
+
+                List<ForestScatter.Placement> placements = scatter.ComputePlacements(null);
+
+                int stretched = 0;
+                foreach (ForestScatter.Placement placement in placements)
+                {
+                    float ratio = placement.HeightScale / placement.Scale;
+                    Assert.That(ratio, Is.InRange(0.85f - 0.0001f, 1.15f + 0.0001f));
+                    stretched += Mathf.Abs(ratio - 1f) > 0.05f ? 1 : 0;
+                }
+
+                Assert.That(stretched, Is.GreaterThan(placements.Count / 2), "most trees should be visibly taller or shorter than their width suggests");
+            }
+            finally
+            {
+                Object.DestroyImmediate(gameObject);
+            }
+        }
+
         private static int[,] Grass(int seed, List<ExclusionCircle> exclusions, System.Func<int, int, bool> steep)
         {
             return GrassDensity.Compute(Resolution, Origin, CellSize, seed, patchSize: 18f, coverage: 0.55f, maxDensity: 6, exclusions, steep);

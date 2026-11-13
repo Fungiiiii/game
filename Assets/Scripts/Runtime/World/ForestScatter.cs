@@ -47,6 +47,9 @@ namespace Fungiiiii.Runtime.World
         [SerializeField, Range(0f, 1f), Tooltip("Roughly the share of the area covered by groves; the rest stays open. Only used when Grove Size is above 0.")]
         private float groveCoverage = 0.6f;
 
+        [SerializeField, Range(0f, 0.5f), Tooltip("Height drawn apart from the width, as a share: 0.15 makes some trees up to 15 % taller or shorter than their width suggests. Two trees of the same model never share a silhouette.")]
+        private float heightVariation;
+
         public GameObject Prefab => prefab;
 
         public float MaxSlope => maxSlope;
@@ -72,6 +75,7 @@ namespace Fungiiiii.Runtime.World
                 // a zone doesn't reshuffle every other tree.
                 float scale = Mathf.Lerp(minScale, maxScale, (float)random.NextDouble());
                 float yaw = (float)random.NextDouble() * 360f;
+                float stretch = Mathf.Lerp(1f - heightVariation, 1f + heightVariation, (float)random.NextDouble());
 
                 var position = origin + new Vector3(sample.x, 0f, sample.y);
                 if (IsInHole(position) || !IsInGrove(position) || IsExcluded(position, exclusions))
@@ -79,7 +83,7 @@ namespace Fungiiiii.Runtime.World
                     continue;
                 }
 
-                result.Add(new Placement(position, scale, randomYRotation ? yaw : 0f));
+                result.Add(new Placement(position, scale, randomYRotation ? yaw : 0f, scale * stretch));
             }
 
             return result;
@@ -99,6 +103,11 @@ namespace Fungiiiii.Runtime.World
         {
             innerHoleSize = holeSize;
             maxSlope = slope;
+        }
+
+        internal void ConfigureHeightVariation(float variation)
+        {
+            heightVariation = variation;
         }
 
         internal void ConfigureGroves(float size, float coverage)
@@ -170,14 +179,23 @@ namespace Fungiiiii.Runtime.World
         public readonly struct Placement
         {
             public Placement(Vector3 position, float scale, float yaw)
+                : this(position, scale, yaw, scale)
             {
+            }
+
+            public Placement(Vector3 position, float scale, float yaw, float heightScale)
+            {
+                HeightScale = heightScale;
                 Position = position;
                 Scale = scale;
                 Yaw = yaw;
             }
 
             public Vector3 Position { get; }
+            /// <summary>Width scale.</summary>
             public float Scale { get; }
+
+            public float HeightScale { get; }
             public float Yaw { get; }
         }
     }

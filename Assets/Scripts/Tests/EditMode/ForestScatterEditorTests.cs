@@ -72,6 +72,7 @@ namespace Fungiiiii.Tests.EditMode
                 Assert.That(instance.position.x, Is.InRange(0f, 1f));
                 Assert.That(instance.position.z, Is.InRange(0f, 1f));
                 Assert.That(instance.widthScale, Is.InRange(0.85f, 1.25f));
+                // No height variation on this layer: height follows width.
                 Assert.That(instance.heightScale, Is.EqualTo(instance.widthScale));
             }
         }

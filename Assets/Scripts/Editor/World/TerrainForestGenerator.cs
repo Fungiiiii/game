@@ -103,7 +103,7 @@ namespace Fungiiiii.Editor.World
                     {
                         position = normalised,
                         widthScale = placement.Scale,
-                        heightScale = placement.Scale,
+                        heightScale = placement.HeightScale,
                         rotation = placement.Yaw * Mathf.Deg2Rad,
                         color = Color.white,
                         lightmapColor = Color.white,
