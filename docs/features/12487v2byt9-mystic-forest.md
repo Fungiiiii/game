@@ -20,7 +20,7 @@ Pour le joueur :
 - [x] Le joueur apparaît posé au sol, au bord sud d'une clairière de départ de 16 m de rayon, sans chute ni glissade.
 - [x] Il apparaît face à l'**arbre géant** (environ 52 m de haut), à environ 140 m, au bout d'une trouée droite de 14 m de large. Le sol de la trouée est plus clair.
 - [x] **Ambiance pesante et magique** : un ciel en dégradé gris-bleu, un brouillard bleu-violet qui se referme entre 15 et 185 m, et un soleil chaud et bas aux ombres nettes. L'étalonnage rend les ombres froides et les lumières chaudes, avec un vignettage. Des spores bleu clair et violet clair tombent lentement autour du joueur.
-- [x] Le sol a du relief en plateaux et pentes franches, rendu en petites facettes de 2 m. Toute pente de la zone jouable est franchissable : 40° au plus, sous la limite de 45° du joueur.
+- [x] Le sol a un relief doux en plateaux et pentes franches, rendu en petites facettes de 2 m, sans bosses au hasard. Toute pente de la zone jouable est franchissable : 40° au plus, sous la limite de 45° du joueur.
 - [x] Les bords de la map sont naturels : une ligne de falaises irrégulière, en gradins de hauteurs variées, aux faces rocheuses accidentées et semées de gros rochers au pied, couronnée d'une forêt très dense. Impossible à gravir, et aucun mur invisible.
 - [x] **Sous-bois** : herbe par plaques (jamais sur les chemins, dans les clairières ni sur les pentes raides), buissons, fougères et groupes de champignons rouges et violets.
 - [x] Les arbres poussent **en bosquets**, avec des trouées entre eux, au lieu d'une plantation régulière.
@@ -41,7 +41,8 @@ Pour le joueur :
   ![L'arbre géant](../screenshots/mystic-forest-giant.png)
   ![Le creux à l'ouest](../screenshots/mystic-forest-hollow.png)
 
-- [x] Des chemins (trouées au sol clair) relient les points d'intérêt en boucle, sans cul-de-sac. Trois petites clairières de respiration coupent la forêt dense entre les zones.
+- [x] **Couleurs du sol** : terre brune sous les arbres, mousse verte dans les clairières et sous les plaques d'herbe, terre de chemin sableuse, roche grise sur les falaises.
+- [x] Des chemins relient les points d'intérêt en boucle, sans cul-de-sac. Ce sont des courbes lisses, sur un sol aplani : un sentier de terre sableuse au milieu d'une trouée bordée de mousse. Trois petites clairières de respiration coupent la forêt dense entre les zones.
 - [x] Les arbres ont une rotation aléatoire. Deux modèles ne poussent jamais l'un dans l'autre, et aucun pied d'arbre ne flotte au-dessus d'une pente.
 - [x] Quatre emplacements de Champimaison : sol plat de 7 m de rayon, sans arbre ni herbe, sur un chemin ou à côté.
 - [x] Les arbres sont dessinés jusqu'à 200 m, l'herbe jusqu'à 90 m. Les ombres restent à 80 m.
@@ -75,10 +76,10 @@ Pour le level design :
 | Objet | Rôle |
 |---|---|
 | `Terrain` | 1000 × 80 × 1000 m en (-500, 0, -500). Heightmap 513 (facettes de 1,95 m), splatmap 1024, détails 512 × 512 (cases de 2 m). Données dans `MysticForestTerrainData.asset` (LFS). |
-| `Terrain/Relief` | `TerrainRelief` centré en (0, 0) : seed 20716, zone jouable 600 × 600 m, base 20 m, collines ±16 m tous les 170 m, 3 octaves, paliers de 4 m dont 30 % en pente, pente max 40°. Falaises : 2 gradins de 14 m (±25 %) tous les 30 m, ligne qui ondule de ±12 m, rugosité de ±3 m. Sol jouable : rugosité de ±0,5 m. Raccord des zones plates sur 6 m. |
+| `Terrain/Relief` | `TerrainRelief` centré en (0, 0) : seed 20716, zone jouable 600 × 600 m, base 20 m, collines ±11 m tous les 220 m, 2 octaves, paliers de 4 m dont 30 % en pente, pente max 40°. Falaises : 2 gradins de 14 m (±25 %) tous les 30 m, ligne qui ondule de ±12 m, rugosité de ±3 m. Sol jouable : bruit doux de ±0,3 m (longueur d'onde 9 m). Chemins lissés sur 6 m de part et d'autre de leur axe. Raccord des zones plates sur 6 m. |
 | `Terrain/Grass` | `TerrainGrass` : touffe `GrassTuft`, seed 31201, plaques de 16 m, 60 % du sol, 5 touffes au plus par case de 2 m, pente max 30°. |
 | `Terrain/<calques>` | 17 calques `ForestScatter`, dans l'ordre de priorité du tableau ci-dessous. |
-| `Clearings` | `StartClearing` (spawn, r 16, aplani), clairières des points d'intérêt, de respiration, et 9 chemins `ScatterExclusionPath`. `EditorOnly`. |
+| `Clearings` | `StartClearing` (spawn, r 16, aplani), clairières des points d'intérêt, de respiration, et 9 chemins `ScatterExclusionPath` (trouée de 10 m, 14 m vers le géant ; sentier peint sur 45 % de la largeur). `EditorOnly`. |
 | `ChampimaisonSites/ChampimaisonSite_01..04` | `ChampimaisonSite` (rayon 5 m) gardé dans le jeu, avec un enfant `Clearing` `EditorOnly` (r 7, aplani). |
 | `Landmarks` | `PF_TreeGiant` (×1,8), gros rochers, pierres levées, champignons et fougères posés à la main au spawn et autour du géant. |
 | `Player` | `CharacterController` + `FirstPersonTestPlayer`, `Main Camera` en enfant à 0,7 m (œil à 1,6 m du sol), post-traitement et SMAA activés. Sa position et son orientation sont le spawn. |
@@ -103,7 +104,7 @@ Pour le level design :
 | `ZoneC_Fern` | `PF_Fern` | zone C | 4 m | 0,8–1,5 | 30° | 30 m, 40 % | 31103 |
 | `Rocks_Large` / `_Medium` / `_Small` (ex-`Forest_Rocks_*`) | `PF_Rock_*` | (0, 0), 640 × 640 | 6 / 8 / 8 m | inchangées | — | — | 2 / 94770 / 30709 |
 
-Au total, 26 466 instances d'arbres de Terrain, plus l'herbe.
+Au total, 26 765 instances d'arbres de Terrain, plus l'herbe.
 
 **Modèles** (`Assets/Art/Models/Environment/`, générés par `tools/blender/generate_forest_models.py`) :
 
@@ -112,17 +113,17 @@ Au total, 26 466 instances d'arbres de Terrain, plus l'herbe.
 | `Tree` (existant, pour comparer) | 388 | 23,4 m | Wood dark, Green dark | capsule r 0,45 |
 | `TreeBroad` | 407 | ~16 m, feuillage dès 6 m | Wood, Leaf warm, Leaf warm shade | capsule r 0,55 × 7 m |
 | `TreePine` | 366 | ~22 m, étages dès 4 m | Wood dark, Pine, Pine shade | capsule r 0,45 × 20 m |
-| `TreeGiant` | 552 | ~29 m (×1,8 dans la scène) | Bark pale, Giant leaf, Green dark | mesh collider |
+| `TreeGiant` | 562 | ~29 m (×1,8 dans la scène) | Bark pale, Giant leaf, Green dark | mesh collider |
 | `Rock_Boulder` | 80 | ~3,8 × 3,2 × 2,6 m | Rock base, Rock shadow, Green | mesh collider convexe |
 | `Rock_Spire` | 42 | ~2,3 × 5,2 m | Rock light, base, shadow, Green | mesh collider convexe |
-| `GrassTuft` | 18 | ~0,6 m, 9 brins vus des deux côtés | Grass, Grass shade | — (détail du Terrain, pas de prefab) |
+| `GrassTuft` | 27 | ~0,6 m, 9 brins pleins à trois faces | Grass, Grass shade | — (détail du Terrain, pas de prefab) |
 | `Bush` | 120 | ~1,3 m | Green, Green dark | sans collider |
-| `Fern` | 28 | ~0,5 m, 7 frondes vues des deux côtés | Green dark, Pine shade | sans collider |
+| `Fern` | 56 | ~0,5 m, 7 frondes fermées avec une nervure | Green dark, Pine shade | sans collider |
 | `MushroomCluster` | 200 | ~0,6 m, 4 champignons à chapeau rond et points clairs | Mushroom red, Mushroom violet, Body light, Body base, White | sans collider |
 
 Tous ont l'origine au pied, l'échelle 1, un seul matériau `M_Fungi_Palette` remappé sur `Palette.mat`, un `LODGroup` à un seul LOD.
 
-**Sol et ciel :** `TerrainFaceted.mat` (Shader Graph `Fungiiiii/TerrainFaceted`), calques `ForestFloor` (6B5436), `ClearingFloor` (8F8150), `Cliff` (7A7276). Ciel `SkyGradient.mat` (shader `Fungiiiii/SkyGradient`) : haut 748093, horizon = brouillard 344758, bas 1E2630. Lumière ambiante Trilight : ciel 5E6E8C, horizon 4C5852, sol 504230. Soleil FFDFAE, intensité 1,3, ombres dures, force 0,85, à 34° de hauteur.
+**Sol et ciel :** `TerrainFaceted.mat` (Shader Graph `Fungiiiii/TerrainFaceted`), 4 calques dans cet ordre : `ForestFloor` (terre, 6B5436), `MossFloor` (mousse, 5E7036), `Cliff` (roche, 7A7276), `PathSoil` (chemin, A38D5E). Ciel `SkyGradient.mat` (shader `Fungiiiii/SkyGradient`) : haut 748093, horizon = brouillard 344758, bas 1E2630. Lumière ambiante Trilight : ciel 5E6E8C, horizon 4C5852, sol 504230. Soleil FFDFAE, intensité 1,3, ombres dures, force 0,85, à 34° de hauteur.
 
 **Scripts :**
 
@@ -133,7 +134,7 @@ Tous ont l'origine au pied, l'échelle 1, un seul matériau `M_Fungi_Palette` re
 | `Editor/World/ReliefGenerator.cs` | Calcul du heightmap en C# pur, déterministe : paliers, falaises irrégulières, rugosité, zones plates, limite de pente. |
 | `Editor/World/TerrainReliefTool.cs`, `TerrainReliefEditor.cs` | Écriture dans le Terrain, peinture du sol, bouton de l'Inspector. |
 | `Runtime/World/TerrainGrass.cs`, `Editor/World/GrassDensity.cs` | Réglages et calcul déterministe de l'herbe. |
-| `Runtime/World/ScatterExclusionPath.cs` | Chemin d'exclusion en polyligne. |
+| `Runtime/World/ScatterExclusionPath.cs` | Chemin d'exclusion en courbe (Catmull-Rom). |
 | `Runtime/World/ForestScatter.cs`, `ScatterExclusionZone.cs`, `Editor/World/TerrainForestGenerator.cs` | Trou, pente max, bosquets, priorité entre calques, enfoncement sur pente, aplanissement, écriture de l'herbe. |
 | `Runtime/Player/FirstPersonTestPlayer.cs` | Joueur de test à la première personne. |
 | `Runtime/Champimaison/ChampimaisonSite.cs` | Marqueur d'emplacement. |
@@ -152,7 +153,10 @@ Tous ont l'origine au pied, l'échelle 1, un seul matériau `M_Fungi_Palette` re
 - **Herbe en détails du Terrain**, en mode « nombre d'instances ». En mode « couverture », celui par défaut, les valeurs 1 à 5 étaient lues comme une part de 255 et presque rien ne s'affichait.
 - **La touffe d'herbe est exportée avec Apply Transform.** Les détails du Terrain ignorent la rotation de -90° sur X de la racine importée : l'herbe s'affichait couchée. C'est la seule exception à la règle d'export.
 - **`Palette.mat` en GPU instancing** : les détails instanciés l'exigent.
-- **Heightmap 513 et rugosité du sol de ±0,5 m** : des facettes de 2 m qui accrochent la lumière, sinon les plateaux restaient lisses.
+- **Heightmap 513 et bruit doux de ±0,3 m sur le sol** : des facettes de 2 m qui accrochent la lumière. Une valeur au hasard par échantillon rendait le sol cabossé : remplacée par un bruit continu. Collines moins hautes (±11 m) et plus larges (220 m). (Hugo, 13/11)
+- **Chemins en courbes lisses, sur un sol aplani** : un chemin se lit par sa régularité. Le sentier sableux n'occupe que le milieu de la trouée, bordé de mousse. (Hugo, 13/11)
+- **Quatre couleurs de sol** : terre, mousse, chemin, roche. Mousse sous les plaques d'herbe (le même bruit, un peu plus large) : l'herbe pousse sur du vert, pas sur de la terre nue. Quatre calques, c'est le maximum du shader du sol en une passe. (Hugo, 13/11)
+- **Modèles fermés** : Unity ne dessine qu'un côté des faces. Les brins d'herbe sont des pointes à trois faces, les frondes de fougère des losanges fermés, et les contreforts du géant ont toutes leurs faces tournées vers l'extérieur (certaines étaient retournées : on voyait à travers). (Hugo, 13/11)
 - **La limite de pente a changé d'algorithme.** L'ancienne relaxation par paires oscillait sans fin à 513 échantillons, entre les clairières plates et la rugosité. La nouvelle propage d'abord un plancher depuis les clairières, puis ne fait que descendre le sol, jamais sous ce plancher. Les deux étapes sont monotones : elle s'arrête toujours.
 - **Falaises irrégulières** : la ligne ondule, les gradins varient de ±25 %, les faces sont rugueuses et des rochers sont semés à leur pied. Le bord ne se lit plus comme un mur droit.
 - **Géant à ×1,8** (environ 52 m) : à ×1,25, il ne dépassait pas assez la canopée.
@@ -171,14 +175,14 @@ Tous ont l'origine au pied, l'échelle 1, un seul matériau `M_Fungi_Palette` re
 - **`TreeBroad` n'est pas symétrique**, sinon la rotation aléatoire ne se voyait pas. (Hugo, 11/11)
 - **Champimaison : une clairière plate exclue de la répartition, plus un petit marqueur** `ChampimaisonSite` gardé dans le jeu.
 - **Joueur repris de `sylvatest-player`, posé dans la scène**, qui lit le clavier et la souris directement : c'est un joueur de test, pas le contrôleur du jeu. `minMoveDistance` à 0, sinon il n'était plus « au sol » à haut FPS.
-- **Chemins en polyligne**, un objet par chemin.
+- **Un objet par chemin**, au lieu d'un cercle d'exclusion par segment.
 - Les décisions de la première version tiennent toujours : Terrain plutôt qu'objets, un calque par prototype, `LODGroup` à la racine, objets d'outil en `EditorOnly`, TerrainData en LFS, ombres à 80 m, `Palette.mat` mat, pas de reflets d'environnement.
 
 ## Tests
 
 ### Automatisés (Unity Test Runner)
 
-Lancés en batchmode avec Unity 6000.3.21f1 sur la machine de Hugo (13/11). Log et XML lus : **EditMode 80/80, PlayMode 17/17.**
+Lancés en batchmode avec Unity 6000.3.21f1 sur la machine de Hugo (13/11). Log et XML lus : **EditMode 81/81, PlayMode 17/17.**
 
 | Test | Mode | Couvre | Résultat |
 |---|---|---|---|
@@ -186,7 +190,8 @@ Lancés en batchmode avec Unity 6000.3.21f1 sur la machine de Hugo (13/11). Log 
 | `PlacementsRespectScaleRangeRotationAndExclusions` | EditMode | échelle, rotation, zones d'exclusion | ✅ |
 | `InnerHoleStaysEmptyAndLeavesTheRestUnchanged` | EditMode | anneau de bordure | ✅ |
 | `GrovesLeaveOpenGroundWithoutReshufflingTheTrees` | EditMode | bosquets | ✅ |
-| `PathCirclesCoverTheWholeCorridor` | EditMode | chemins sans trou | ✅ |
+| `PathCirclesCoverTheWholeCorridor` | EditMode | chemins sans trou. **Exigence modifiée :** courbes lisses passant par chaque point, au lieu d'une polyligne | ✅ |
+| `PathGroundIsSmootherThanTheGroundAround` | EditMode | sol aplani le long des chemins | ✅ |
 | `SameSeedGivesSameGrass` | EditMode | herbe déterministe | ✅ |
 | `GrassGrowsInPatchesWithBareGroundBetween` | EditMode | herbe par plaques | ✅ |
 | `NoGrassInClearingsPathsOrOnSteepGround` | EditMode | herbe absente des clairières, chemins, pentes | ✅ |
@@ -216,11 +221,11 @@ Lancés en batchmode avec Unity 6000.3.21f1 sur la machine de Hugo (13/11). Log 
 | 2 | Regarder autour de soi sans bouger. | Ciel gris-bleu en dégradé, horizon de la couleur du brouillard. Spores bleu clair et violet clair qui tombent lentement ; en tournant la tête, elles restent en place dans l'air. | |
 | 3 | Marcher (ZQSD / WASD, Maj pour sprinter, Espace pour sauter) jusqu'au géant en suivant le sol clair. | Environ 30 s de marche. Le géant dépasse nettement la canopée, des champignons à ses racines. On ne traverse ni le tronc ni les contreforts. | |
 | 4 | Suivre les chemins clairs : amas de rochers à l'est, pierres levées au nord, creux à l'ouest, retour au spawn. | Une boucle complète sans cul-de-sac. Chaque zone a son arbre, son sous-bois et son ambiance. Les arbres forment des bosquets avec des trouées. | |
-| 5 | Regarder le sol en marchant. | Herbe en plaques, jamais sur les chemins ni dans les clairières. Fougères en zone B, buissons en zones A et C. Le sol est en petites facettes nettes. | |
+| 5 | Regarder le sol en marchant, de près, en tournant autour des touffes, des fougères et du pied du géant. | Herbe en plaques sur de la mousse, jamais sur les chemins ni dans les clairières. Fougères en zone B, buissons en zones A et C. On ne voit à travers aucun modèle, sous aucun angle. Sol en facettes douces : terre, mousse, sentier sableux, roche. | |
 | 6 | Monter et descendre les pentes, partout dans la zone jouable. | Aucune pente ne bloque le joueur. | |
 | 7 | Aller jusqu'à un bord de la map et essayer de grimper, en sautant. | Une falaise irrégulière et rocheuse, de gros rochers au pied, une forêt dense au-dessus. Infranchissable, aucun mur invisible. | |
 | 8 | Regarder les pieds des arbres sur les pentes, et les arbres proches les uns des autres. | Aucun pied ne flotte. Aucun arbre ne pousse dans un autre. Orientations variées. | |
-| 9 | Sélectionner `Terrain/Relief`, cliquer **Generate relief + forest**, puis Ctrl+Z. | Rien ne change (même seed), herbe comprise. Après Ctrl+Z, toujours rien. La Console affiche « Relief generated, 26466 trees regenerated ». | |
+| 9 | Sélectionner `Terrain/Relief`, cliquer **Generate relief + forest**, puis Ctrl+Z. | Rien ne change (même seed), herbe comprise. Après Ctrl+Z, toujours rien. La Console affiche « Relief generated, 26765 trees regenerated ». | |
 | 10 | **New seed + Generate relief + forest**, puis Ctrl+Z une fois. | Un autre relief, une autre forêt, une autre herbe. Un seul Ctrl+Z ramène l'ancien relief, l'ancienne forêt **et** l'ancienne seed. | |
 | 11 | Sélectionner `ChampimaisonSites/ChampimaisonSite_01..04`. | Chaque site est sur un sol plat, vide d'arbres et d'herbe, accessible à pied. | |
 | 12 | Window > Analysis > Physics Debugger, Play. | Capsules sur les troncs, mesh colliders sur le géant et les gros rochers posés à la main, rien sur le sous-bois ni les petits cailloux. | |
