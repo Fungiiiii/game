@@ -236,7 +236,7 @@ Lancés en batchmode avec Unity 6000.3.21f1 sur la machine de Hugo (13/11). Log 
 
 ## Limitations connues
 
-- **Les FPS ne sont pas mesurés** (test manuel 13). L'herbe, le post-traitement et les arbres à 200 m coûtent : rien ne garantit encore 120 FPS.
+- **FPS** : mesurés par Hugo le 13/11 sur RX 6800 XT + i5-12400F, jusqu'à 220 FPS. Le minimum n'a pas été relevé, ni une machine plus modeste.
 - Les captures sont rendues en batchmode : les spores y sont simulées à la main, et l'ambiance en mouvement n'a pas été vue en jeu.
 - Le Shader Graph du sol affiche à l'import des avertissements sur ses shaders `AddPass` et `BaseMapGen` introuvables. Sans effet visible avec 3 calques et `Basemap Distance` à 1000 m, mais non résolu.
 - La pente est limitée par axe, de façon prudente : en pratique, les pentes de la zone jouable restent plutôt sous 31° que sous 40°.
