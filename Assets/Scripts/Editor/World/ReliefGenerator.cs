@@ -36,7 +36,8 @@ namespace Fungiiiii.Editor.World
         /// <summary>
         /// Heights in metres, indexed [z, x] like TerrainData.SetHeights.
         /// </summary>
-        internal static float[,] Generate(ReliefSettings settings, ReliefGrid grid, Vector2 playableCentre, IReadOnlyList<ExclusionCircle> flatAreas)
+        internal static float[,] Generate(ReliefSettings settings, ReliefGrid grid, Vector2 playableCentre,
+            IReadOnlyList<ExclusionCircle> flatAreas, IReadOnlyList<ExclusionCircle> paths = null)
         {
             int n = grid.Resolution;
             var heights = new float[n, n];
@@ -65,14 +66,82 @@ namespace Fungiiiii.Editor.World
                     }
                     else
                     {
-                        heights[z, x] += (ValueNoise.Lattice(x, z, unchecked(settings.Seed + 401)) - 0.5f) * 2f * settings.GroundRoughness;
+                        // A gentle noise, not a random value per sample: small facets, no rubble.
+                        heights[z, x] += (ValueNoise.Fbm(position / 9f, 2, unchecked(settings.Seed + 401)) - 0.5f) * 2f * settings.GroundRoughness;
                     }
                 }
             }
 
+            SmoothPaths(grid, paths, heights, cliff);
             Flatten(settings, grid, flatAreas, heights, cliff, fixedHeight);
             LimitSlope(settings, grid, heights, cliff, fixedHeight);
             return heights;
+        }
+
+        /// <summary>Half width of the averaging window along a path, in samples.</summary>
+        private const int PathSmoothing = 3;
+
+        /// <summary>
+        /// A path is walked ground: its bumps are averaged away, a little wider than
+        /// the path itself so its edges blend into the ground around.
+        /// </summary>
+        private static void SmoothPaths(ReliefGrid grid, IReadOnlyList<ExclusionCircle> paths, float[,] heights, bool[,] cliff)
+        {
+            if (paths == null || paths.Count == 0)
+            {
+                return;
+            }
+
+            int n = grid.Resolution;
+            var onPath = new bool[n, n];
+            foreach (ExclusionCircle circle in paths)
+            {
+                float reach = circle.Radius + grid.CellSize * 2f;
+                Vector2 local = (circle.Center - grid.Origin) / grid.CellSize;
+                int span = Mathf.CeilToInt(reach / grid.CellSize);
+                for (int z = Mathf.Max(0, (int)local.y - span); z <= Mathf.Min(n - 1, (int)local.y + span); z++)
+                {
+                    for (int x = Mathf.Max(0, (int)local.x - span); x <= Mathf.Min(n - 1, (int)local.x + span); x++)
+                    {
+                        if (!cliff[z, x] && Vector2.Distance(grid.PositionOf(x, z), circle.Center) <= reach)
+                        {
+                            onPath[z, x] = true;
+                        }
+                    }
+                }
+            }
+
+            for (int pass = 0; pass < 2; pass++)
+            {
+                var source = (float[,])heights.Clone();
+                for (int z = 0; z < n; z++)
+                {
+                    for (int x = 0; x < n; x++)
+                    {
+                        if (!onPath[z, x])
+                        {
+                            continue;
+                        }
+
+                        float sum = 0f;
+                        int count = 0;
+                        for (int dz = -PathSmoothing; dz <= PathSmoothing; dz++)
+                        {
+                            for (int dx = -PathSmoothing; dx <= PathSmoothing; dx++)
+                            {
+                                int zz = z + dz, xx = x + dx;
+                                if (zz >= 0 && xx >= 0 && zz < n && xx < n && !cliff[zz, xx])
+                                {
+                                    sum += source[zz, xx];
+                                    count++;
+                                }
+                            }
+                        }
+
+                        heights[z, x] = sum / count;
+                    }
+                }
+            }
         }
 
         /// <summary>

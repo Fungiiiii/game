@@ -42,13 +42,13 @@ namespace Fungiiiii.Runtime.World
         private float baseHeight = 20f;
 
         [SerializeField, Min(0f), Tooltip("How far the hills go above and below the mean height, in metres.")]
-        private float hillAmplitude = 16f;
+        private float hillAmplitude = 11f;
 
         [SerializeField, Min(1f), Tooltip("Typical distance between two hills, in metres.")]
-        private float hillWavelength = 170f;
+        private float hillWavelength = 220f;
 
         [SerializeField, Range(1, 5)]
-        private int octaves = 3;
+        private int octaves = 2;
 
         [SerializeField, Min(0.1f), Tooltip("Height of one plateau step, in metres.")]
         private float terraceStep = 4f;
@@ -77,8 +77,8 @@ namespace Fungiiiii.Runtime.World
         [SerializeField, Min(0f), Tooltip("Random height of each cliff sample, in metres: rough rock faces instead of one flat wall.")]
         private float cliffRoughness = 3f;
 
-        [SerializeField, Min(0f), Tooltip("Random height of each walkable sample, in metres: small facets that catch the light. Level clearings stay level.")]
-        private float groundRoughness = 0.5f;
+        [SerializeField, Min(0f), Tooltip("Height of a gentle noise on walkable ground, in metres: small facets that catch the light. Level clearings and paths stay smooth.")]
+        private float groundRoughness = 0.3f;
 
         public int Seed => seed;
         public Vector2 PlayableSize => playableSize;

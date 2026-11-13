@@ -94,6 +94,34 @@ namespace Fungiiiii.Tests.EditMode
         }
 
         [Test]
+        public void PathGroundIsSmootherThanTheGroundAround()
+        {
+            var path = new List<ExclusionCircle>();
+            for (float x = -120f; x <= 120f; x += 2f)
+            {
+                path.Add(new ExclusionCircle(new Vector3(x, 0f, 20f), 4f));
+            }
+
+            float[,] rough = ReliefGenerator.Generate(Settings(seed: 6), Grid, Vector2.zero, NoFlats);
+            float[,] smoothed = ReliefGenerator.Generate(Settings(seed: 6), Grid, Vector2.zero, NoFlats, path);
+
+            float Bumpiness(float[,] h)
+            {
+                // Second difference along the path: zero on a straight slope, large on bumps.
+                float total = 0f;
+                int z = Mathf.RoundToInt((20f - Grid.Origin.y) / CellSize);
+                for (int x = Mathf.RoundToInt((-100f - Grid.Origin.x) / CellSize); x < Mathf.RoundToInt((100f - Grid.Origin.x) / CellSize); x++)
+                {
+                    total += Mathf.Abs(h[z, x - 1] - 2f * h[z, x] + h[z, x + 1]);
+                }
+
+                return total;
+            }
+
+            Assert.That(Bumpiness(smoothed), Is.LessThan(Bumpiness(rough) * 0.6f));
+        }
+
+        [Test]
         public void FlatAreasAreLevel()
         {
             var clearing = new ExclusionCircle(new Vector3(40f, 0f, -30f), 14f);

@@ -121,16 +121,17 @@ namespace Fungiiiii.Tests.EditMode
 
                 List<ExclusionCircle> circles = path.ToCircles();
 
-                // Any point within 3.5 m of the polyline is inside a circle.
-                for (int i = 0; i + 1 < corners.Length; i++)
+                // Requirement changed: paths are smooth curves through their corners,
+                // not polylines. The curve passes through every corner...
+                foreach (Vector3 corner in corners)
                 {
-                    Vector3 along = (corners[i + 1] - corners[i]).normalized;
-                    Vector3 side = Vector3.Cross(Vector3.up, along);
-                    for (float t = 0f; t <= 1f; t += 0.01f)
-                    {
-                        Vector3 point = Vector3.Lerp(corners[i], corners[i + 1], t) + side * 3.5f;
-                        Assert.That(circles.Exists(circle => circle.Contains(point)), Is.True, $"gap at {point}");
-                    }
+                    Assert.That(circles.Exists(circle => circle.Contains(corner)), Is.True, $"the path misses its corner {corner}");
+                }
+
+                // ...and leaves no gap: consecutive circles overlap well.
+                for (int i = 0; i + 1 < circles.Count; i++)
+                {
+                    Assert.That(Vector2.Distance(circles[i].Center, circles[i + 1].Center), Is.LessThanOrEqualTo(2f + 0.001f), $"gap after circle {i}");
                 }
 
                 Assert.That(circles.Exists(circle => circle.Contains(new Vector3(15f, 0f, 10f))), Is.False, "the path is wider than its radius");
