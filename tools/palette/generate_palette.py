@@ -53,6 +53,9 @@ PALETTE = {
     (6, 3): ("#2E5248", "Pine shade"),
     (6, 4): ("#A89078", "Bark pale"),
     (6, 5): ("#4F7F86", "Giant leaf"),
+    (6, 6): ("#8BAA4F", "Grass"),
+    (6, 7): ("#5F7E38", "Grass shade"),
+    (7, 0): ("#8E6CB8", "Mushroom violet"),
 }
 
 # Rock variants — replace the four hex values on row 4 with one of these ramps:
