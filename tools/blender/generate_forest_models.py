@@ -10,6 +10,10 @@
 #                    splits into three crowned limbs
 #   Rock_Boulder.fbx landmark boulder, ~3.5 m wide, moss on top
 #   Rock_Spire.fbx   standing stone, ~5 m tall
+#   GrassTuft.fbx    a tuft of blades, ~0.5 m, drawn as Terrain detail
+#   Bush.fbx         low bush, ~1.3 m
+#   Fern.fbx         arching fern, ~0.5 m
+#   MushroomCluster.fbx  four mushrooms, red and violet caps, ~0.6 m
 #
 # Every model follows what was measured on Tree.fbx: origin at the foot, Z up in
 # Blender, 1 unit = 1 m, one material named M_Fungi_Palette (remapped to
@@ -45,6 +49,13 @@ PINE = (6, 2)
 PINE_SHADE = (6, 3)
 BARK_PALE = (6, 4)
 GIANT_LEAF = (6, 5)
+GRASS = (6, 6)
+GRASS_SHADE = (6, 7)
+MUSHROOM_VIOLET = (7, 0)
+MUSHROOM_RED = (2, 0)
+BODY_LIGHT = (0, 0)
+BODY_BASE = (0, 1)
+SPOTS = (1, 1)
 
 GRID = 8
 
@@ -285,6 +296,97 @@ def rock_spire():
     return m.build("Rock_Spire")
 
 
+def two_sided(m, verts, front, back):
+    """A thin surface seen from both sides: the same polygon, both windings.
+    The back gets its own vertices, or Blender merges it into the front."""
+    m.face(verts, front)
+    m.face([m.vert(m.verts[v].copy()) for v in reversed(verts)], back)
+
+
+def grass_tuft():
+    rng = random.Random(6101)
+    m = MeshBuilder()
+    for k in range(9):
+        a = 2 * math.pi * k / 9 + rng.uniform(-0.3, 0.3)
+        dx, dy = math.cos(a), math.sin(a)
+        px, py = -dy * 0.07, dx * 0.07
+        base = (dx * 0.08, dy * 0.08, 0.0)
+        lean = rng.uniform(0.15, 0.3)
+        tip = (dx * lean, dy * lean, rng.uniform(0.4, 0.7))
+        left = m.vert((base[0] + px, base[1] + py, 0.0))
+        right = m.vert((base[0] - px, base[1] - py, 0.0))
+        top = m.vert(tip)
+        two_sided(m, [left, right, top], GRASS, GRASS_SHADE)
+    return m.build("GrassTuft")
+
+
+def bush():
+    rng = random.Random(6203)
+    m = MeshBuilder()
+    m.blob((0.0, 0.0, 0.7), (1.0, 0.95, 0.75), GREEN, GREEN_DARK, rng)
+    m.blob((0.75, 0.25, 0.45), (0.6, 0.55, 0.5), GREEN, GREEN_DARK, rng, subdivisions=1)
+    m.blob((-0.6, -0.4, 0.4), (0.55, 0.6, 0.45), GREEN_DARK, GREEN_DARK, rng, subdivisions=1)
+    return m.build("Bush")
+
+
+def fern():
+    rng = random.Random(6307)
+    m = MeshBuilder()
+    for k in range(7):
+        a = 2 * math.pi * k / 7 + rng.uniform(-0.2, 0.2)
+        dx, dy = math.cos(a), math.sin(a)
+        px, py = -dy, dx
+        reach = rng.uniform(0.8, 1.05)
+        rise = rng.uniform(0.38, 0.5)
+        width = 0.16
+        base = m.vert((0.0, 0.0, 0.05))
+        mid_l = m.vert((dx * reach * 0.5 + px * width, dy * reach * 0.5 + py * width, rise))
+        mid_r = m.vert((dx * reach * 0.5 - px * width, dy * reach * 0.5 - py * width, rise))
+        tip = m.vert((dx * reach, dy * reach, rise * 0.45))
+        two_sided(m, [base, mid_r, tip, mid_l], GREEN_DARK, PINE_SHADE)
+    return m.build("Fern")
+
+
+def mushroom(m, rng, x, y, height, cap_radius, cap_cell):
+    stem = m.ring((x, y, 0.0), cap_radius * 0.28, 6)
+    top = m.ring((x, y, height), cap_radius * 0.22, 6)
+    m.bridge(stem, top, BODY_LIGHT)
+    # A rounded cap: rim, shoulder, crown, then the pale gills underneath.
+    rim = m.ring((x, y, height - cap_radius * 0.1), cap_radius, 8, rng, 0.05)
+    shoulder = m.ring((x, y, height + cap_radius * 0.35), cap_radius * 0.82, 8, rng, 0.04, math.pi / 8)
+    crown = m.vert((x + rng.uniform(-0.02, 0.02), y + rng.uniform(-0.02, 0.02), height + cap_radius * 0.62))
+    m.bridge(rim, shoulder, cap_cell)
+    for i in range(8):
+        j = (i + 1) % 8
+        m.face([shoulder[i], shoulder[j], crown], cap_cell)
+    m.cap(rim, (x, y, height - cap_radius * 0.02), BODY_BASE, up=False)
+    # Pale spots on the cap, the Fungiiiii signature.
+    for k in (1, 4, 6):
+        a, b = m.verts[shoulder[k]], m.verts[crown]
+        centre = a.lerp(b, 0.3)
+        normal = (centre - Vector((x, y, height - cap_radius * 0.3))).normalized()
+        side = normal.cross(Vector((0, 0, 1))).normalized() * cap_radius * 0.2
+        up = side.cross(normal).normalized() * cap_radius * 0.2
+        lift = normal * cap_radius * 0.04
+        spot = [m.vert(centre + lift + offset) for offset in (side, up, -side, -up)]
+        m.face(spot, SPOTS)
+
+
+def mushroom_cluster():
+    rng = random.Random(6409)
+    m = MeshBuilder()
+    for x, y, height, radius, cell in ((0.0, 0.0, 0.55, 0.26, MUSHROOM_RED), (0.32, 0.12, 0.32, 0.17, MUSHROOM_VIOLET),
+                                       (-0.22, 0.24, 0.26, 0.13, MUSHROOM_RED), (-0.1, -0.3, 0.4, 0.2, MUSHROOM_VIOLET)):
+        mushroom(m, rng, x, y, height, radius, cell)
+    return m.build("MushroomCluster")
+
+
+# Terrain details draw the raw mesh with position, yaw and scale only, ignoring
+# the -90 X root rotation every other model imports with: these are exported
+# with Apply Transform on, so the mesh itself is Y up.
+BAKED_AXES = {"GrassTuft"}
+
+
 def export(obj):
     bpy.ops.object.select_all(action="DESELECT")
     obj.select_set(True)
@@ -302,7 +404,7 @@ def export(obj):
         axis_up="Y",
         apply_unit_scale=True,
         use_space_transform=True,
-        bake_space_transform=False,
+        bake_space_transform=obj.name in BAKED_AXES,
         mesh_smooth_type="FACE",
         use_mesh_modifiers=True,
         use_mesh_edges=False,
@@ -324,7 +426,7 @@ def main():
     scene = bpy.context.scene
     scene.unit_settings.system = "METRIC"
     scene.unit_settings.scale_length = 1.0
-    for build in (tree_broad, tree_pine, tree_giant, rock_boulder, rock_spire):
+    for build in (tree_broad, tree_pine, tree_giant, rock_boulder, rock_spire, grass_tuft, bush, fern, mushroom_cluster):
         export(build())
 
 
