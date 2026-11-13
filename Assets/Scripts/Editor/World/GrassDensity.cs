@@ -33,8 +33,9 @@ namespace Fungiiiii.Editor.World
                         continue;
                     }
 
-                    // From the edge of a patch (threshold) to its heart (+0.15): sparse, then thick.
-                    float heart = Mathf.InverseLerp(threshold, threshold + 0.15f, noise);
+                    // From the edge of a patch (threshold) to its heart (+0.08): a short
+                    // sparse fringe, then thick grass.
+                    float heart = Mathf.InverseLerp(threshold, threshold + 0.08f, noise);
                     density[z, x] = Mathf.Max(1, Mathf.RoundToInt(heart * maxDensity));
                 }
             }

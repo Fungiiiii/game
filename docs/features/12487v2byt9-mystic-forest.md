@@ -45,7 +45,7 @@ Pour le joueur :
 - [x] Des chemins relient les points d'intérêt en boucle, sans cul-de-sac. Ce sont des courbes lisses, sur un sol aplani : un sentier de terre sableuse au milieu d'une trouée bordée de mousse. Trois petites clairières de respiration coupent la forêt dense entre les zones.
 - [x] Les arbres ont une rotation aléatoire. Deux modèles ne poussent jamais l'un dans l'autre, et aucun pied d'arbre ne flotte au-dessus d'une pente.
 - [x] Quatre emplacements de Champimaison : sol plat de 7 m de rayon, sans arbre ni herbe, sur un chemin ou à côté.
-- [x] Les arbres sont dessinés jusqu'à 200 m, l'herbe jusqu'à 90 m. Les ombres restent à 80 m.
+- [x] Les arbres sont dessinés jusqu'à 200 m, l'herbe jusqu'à 75 m. Les ombres restent à 80 m.
 - [x] En jeu, on ne traverse pas les troncs, l'arbre géant ni les gros rochers posés à la main. Les petits cailloux, l'herbe, les buissons, les fougères, les champignons et les rochers du pied des falaises n'ont pas de collision.
 
 ![Vue d'ensemble, sans brouillard](../screenshots/mystic-forest-overview.png)
@@ -77,7 +77,7 @@ Pour le level design :
 |---|---|
 | `Terrain` | 1000 × 80 × 1000 m en (-500, 0, -500). Heightmap 513 (facettes de 1,95 m), splatmap 1024, détails 512 × 512 (cases de 2 m). Données dans `MysticForestTerrainData.asset` (LFS). |
 | `Terrain/Relief` | `TerrainRelief` centré en (0, 0) : seed 20716, zone jouable 600 × 600 m, base 20 m, collines ±11 m tous les 220 m, 2 octaves, paliers de 4 m dont 30 % en pente, pente max 40°. Falaises : 2 gradins de 14 m (±25 %) tous les 30 m, ligne qui ondule de ±12 m, rugosité de ±3 m. Sol jouable : bruit doux de ±0,3 m (longueur d'onde 9 m). Chemins lissés sur 6 m de part et d'autre de leur axe. Raccord des zones plates sur 6 m. |
-| `Terrain/Grass` | `TerrainGrass` : touffe `GrassTuft`, seed 31201, plaques de 16 m, 60 % du sol, 5 touffes au plus par case de 2 m, pente max 30°. |
+| `Terrain/Grass` | `TerrainGrass` : touffe `GrassTuft`, seed 31201, plaques de 14 m, 68 % du sol, 12 touffes au plus par case de 2 m, pente max 30°. Touffes à l'échelle 0,9–1,3 en largeur, 0,7–1,3 en hauteur. |
 | `Terrain/<calques>` | 17 calques `ForestScatter`, dans l'ordre de priorité du tableau ci-dessous. |
 | `Clearings` | `StartClearing` (spawn, r 16, aplani), clairières des points d'intérêt, de respiration, et 9 chemins `ScatterExclusionPath` (trouée de 10 m, 14 m vers le géant ; sentier peint sur 45 % de la largeur). `EditorOnly`. |
 | `ChampimaisonSites/ChampimaisonSite_01..04` | `ChampimaisonSite` (rayon 5 m) gardé dans le jeu, avec un enfant `Clearing` `EditorOnly` (r 7, aplani). |
@@ -116,7 +116,7 @@ Au total, 26 765 instances d'arbres de Terrain, plus l'herbe.
 | `TreeGiant` | 562 | ~29 m (×1,8 dans la scène) | Bark pale, Giant leaf, Green dark | mesh collider |
 | `Rock_Boulder` | 80 | ~3,8 × 3,2 × 2,6 m | Rock base, Rock shadow, Green | mesh collider convexe |
 | `Rock_Spire` | 42 | ~2,3 × 5,2 m | Rock light, base, shadow, Green | mesh collider convexe |
-| `GrassTuft` | 27 | ~0,6 m, 9 brins pleins à trois faces | Grass, Grass shade | — (détail du Terrain, pas de prefab) |
+| `GrassTuft` | 99 | 15 à 35 cm, 11 brins courts et pleins, pied sombre et pointe claire | Grass, Grass shade | — (détail du Terrain, pas de prefab) |
 | `Bush` | 120 | ~1,3 m | Green, Green dark | sans collider |
 | `Fern` | 56 | ~0,5 m, 7 frondes fermées avec une nervure | Green dark, Pine shade | sans collider |
 | `MushroomCluster` | 200 | ~0,6 m, 4 champignons à chapeau rond et points clairs | Mushroom red, Mushroom violet, Body light, Body base, White | sans collider |
@@ -155,6 +155,7 @@ Tous ont l'origine au pied, l'échelle 1, un seul matériau `M_Fungi_Palette` re
 - **`Palette.mat` en GPU instancing** : les détails instanciés l'exigent.
 - **Heightmap 513 et bruit doux de ±0,3 m sur le sol** : des facettes de 2 m qui accrochent la lumière. Une valeur au hasard par échantillon rendait le sol cabossé : remplacée par un bruit continu. Collines moins hautes (±11 m) et plus larges (220 m). (Hugo, 13/11)
 - **Chemins en courbes lisses, sur un sol aplani** : un chemin se lit par sa régularité. Le sentier sableux n'occupe que le milieu de la trouée, bordé de mousse. (Hugo, 13/11)
+- **Herbe courte, dense et à deux tons** (Hugo, 13/11) : beaucoup de brins fins et courts, groupés en touffes, avec un dégradé du pied sombre à la pointe claire, comme dans l'herbe stylisée de référence. Le dégradé est fait en deux tons de palette par brin. Les plaques se remplissent vite depuis leur bord. L'herbe est dessinée jusqu'à 75 m au lieu de 90, pour compenser la densité.
 - **Quatre couleurs de sol** : terre, mousse, chemin, roche. Mousse sous les plaques d'herbe (le même bruit, un peu plus large) : l'herbe pousse sur du vert, pas sur de la terre nue. Quatre calques, c'est le maximum du shader du sol en une passe. (Hugo, 13/11)
 - **Modèles fermés** : Unity ne dessine qu'un côté des faces. Les brins d'herbe sont des pointes à trois faces, les frondes de fougère des losanges fermés, et les contreforts du géant ont toutes leurs faces tournées vers l'extérieur (certaines étaient retournées : on voyait à travers). (Hugo, 13/11)
 - **La limite de pente a changé d'algorithme.** L'ancienne relaxation par paires oscillait sans fin à 513 échantillons, entre les clairières plates et la rugosité. La nouvelle propage d'abord un plancher depuis les clairières, puis ne fait que descendre le sol, jamais sous ce plancher. Les deux étapes sont monotones : elle s'arrête toujours.

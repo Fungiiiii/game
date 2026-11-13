@@ -310,20 +310,27 @@ def rock_spire():
 
 
 def grass_tuft():
-    """Nine blades, each a thin three-sided spike: solid from every side."""
+    """Eleven short, thin blades. Each is solid (three faces) and two-toned: a
+    darker foot and a light tip, the root-to-tip gradient of stylized grass,
+    done with flat palette colours."""
     rng = random.Random(6101)
     m = MeshBuilder()
-    for k in range(9):
-        a = 2 * math.pi * k / 9 + rng.uniform(-0.3, 0.3)
+    for k in range(11):
+        a = 2 * math.pi * k / 11 + rng.uniform(-0.25, 0.25)
         dx, dy = math.cos(a), math.sin(a)
-        base = Vector((dx * 0.08, dy * 0.08, 0.0))
-        lean = rng.uniform(0.15, 0.3)
-        tip = m.vert((dx * lean, dy * lean, rng.uniform(0.4, 0.7)))
-        ring = m.ring(base, 0.055, 3, phase=a)
-        inside = base.lerp(m.verts[tip], 0.25)
+        spread = rng.uniform(0.02, 0.09)
+        base = Vector((dx * spread, dy * spread, 0.0))
+        height = rng.uniform(0.15, 0.35)
+        lean = rng.uniform(0.05, 0.13)
+        tip = m.vert((dx * (spread + lean), dy * (spread + lean), height))
+        foot = m.ring(base, 0.03, 3, phase=a)
+        knee_centre = base.lerp(m.verts[tip], 0.45)
+        knee = m.ring(knee_centre, 0.018, 3, phase=a)
+        inside = base.lerp(m.verts[tip], 0.3)
         for i in range(3):
             j = (i + 1) % 3
-            m.outward_face([ring[i], ring[j], tip], GRASS if i != 1 else GRASS_SHADE, inside)
+            m.outward_face([foot[i], foot[j], knee[j], knee[i]], GRASS_SHADE, inside)
+            m.outward_face([knee[i], knee[j], tip], GRASS, inside)
     return m.build("GrassTuft")
 
 
