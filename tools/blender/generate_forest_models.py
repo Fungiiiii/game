@@ -79,6 +79,17 @@ class MeshBuilder:
     def face(self, indices, cell):
         self.faces.append((list(indices), cell))
 
+    def outward_face(self, indices, cell, inside):
+        """A face of a closed shape, wound so it faces away from a point inside
+        the shape. Unity draws one side only: a face wound the wrong way is
+        invisible from outside, and the model looks hollow."""
+        a, b, c = (self.verts[i] for i in indices[:3])
+        normal = (b - a).cross(c - a)
+        centre = sum((self.verts[i] for i in indices), Vector()) / len(indices)
+        if normal.dot(centre - Vector(inside)) < 0:
+            indices = list(reversed(indices))
+        self.face(indices, cell)
+
     def ring(self, centre, radius, sides, rng=None, jitter=0.0, phase=0.0, axis=None, squash=1.0):
         """A ring of vertices around centre, perpendicular to axis (default Z)."""
         centre = Vector(centre)
@@ -238,10 +249,12 @@ def buttress(m, angle, rng):
     pts = [(dx * 1.5, dy * 1.5, 0.0), (dx * reach, dy * reach, 0.0), (dx * 1.5, dy * 1.5, height)]
     left = [m.vert((x + px, y + py, z)) for x, y, z in pts]
     right = [m.vert((x - px, y - py, z)) for x, y, z in pts]
-    m.face([left[0], left[1], left[2]], BARK_PALE)
-    m.face([right[2], right[1], right[0]], BARK_PALE)
-    m.face([left[1], right[1], right[2], left[2]], BARK_PALE)  # sloped back
-    m.face([left[0], left[2], right[2], right[0]], BARK_PALE)  # inside the trunk
+    inside = (dx * (1.5 + reach) / 3, dy * (1.5 + reach) / 3, height / 3)
+    m.outward_face([left[0], left[1], left[2]], BARK_PALE, inside)
+    m.outward_face([right[0], right[1], right[2]], BARK_PALE, inside)
+    m.outward_face([left[1], right[1], right[2], left[2]], BARK_PALE, inside)  # sloped back
+    m.outward_face([left[0], left[2], right[2], right[0]], BARK_PALE, inside)  # against the trunk
+    m.outward_face([left[0], right[0], right[1], left[1]], BARK_PALE, inside)  # under the ground
 
 
 def tree_giant():
@@ -296,27 +309,21 @@ def rock_spire():
     return m.build("Rock_Spire")
 
 
-def two_sided(m, verts, front, back):
-    """A thin surface seen from both sides: the same polygon, both windings.
-    The back gets its own vertices, or Blender merges it into the front."""
-    m.face(verts, front)
-    m.face([m.vert(m.verts[v].copy()) for v in reversed(verts)], back)
-
-
 def grass_tuft():
+    """Nine blades, each a thin three-sided spike: solid from every side."""
     rng = random.Random(6101)
     m = MeshBuilder()
     for k in range(9):
         a = 2 * math.pi * k / 9 + rng.uniform(-0.3, 0.3)
         dx, dy = math.cos(a), math.sin(a)
-        px, py = -dy * 0.07, dx * 0.07
-        base = (dx * 0.08, dy * 0.08, 0.0)
+        base = Vector((dx * 0.08, dy * 0.08, 0.0))
         lean = rng.uniform(0.15, 0.3)
-        tip = (dx * lean, dy * lean, rng.uniform(0.4, 0.7))
-        left = m.vert((base[0] + px, base[1] + py, 0.0))
-        right = m.vert((base[0] - px, base[1] - py, 0.0))
-        top = m.vert(tip)
-        two_sided(m, [left, right, top], GRASS, GRASS_SHADE)
+        tip = m.vert((dx * lean, dy * lean, rng.uniform(0.4, 0.7)))
+        ring = m.ring(base, 0.055, 3, phase=a)
+        inside = base.lerp(m.verts[tip], 0.25)
+        for i in range(3):
+            j = (i + 1) % 3
+            m.outward_face([ring[i], ring[j], tip], GRASS if i != 1 else GRASS_SHADE, inside)
     return m.build("GrassTuft")
 
 
@@ -330,6 +337,8 @@ def bush():
 
 
 def fern():
+    """Seven fronds, each a flat closed diamond with a raised rib: solid from
+    above and below."""
     rng = random.Random(6307)
     m = MeshBuilder()
     for k in range(7):
@@ -340,10 +349,15 @@ def fern():
         rise = rng.uniform(0.38, 0.5)
         width = 0.16
         base = m.vert((0.0, 0.0, 0.05))
-        mid_l = m.vert((dx * reach * 0.5 + px * width, dy * reach * 0.5 + py * width, rise))
-        mid_r = m.vert((dx * reach * 0.5 - px * width, dy * reach * 0.5 - py * width, rise))
+        mid = Vector((dx * reach * 0.5, dy * reach * 0.5, rise))
+        left = m.vert(mid + Vector((px * width, py * width, 0.0)))
+        right = m.vert(mid - Vector((px * width, py * width, 0.0)))
+        rib = m.vert(mid + Vector((0.0, 0.0, 0.05)))
+        keel = m.vert(mid - Vector((0.0, 0.0, 0.04)))
         tip = m.vert((dx * reach, dy * reach, rise * 0.45))
-        two_sided(m, [base, mid_r, tip, mid_l], GREEN_DARK, PINE_SHADE)
+        for a_, b_ in ((base, left), (left, tip), (tip, right), (right, base)):
+            m.outward_face([a_, b_, rib], GREEN_DARK, mid)
+            m.outward_face([a_, b_, keel], PINE_SHADE, mid)
     return m.build("Fern")
 
 
