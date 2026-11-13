@@ -116,7 +116,7 @@ Au total, 26 765 instances d'arbres de Terrain, plus l'herbe.
 | `TreeGiant` | 562 | ~29 m (×1,8 dans la scène) | Bark pale, Giant leaf, Green dark | mesh collider |
 | `Rock_Boulder` | 80 | ~3,8 × 3,2 × 2,6 m | Rock base, Rock shadow, Green | mesh collider convexe |
 | `Rock_Spire` | 42 | ~2,3 × 5,2 m | Rock light, base, shadow, Green | mesh collider convexe |
-| `GrassTuft` | 99 | 15 à 35 cm, 11 brins courts et pleins, pied sombre et pointe claire | Grass, Grass shade | — (détail du Terrain, pas de prefab) |
+| `GrassTuft` | 120 | 22 à 45 cm, 12 brins plats et courbes en trois tons (pied couleur mousse, milieu vert, pointe claire), normales vers le haut | Grass shade, Grass, Grass tip | — (détail du Terrain, pas de prefab) |
 | `Bush` | 120 | ~1,3 m | Green, Green dark | sans collider |
 | `Fern` | 56 | ~0,5 m, 7 frondes fermées avec une nervure | Green dark, Pine shade | sans collider |
 | `MushroomCluster` | 200 | ~0,6 m, 4 champignons à chapeau rond et points clairs | Mushroom red, Mushroom violet, Body light, Body base, White | sans collider |
@@ -155,7 +155,7 @@ Tous ont l'origine au pied, l'échelle 1, un seul matériau `M_Fungi_Palette` re
 - **`Palette.mat` en GPU instancing** : les détails instanciés l'exigent.
 - **Heightmap 513 et bruit doux de ±0,3 m sur le sol** : des facettes de 2 m qui accrochent la lumière. Une valeur au hasard par échantillon rendait le sol cabossé : remplacée par un bruit continu. Collines moins hautes (±11 m) et plus larges (220 m). (Hugo, 13/11)
 - **Chemins en courbes lisses, sur un sol aplani** : un chemin se lit par sa régularité. Le sentier sableux n'occupe que le milieu de la trouée, bordé de mousse. (Hugo, 13/11)
-- **Herbe courte, dense et à deux tons** (Hugo, 13/11) : beaucoup de brins fins et courts, groupés en touffes, avec un dégradé du pied sombre à la pointe claire, comme dans l'herbe stylisée de référence. Le dégradé est fait en deux tons de palette par brin. Les plaques se remplissent vite depuis leur bord. L'herbe est dessinée jusqu'à 75 m au lieu de 90, pour compenser la densité.
+- **Herbe stylisée, réécrite de zéro** (Hugo, 13/11), sur la technique courante des jeux stylisés : toutes les normales des brins pointent vers le haut, donc l'herbe est éclairée comme le sol au lieu de faire une mosaïque de facettes claires et sombres. Brins plats et courbés vers l'extérieur, dégradé en trois tons du pied (couleur de la mousse) à la pointe claire. Chaque brin a un recto et un verso à quelques millimètres : plein des deux côtés. Plaques denses (12 touffes au plus par case de 2 m), dessinées jusqu'à 75 m pour compenser.
 - **Quatre couleurs de sol** : terre, mousse, chemin, roche. Mousse sous les plaques d'herbe (le même bruit, un peu plus large) : l'herbe pousse sur du vert, pas sur de la terre nue. Quatre calques, c'est le maximum du shader du sol en une passe. (Hugo, 13/11)
 - **Modèles fermés** : Unity ne dessine qu'un côté des faces. Les brins d'herbe sont des pointes à trois faces, les frondes de fougère des losanges fermés, et les contreforts du géant ont toutes leurs faces tournées vers l'extérieur (certaines étaient retournées : on voyait à travers). (Hugo, 13/11)
 - **La limite de pente a changé d'algorithme.** L'ancienne relaxation par paires oscillait sans fin à 513 échantillons, entre les clairières plates et la rugosité. La nouvelle propage d'abord un plancher depuis les clairières, puis ne fait que descendre le sol, jamais sous ce plancher. Les deux étapes sont monotones : elle s'arrête toujours.

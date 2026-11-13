@@ -51,6 +51,7 @@ BARK_PALE = (6, 4)
 GIANT_LEAF = (6, 5)
 GRASS = (6, 6)
 GRASS_SHADE = (6, 7)
+GRASS_TIP = (7, 1)
 MUSHROOM_VIOLET = (7, 0)
 MUSHROOM_RED = (2, 0)
 BODY_LIGHT = (0, 0)
@@ -152,7 +153,7 @@ class MeshBuilder:
             self.face([base + v.index for v in f.verts], cell_top if normal_z > -0.2 else cell_bottom)
         bm.free()
 
-    def build(self, name):
+    def build(self, name, up_normals=False):
         mesh = bpy.data.meshes.new(name)
         mesh.from_pydata([tuple(v) for v in self.verts], [], [f for f, _ in self.faces])
         mesh.update()
@@ -163,6 +164,10 @@ class MeshBuilder:
                 uv_layer.data[li].uv = uv
             poly.use_smooth = False
         mesh.validate()
+        if up_normals:
+            # Every normal straight up: the model is lit like the ground under it,
+            # without a mosaic of light and dark facets.
+            mesh.normals_split_custom_set([(0.0, 0.0, 1.0)] * len(mesh.loops))
         obj = bpy.data.objects.new(name, mesh)
         bpy.context.scene.collection.objects.link(obj)
         obj.data.materials.append(palette_material())
@@ -310,28 +315,40 @@ def rock_spire():
 
 
 def grass_tuft():
-    """Eleven short, thin blades. Each is solid (three faces) and two-toned: a
-    darker foot and a light tip, the root-to-tip gradient of stylized grass,
-    done with flat palette colours."""
+    """A soft tuft, as in stylized games: twelve flat blades curving outward,
+    each in three tones from a foot the colour of the moss to a light tip, and
+    every normal pointing up so the tuft is lit like the ground. Each blade has
+    a front and a back a few millimetres apart: solid from both sides."""
     rng = random.Random(6101)
     m = MeshBuilder()
-    for k in range(11):
-        a = 2 * math.pi * k / 11 + rng.uniform(-0.25, 0.25)
+    rows = (0.0, 0.4, 0.75, 1.0)
+    widths = (1.0, 0.8, 0.45, 0.0)
+    cells = (GRASS_SHADE, GRASS, GRASS_TIP)
+    for k in range(12):
+        a = 2 * math.pi * k / 12 + rng.uniform(-0.25, 0.25)
         dx, dy = math.cos(a), math.sin(a)
-        spread = rng.uniform(0.02, 0.09)
-        base = Vector((dx * spread, dy * spread, 0.0))
-        height = rng.uniform(0.15, 0.35)
-        lean = rng.uniform(0.05, 0.13)
-        tip = m.vert((dx * (spread + lean), dy * (spread + lean), height))
-        foot = m.ring(base, 0.03, 3, phase=a)
-        knee_centre = base.lerp(m.verts[tip], 0.45)
-        knee = m.ring(knee_centre, 0.018, 3, phase=a)
-        inside = base.lerp(m.verts[tip], 0.3)
-        for i in range(3):
-            j = (i + 1) % 3
-            m.outward_face([foot[i], foot[j], knee[j], knee[i]], GRASS_SHADE, inside)
-            m.outward_face([knee[i], knee[j], tip], GRASS, inside)
-    return m.build("GrassTuft")
+        out = Vector((dx, dy, 0.0))
+        side = Vector((-dy, dx, 0.0))
+        root = out * rng.uniform(0.0, 0.1)
+        height = rng.uniform(0.22, 0.45)
+        bend = rng.uniform(0.08, 0.2)
+        width = rng.uniform(0.05, 0.08)
+        for skin in (0.004, -0.004):
+            left, right = [], []
+            for t, w in zip(rows, widths):
+                centre = root + out * (bend * t * t + skin) + Vector((0.0, 0.0, height * t))
+                left.append(m.vert(centre + side * width * w * 0.5))
+                right.append(m.vert(centre - side * width * w * 0.5))
+            # One winding for the whole skin: the front faces outward, the back inward.
+            normal = (m.verts[right[0]] - m.verts[left[0]]).cross(m.verts[left[1]] - m.verts[left[0]])
+            flip = (normal.dot(out) > 0) != (skin > 0)
+            for i, cell in enumerate(cells):
+                if i < 2:
+                    face = [left[i], right[i], right[i + 1], left[i + 1]]
+                else:
+                    face = [left[i], right[i], right[i + 1]]
+                m.face(list(reversed(face)) if flip else face, cell)
+    return m.build("GrassTuft", up_normals=True)
 
 
 def bush():
