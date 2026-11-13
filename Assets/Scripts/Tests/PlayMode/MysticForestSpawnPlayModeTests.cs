@@ -74,6 +74,22 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator SporesFloatAroundTheCameraInWorldSpace()
+        {
+            Camera eye = player.GetComponentInChildren<Camera>();
+            ParticleSystem spores = eye.GetComponentInChildren<ParticleSystem>();
+            Assert.That(spores, Is.Not.Null, "the camera carries no spores");
+            Assert.That(spores.main.simulationSpace, Is.EqualTo(ParticleSystemSimulationSpace.World),
+                "spores must stay in the air when the player turns, not follow the view");
+
+            yield return null;
+            yield return null;
+
+            Assert.That(spores.isPlaying, Is.True);
+            Assert.That(spores.particleCount, Is.GreaterThan(0), "no spore in the air");
+        }
+
+        [UnityTest]
         public IEnumerator SpawnFacesTheGiantTree()
         {
             GameObject giant = GameObject.Find("PF_TreeGiant");
