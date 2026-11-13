@@ -41,6 +41,12 @@ namespace Fungiiiii.Runtime.World
         [SerializeField, Range(0f, 90f), Tooltip("No instance where the ground is steeper than this, in degrees. 90 places everywhere.")]
         private float maxSlope = 90f;
 
+        [SerializeField, Min(0f), Tooltip("Typical size of a grove, in metres. 0 spreads the layer evenly.")]
+        private float groveSize;
+
+        [SerializeField, Range(0f, 1f), Tooltip("Roughly the share of the area covered by groves; the rest stays open. Only used when Grove Size is above 0.")]
+        private float groveCoverage = 0.6f;
+
         public GameObject Prefab => prefab;
 
         public float MaxSlope => maxSlope;
@@ -68,7 +74,7 @@ namespace Fungiiiii.Runtime.World
                 float yaw = (float)random.NextDouble() * 360f;
 
                 var position = origin + new Vector3(sample.x, 0f, sample.y);
-                if (IsInHole(position) || IsExcluded(position, exclusions))
+                if (IsInHole(position) || !IsInGrove(position) || IsExcluded(position, exclusions))
                 {
                     continue;
                 }
@@ -93,6 +99,30 @@ namespace Fungiiiii.Runtime.World
         {
             innerHoleSize = holeSize;
             maxSlope = slope;
+        }
+
+        internal void ConfigureGroves(float size, float coverage)
+        {
+            groveSize = size;
+            groveCoverage = coverage;
+        }
+
+        /// <summary>
+        /// Groves are where a seeded noise rises above a threshold set by the
+        /// coverage: trees gather in clumps with open ground between them, instead
+        /// of an even plantation.
+        /// </summary>
+        private bool IsInGrove(Vector3 position)
+        {
+            if (groveSize <= 0f)
+            {
+                return true;
+            }
+
+            float noise = ValueNoise.Fbm(new Vector2(position.x, position.z) / groveSize, 2, unchecked(seed * 31 + 17));
+            // The noise sits mostly between 0.25 and 0.75: map the coverage onto that range.
+            float threshold = Mathf.Lerp(0.75f, 0.25f, groveCoverage);
+            return noise >= threshold;
         }
 
         private bool IsInHole(Vector3 position)

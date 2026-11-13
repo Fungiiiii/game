@@ -122,8 +122,58 @@ namespace Fungiiiii.Editor.World
             data.treePrototypes = prototypes;
             data.RefreshPrototypes();
             data.SetTreeInstances(instances.ToArray(), false);
+
+            TerrainGrass grass = terrain.GetComponentInChildren<TerrainGrass>();
+            if (grass != null)
+            {
+                WriteGrass(terrain, grass, exclusions);
+            }
+
             EditorUtility.SetDirty(data);
             return instances.Count;
+        }
+
+        /// <summary>
+        /// Writes the grass as the Terrain's single detail layer. Call it inside an
+        /// undo record of the TerrainData.
+        /// </summary>
+        private static void WriteGrass(Terrain terrain, TerrainGrass grass, IReadOnlyList<ExclusionCircle> exclusions)
+        {
+            if (grass.Tuft == null)
+            {
+                throw new InvalidOperationException($"Grass '{grass.name}' has no tuft model.");
+            }
+
+            TerrainData data = terrain.terrainData;
+            data.detailPrototypes = new[]
+            {
+                new DetailPrototype
+                {
+                    prototype = grass.Tuft,
+                    usePrototypeMesh = true,
+                    useInstancing = true,
+                    renderMode = DetailRenderMode.VertexLit,
+                    minWidth = 1f,
+                    maxWidth = 1.6f,
+                    minHeight = 0.9f,
+                    maxHeight = 1.5f,
+                    noiseSpread = 0.3f,
+                    healthyColor = Color.white,
+                    dryColor = new Color(0.85f, 0.9f, 0.7f),
+                },
+            };
+
+            // The default coverage mode reads each value as a share of 255: 1 to 6
+            // would draw almost nothing. Our values are tuft counts per cell.
+            data.SetDetailScatterMode(DetailScatterMode.InstanceCountMode);
+
+            int resolution = data.detailResolution;
+            Vector3 origin = terrain.transform.position;
+            float cellSize = data.size.x / resolution;
+            int[,] density = GrassDensity.Compute(resolution, new Vector2(origin.x, origin.z), cellSize, grass.Seed,
+                grass.PatchSize, grass.Coverage, grass.MaxDensity, exclusions,
+                (x, z) => Steepness(data, (x + 0.5f) / resolution, (z + 0.5f) / resolution) > grass.MaxSlope);
+            data.SetDetailLayer(0, 0, 0, density);
         }
 
         /// <summary>
@@ -263,6 +313,11 @@ namespace Fungiiiii.Editor.World
         {
             Undo.RegisterCompleteObjectUndo(terrain.terrainData, "Clear forest");
             terrain.terrainData.SetTreeInstances(Array.Empty<TreeInstance>(), false);
+            if (terrain.terrainData.detailPrototypes.Length > 0)
+            {
+                int resolution = terrain.terrainData.detailResolution;
+                terrain.terrainData.SetDetailLayer(0, 0, 0, new int[resolution, resolution]);
+            }
             EditorUtility.SetDirty(terrain.terrainData);
         }
     }
