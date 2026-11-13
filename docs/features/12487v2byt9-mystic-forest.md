@@ -43,7 +43,7 @@ Pour le joueur :
 
 - [x] **Couleurs du sol** : terre brune sous les arbres, mousse verte dans les clairières et sous les plaques d'herbe, terre de chemin sableuse, roche grise sur les falaises.
 - [x] Des chemins relient les points d'intérêt en boucle, sans cul-de-sac. Ce sont des courbes lisses, sur un sol aplani : un sentier de terre sableuse au milieu d'une trouée bordée de mousse. Trois petites clairières de respiration coupent la forêt dense entre les zones.
-- [x] Les arbres ont une rotation aléatoire. Deux modèles ne poussent jamais l'un dans l'autre, et aucun pied d'arbre ne flotte au-dessus d'une pente.
+- [x] Les arbres ont une rotation aléatoire et une taille bien différente d'un arbre à l'autre : leur hauteur varie aussi indépendamment de leur largeur, certains plus élancés, d'autres plus trapus. Deux modèles ne poussent jamais l'un dans l'autre, et aucun pied d'arbre ne flotte au-dessus d'une pente.
 - [x] Quatre emplacements de Champimaison : sol plat de 7 m de rayon, sans arbre ni herbe, sur un chemin ou à côté.
 - [x] Les arbres sont dessinés jusqu'à 200 m, l'herbe jusqu'à 75 m. Les ombres restent à 80 m.
 - [x] En jeu, on ne traverse pas les troncs, l'arbre géant ni les gros rochers posés à la main. Les petits cailloux, l'herbe, les buissons, les fougères, les champignons et les rochers du pied des falaises n'ont pas de collision.
@@ -88,14 +88,14 @@ Pour le level design :
 
 | Calque (ordre) | Prefab | Centre, zone | Distance min | Échelle | Pente max | Bosquets (taille, part) | Seed |
 |---|---|---|---|---|---|---|---|
-| `ZoneA_TreeBroad` | `PF_TreeBroad` | (0, -185), 600 × 230 | 8,5 m | 0,8–1,2 | 25° | 45 m, 55 % | 31001 |
-| `ZoneB_TreePine` | `PF_TreePine` | (0, 25), 600 × 290 | 6,5 m | 0,8–1,3 | 25° | 32 m, 70 % | 31003 |
-| `ZoneC_Tree` | `PF_Tree` | (0, 215), 600 × 170 | 9 m | 1,1–1,5 | 25° | 60 m, 55 % | 31004 |
-| `ZoneA_Tree` | `PF_Tree` | (0, -185), 600 × 230 | 16 m | 0,85–1,1 | 25° | — | 31002 |
-| `ZoneB_Tree` (ex-`Forest_Trees`) | `PF_Tree` | (0, 25), 600 × 290 | 9 m | 0,85–1,2 | 25° | — | 20716 |
-| `ZoneC_TreePine` | `PF_TreePine` | (0, 215), 600 × 170 | 14 m | 0,9–1,3 | 25° | — | 31005 |
-| `Border_TreePine` | `PF_TreePine` | (0, 0), 760 × 760, trou 600 × 600 | 3,5 m | 0,9–1,3 | 30° | — | 31006 |
-| `Border_Tree` | `PF_Tree` | idem | 6 m | 0,9–1,25 | 30° | — | 31007 |
+| `ZoneA_TreeBroad` | `PF_TreeBroad` | (0, -185), 600 × 230 | 8,5 m | 0,7–1,35 | 25° | 45 m, 55 % | 31001 |
+| `ZoneB_TreePine` | `PF_TreePine` | (0, 25), 600 × 290 | 6,5 m | 0,7–1,45 | 25° | 32 m, 70 % | 31003 |
+| `ZoneC_Tree` | `PF_Tree` | (0, 215), 600 × 170 | 9 m | 1–1,65 | 25° | 60 m, 55 % | 31004 |
+| `ZoneA_Tree` | `PF_Tree` | (0, -185), 600 × 230 | 16 m | 0,75–1,25 | 25° | — | 31002 |
+| `ZoneB_Tree` (ex-`Forest_Trees`) | `PF_Tree` | (0, 25), 600 × 290 | 9 m | 0,75–1,35 | 25° | — | 20716 |
+| `ZoneC_TreePine` | `PF_TreePine` | (0, 215), 600 × 170 | 14 m | 0,75–1,45 | 25° | — | 31005 |
+| `Border_TreePine` | `PF_TreePine` | (0, 0), 760 × 760, trou 600 × 600 | 3,5 m | 0,8–1,45 | 30° | — | 31006 |
+| `Border_Tree` | `PF_Tree` | idem | 6 m | 0,8–1,4 | 30° | — | 31007 |
 | `Border_Rocks` | `PF_Rock_Boulder` | (0, 0), 700 × 700, trou 580 × 580 | 13 m | 1–2,4 | — | — | 31106 |
 | `ZoneA_Bush` | `PF_Bush` | zone A | 6 m | 0,7–1,3 | 30° | 25 m, 50 % | 31101 |
 | `ZoneC_Bush` | `PF_Bush` | zone C | 9 m | 0,8–1,4 | 30° | 35 m, 40 % | 31104 |
@@ -104,7 +104,7 @@ Pour le level design :
 | `ZoneC_Fern` | `PF_Fern` | zone C | 4 m | 0,8–1,5 | 30° | 30 m, 40 % | 31103 |
 | `Rocks_Large` / `_Medium` / `_Small` (ex-`Forest_Rocks_*`) | `PF_Rock_*` | (0, 0), 640 × 640 | 6 / 8 / 8 m | inchangées | — | — | 2 / 94770 / 30709 |
 
-Au total, 26 765 instances d'arbres de Terrain, plus l'herbe.
+Les 8 calques d'arbres ont en plus une variation de hauteur de ±15 %, tirée indépendamment de l'échelle. Au total, 26 765 instances d'arbres de Terrain, plus l'herbe.
 
 **Modèles** (`Assets/Art/Models/Environment/`, générés par `tools/blender/generate_forest_models.py`) :
 
@@ -170,6 +170,7 @@ Tous ont l'origine au pied, l'échelle 1, un seul matériau `M_Fungi_Palette` re
 - **Sol à facettes par Shader Graph** (cible Terrain Lit) : la normale de chaque pixel est celle de son triangle. (Hugo, 11/11)
 - **L'arbre géant reprend la lecture de `Tree`** : un seul tronc, des contreforts, trois branches, des couronnes plates. Pas de « jambes » ni de cristaux lumineux. (Hugo, 11/11)
 - **L'arbre géant et les gros rochers posés à la main sont des objets de la scène**, pas des arbres du Terrain : ils sont uniques, et un arbre de Terrain n'a qu'une capsule pour collider.
+- **Tailles bien différentes entre arbres d'un même modèle** (Hugo, 13/11) : fourchettes d'échelle élargies (environ ×0,7 à ×1,45) et hauteur tirée à part (±15 %). L'enfoncement sur pente suit la largeur, pas la hauteur. Ajouter ce tirage a rebattu les échelles et les rotations, pas les positions.
 - **Priorité entre calques, par ordre de hiérarchie** : arbres dominants d'abord, sous-bois ensuite, cailloux en dernier. (Hugo, 11/11)
 - **Enfoncement selon la pente** : `rayon du pied × échelle × tan(pente) + 5 cm`. Les arbres sont limités à 25° de pente. (Hugo, 11/11)
 - **La pente est mesurée sur les hauteurs**, pas avec `TerrainData.GetSteepness`, qui pouvait renvoyer une valeur périmée juste après `SetHeights`.
@@ -183,7 +184,7 @@ Tous ont l'origine au pied, l'échelle 1, un seul matériau `M_Fungi_Palette` re
 
 ### Automatisés (Unity Test Runner)
 
-Lancés en batchmode avec Unity 6000.3.21f1 sur la machine de Hugo (13/11). Log et XML lus : **EditMode 81/81, PlayMode 17/17.**
+Lancés en batchmode avec Unity 6000.3.21f1 sur la machine de Hugo (13/11). Log et XML lus : **EditMode 82/82, PlayMode 17/17.**
 
 | Test | Mode | Couvre | Résultat |
 |---|---|---|---|
@@ -191,6 +192,7 @@ Lancés en batchmode avec Unity 6000.3.21f1 sur la machine de Hugo (13/11). Log 
 | `PlacementsRespectScaleRangeRotationAndExclusions` | EditMode | échelle, rotation, zones d'exclusion | ✅ |
 | `InnerHoleStaysEmptyAndLeavesTheRestUnchanged` | EditMode | anneau de bordure | ✅ |
 | `GrovesLeaveOpenGroundWithoutReshufflingTheTrees` | EditMode | bosquets | ✅ |
+| `HeightVariesApartFromWidthWithinItsShare` | EditMode | hauteur variée à part de la largeur | ✅ |
 | `PathCirclesCoverTheWholeCorridor` | EditMode | chemins sans trou. **Exigence modifiée :** courbes lisses passant par chaque point, au lieu d'une polyligne | ✅ |
 | `PathGroundIsSmootherThanTheGroundAround` | EditMode | sol aplani le long des chemins | ✅ |
 | `SameSeedGivesSameGrass` | EditMode | herbe déterministe | ✅ |
