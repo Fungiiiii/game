@@ -158,8 +158,9 @@ namespace Fungiiiii.Editor.World
                     minHeight = 0.9f,
                     maxHeight = 1.5f,
                     noiseSpread = 0.3f,
-                    healthyColor = Color.white,
-                    dryColor = new Color(0.85f, 0.9f, 0.7f),
+                    // Tufts vary between fresh and dry, so the patches do not read as one carpet.
+                    healthyColor = new Color(1f, 1f, 0.92f),
+                    dryColor = new Color(0.82f, 0.78f, 0.55f),
                 },
             };
 

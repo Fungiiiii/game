@@ -42,6 +42,17 @@ namespace Fungiiiii.Editor.World
             return density;
         }
 
+        /// <summary>
+        /// Moss under a grass patch, 0 to 1: the same noise as the grass, a little
+        /// wider, so every patch stands on green ground with a crisp edge.
+        /// </summary>
+        internal static float MossCover(Vector2 position, int seed, float patchSize, float coverage)
+        {
+            float threshold = Mathf.Lerp(0.75f, 0.25f, coverage);
+            float noise = ValueNoise.Fbm(position / patchSize, 2, seed);
+            return Mathf.InverseLerp(threshold - 0.05f, threshold - 0.03f, noise);
+        }
+
         private static bool IsExcluded(Vector2 position, IReadOnlyList<ExclusionCircle> exclusions)
         {
             if (exclusions == null)

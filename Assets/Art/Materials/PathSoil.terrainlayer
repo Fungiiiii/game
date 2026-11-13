@@ -6,7 +6,7 @@ TerrainLayer:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: ClearingFloor
+  m_Name: PathSoil
   m_DiffuseTexture: {fileID: 2800000, guid: 64578c87da3a4fa1bb994458d5aefae5, type: 3}
   m_NormalMapTexture: {fileID: 0}
   m_MaskMapTexture: {fileID: 0}
