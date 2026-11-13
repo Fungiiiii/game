@@ -35,7 +35,7 @@ namespace Fungiiiii.Tests.EditMode
             float[,] heights = ReliefGenerator.Generate(Settings(seed: 3), Grid, Vector2.zero, NoFlats);
 
             float min = float.MaxValue, max = float.MinValue;
-            ForEachPlayableSample((x, z) =>
+            ForEachPlayableSample(3, (x, z) =>
             {
                 min = Mathf.Min(min, heights[z, x]);
                 max = Mathf.Max(max, heights[z, x]);
@@ -56,7 +56,7 @@ namespace Fungiiiii.Tests.EditMode
                 {
                     for (int x = 0; x + 1 < Resolution; x++)
                     {
-                        if (!IsPlayable(x, z) || !IsPlayable(x + 1, z + 1))
+                        if (!IsPlayable(x, z, seed) || !IsPlayable(x + 1, z, seed) || !IsPlayable(x, z + 1, seed) || !IsPlayable(x + 1, z + 1, seed))
                         {
                             continue;
                         }
@@ -83,7 +83,7 @@ namespace Fungiiiii.Tests.EditMode
             float steepestStep = 0f;
             for (int x = 0; x + 1 < Resolution; x++)
             {
-                if (IsPlayable(x, row) && !IsPlayable(x + 1, row))
+                if (IsPlayable(x, row, 5) && !IsPlayable(x + 1, row, 5))
                 {
                     steepestStep = Mathf.Max(steepestStep, heights[row, x + 1] - heights[row, x]);
                 }
@@ -101,7 +101,7 @@ namespace Fungiiiii.Tests.EditMode
             float[,] heights = ReliefGenerator.Generate(Settings(seed: 9), Grid, Vector2.zero, new List<ExclusionCircle> { clearing });
 
             float? level = null;
-            ForEachPlayableSample((x, z) =>
+            ForEachPlayableSample(9, (x, z) =>
             {
                 Vector2 position = Grid.PositionOf(x, z);
                 if (Vector2.Distance(position, clearing.Center) > clearing.Radius)
@@ -154,18 +154,19 @@ namespace Fungiiiii.Tests.EditMode
             return settings;
         }
 
-        private static bool IsPlayable(int x, int z)
+        // The cliff line wanders with the seed: a sample is walkable for the seed of the relief it belongs to.
+        private static bool IsPlayable(int x, int z, int seed)
         {
-            return ReliefGenerator.BorderDistance(Grid.PositionOf(x, z), Vector2.zero, Playable) <= 0f;
+            return ReliefGenerator.CliffDistance(Settings(seed), Grid.PositionOf(x, z), Vector2.zero) <= 0f;
         }
 
-        private static void ForEachPlayableSample(System.Action<int, int> action)
+        private static void ForEachPlayableSample(int seed, System.Action<int, int> action)
         {
             for (int z = 0; z < Resolution; z++)
             {
                 for (int x = 0; x < Resolution; x++)
                 {
-                    if (IsPlayable(x, z))
+                    if (IsPlayable(x, z, seed))
                     {
                         action(x, z);
                     }

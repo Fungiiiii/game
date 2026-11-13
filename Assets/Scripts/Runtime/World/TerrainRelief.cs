@@ -71,6 +71,15 @@ namespace Fungiiiii.Runtime.World
         [SerializeField, Min(0f), Tooltip("Width of the slope around a flattened clearing, in metres.")]
         private float flattenBlend = 6f;
 
+        [SerializeField, Min(0f), Tooltip("How far the cliff line wanders in and out of the playable edge, in metres.")]
+        private float cliffWobble = 12f;
+
+        [SerializeField, Min(0f), Tooltip("Random height of each cliff sample, in metres: rough rock faces instead of one flat wall.")]
+        private float cliffRoughness = 3f;
+
+        [SerializeField, Min(0f), Tooltip("Random height of each walkable sample, in metres: small facets that catch the light. Level clearings stay level.")]
+        private float groundRoughness = 0.5f;
+
         public int Seed => seed;
         public Vector2 PlayableSize => playableSize;
         public float BaseHeight => baseHeight;
@@ -84,6 +93,9 @@ namespace Fungiiiii.Runtime.World
         public int CliffTiers => cliffTiers;
         public float CliffSpacing => cliffSpacing;
         public float FlattenBlend => flattenBlend;
+        public float CliffWobble => cliffWobble;
+        public float CliffRoughness => cliffRoughness;
+        public float GroundRoughness => groundRoughness;
 
         internal void Configure(int newSeed, Vector2 playable, float slope)
         {

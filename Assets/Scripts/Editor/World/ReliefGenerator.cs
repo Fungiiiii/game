@@ -31,7 +31,7 @@ namespace Fungiiiii.Editor.World
     /// </summary>
     internal static class ReliefGenerator
     {
-        private const int MaxSlopePasses = 2000;
+        private const int MaxSlopePasses = 500;
 
         /// <summary>
         /// Heights in metres, indexed [z, x] like TerrainData.SetHeights.
@@ -48,13 +48,24 @@ namespace Fungiiiii.Editor.World
                 for (int x = 0; x < n; x++)
                 {
                     Vector2 position = grid.PositionOf(x, z);
-                    float border = BorderDistance(position, playableCentre, settings.PlayableSize);
+                    float border = CliffDistance(settings, position, playableCentre);
                     heights[z, x] = TerracedHeight(settings, position);
                     if (border > 0f)
                     {
                         int tier = Mathf.Min(settings.CliffTiers, Mathf.FloorToInt(border / settings.CliffSpacing) + 1);
-                        heights[z, x] += tier * settings.CliffHeight;
+                        for (int t = 0; t < tier; t++)
+                        {
+                            // Each tier a little higher or lower, so the ledges never line up.
+                            float variation = ValueNoise.Fbm(position / 60f, 2, unchecked(settings.Seed + 211 + t * 13));
+                            heights[z, x] += settings.CliffHeight * Mathf.Lerp(0.75f, 1.25f, variation);
+                        }
+
+                        heights[z, x] += (ValueNoise.Lattice(x, z, unchecked(settings.Seed + 307)) - 0.5f) * 2f * settings.CliffRoughness;
                         cliff[z, x] = true;
+                    }
+                    else
+                    {
+                        heights[z, x] += (ValueNoise.Lattice(x, z, unchecked(settings.Seed + 401)) - 0.5f) * 2f * settings.GroundRoughness;
                     }
                 }
             }
@@ -75,6 +86,17 @@ namespace Fungiiiii.Editor.World
         }
 
         /// <summary>
+        /// Distance past the cliff line, in metres; zero or less on walkable ground.
+        /// The cliff line is the playable edge, wandering in and out by up to
+        /// CliffWobble so the border never reads as a straight wall.
+        /// </summary>
+        internal static float CliffDistance(ReliefSettings settings, Vector2 position, Vector2 playableCentre)
+        {
+            float wobble = (ValueNoise.Fbm(position / 45f, 2, unchecked(settings.Seed + 101)) - 0.5f) * 2f * settings.CliffWobble;
+            return BorderDistance(position, playableCentre, settings.PlayableSize) + wobble;
+        }
+
+        /// <summary>
         /// Distance outside the playable rectangle, in metres. Zero or less inside.
         /// </summary>
         internal static float BorderDistance(Vector2 position, Vector2 centre, Vector2 playableSize)
@@ -83,9 +105,9 @@ namespace Fungiiiii.Editor.World
             return Mathf.Max(Mathf.Abs(offset.x) - playableSize.x * 0.5f, Mathf.Abs(offset.y) - playableSize.y * 0.5f);
         }
 
-        private static float TerracedHeight(ReliefSettings settings, Vector2 position)
+        internal static float TerracedHeight(ReliefSettings settings, Vector2 position)
         {
-            float noise = Fbm(position / settings.HillWavelength, settings.Octaves, settings.Seed);
+            float noise = ValueNoise.Fbm(position / settings.HillWavelength, settings.Octaves, settings.Seed);
             float height = settings.BaseHeight + settings.HillAmplitude * (noise * 2f - 1f);
 
             float steps = height / settings.TerraceStep;
@@ -135,36 +157,95 @@ namespace Fungiiiii.Editor.World
         }
 
         /// <summary>
-        /// Brings every walkable slope under the limit. The higher sample of a too
-        /// steep pair comes down; next to a level clearing, the lower one comes up
-        /// instead, so clearings stay level. Cliff samples are left alone.
+        /// Brings every walkable slope under the limit; cliff samples are left alone.
+        ///
+        /// Two steps, both monotone, so they always settle. First a floor is spread
+        /// from the level clearings: no sample may sit more than one step per cell
+        /// below a clearing, or the clearing's edge would be too steep. Then the
+        /// ground only comes down, never under that floor, until no neighbour is
+        /// more than one step lower. Clearings never move.
         /// </summary>
         private static void LimitSlope(ReliefSettings settings, ReliefGrid grid, float[,] heights, bool[,] cliff, bool[,] fixedHeight)
         {
             int n = grid.Resolution;
             float maxStep = MaxStep(grid.CellSize, settings.MaxWalkableSlope);
 
-            for (int pass = 0; pass < MaxSlopePasses; pass++)
+            var floor = new float[n, n];
+            for (int z = 0; z < n; z++)
+            {
+                for (int x = 0; x < n; x++)
+                {
+                    floor[z, x] = fixedHeight[z, x] ? heights[z, x] : float.NegativeInfinity;
+                }
+            }
+
+            Sweep(n, cliff, (z, x, zn, xn) =>
+            {
+                float candidate = floor[zn, xn] - maxStep;
+                if (candidate <= floor[z, x] + Tolerance)
+                {
+                    return false;
+                }
+
+                floor[z, x] = candidate;
+                return true;
+            });
+
+            for (int z = 0; z < n; z++)
+            {
+                for (int x = 0; x < n; x++)
+                {
+                    if (!cliff[z, x] && !fixedHeight[z, x])
+                    {
+                        heights[z, x] = Mathf.Max(heights[z, x], floor[z, x]);
+                    }
+                }
+            }
+
+            Sweep(n, cliff, (z, x, zn, xn) =>
+            {
+                if (fixedHeight[z, x])
+                {
+                    return false;
+                }
+
+                float candidate = Mathf.Max(floor[z, x], heights[zn, xn] + maxStep);
+                if (candidate >= heights[z, x] - Tolerance)
+                {
+                    return false;
+                }
+
+                heights[z, x] = candidate;
+                return true;
+            });
+        }
+
+        private const float Tolerance = 0.0001f;
+
+        /// <summary>
+        /// Applies <paramref name="relax"/> to every walkable sample against each of
+        /// its four neighbours, sweeping forward then backward, until nothing changes.
+        /// <paramref name="relax"/> gets (z, x) and the neighbour (zn, xn) and says
+        /// whether it changed the sample.
+        /// </summary>
+        private static void Sweep(int n, bool[,] cliff, Func<int, int, int, int, bool> relax)
+        {
+            for (int round = 0; round < MaxSlopePasses; round++)
             {
                 bool changed = false;
                 for (int z = 0; z < n; z++)
                 {
                     for (int x = 0; x < n; x++)
                     {
-                        if (cliff[z, x])
-                        {
-                            continue;
-                        }
+                        changed |= RelaxWith(n, cliff, relax, z, x, z, x - 1) | RelaxWith(n, cliff, relax, z, x, z - 1, x);
+                    }
+                }
 
-                        if (x + 1 < n && !cliff[z, x + 1])
-                        {
-                            changed |= Relax(heights, fixedHeight, z, x, z, x + 1, maxStep);
-                        }
-
-                        if (z + 1 < n && !cliff[z + 1, x])
-                        {
-                            changed |= Relax(heights, fixedHeight, z, x, z + 1, x, maxStep);
-                        }
+                for (int z = n - 1; z >= 0; z--)
+                {
+                    for (int x = n - 1; x >= 0; x--)
+                    {
+                        changed |= RelaxWith(n, cliff, relax, z, x, z, x + 1) | RelaxWith(n, cliff, relax, z, x, z + 1, x);
                     }
                 }
 
@@ -174,76 +255,17 @@ namespace Fungiiiii.Editor.World
                 }
             }
 
-            throw new InvalidOperationException($"Relief slopes did not settle after {MaxSlopePasses} passes.");
+            throw new InvalidOperationException($"Relief slopes did not settle after {MaxSlopePasses} rounds.");
         }
 
-        private static bool Relax(float[,] heights, bool[,] fixedHeight, int za, int xa, int zb, int xb, float maxStep)
+        private static bool RelaxWith(int n, bool[,] cliff, Func<int, int, int, int, bool> relax, int z, int x, int zn, int xn)
         {
-            float a = heights[za, xa];
-            float b = heights[zb, xb];
-            if (Mathf.Abs(a - b) <= maxStep * 1.0001f)
+            if (zn < 0 || xn < 0 || zn >= n || xn >= n || cliff[z, x] || cliff[zn, xn])
             {
                 return false;
             }
 
-            bool aIsHigher = a > b;
-            int zh = aIsHigher ? za : zb, xh = aIsHigher ? xa : xb;
-            int zl = aIsHigher ? zb : za, xl = aIsHigher ? xb : xa;
-
-            if (!fixedHeight[zh, xh])
-            {
-                heights[zh, xh] = heights[zl, xl] + maxStep;
-                return true;
-            }
-
-            if (!fixedHeight[zl, xl])
-            {
-                heights[zl, xl] = heights[zh, xh] - maxStep;
-                return true;
-            }
-
-            return false;
-        }
-
-        private static float Fbm(Vector2 position, int octaves, int seed)
-        {
-            float sum = 0f;
-            float weight = 0f;
-            float amplitude = 1f;
-            float frequency = 1f;
-            for (int octave = 0; octave < octaves; octave++)
-            {
-                sum += ValueNoise(position * frequency, unchecked(seed + octave * 7919)) * amplitude;
-                weight += amplitude;
-                amplitude *= 0.5f;
-                frequency *= 2f;
-            }
-
-            return sum / weight;
-        }
-
-        private static float ValueNoise(Vector2 position, int seed)
-        {
-            int x0 = Mathf.FloorToInt(position.x);
-            int z0 = Mathf.FloorToInt(position.y);
-            float tx = Mathf.SmoothStep(0f, 1f, position.x - x0);
-            float tz = Mathf.SmoothStep(0f, 1f, position.y - z0);
-
-            float bottom = Mathf.Lerp(Lattice(x0, z0, seed), Lattice(x0 + 1, z0, seed), tx);
-            float top = Mathf.Lerp(Lattice(x0, z0 + 1, seed), Lattice(x0 + 1, z0 + 1, seed), tx);
-            return Mathf.Lerp(bottom, top, tz);
-        }
-
-        /// <summary>Integer hash to [0, 1]: the same on every machine.</summary>
-        private static float Lattice(int x, int z, int seed)
-        {
-            unchecked
-            {
-                uint h = (uint)x * 374761393u + (uint)z * 668265263u + (uint)seed * 2246822519u;
-                h = (h ^ (h >> 13)) * 1274126177u;
-                h ^= h >> 16;
-                return (h & 0xFFFFFFu) / 16777215f;
-            }
+            return relax(z, x, zn, xn);
         }
     }
 }

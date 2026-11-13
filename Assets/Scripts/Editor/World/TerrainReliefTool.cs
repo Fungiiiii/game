@@ -21,8 +21,11 @@ namespace Fungiiiii.Editor.World
         /// <summary>Ground steeper than this, in degrees, is painted as rock.</summary>
         internal const float CliffPaintSlope = 44f;
 
-        /// <summary>Soft edge of a painted clearing, in metres, on each side of its circle.</summary>
-        private const float ClearingEdge = 2.5f;
+        /// <summary>
+        /// Edge of a painted clearing, in metres, on each side of its circle. Kept
+        /// short: low poly reads with sharp edges, not soft gradients.
+        /// </summary>
+        private const float ClearingEdge = 0.75f;
 
         /// <summary>
         /// Uses every ScatterExclusionZone and ScatterExclusionPath in the open scenes:
@@ -86,7 +89,7 @@ namespace Fungiiiii.Editor.World
                     float nz = (z + 0.5f) / resolution;
                     var position = new Vector2(origin.x + nx * data.size.x, origin.z + nz * data.size.z);
 
-                    float cliff = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(CliffPaintSlope - 6f, CliffPaintSlope, TerrainForestGenerator.Steepness(data, nx, nz)));
+                    float cliff = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(CliffPaintSlope - 1.5f, CliffPaintSlope, TerrainForestGenerator.Steepness(data, nx, nz)));
                     float clearing = 0f;
                     foreach (ExclusionCircle circle in clearings)
                     {
