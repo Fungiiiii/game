@@ -259,3 +259,5 @@ Lancés en batchmode avec Unity 6000.3.21f1 sur la machine de Hugo (17/11, aprè
 - `docs/screenshots/mystic-forest.png` (l'ancienne capture) n'est plus référencé. Il est gardé : supprimer un asset demande l'accord de Hugo.
 
 ## Modifié par
+
+- [12487v2byt9-mystic-forest-audio](./12487v2byt9-mystic-forest-audio.md) — la scène a maintenant des sons d'ambiance : un objet `Audio` (fonds de zone, rafales, arbre géant, pierres dressées).
