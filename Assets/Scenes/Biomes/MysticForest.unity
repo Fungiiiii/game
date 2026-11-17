@@ -2278,7 +2278,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: 86c9d7215bd01704cb84ceedbc878328, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0.5
+  m_Volume: 1
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -9550,9 +9550,9 @@ MonoBehaviour:
   southFadeEnd: -70
   northFadeStart: 130
   northFadeEnd: 170
-  southVolume: 0.25
-  middleVolume: 0.5
-  northVolume: 0.5
+  southVolume: 0.15
+  middleVolume: 0.3
+  northVolume: 0.3
 --- !u!1 &1529394623
 GameObject:
   m_ObjectHideFlags: 0
@@ -9603,8 +9603,8 @@ MonoBehaviour:
   - {fileID: 8300000, guid: b53aa37e1b1dda7499aaa8112e63fd90, type: 3}
   minInterval: 25
   maxInterval: 70
-  minVolume: 0.5
-  maxVolume: 0.8
+  minVolume: 0.3
+  maxVolume: 0.5
 --- !u!82 &1529394626
 AudioSource:
   m_ObjectHideFlags: 0
