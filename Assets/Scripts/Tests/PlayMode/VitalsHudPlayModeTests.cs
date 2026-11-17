@@ -1,4 +1,5 @@
 using System.Collections;
+using Fungiiiii.Survival;
 using Fungiiiii.UI;
 using NUnit.Framework;
 using UnityEngine;
@@ -26,14 +27,40 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(hud.StaminaBarVisible, Is.True);
             Assert.That(hud.PoisonBarVisible, Is.False);
 
-            model.SetPoisonPercentage(25f);
+            model.Poison.SetIntensity(25f);
             yield return null;
             Assert.That(hud.PoisonBarVisible, Is.True);
             Assert.That(hud.PoisonPercentage, Is.EqualTo(25f).Within(0.01f));
 
-            model.SetPoisonPercentage(0f);
+            model.Poison.Clear();
             yield return null;
             Assert.That(hud.PoisonBarVisible, Is.False);
+
+            Object.Destroy(root);
+        }
+
+        [UnityTest]
+        public IEnumerator PoisonStateChanges_RefreshTheDisplayedHud()
+        {
+            var root = new GameObject(nameof(PoisonStateChanges_RefreshTheDisplayedHud));
+            var model = new PlayerVitals(100f, 100f);
+            var hud = root.AddComponent<VitalsHud>();
+            hud.Initialize(model);
+
+            model.Poison.Apply(40f);
+            yield return null;
+            Assert.That(hud.PoisonBarVisible, Is.True);
+            Assert.That(hud.PoisonPercentage, Is.EqualTo(40f).Within(0.01f));
+
+            model.Poison.Remove(15f);
+            yield return null;
+            Assert.That(hud.PoisonBarVisible, Is.True);
+            Assert.That(hud.PoisonPercentage, Is.EqualTo(25f).Within(0.01f));
+
+            model.Poison.Clear();
+            yield return null;
+            Assert.That(hud.PoisonBarVisible, Is.False);
+            Assert.That(hud.PoisonPercentage, Is.EqualTo(0f).Within(0.01f));
 
             Object.Destroy(root);
         }
