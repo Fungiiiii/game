@@ -59,7 +59,10 @@ Shader "Fungiiiii/GroundMist"
             float4 _MistTerrainOrigin;
             float4 _MistTerrainSize;
 
-            static const int Steps = 24;
+            static const int Steps = 8;
+
+            // Above this height over the ground the mist is too thin to see.
+            static const float LayerHeights = 5.0;
 
             // A Terrain heightmap stores full height as 32766 / 65535.
             static const float HeightmapScale = 65535.0 / 32766.0;
@@ -69,7 +72,9 @@ Shader "Fungiiiii/GroundMist"
 
             float Hash(float2 cell)
             {
-                return frac(sin(dot(cell, float2(127.1, 311.7))) * 43758.5453);
+                float3 p = frac(cell.xyx * 0.1031);
+                p += dot(p, p.yzx + 33.33);
+                return frac((p.x + p.y) * p.z);
             }
 
             float Noise(float2 p)
@@ -94,7 +99,7 @@ Shader "Fungiiiii/GroundMist"
                 float zone = 1.0 - saturate(max(fromZone.x, fromZone.y) / _ZoneFade);
 
                 float2 p = (position.xz - WindDirection * (_Time.y * _Drift)) / _PatchSize;
-                float patches = smoothstep(0.2, 0.65, Noise(p) * 0.7 + Noise(p * 2.7) * 0.3);
+                float patches = smoothstep(0.2, 0.65, Noise(p));
 
                 float aboveGround = max(position.y - GroundHeight(position.xz), 0.0);
                 return exp(-aboveGround / _Falloff) * patches * zone;
@@ -118,6 +123,19 @@ Shader "Fungiiiii/GroundMist"
                 float rayLength = length(ray);
                 float3 direction = ray / rayLength;
                 float travelled = min(rayLength, _MaxDistance);
+
+                // A ray that climbs leaves the mist layer early: stop there, so the
+                // few steps are spent where the mist is. Taken from the ground under
+                // the camera, which is close enough over the length of a ray.
+                float layerTop = GroundHeight(origin.xz) + LayerHeights * _Falloff;
+                if (direction.y > 0.0)
+                {
+                    travelled = min(travelled, max(layerTop - origin.y, 0.0) / direction.y);
+                }
+                if (travelled < 0.5)
+                {
+                    return 0;
+                }
 
                 // Steps grow with distance: the mist near the camera needs the detail.
                 // Each pixel starts at a slightly different point, which hides the steps.
