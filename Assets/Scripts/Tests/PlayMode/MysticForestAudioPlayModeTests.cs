@@ -11,7 +11,7 @@ namespace Fungiiiii.Tests.PlayMode
 {
     public sealed class MysticForestAudioPlayModeTests
     {
-        private const string ScenePath = "Assets/Scenes/Prototype/MysticForestAudio.unity";
+        private const string ScenePath = "Assets/Scenes/Biomes/MysticForest.unity";
 
         [UnitySetUp]
         public IEnumerator LoadScene()
