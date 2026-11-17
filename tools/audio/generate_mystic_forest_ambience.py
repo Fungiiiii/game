@@ -88,11 +88,11 @@ for i, (seconds, rise) in enumerate([(7.0, 2.2), (8.0, 3.0)], start=1):
     save(f"SFX_MysticForest_Gust_{i:02d}", fade(np.stack(chans, axis=1), 0.3, 1.0))
 
 # --- Zone A: the Zone B recipe, a little higher and lighter ------------------------------------
-# Same slow shared swells as Zone B, shallower. The highs stay low in level: loud bright noise
+# Slower and shallower swells than Zone B: nothing moves fast at the spawn, the trees stand still. The highs stay low in level: loud bright noise
 # that swells is what reads as surf.
 rng = np.random.default_rng(31001)
 save("AMB_MysticForest_ZoneA", wind_bed(60, [
-    (150, 1.0, 0.6), (480, 1.0, 0.9), (1400, 0.9, 0.6), (3800, 0.8, 0.16)], [2, 3, 5, 9], 0.32))
+    (150, 1.0, 0.5), (450, 1.0, 0.9), (1200, 0.9, 0.45), (3200, 0.8, 0.08)], [1, 2, 3, 5], 0.28))
 
 # --- Giant tree presence: 32 s loop, mono -------------------------------------------------------
 seconds = 32

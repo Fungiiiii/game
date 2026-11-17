@@ -29,8 +29,14 @@ namespace Fungiiiii.Runtime.Audio
         [SerializeField, Tooltip("World Z where only the north bed is left.")]
         private float northFadeEnd = 170f;
 
-        [SerializeField, Range(0f, 1f), Tooltip("Volume of a bed when it plays alone.")]
-        private float volume = 0.5f;
+        [SerializeField, Range(0f, 1f), Tooltip("Volume of the south bed when it plays alone.")]
+        private float southVolume = 0.5f;
+
+        [SerializeField, Range(0f, 1f), Tooltip("Volume of the middle bed when it plays alone.")]
+        private float middleVolume = 0.5f;
+
+        [SerializeField, Range(0f, 1f), Tooltip("Volume of the north bed when it plays alone.")]
+        private float northVolume = 0.5f;
 
         // The mix follows a position that changes every frame, and setting three
         // volumes costs nothing: an Update is the simplest honest way to do it.
@@ -42,9 +48,9 @@ namespace Fungiiiii.Runtime.Audio
             }
 
             ZoneMix mix = ZoneMix.At(listener.position.z, southFadeStart, southFadeEnd, northFadeStart, northFadeEnd);
-            south.volume = mix.South * volume;
-            middle.volume = mix.Middle * volume;
-            north.volume = mix.North * volume;
+            south.volume = mix.South * southVolume;
+            middle.volume = mix.Middle * middleVolume;
+            north.volume = mix.North * northVolume;
         }
     }
 }
