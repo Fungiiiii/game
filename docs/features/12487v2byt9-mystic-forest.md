@@ -47,7 +47,7 @@ Pour le joueur :
 - [x] Quatre emplacements de Champimaison : sol plat de 7 m de rayon, sans arbre ni herbe, sur un chemin ou à côté.
 - [x] Les arbres sont dessinés jusqu'à 200 m, l'herbe jusqu'à 75 m. Les ombres restent à 80 m.
 - [x] **Vent** : l'herbe penche et ondule, par rafales qui traversent les plaques. Le pied des touffes ne bouge pas.
-- [x] **Brume au sol** : une brume basse bleu-violet dérive lentement dans le creux et dans les trois clairières de respiration.
+- [x] **Brume au sol** : une brume basse bleu-violet, épaisse d'environ 1,5 m, suit le relief dans la bande centrale de la carte (zone B et le creux). Elle forme de grandes plaques sans bord net, qui dérivent lentement dans le sens du vent. Le spawn et le nord restent dégagés.
 
   ![Brume au sol près du creux](../screenshots/mystic-forest-mist.png)
 - [x] En jeu, on ne traverse pas les troncs, l'arbre géant ni les gros rochers posés à la main. Les petits cailloux, l'herbe, les buissons, les fougères, les champignons et les rochers du pied des falaises n'ont pas de collision.
@@ -90,7 +90,7 @@ Pour le level design :
 | `Landmarks` | `PF_TreeGiant` (×1,8), gros rochers, pierres levées, champignons et fougères posés à la main au spawn et autour du géant. |
 | `Player` | `CharacterController` + `FirstPersonTestPlayer`, `Main Camera` en enfant à 0,7 m (œil à 1,6 m du sol), post-traitement et SMAA activés. Sa position et son orientation sont le spawn. |
 | `Player/Main Camera/Spores` | `ParticleSystem` simulé dans le monde : boîte de 36 × 10 × 36 m autour de la caméra, 90 spores par seconde, vie de 7 à 11 s, entre bleu clair et violet clair, qui tombent lentement. Matériau `ParticlesUnlit` d'URP. |
-| `Mist/PF_GroundMist` ×4 | `ParticleSystem` simulé dans le monde : boîte de 50 × 1,2 × 50 m à 0,8 m du sol, 3,5 particules par seconde de 10 à 18 m, vie de 18 à 28 s, opacité 15 %, dérive dans le sens du vent. Matériau `GroundMist.mat` (`ParticlesUnlit` d'URP, particules douces). Au creux et aux trois clairières de respiration. |
+| `Player/Main Camera/PF_GroundMist` | Un quad devant la caméra, matériau `GroundMist.mat` (shader `Fungiiiii/GroundMist`) et composant `GroundMist`, qui donne au shader le heightmap du Terrain. Réglages dans le matériau : densité 0,04 par mètre, fondu de 1,2 m au-dessus du sol, opacité max 50 %, portée 120 m, plaques de 60 m, zone centrée en (0, 30) de 300 × 90 m de demi-côtés, fondue sur 70 m. |
 | `PostProcess` | `Volume` global, profil `SO_MysticForestVolume.asset` : tonemapping Neutral, exposition +0,25, contraste +16, saturation +4, split toning (ombres bleu-violet, lumières chaudes), bloom léger, vignettage 0,36. |
 
 | Calque (ordre) | Prefab | Centre, zone | Distance min | Échelle | Pente max | Bosquets (taille, part) | Seed |
@@ -156,7 +156,7 @@ Tous ont l'origine au pied, l'échelle 1, un seul matériau `M_Fungi_Palette` re
 - **Ombres dures.** Les ombres douces brouillaient les arêtes du low poly.
 - **Post-traitement par un Volume de la scène**, pas par le profil par défaut du projet : les autres scènes ne changent pas. L'étalonnage reste léger, sinon le feuillage de la zone A virait au jaune fluo et le ciel au bleu nuit.
 - **Vent : un seul shader, sur l'herbe seulement** (Hugo, 17/11 : « le choix le plus simple »). `Fungiiiii/GrassWind` déplace les sommets selon leur hauteur au-dessus du pied de la touffe ; l'éclairage est un Lambert simple, proche du matériau palette. `GrassTuft.fbx` pointe sur `GrassWind.mat` au lieu de `Palette.mat`. Les buissons, fougères et arbres gardent `Palette.mat`.
-- **Brume : un seul prefab de particules** (`PF_GroundMist`), posé à la main à 4 endroits sous l'objet `Mist`, plutôt qu'un brouillard de hauteur (URP n'en a pas). 100 grandes particules au plus par endroit, en fondu doux contre le sol : la caméra de la scène demande donc la texture de profondeur.
+- **Brume : un shader qui suit le sol, pas des particules** (Hugo, 17/11 : les nappes de particules faisaient « un rond de brume »). Pour chaque pixel, `Fungiiiii/GroundMist` reconstruit la position dans le monde depuis la texture de profondeur, avance le long du rayon en 24 pas et additionne la brume, dense au niveau du sol (lu dans le heightmap du Terrain) et qui s'efface au-dessus. Une brume à hauteur fixe a été essayée d'abord : avec ±11 m de relief, elle noyait le spawn. La caméra de la scène demande donc la texture de profondeur. `PF_GroundMist` et `GroundMist.mat` gardent leur nom mais ne sont plus des particules.
 - **Spores bleu clair et violet clair** (Hugo, 13/11), simulées dans le monde (elles ne tournent pas avec la caméra), qui tombent lentement : l'air paraît lourd. Coût fixe partout (900 au plus).
 - **Arbres en bosquets** : un bruit par calque garde les arbres là où il dépasse un seuil. Les tirages de position, d'échelle et de rotation ne changent pas : on retire des arbres, on n'en rebat aucun.
 - **Herbe en détails du Terrain**, en mode « nombre d'instances ». En mode « couverture », celui par défaut, les valeurs 1 à 5 étaient lues comme une part de 255 et presque rien ne s'affichait.
@@ -243,7 +243,7 @@ Lancés en batchmode avec Unity 6000.3.21f1 sur la machine de Hugo (17/11, aprè
 | 12 | Window > Analysis > Physics Debugger, Play. | Capsules sur les troncs, mesh colliders sur le géant et les gros rochers posés à la main, rien sur le sous-bois ni les petits cailloux. | |
 | 13 | Play, fenêtre **Stats**, depuis le spawn, puis au centre de la zone B. | Noter les FPS dans la PR. Objectif : 120 FPS ou plus sur RX 6800 XT + i5-12400F. | |
 | 14 | Play, regarder une plaque d'herbe sans bouger. | L'herbe ondule par rafales, le pied des touffes reste en place, aucune touffe ne clignote. | |
-| 15 | Play, aller au creux (ouest) puis dans une clairière de respiration. | Une brume basse bleu-violet dérive lentement, sans bord net contre le sol ni les troncs. Noter les FPS dans la brume. | |
+| 15 | Play, marcher du spawn vers le nord jusqu'en zone B, puis vers le creux à l'ouest. | Pas de brume au spawn. En zone B, une brume basse bleu-violet colle au sol par grandes plaques qui dérivent, sans bord net ni boule ; elle suit les pentes. Pas de bandes ni de grain visible. Noter les FPS dans la brume. | |
 
 ## Limitations connues
 
