@@ -1,5 +1,8 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Fungiiiii.Runtime.Audio
 {
@@ -25,6 +28,14 @@ namespace Fungiiiii.Runtime.Audio
         private AudioSource source;
         private int previous = -1;
 
+        /// <summary>
+        /// Raised each time a sound starts, with the clip and the volume it plays at.
+        /// </summary>
+        public event Action<AudioClip, float> Played;
+
+        /// <summary>The sounds this emitter picks from.</summary>
+        public IReadOnlyList<AudioClip> Clips => clips ?? Array.Empty<AudioClip>();
+
         private void Awake()
         {
             source = GetComponent<AudioSource>();
@@ -48,7 +59,9 @@ namespace Fungiiiii.Runtime.Audio
             {
                 yield return new WaitForSeconds(Random.Range(minInterval, maxInterval));
                 previous = PickDifferent(clips.Length, previous, Random.value);
-                source.PlayOneShot(clips[previous], Random.Range(minVolume, maxVolume));
+                float volume = Random.Range(minVolume, maxVolume);
+                source.PlayOneShot(clips[previous], volume);
+                Played?.Invoke(clips[previous], volume);
             }
         }
 

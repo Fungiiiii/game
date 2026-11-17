@@ -9564,6 +9564,7 @@ GameObject:
   - component: {fileID: 1529394624}
   - component: {fileID: 1529394626}
   - component: {fileID: 1529394625}
+  - component: {fileID: 1529394627}
   m_Layer: 0
   m_Name: Gusts
   m_TagString: Untagged
@@ -9702,6 +9703,19 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1529394627
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1529394623}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10de6793ae928ab4e978486206836125, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Runtime.Audio.WindGustDriver
+  measureStep: 0.1
 --- !u!1001 &1557678467
 PrefabInstance:
   m_ObjectHideFlags: 0

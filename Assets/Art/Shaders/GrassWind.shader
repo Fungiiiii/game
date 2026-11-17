@@ -1,5 +1,6 @@
 // Palette-textured grass that leans in the wind. The lean grows with the height
-// above the tuft's root, so the root stays planted. Lighting is plain Lambert plus
+// above the tuft's root, so the root stays planted. The gust heard in the sound
+// (_WindGust, see Wind.hlsl) leans it further, together with the trees. Lighting is plain Lambert plus
 // ambient, to match the palette material used by the rest of the forest.
 Shader "Fungiiiii/GrassWind"
 {
@@ -9,6 +10,7 @@ Shader "Fungiiiii/GrassWind"
         _WindStrength ("Lean per metre of height", Range(0, 1)) = 0.35
         _WindSpeed ("Speed", Range(0, 5)) = 1.3
         _GustSize ("Gust size (m)", Range(1, 60)) = 14
+        _GustLean ("Extra lean in a heard gust", Range(0, 3)) = 0.9
     }
 
     SubShader
@@ -18,6 +20,7 @@ Shader "Fungiiiii/GrassWind"
         HLSLINCLUDE
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
         #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+        #include "Wind.hlsl"
 
         TEXTURE2D(_BaseMap);
         SAMPLER(sampler_BaseMap);
@@ -27,9 +30,8 @@ Shader "Fungiiiii/GrassWind"
             half _WindStrength;
             half _WindSpeed;
             half _GustSize;
+            half _GustLean;
         CBUFFER_END
-
-        static const float2 WindDirection = float2(0.8, 0.6);
 
         struct Attributes
         {
@@ -57,6 +59,7 @@ Shader "Fungiiiii/GrassWind"
             // One phase per tuft, sliding along the wind: gusts cross the meadow.
             float phase = _Time.y * _WindSpeed - dot(rootWS.xz, WindDirection) / _GustSize * 6.2832;
             float sway = 0.35 + 0.65 * sin(phase) + 0.25 * sin(phase * 2.7 + rootWS.x);
+            sway += _GustLean * _WindGust;
 
             positionWS.xz += WindDirection * (sway * _WindStrength * height);
             return positionWS;

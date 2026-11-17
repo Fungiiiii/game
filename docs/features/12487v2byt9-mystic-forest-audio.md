@@ -120,3 +120,4 @@ Au casque, bouton de son de la fenêtre Game activé.
 - 7 fichiers WAV, environ 42 Mo dans LFS.
 
 ## Modifié par
+- [12487v2byt9-mystic-forest-tree-wind](./12487v2byt9-mystic-forest-tree-wind.md) — les rafales entendues se voient dans le feuillage et l'herbe : `RandomOneShotEmitter` signale chaque rafale, `WindGustDriver` s'ajoute sur `Audio/Gusts`.
