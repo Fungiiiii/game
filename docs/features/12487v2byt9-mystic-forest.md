@@ -46,6 +46,10 @@ Pour le joueur :
 - [x] Les arbres ont une rotation aléatoire et une taille bien différente d'un arbre à l'autre : leur hauteur varie aussi indépendamment de leur largeur, certains plus élancés, d'autres plus trapus. Deux modèles ne poussent jamais l'un dans l'autre, et aucun pied d'arbre ne flotte au-dessus d'une pente.
 - [x] Quatre emplacements de Champimaison : sol plat de 7 m de rayon, sans arbre ni herbe, sur un chemin ou à côté.
 - [x] Les arbres sont dessinés jusqu'à 200 m, l'herbe jusqu'à 75 m. Les ombres restent à 80 m.
+- [x] **Vent** : l'herbe penche et ondule, par rafales qui traversent les plaques. Le pied des touffes ne bouge pas.
+- [x] **Brume au sol** : une brume basse bleu-violet dérive lentement dans le creux et dans les trois clairières de respiration.
+
+  ![Brume au sol près du creux](../screenshots/mystic-forest-mist.png)
 - [x] En jeu, on ne traverse pas les troncs, l'arbre géant ni les gros rochers posés à la main. Les petits cailloux, l'herbe, les buissons, les fougères, les champignons et les rochers du pied des falaises n'ont pas de collision.
 
 ![Vue d'ensemble, sans brouillard](../screenshots/mystic-forest-overview.png)
@@ -63,7 +67,9 @@ Pour le level design :
 
 ## Hors périmètre
 
-- Le vent sur l'herbe : sous-tâche « Vent sur l'herbe ».
+- Le vent sur les buissons, les fougères et les arbres : seul l'herbe bouge.
+- Le son : aucun son n'est dans la scène. La liste des sons possibles a été remise à Hugo le 17/11.
+- L'eau et les rais de lumière.
 - Gameplay : les points d'intérêt sont du décor.
 - La Champimaison elle-même : seuls ses emplacements sont prêts.
 - Le contrôleur joueur du jeu : le joueur de cette scène est un joueur de test.
@@ -84,6 +90,7 @@ Pour le level design :
 | `Landmarks` | `PF_TreeGiant` (×1,8), gros rochers, pierres levées, champignons et fougères posés à la main au spawn et autour du géant. |
 | `Player` | `CharacterController` + `FirstPersonTestPlayer`, `Main Camera` en enfant à 0,7 m (œil à 1,6 m du sol), post-traitement et SMAA activés. Sa position et son orientation sont le spawn. |
 | `Player/Main Camera/Spores` | `ParticleSystem` simulé dans le monde : boîte de 36 × 10 × 36 m autour de la caméra, 90 spores par seconde, vie de 7 à 11 s, entre bleu clair et violet clair, qui tombent lentement. Matériau `ParticlesUnlit` d'URP. |
+| `Mist/PF_GroundMist` ×4 | `ParticleSystem` simulé dans le monde : boîte de 46 × 0,6 × 46 m à 0,8 m du sol, 2,5 particules par seconde de 9 à 15 m, vie de 18 à 28 s, opacité 10 %, dérive dans le sens du vent. Matériau `GroundMist.mat` (`ParticlesUnlit` d'URP, particules douces). Au creux et aux trois clairières de respiration. |
 | `PostProcess` | `Volume` global, profil `SO_MysticForestVolume.asset` : tonemapping Neutral, exposition +0,25, contraste +16, saturation +4, split toning (ombres bleu-violet, lumières chaudes), bloom léger, vignettage 0,36. |
 
 | Calque (ordre) | Prefab | Centre, zone | Distance min | Échelle | Pente max | Bosquets (taille, part) | Seed |
@@ -148,6 +155,8 @@ Tous ont l'origine au pied, l'échelle 1, un seul matériau `M_Fungi_Palette` re
 - **Ciel en dégradé dont l'horizon a la couleur du brouillard.** Le brouillard d'Unity ne s'applique pas au ciel : avec un horizon de la même couleur, les arbres lointains se fondent dedans. Remplace « Aucun ciel » de la première version.
 - **Ombres dures.** Les ombres douces brouillaient les arêtes du low poly.
 - **Post-traitement par un Volume de la scène**, pas par le profil par défaut du projet : les autres scènes ne changent pas. L'étalonnage reste léger, sinon le feuillage de la zone A virait au jaune fluo et le ciel au bleu nuit.
+- **Vent : un seul shader, sur l'herbe seulement** (Hugo, 17/11 : « le choix le plus simple »). `Fungiiiii/GrassWind` déplace les sommets selon leur hauteur au-dessus du pied de la touffe ; l'éclairage est un Lambert simple, proche du matériau palette. `GrassTuft.fbx` pointe sur `GrassWind.mat` au lieu de `Palette.mat`. Les buissons, fougères et arbres gardent `Palette.mat`.
+- **Brume : un seul prefab de particules** (`PF_GroundMist`), posé à la main à 4 endroits sous l'objet `Mist`, plutôt qu'un brouillard de hauteur (URP n'en a pas). 80 grandes particules au plus par endroit, en fondu doux contre le sol : la caméra de la scène demande donc la texture de profondeur.
 - **Spores bleu clair et violet clair** (Hugo, 13/11), simulées dans le monde (elles ne tournent pas avec la caméra), qui tombent lentement : l'air paraît lourd. Coût fixe partout (900 au plus).
 - **Arbres en bosquets** : un bruit par calque garde les arbres là où il dépasse un seuil. Les tirages de position, d'échelle et de rotation ne changent pas : on retire des arbres, on n'en rebat aucun.
 - **Herbe en détails du Terrain**, en mode « nombre d'instances ». En mode « couverture », celui par défaut, les valeurs 1 à 5 étaient lues comme une part de 255 et presque rien ne s'affichait.
@@ -184,7 +193,7 @@ Tous ont l'origine au pied, l'échelle 1, un seul matériau `M_Fungi_Palette` re
 
 ### Automatisés (Unity Test Runner)
 
-Lancés en batchmode avec Unity 6000.3.21f1 sur la machine de Hugo (13/11). Log et XML lus : **EditMode 82/82, PlayMode 17/17.**
+Lancés en batchmode avec Unity 6000.3.21f1 sur la machine de Hugo (17/11, après le vent et la brume). Le vent et la brume n'ont pas de test automatisé : ce sont des réglages visuels. Log et XML lus : **EditMode 82/82, PlayMode 17/17.**
 
 | Test | Mode | Couvre | Résultat |
 |---|---|---|---|
@@ -233,8 +242,12 @@ Lancés en batchmode avec Unity 6000.3.21f1 sur la machine de Hugo (13/11). Log 
 | 11 | Sélectionner `ChampimaisonSites/ChampimaisonSite_01..04`. | Chaque site est sur un sol plat, vide d'arbres et d'herbe, accessible à pied. | |
 | 12 | Window > Analysis > Physics Debugger, Play. | Capsules sur les troncs, mesh colliders sur le géant et les gros rochers posés à la main, rien sur le sous-bois ni les petits cailloux. | |
 | 13 | Play, fenêtre **Stats**, depuis le spawn, puis au centre de la zone B. | Noter les FPS dans la PR. Objectif : 120 FPS ou plus sur RX 6800 XT + i5-12400F. | |
+| 14 | Play, regarder une plaque d'herbe sans bouger. | L'herbe ondule par rafales, le pied des touffes reste en place, aucune touffe ne clignote. | |
+| 15 | Play, aller au creux (ouest) puis dans une clairière de respiration. | Une brume basse bleu-violet dérive lentement, sans bord net contre le sol ni les troncs. Noter les FPS dans la brume. | |
 
 ## Limitations connues
+
+- **Le vent et la brume n'ont pas été vus en mouvement** : seules des captures fixes ont été rendues (17/11). Les FPS dans la brume n'ont pas été mesurés.
 
 - **FPS** : mesurés par Hugo le 13/11 sur RX 6800 XT + i5-12400F, jusqu'à 220 FPS. Le minimum n'a pas été relevé, ni une machine plus modeste.
 - Les captures sont rendues en batchmode : les spores y sont simulées à la main. L'ambiance en mouvement a été vue et validée en jeu par Hugo le 13/11.
