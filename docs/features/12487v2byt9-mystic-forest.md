@@ -247,8 +247,7 @@ Lancés en batchmode avec Unity 6000.3.21f1 sur la machine de Hugo (17/11, aprè
 
 ## Limitations connues
 
-- **Coût de la brume** : la première version (24 pas, bruit à deux octaves, dessinée partout) faisait tomber Hugo de 220 à 112 FPS (17/11). Elle a été allégée : 8 pas, rayon coupé au-dessus de la couche, bruit moins cher, et le composant `GroundMist` cache le quad quand la caméra est trop loin de la zone. Mesure en batchmode à 1440p, bruitée (± 1,5 ms) : environ 4,3 ms par image avant, 1 à 2 ms après en zone B. **Les FPS en jeu après allègement n'ont pas été mesurés.**
-- **Le vent et la brume n'ont pas été vus en mouvement** : seules des captures fixes ont été rendues (17/11). Les FPS dans la brume n'ont pas été mesurés.
+- **Coût de la brume** : la première version (24 pas, bruit à deux octaves, dessinée partout) faisait tomber Hugo de 220 à 112 FPS (17/11). Elle a été allégée : 8 pas, rayon coupé au-dessus de la couche, bruit moins cher, et le composant `GroundMist` cache le quad quand la caméra est trop loin de la zone. Mesure en batchmode à 1440p, bruitée (± 1,5 ms) : environ 4,3 ms par image avant, 1 à 2 ms après en zone B. Mesuré en jeu par Hugo après allègement (17/11, RX 6800 XT + i5-12400F) : 195 à 205 FPS à l'arrêt (4,5 ms), 190 FPS dans la brume (5,2 ms), 140 à 150 FPS en déplaçant la caméra (6 à 7 ms), dans la brume ou non. Jugé acceptable : la cible est 120 FPS. La baisse en mouvement n'est pas expliquée ; elle ne vient pas de la brume.
 
 - **FPS** : mesurés par Hugo le 13/11 sur RX 6800 XT + i5-12400F, jusqu'à 220 FPS. Le minimum n'a pas été relevé, ni une machine plus modeste.
 - Les captures sont rendues en batchmode : les spores y sont simulées à la main. L'ambiance en mouvement a été vue et validée en jeu par Hugo le 13/11.
