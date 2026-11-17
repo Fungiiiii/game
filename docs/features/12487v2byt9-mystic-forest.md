@@ -261,3 +261,4 @@ Lancés en batchmode avec Unity 6000.3.21f1 sur la machine de Hugo (17/11, aprè
 ## Modifié par
 
 - [12487v2byt9-mystic-forest-audio](./12487v2byt9-mystic-forest-audio.md) — la scène a maintenant des sons d'ambiance : un objet `Audio` (fonds de zone, rafales, arbre géant, pierres dressées).
+- [12487v2byt9-mystic-forest-tree-wind](./12487v2byt9-mystic-forest-tree-wind.md) — le feuillage des arbres bouge, troncs immobiles ; l'herbe se penche aussi pendant les rafales que l'on entend (`GrassWind` lit `_WindGust`).
