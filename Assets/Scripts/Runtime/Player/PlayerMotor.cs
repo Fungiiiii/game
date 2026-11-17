@@ -103,16 +103,6 @@ namespace Fungiiiii.Runtime.Player
         }
 
         /// <summary>
-        /// Assigns the objects the motor drives. Used by the prototype bootstrap, which
-        /// builds its objects at runtime and has no Inspector to wire.
-        /// </summary>
-        public void Initialise(PlayerInputReader reader, Transform visual)
-        {
-            inputReader = reader;
-            visualRoot = visual;
-        }
-
-        /// <summary>
         /// Requests a dodge along the current move direction, or straight ahead when
         /// there is no input. Refused while a dodge or its cooldown is running.
         /// </summary>

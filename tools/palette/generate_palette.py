@@ -44,6 +44,19 @@ PALETTE = {
     (4, 1): ("#827A7E", "Rock base"),
     (4, 2): ("#605A5E", "Rock shadow"),
     (4, 3): ("#413D3F", "Rock dark"),
+
+    # Mystic Forest trees and landmarks. Row 5 is left to the sponge colours
+    # pending on chore/12487v2aetn-palette-sponge-colours.
+    (6, 0): ("#9CB955", "Leaf warm"),
+    (6, 1): ("#6E8A3E", "Leaf warm shade"),
+    (6, 2): ("#3F6E5A", "Pine"),
+    (6, 3): ("#2E5248", "Pine shade"),
+    (6, 4): ("#A89078", "Bark pale"),
+    (6, 5): ("#4F7F86", "Giant leaf"),
+    (6, 6): ("#8BAA4F", "Grass"),
+    (6, 7): ("#5F7E38", "Grass shade"),
+    (7, 0): ("#8E6CB8", "Mushroom violet"),
+    (7, 1): ("#B7C463", "Grass tip"),
 }
 
 # Rock variants — replace the four hex values on row 4 with one of these ramps:

@@ -2,7 +2,8 @@
     "name": "Fungiiiii.Runtime",
     "rootNamespace": "Fungiiiii",
     "references": [
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Unity.Netcode.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
