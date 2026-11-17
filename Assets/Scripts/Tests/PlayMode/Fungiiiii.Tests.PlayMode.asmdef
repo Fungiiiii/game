@@ -5,6 +5,7 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "Fungiiiii.Runtime",
+        "Unity.InputSystem",
         "Unity.Netcode.Runtime"
     ],
     "includePlatforms": [],
