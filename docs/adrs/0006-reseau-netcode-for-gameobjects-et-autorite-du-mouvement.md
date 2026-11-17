@@ -2,7 +2,7 @@
 
 ## Statut
 
-Proposé
+Accepté
 
 Date : 2026-09-22
 
