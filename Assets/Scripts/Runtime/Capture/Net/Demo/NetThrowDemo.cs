@@ -34,7 +34,7 @@ namespace Fungiiiii.Capture
         [SerializeField]
         private GameObject playerPrefab;
 
-        [Header("Net — starting values of the design note, to balance in playtest")]
+        [Header("Net: starting values of the design note, to balance in playtest")]
         [SerializeField, Min(0.1f)]
         private float launchSpeed = 11f;
 
