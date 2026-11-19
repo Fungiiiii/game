@@ -4,7 +4,7 @@
 - **Note de design validée :** [[VALIDATION] Note de design — Filet de capture (Net Throw)](https://app.clickup.com/t/12487v2nkb9) — réécrite et fermée par Hugo le 19/11. Révision de Hugo le 19/11, transmise par Ilyes : couleur du cercle en dégradé, fil entre la main et le filet, puis filet et cercle faits de points qui épousent le terrain.
 - **Branche :** `feat/86c9mnqy5-filet-capture`
 - **Auteur :** Ilyes Benkerri
-- **Statut :** En cours — écrit sans Unity, **ni compilé ni testé** (voir « Limitations connues »)
+- **Statut :** En cours — compilé et tests automatisés au vert dans Unity 6000.3.21f1 (19/11) ; tests manuels à faire
 
 ## Docs précédents
 
@@ -128,20 +128,20 @@ Ces choix ne figurent pas dans la note, ou la précisent. Ils sont à confirmer 
 
 ### Automatisés (Unity Test Runner)
 
-**Pas encore exécutés dans Unity.** Les tests EditMode de la logique pure ont tourné hors Unity, avec .NET 8 et des substituts minimaux de `UnityEngine` : 61 sur 61 au vert, tests existants de la machine à états compris. Ça ne remplace pas le Test Runner : à lancer dans Unity avant toute revue. Les tests PlayMode n'ont pas tourné.
+Lancés en batchmode avec Unity 6000.3.21f1 le 19/11, sur la machine d'Ilyes, branche à jour avec `origin/develop`. Log et XML lus : **EditMode 168/168, PlayMode 29/29**, tous les tests du projet compris. Aucune erreur de compilation dans le log. PlayMode a tourné sans `-nographics`, pour que le rendu URP soit exercé. Aucun avertissement n'est logué pendant le chargement de `NetThrowScene` ; les avertissements « 2 event systems » du log viennent de `ChampimaisonScene` et `PoisonScene`, hors de cette branche.
 
 | Test | Mode | Couvre | Résultat |
 |---|---|---|---|
-| `NetTrajectoryTests` (5 tests) | EditMode | Parabole pour une vitesse et une gravité données ; portée à 45° ; point et temps d'atterrissage ; vol sans impact | ⬜ |
-| `NetCycleTests` (9 tests) | EditMode | Lancer refusé en vol, pendant le gel et pendant le retour, accepté une fois le filet revenu ; résultat montré à la fin du gel ; retour avec ou sans prise ; reset | ⬜ |
-| `NetImpactTests` (7 tests) | EditMode | Aucune cible, une seule, plusieurs (la plus proche gagne), cible pile sur le bord, distance au sol, liste dans un rayon | ⬜ |
-| `NetCaptureRatesTests` (7 méthodes) | EditMode | Les trois profils, le bonus de surprise, plafond à 100 %, tirage déterministe avec générateur fixé | ⬜ |
-| `NetRimLayoutTests` (6 tests) | EditMode | Anneau à plat au bon rayon ; drapé sur sol plat ; drapé point par point sur une marche ; point sans rien dessous laissé à plat ; le filet monte sur un chapeau ; au moins 3 points | ⬜ |
-| `NetChanceColorsTests` (6 tests) | EditMode | Rouge à 0 % (et pour une chance inconnue), orange dès une chance infime, jaune à 50 %, vert à 100 %, le rouge diminue quand la chance monte | ⬜ |
-| `NetLandingResolverTests` (6 tests) | EditMode | Un lancer à côté fait fuir les champignons à moins de 3 m ; une touche ne vise que le plus proche et n'en effraie aucun ; profil et surprise de la cible ; même graine, mêmes résultats ; aperçu sans tirage | ⬜ |
-| `MushroomCaptureResolveAttemptTests` (5 tests) | EditMode | Une réussite passe à Captured et déclenche `Captured` une seule fois ; un échec passe à Flee ; un champignon en Idle ou en fuite est accepté ; un champignon capturé ne bouge plus | ⬜ |
-| `NetThrowScenePlayModeTests.SceneLoad_BuildsThePlayerTheNetAndThreeMushrooms` | PlayMode | La scène se charge avec le joueur, le filet en main et 3 champignons | ⬜ |
-| `NetThrowScenePlayModeTests.ANetDroppedOnAMushroom_LandsOnIt_AndChangesItsState` | PlayMode | Un lancer déclenché par code atterrit sur un champignon et son état change (Captured ou Flee) | ⬜ |
+| `NetTrajectoryTests` (5 tests) | EditMode | Parabole pour une vitesse et une gravité données ; portée à 45° ; point et temps d'atterrissage ; vol sans impact | ✅ |
+| `NetCycleTests` (9 tests) | EditMode | Lancer refusé en vol, pendant le gel et pendant le retour, accepté une fois le filet revenu ; résultat montré à la fin du gel ; retour avec ou sans prise ; reset | ✅ |
+| `NetImpactTests` (7 tests) | EditMode | Aucune cible, une seule, plusieurs (la plus proche gagne), cible pile sur le bord, distance au sol, liste dans un rayon | ✅ |
+| `NetCaptureRatesTests` (7 méthodes) | EditMode | Les trois profils, le bonus de surprise, plafond à 100 %, tirage déterministe avec générateur fixé | ✅ |
+| `NetRimLayoutTests` (6 tests) | EditMode | Anneau à plat au bon rayon ; drapé sur sol plat ; drapé point par point sur une marche ; point sans rien dessous laissé à plat ; le filet monte sur un chapeau ; au moins 3 points | ✅ |
+| `NetChanceColorsTests` (6 tests) | EditMode | Rouge à 0 % (et pour une chance inconnue), orange dès une chance infime, jaune à 50 %, vert à 100 %, le rouge diminue quand la chance monte | ✅ |
+| `NetLandingResolverTests` (6 tests) | EditMode | Un lancer à côté fait fuir les champignons à moins de 3 m ; une touche ne vise que le plus proche et n'en effraie aucun ; profil et surprise de la cible ; même graine, mêmes résultats ; aperçu sans tirage | ✅ |
+| `MushroomCaptureResolveAttemptTests` (5 tests) | EditMode | Une réussite passe à Captured et déclenche `Captured` une seule fois ; un échec passe à Flee ; un champignon en Idle ou en fuite est accepté ; un champignon capturé ne bouge plus | ✅ |
+| `NetThrowScenePlayModeTests.SceneLoad_BuildsThePlayerTheNetAndThreeMushrooms` | PlayMode | La scène se charge avec le joueur, le filet en main et 3 champignons | ✅ |
+| `NetThrowScenePlayModeTests.ANetDroppedOnAMushroom_LandsOnIt_AndChangesItsState` | PlayMode | Un lancer déclenché par code atterrit sur un champignon et son état change (Captured ou Flee) | ✅ |
 
 Les tests existants de `MushroomCaptureStateMachineTests` et `PlayerMovementDemoPlayModeTests` ne sont pas modifiés. Ils doivent rester verts.
 
@@ -175,7 +175,7 @@ Scène : `Assets/Scenes/Prototype/NetThrowScene.unity`, puis **Play** et un clic
 
 ## Limitations connues
 
-- **Rien n'a été compilé ni exécuté.** La branche a été écrite dans un conteneur sans Unity, et la CI ne lance pas Unity (ADR-0004). La scène et les `.meta` ont été écrits à la main : la première ouverture dans l'Editor est le vrai premier test.
+- **Écrit sans Unity, vérifié ensuite.** La branche a été écrite dans un conteneur sans Unity ; la scène et les `.meta` ont été écrits à la main. Elle compile et ses tests automatisés passent dans Unity (19/11), et l'import n'a réécrit aucun `.meta`. Les tests manuels n'ont pas encore été faits : le rendu, la sensation de visée et le mouvement FPS ne sont vérifiés par aucun test automatisé.
 - **Code jetable :** la table de taux et le tirage seront remplacés par le `TryCapture` du CaptureSystem. `ResolveCaptureAttempt` est dans le domaine de Pol-Mattis : à coordonner au merge.
 - **Prefab réseau hors ligne :** utiliser `Player` sans `NetworkManager` n'a pas été vérifié. Netcode peut logger des avertissements.
 - **Caméra FPS et `PlayerMotor` :** le corps tourne toujours vers la direction de déplacement, et un dodge sans direction part vers l'avant du corps, pas vers le regard. À vérifier en jeu.
