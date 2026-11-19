@@ -65,6 +65,9 @@ namespace Fungiiiii.Capture
         private const float NetLineWidth = 0.02f;
         private const float ImpactLineWidth = 0.04f;
 
+        /// <summary>Rings of cords between the centre and the rim of the placeholder net.</summary>
+        private const int NetInnerRingCount = 3;
+
         /// <summary>
         /// Draping: each point looks down from this high above the landing point, so it can
         /// climb onto a mushroom cap or a slope, and lies this far above what it finds.
@@ -552,7 +555,7 @@ namespace Fungiiiii.Capture
             // The net's position, carried by an empty object; its shape is the rim of points.
             netVisual = new GameObject("Net").transform;
             netVisual.SetParent(root, false);
-            netRim = CreateRim("Net Rim", root, netMaterial, NetLineWidth, withSpokes: true);
+            netRim = CreateRim("Net Rim", root, netMaterial, NetLineWidth, withSpokes: true, NetInnerRingCount);
 
             handNet = NetDemoPrimitives.Create(
                 PrimitiveType.Cylinder,
@@ -564,7 +567,7 @@ namespace Fungiiiii.Capture
                 keepCollider: false).transform;
             handNet.localRotation = Quaternion.Euler(-60f, 0f, 0f);
 
-            impactRim = CreateRim("Impact Circle", root, circleMaterial, ImpactLineWidth, withSpokes: false);
+            impactRim = CreateRim("Impact Circle", root, circleMaterial, ImpactLineWidth, withSpokes: false, innerRingCount: 0);
 
             ropeMaterial = NetDemoPrimitives.CreateUnlitMaterial("Net Rope", RopeColor);
             var ropeObject = new GameObject("Net Rope");
@@ -594,13 +597,19 @@ namespace Fungiiiii.Capture
             }
         }
 
-        private static NetRim CreateRim(string objectName, Transform parent, Material material, float width, bool withSpokes)
+        private static NetRim CreateRim(
+            string objectName,
+            Transform parent,
+            Material material,
+            float width,
+            bool withSpokes,
+            int innerRingCount)
         {
             var rimObject = new GameObject(objectName);
             rimObject.transform.SetParent(parent, false);
 
             var rim = rimObject.AddComponent<NetRim>();
-            rim.Build(NetRimPointCount, material, width, withSpokes);
+            rim.Build(NetRimPointCount, material, width, withSpokes, innerRingCount);
             return rim;
         }
 
