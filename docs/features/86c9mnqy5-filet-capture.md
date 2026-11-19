@@ -52,6 +52,8 @@ Le filet sert à capturer à distance les champignons rapides ou en fuite. C'est
   - un **rare**, au chapeau violet et plus gros.
 - [ ] **R** ou **Start** remet la démo à zéro : filet en main, champignons à leur place et calmes, joueur au point de départ.
 
+La SFD a été mise à jour par Hugo le 19/11 dans ce sens (RG_CA_02, RG_CA_04, RG_CR_04) : filet permanent, sans durabilité, taux selon la rareté et la surprise. Dans ce prototype, le filet est la méthode adaptée pour les trois champignons (RG_CA_01).
+
 ## Hors périmètre
 
 - Le CaptureSystem (ticket de Pol-Mattis) : vrais taux par espèce, état affaibli réel, récompenses, XP.
@@ -169,7 +171,7 @@ Scène : `Assets/Scenes/Prototype/NetThrowScene.unity`, puis **Play** et un clic
 - **Code jetable :** la table de taux et le tirage seront remplacés par le `TryCapture` du CaptureSystem. `ResolveCaptureAttempt` est dans le domaine de Pol-Mattis : à coordonner au merge.
 - **Prefab réseau hors ligne :** utiliser `Player` sans `NetworkManager` n'a pas été vérifié. Netcode peut logger des avertissements.
 - **Caméra FPS et `PlayerMotor` :** le corps tourne toujours vers la direction de déplacement, et un dodge sans direction part vers l'avant du corps, pas vers le regard. À vérifier en jeu.
-- **SFD à mettre à jour** (note de Hugo) : RG_CR_04 (durabilité) et RG_CA_02 (taux unique).
+- **Endurance :** le lancer ne coûte pas d'endurance (risque n° 4 de la note). C'est à décider en playtest.
 - Placeholders partout : `Shader.Find` sur les shaders URP, valable dans l'Editor, pas garanti dans un build.
 
 ## Modifié par
