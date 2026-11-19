@@ -22,6 +22,9 @@ namespace Fungiiiii.UI
 
         [SerializeField] private int demoMaxStackSize = 5;
 
+        [Tooltip("Fills the inventory with sample items on Awake. Off for a game loop that starts empty.")]
+        [SerializeField] private bool seedDemoItems = true;
+
         private const string DemoMushroomId = "demo_mushroom";
         private const string DemoHerbId = "demo_herb";
         private const string DemoSporeId = "demo_spore";
@@ -50,6 +53,16 @@ namespace Fungiiiii.UI
 
         public PlayerInventory Inventory => inventory;
 
+        /// <summary>
+        /// Whether Awake fills the inventory with sample items. Set it before Awake runs,
+        /// that is on an inactive GameObject, to start empty.
+        /// </summary>
+        public bool SeedsDemoItems
+        {
+            get => seedDemoItems;
+            set => seedDemoItems = value;
+        }
+
         private bool IsCarrying => carriedQuantity > 0;
 
         private void Awake()
@@ -59,7 +72,11 @@ namespace Fungiiiii.UI
             CreateEventSystemIfNeeded();
             BuildUi();
             inventory.Changed += RefreshUi;
-            SeedDemoItems();
+
+            if (seedDemoItems)
+            {
+                SeedDemoItems();
+            }
         }
 
         private void Update()
