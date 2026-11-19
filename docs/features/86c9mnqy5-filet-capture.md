@@ -37,7 +37,7 @@ Le filet sert à capturer à distance les champignons rapides ou en fuite. C'est
 
   « Ne l'a pas repéré » veut dire que le champignon est encore calme (gris). Un champignon en alerte (jaune) ou en fuite (rouge) n'a pas le bonus.
 - [ ] Quand le filet touche un champignon, le filet et le champignon se figent 0,5 s. Le champignon est mis en surbrillance avec des couleurs plus claires. Le joueur reste libre de bouger.
-- [ ] Tant que le filet est sorti (en vol, au sol, au retour), un fil relie la main au filet, avec un léger affaissement.
+- [ ] Tant que le filet est sorti (en vol, au sol, au retour), un fil relie la main au **dessus** du filet. Il suit l'arc que le filet a parcouru, comme une corde lancée. Au retour, l'arc s'aplatit à mesure que le filet revient.
 - [ ] **Réussite :** après le gel, le filet se referme en boule et revient vers le joueur en 1 s. Le champignon est dedans et rétrécit jusqu'à disparaître à l'arrivée.
 - [ ] **Échec :** après le gel, le filet revient vide en 1 s et le champignon fuit loin du filet.
 - [ ] **Lancer à côté :** le filet revient vide tout de suite, en 1 s. Les champignons à moins de 3 m de l'impact fuient loin du filet.
@@ -151,8 +151,8 @@ Scène : `Assets/Scenes/Prototype/NetThrowScene.unity`, puis **Play** et un clic
 | 5 | Viser le champignon rouge sans s'approcher (il reste gris) | Cercle **jaune tirant sur le vert** (60 %). En s'approchant à moins de 3,5 m, le champignon passe au jaune et le cercle à un **jaune orangé** (40 %) | ⬜ |
 | 6 | Viser le champignon violet, de loin puis de près | Jamais rouge : **orange jaune** s'il est calme (30 %), **orange** franc en alerte (10 %) | ⬜ |
 | 7 | Viser le champignon terne de loin | Cercle du **vert le plus vert** (100 %). Même champignon en alerte : vert un peu moins franc (80 %) | ⬜ |
-| 8 | Lancer (clic gauche) sur le champignon terne | Un fil relie la main au filet pendant tout le vol. Le filet vole en arc et se pose sur lui. Filet et champignon se figent environ 0,5 s, champignon plus clair. On peut bouger pendant ce temps | ⬜ |
-| 9 | Suite de #8 | Le filet se referme en boule et revient en 1 s, le fil raccourcit avec lui. Le champignon rétrécit dedans et disparaît. Le disque réapparaît en bas à droite et le fil disparaît | ⬜ |
+| 8 | Lancer (clic gauche) sur le champignon terne | Un fil part de la main et monte en arc avec le filet, accroché sur le dessus du disque, jamais en dessous. Le filet vole en arc et se pose sur lui. Filet et champignon se figent environ 0,5 s, champignon plus clair. On peut bouger pendant ce temps | ⬜ |
+| 9 | Suite de #8 | Le filet se referme en boule et revient en 1 s. L'arc du fil s'aplatit et le fil raccourcit avec lui. Le champignon rétrécit dedans et disparaît. Le disque réapparaît en bas à droite et le fil disparaît | ⬜ |
 | 10 | Cliquer plusieurs fois pendant le vol et le retour | Aucun second filet ne part avant que le disque soit revenu | ⬜ |
 | 11 | R, puis lancer plusieurs fois sur le champignon violet, R entre chaque essai | La plupart du temps, échec : le filet revient vide et le champignon devient rouge et s'éloigne du point d'impact. Il se calme (gris) environ 6 m plus loin | ⬜ |
 | 12 | R, puis lancer à environ 2 m du champignon rouge, sans le toucher | Cercle gris avant le lancer. Le filet revient vide tout de suite. Le champignon fuit | ⬜ |

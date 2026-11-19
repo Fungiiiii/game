@@ -37,7 +37,8 @@ namespace Fungiiiii.Capture
     /// <summary>
     /// Throws the capture net from the first-person view, previews its arc and impact
     /// zone, and plays the hold, the capture and the return with placeholders. A rope
-    /// links the hand to the net for as long as the net is out.
+    /// links the hand to the top of the net for as long as the net is out, following
+    /// the arc the net flew.
     ///
     /// The rules live in plain C# (<see cref="NetCycle"/>, <see cref="NetLandingResolver"/>,
     /// <see cref="NetTrajectory"/>); this component only feeds them input, physics casts
@@ -75,8 +76,6 @@ namespace Fungiiiii.Capture
         private const int RopePointCount = 12;
         private const float RopeWidth = 0.012f;
 
-        /// <summary>Sag at the middle of the rope, per metre of rope.</summary>
-        private const float RopeSagPerMetre = 0.04f;
 
         private readonly List<NetCandidate> candidates = new List<NetCandidate>();
         private readonly List<NetDemoMushroom> candidateOwners = new List<NetDemoMushroom>();
@@ -93,6 +92,8 @@ namespace Fungiiiii.Capture
 
         private NetTrajectory flight;
         private float flightSeconds;
+        private float ropeArcSeconds;
+        private float landedRopeBulge;
         private Vector3 previousFlightPoint;
         private Vector3 landingPoint;
         private NetDemoMushroom heldTarget;
@@ -264,6 +265,7 @@ namespace Fungiiiii.Capture
         {
             landingPoint = point;
             netVisual.position = point;
+            FreezeRopeArc();
 
             CollectCandidates();
             var result = resolver.Resolve(point, candidates, scaredIndices);
@@ -448,19 +450,73 @@ namespace Fungiiiii.Capture
             }
         }
 
-        /// <summary>Stretches the rope from the hand to the net, with a slight sag.</summary>
+        /// <summary>
+        /// Draws the rope from the hand to the top of the net. In flight and while the
+        /// net holds a mushroom, it follows the arc the net flew, moved so that it starts
+        /// at the hand and ends on the net. On the way back, that arc flattens out as the
+        /// net comes in.
+        /// </summary>
         private void UpdateRope()
         {
-            var hand = aimCamera.transform.TransformPoint(HandNetLocalPosition);
-            var net = netVisual.position;
-            var sag = Vector3.Distance(hand, net) * RopeSagPerMetre;
+            var hand = HandPosition();
+            var netTop = NetTop();
 
+            if (Cycle.Phase == NetPhase.Returning)
+            {
+                var bulge = landedRopeBulge * (1f - Cycle.ReturnProgress);
+                for (var index = 0; index < RopePointCount; index++)
+                {
+                    var along = index / (float)(RopePointCount - 1);
+                    var rise = 4f * along * (1f - along) * bulge;
+                    rope.SetPosition(index, Vector3.Lerp(hand, netTop, along) + Vector3.up * rise);
+                }
+
+                return;
+            }
+
+            var arcSeconds = Cycle.Phase == NetPhase.Flying ? flightSeconds : ropeArcSeconds;
             for (var index = 0; index < RopePointCount; index++)
             {
                 var along = index / (float)(RopePointCount - 1);
-                var droop = 4f * along * (1f - along) * sag;
-                rope.SetPosition(index, Vector3.Lerp(hand, net, along) + Vector3.down * droop);
+                rope.SetPosition(index, RopePointOnArc(along, arcSeconds, hand, netTop));
             }
+        }
+
+        /// <summary>
+        /// Keeps the arc the rope follows once the net has landed, and how far it rises
+        /// above the straight line, so the return can flatten it.
+        /// </summary>
+        private void FreezeRopeArc()
+        {
+            ropeArcSeconds = flightSeconds;
+
+            var hand = HandPosition();
+            var netTop = NetTop();
+            var middle = RopePointOnArc(0.5f, ropeArcSeconds, hand, netTop);
+            landedRopeBulge = Mathf.Max(0f, middle.y - Vector3.Lerp(hand, netTop, 0.5f).y);
+        }
+
+        /// <summary>
+        /// Point of the flown arc at <paramref name="along"/> (0 at the hand, 1 on the net),
+        /// shifted so that its ends meet the hand and the top of the net.
+        /// </summary>
+        private Vector3 RopePointOnArc(float along, float arcSeconds, Vector3 hand, Vector3 netTop)
+        {
+            var arcEnd = flight.PositionAt(arcSeconds);
+            return flight.PositionAt(along * arcSeconds)
+                + (hand - flight.Origin) * (1f - along)
+                + (netTop - arcEnd) * along;
+        }
+
+        private Vector3 HandPosition()
+        {
+            return aimCamera.transform.TransformPoint(HandNetLocalPosition);
+        }
+
+        /// <summary>Top of the net placeholder: a Unity cylinder is two units tall at scale 1.</summary>
+        private Vector3 NetTop()
+        {
+            return netVisual.position + Vector3.up * netVisual.localScale.y;
         }
 
         private void BuildVisuals()
