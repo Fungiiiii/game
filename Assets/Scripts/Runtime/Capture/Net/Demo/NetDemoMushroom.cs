@@ -11,6 +11,11 @@ namespace Fungiiiii.Capture
     /// A net that misses it or fails to catch it leaves a threat at the impact point: the
     /// mushroom flees from the closer of the player and that point. Without it, a net
     /// thrown from beyond the calm distance would make the mushroom flee for one frame only.
+    ///
+    /// Options for a level with real models and relief: <see cref="InitializeWithModel"/>
+    /// shows an existing model instead of primitives, <see cref="EnableWander"/> makes it
+    /// stroll around its spawn while unaware, and <see cref="FollowGround"/> keeps it on
+    /// uneven ground.
     /// </summary>
     internal sealed class NetDemoMushroom : MonoBehaviour
     {
@@ -21,6 +26,17 @@ namespace Fungiiiii.Capture
 
         /// <summary>How far the colours move towards white while the net holds the mushroom.</summary>
         private const float HighlightWhiteness = 0.55f;
+
+        /// <summary>A model is brightened, not whitened: its colours come from a palette texture.</summary>
+        private static readonly Color ModelHighlightTint = new Color(1.6f, 1.6f, 1.6f, 1f);
+
+        private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+
+        private Renderer[] modelRenderers;
+        private MaterialPropertyBlock highlightBlock;
+        private MushroomWander wander;
+        private System.Func<Vector3, float> groundHeight;
+        private Quaternion spawnRotation = Quaternion.identity;
 
         private MushroomCaptureStateMachine stateMachine;
         private Transform player;
@@ -61,20 +77,65 @@ namespace Fungiiiii.Capture
             float size,
             Color profileCapColor)
         {
+            capColor = profileCapColor;
+            Setup(profile, observedPlayer, arenaBounds, mushroomFleeSpeed, size);
+            BuildVisuals(profile == NetTargetProfile.CommonWeakened);
+            ApplyColors();
+        }
+
+        /// <summary>
+        /// Sets the mushroom up with an existing model as its body, at scale 1, instead of
+        /// primitives. A capsule fitted to the model takes the net.
+        /// </summary>
+        public void InitializeWithModel(
+            NetTargetProfile profile,
+            Transform observedPlayer,
+            Rect arenaBounds,
+            float mushroomFleeSpeed,
+            GameObject modelPrefab)
+        {
+            if (modelPrefab == null)
+            {
+                throw new ArgumentNullException(nameof(modelPrefab));
+            }
+
+            Setup(profile, observedPlayer, arenaBounds, mushroomFleeSpeed, 1f);
+            BuildModelVisuals(modelPrefab);
+            ApplyColors();
+        }
+
+        /// <summary>Makes the mushroom stroll while it is unaware, instead of standing still.</summary>
+        public void EnableWander(MushroomWander stroll)
+        {
+            wander = stroll;
+        }
+
+        /// <summary>Keeps the mushroom on the ground: <paramref name="heightAt"/> gives the ground height under a point.</summary>
+        public void FollowGround(System.Func<Vector3, float> heightAt)
+        {
+            groundHeight = heightAt;
+            transform.position = OnGround(transform.position);
+            spawnPosition = transform.position;
+        }
+
+        private void Setup(
+            NetTargetProfile profile,
+            Transform observedPlayer,
+            Rect arenaBounds,
+            float mushroomFleeSpeed,
+            float size)
+        {
             Profile = profile;
             player = observedPlayer;
             arena = arenaBounds;
             fleeSpeed = mushroomFleeSpeed;
             spawnPosition = transform.position;
+            spawnRotation = transform.rotation;
             baseScale = Vector3.one * size;
-            capColor = profileCapColor;
             transform.localScale = baseScale;
 
             stateMachine = new MushroomCaptureStateMachine(MushroomCaptureStateMachine.Configuration.Default);
             stateMachine.StateChanged += HandleStateChanged;
-
-            BuildVisuals(profile == NetTargetProfile.CommonWeakened);
-            ApplyColors();
         }
 
         /// <summary>Freezes or releases the mushroom while the net is on it, and highlights it.</summary>
@@ -136,11 +197,12 @@ namespace Fungiiiii.Capture
             isCaught = false;
             threatPoint = null;
             transform.position = spawnPosition;
-            transform.rotation = Quaternion.identity;
+            transform.rotation = spawnRotation;
             transform.localScale = baseScale;
             gameObject.SetActive(true);
             SetCollidersEnabled(true);
             stateMachine.Reset();
+            wander?.Restart();
             ApplyColors();
         }
 
@@ -162,6 +224,11 @@ namespace Fungiiiii.Capture
             {
                 // Calmed down: the net it fled from is forgotten.
                 threatPoint = null;
+
+                if (wander != null)
+                {
+                    MoveTo(wander.Step(transform.position, Time.deltaTime));
+                }
             }
         }
 
@@ -229,10 +296,34 @@ namespace Fungiiiii.Capture
                 away = Vector3.right;
             }
 
-            var position = transform.position + away.normalized * (fleeSpeed * Time.deltaTime);
+            MoveTo(transform.position + away.normalized * (fleeSpeed * Time.deltaTime));
+        }
+
+        private void MoveTo(Vector3 position)
+        {
             position.x = Mathf.Clamp(position.x, arena.xMin, arena.xMax);
             position.z = Mathf.Clamp(position.z, arena.yMin, arena.yMax);
+            position = OnGround(position);
+
+            // A model shows which way it goes; the round primitive body does not need to.
+            var step = position - transform.position;
+            step.y = 0f;
+            if (modelRenderers != null && step.sqrMagnitude > 0.000001f)
+            {
+                transform.rotation = Quaternion.LookRotation(step, Vector3.up);
+            }
+
             transform.position = position;
+        }
+
+        private Vector3 OnGround(Vector3 position)
+        {
+            if (groundHeight != null)
+            {
+                position.y = groundHeight(position);
+            }
+
+            return position;
         }
 
         private void BuildVisuals(bool weakened)
@@ -280,16 +371,72 @@ namespace Fungiiiii.Capture
             colliders = new[] { stem.GetComponent<Collider>(), cap.GetComponent<Collider>() };
         }
 
+        private void BuildModelVisuals(GameObject modelPrefab)
+        {
+            var model = Instantiate(modelPrefab, transform, false);
+            model.name = "Model";
+            modelRenderers = model.GetComponentsInChildren<Renderer>();
+            highlightBlock = new MaterialPropertyBlock();
+
+            // The model's own colliders, if any, are replaced by one capsule fitted to it.
+            foreach (var modelCollider in model.GetComponentsInChildren<Collider>())
+            {
+                Destroy(modelCollider);
+            }
+
+            var bounds = new Bounds(transform.position, Vector3.zero);
+            foreach (var modelRenderer in modelRenderers)
+            {
+                bounds.Encapsulate(modelRenderer.bounds);
+            }
+
+            var body = gameObject.AddComponent<CapsuleCollider>();
+            body.center = bounds.center - transform.position;
+            body.radius = Mathf.Max(0.05f, Mathf.Max(bounds.extents.x, bounds.extents.z));
+            body.height = Mathf.Max(body.radius * 2f, bounds.size.y);
+
+            markerMaterial = NetDemoPrimitives.CreateMaterial("Net Demo Mushroom State Marker", IdleColor);
+            var markerDiameter = body.radius * 2.6f;
+            NetDemoPrimitives.Create(
+                PrimitiveType.Cylinder,
+                "State Marker",
+                transform,
+                new Vector3(0f, 0.02f, 0f),
+                new Vector3(markerDiameter, 0.01f, markerDiameter),
+                markerMaterial,
+                keepCollider: false);
+
+            colliders = new Collider[] { body };
+        }
+
         private void ApplyColors()
         {
-            if (capMaterial == null || markerMaterial == null)
+            if (markerMaterial == null)
             {
                 return;
             }
 
             var stateColor = GetStateColor(stateMachine.CurrentState);
-            capMaterial.color = isHeld ? Highlight(capColor) : capColor;
             markerMaterial.color = isHeld ? Highlight(stateColor) : stateColor;
+
+            if (capMaterial != null)
+            {
+                capMaterial.color = isHeld ? Highlight(capColor) : capColor;
+            }
+
+            if (modelRenderers != null)
+            {
+                highlightBlock.Clear();
+                if (isHeld)
+                {
+                    highlightBlock.SetColor(BaseColorId, ModelHighlightTint);
+                }
+
+                foreach (var modelRenderer in modelRenderers)
+                {
+                    modelRenderer.SetPropertyBlock(isHeld ? highlightBlock : null);
+                }
+            }
         }
 
         private static Color Highlight(Color color)
