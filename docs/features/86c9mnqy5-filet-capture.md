@@ -1,7 +1,7 @@
 # Filet de capture (Net Throw) — prototype
 
 - **Ticket ClickUp :** [[CAPTURE] Filet de capture (Net Throw)](https://app.clickup.com/t/86c9mnqy5)
-- **Note de design validée :** [[VALIDATION] Note de design — Filet de capture (Net Throw)](https://app.clickup.com/t/12487v2nkb9) — réécrite et fermée par Hugo le 19/11
+- **Note de design validée :** [[VALIDATION] Note de design — Filet de capture (Net Throw)](https://app.clickup.com/t/12487v2nkb9) — réécrite et fermée par Hugo le 19/11. Révision de Hugo le 19/11, transmise par Ilyes : couleur du cercle en dégradé et fil entre la main et le filet.
 - **Branche :** `feat/86c9mnqy5-filet-capture`
 - **Auteur :** Ilyes Benkerri
 - **Statut :** En cours — écrit sans Unity, **ni compilé ni testé** (voir « Limitations connues »)
@@ -18,7 +18,13 @@ Le filet sert à capturer à distance les champignons rapides ou en fuite. C'est
 
 - [ ] Le joueur vise à la première personne, à la souris ou au stick droit. Il se déplace avec le vrai mouvement : marche, sprint, accroupi, dodge. Avancer va dans la direction du regard.
 - [ ] Tant que le filet est en main, un petit disque est visible en bas à droite de l'écran. Un arc en pointillés montre la trajectoire, et un cercle de 1,5 m de rayon montre la zone d'impact.
-- [ ] Le cercle change de couleur selon les chances du champignon qui serait visé : **rouge** sous 35 %, **orange** de 35 % à 60 %, **vert** à partir de 60 %. Il est **gris** si aucun champignon n'est dans la zone. Aucun texte n'est affiché.
+- [ ] Le cercle prend une couleur en dégradé selon les chances du champignon qui serait visé, pour qu'on voie tout de suite à quoi on a affaire :
+  - **rouge** : 0 %, capture impossible ;
+  - **orange** : dès que la chance dépasse 0 %, chance basse mais pas impossible ;
+  - **jaune** : 50 % ;
+  - **le vert le plus vert** : 100 %.
+
+  La couleur passe en continu de l'orange au jaune, puis du jaune au vert. Le cercle est **gris** si aucun champignon n'est dans la zone. Aucun texte n'est affiché.
 - [ ] Clic gauche ou gâchette droite : le filet part dans la direction du regard à 11 m/s. Il suit un arc et retombe au premier sol, obstacle ou champignon rencontré. Il ne s'arrête jamais sur le joueur lui-même.
 - [ ] Si un champignon est dans la zone à l'atterrissage, il y a une seule tentative de capture : sur le champignon le plus proche du centre, mesuré au sol.
 - [ ] Les chances de réussite sont provisoires :
@@ -31,6 +37,7 @@ Le filet sert à capturer à distance les champignons rapides ou en fuite. C'est
 
   « Ne l'a pas repéré » veut dire que le champignon est encore calme (gris). Un champignon en alerte (jaune) ou en fuite (rouge) n'a pas le bonus.
 - [ ] Quand le filet touche un champignon, le filet et le champignon se figent 0,5 s. Le champignon est mis en surbrillance avec des couleurs plus claires. Le joueur reste libre de bouger.
+- [ ] Tant que le filet est sorti (en vol, au sol, au retour), un fil relie la main au filet, avec un léger affaissement.
 - [ ] **Réussite :** après le gel, le filet se referme en boule et revient vers le joueur en 1 s. Le champignon est dedans et rétrécit jusqu'à disparaître à l'arrivée.
 - [ ] **Échec :** après le gel, le filet revient vide en 1 s et le champignon fuit loin du filet.
 - [ ] **Lancer à côté :** le filet revient vide tout de suite, en 1 s. Les champignons à moins de 3 m de l'impact fuient loin du filet.
@@ -68,7 +75,8 @@ Scène : `Assets/Scenes/Prototype/NetThrowScene.unity`. C'est une copie de `Capt
 | `NetTrajectory.cs` | Vol balistique du filet : position et vitesse à l'instant t. Recherche du point d'atterrissage par pas, à travers un lancer de segment injecté. |
 | `NetCycle.cs` | Cycle du filet : en main → en vol → gel → retour → en main. Refuse un lancer hors de la main. Événements `Thrown`, `Landed`, `CaptureSucceeded`, `CaptureFailed`, `Returned`. |
 | `NetImpact.cs` | Choix de la cible (la plus proche du centre, bord inclus, distance au sol) et liste des champignons dans un rayon. |
-| `NetCaptureRates.cs` | **Provisoire.** Table des taux par profil, bonus de surprise, tirage avec un générateur injecté, et seuils de couleur du cercle. |
+| `NetCaptureRates.cs` | **Provisoire.** Table des taux par profil, bonus de surprise, tirage avec un générateur injecté. |
+| `NetChanceColors.cs` | Dégradé de couleur du cercle selon la chance : rouge à 0 %, puis orange, jaune à 50 %, vert à 100 %. Ne calcule pas la chance elle-même. |
 | `NetLandingResolver.cs` | Ce que fait un filet posé : tentative sur une cible (tirage), ou liste des champignons effrayés si le lancer est à côté. Aperçu sans tirage pour la visée. |
 
 **Scène prototype**, dans `Assets/Scripts/Runtime/Capture/Net/Demo/` :
@@ -76,7 +84,7 @@ Scène : `Assets/Scenes/Prototype/NetThrowScene.unity`. C'est une copie de `Capt
 | Fichier | Rôle |
 |---|---|
 | `NetThrowDemo.cs` | Construit l'arène, le joueur, les 3 champignons et le lanceur. Porte les réglages (valeurs de la note) et le reset. |
-| `NetThrower.cs` | Entrée `ThrowNet`, aperçu de l'arc et du cercle, vol, gel, retour, rétrécissement de la prise. |
+| `NetThrower.cs` | Entrée `ThrowNet`, aperçu de l'arc et du cercle, vol, gel, retour, rétrécissement de la prise, fil entre la main et le filet (`LineRenderer`). |
 | `NetDemoMushroom.cs` | Champignon placeholder : perception par la machine à états de capture, fuite, surbrillance, transport dans le filet. |
 | `PrototypeFirstPersonCamera.cs` | Caméra FPS du prototype : entrée `Look`, place les yeux sur le haut de la capsule, donne son lacet à `PlayerMotor`. |
 | `NetDemoPrimitives.cs` | Primitives et matériaux placeholder. |
@@ -93,13 +101,14 @@ Scène : `Assets/Scenes/Prototype/NetThrowScene.unity`. C'est une copie de `Capt
 - **Un lancer à côté passe par `ResolveCaptureAttempt(false)`** sur les champignons proches. Pour la machine à états, c'est une tentative ratée qui fait fuir. Aucune autre méthode n'est ajoutée au domaine de Pol-Mattis.
 - **Un champignon fuit loin du filet, pas du joueur,** après un échec ou un lancer à côté. Sinon, un filet lancé de plus de 6 m le calmerait à l'image suivante : le joueur est au-delà de la distance de calme.
 - **Les champignons gardent leurs colliders.** Un filet lancé sur eux s'y pose au lieu de les traverser. Ils sont désactivés pendant que la prise revient dans le filet.
+- **La couleur ne dépend que de la chance.** Selon Hugo, la chance sera à terme un rapport entre la rareté, le niveau et la vie du champignon, et l'objet utilisé : le filet n'est que le premier outil, d'autres plus forts viendront. Cette formule relève du CaptureSystem. `NetChanceColors` reste valable quelle que soit la façon dont la chance est calculée.
 - **`ThrowNet` et `Look` sont construites en code**, comme `Dodge` dans `PlayerInputReader`. L'asset partagé `InputSystem_Actions` n'est pas modifié. `ThrowNet` devra y être ajoutée avant la production.
 
 ### Écarts par rapport à la note validée
 
 Ces choix ne figurent pas dans la note, ou la précisent. Ils sont à confirmer par Hugo :
 
-1. **Seuils de couleur du cercle : 35 % et 60 %.** Plus le **gris** quand aucun champignon n'est dans la zone. La note demande rouge / orange / vert sans chiffre.
+1. **Le cercle est gris** quand aucun champignon n'est dans la zone : « aucune cible » n'est pas « impossible ». Couleurs exactes et point jaune à 50 % : choix de placeholder.
 2. **Le rare affaibli n'existe pas.** La note n'en donne pas le taux, et la scène n'a que les 3 profils demandés.
 3. **Le filet en main est visible** (petit disque en bas à droite), pour montrer qu'on peut relancer.
 4. **Fermeture et rétrécissement :** le filet se referme pendant le premier quart du retour, et la prise rétrécit pendant tout le retour. La note ne donne pas de durée.
@@ -111,14 +120,15 @@ Ces choix ne figurent pas dans la note, ou la précisent. Ils sont à confirmer 
 
 ### Automatisés (Unity Test Runner)
 
-**Pas encore exécutés.** Ils ont été écrits sans Editor : à lancer dans Unity avant toute revue.
+**Pas encore exécutés dans Unity.** Les tests EditMode de la logique pure ont tourné hors Unity, avec .NET 8 et des substituts minimaux de `UnityEngine` : 55 sur 55 au vert, tests existants de la machine à états compris. Ça ne remplace pas le Test Runner : à lancer dans Unity avant toute revue. Les tests PlayMode n'ont pas tourné.
 
 | Test | Mode | Couvre | Résultat |
 |---|---|---|---|
 | `NetTrajectoryTests` (5 tests) | EditMode | Parabole pour une vitesse et une gravité données ; portée à 45° ; point et temps d'atterrissage ; vol sans impact | ⬜ |
 | `NetCycleTests` (9 tests) | EditMode | Lancer refusé en vol, pendant le gel et pendant le retour, accepté une fois le filet revenu ; résultat montré à la fin du gel ; retour avec ou sans prise ; reset | ⬜ |
 | `NetImpactTests` (7 tests) | EditMode | Aucune cible, une seule, plusieurs (la plus proche gagne), cible pile sur le bord, distance au sol, liste dans un rayon | ⬜ |
-| `NetCaptureRatesTests` (8 méthodes) | EditMode | Les trois profils, le bonus de surprise, plafond à 100 %, couleurs du cercle, tirage déterministe avec générateur fixé | ⬜ |
+| `NetCaptureRatesTests` (7 méthodes) | EditMode | Les trois profils, le bonus de surprise, plafond à 100 %, tirage déterministe avec générateur fixé | ⬜ |
+| `NetChanceColorsTests` (6 tests) | EditMode | Rouge à 0 % (et pour une chance inconnue), orange dès une chance infime, jaune à 50 %, vert à 100 %, le rouge diminue quand la chance monte | ⬜ |
 | `NetLandingResolverTests` (6 tests) | EditMode | Un lancer à côté fait fuir les champignons à moins de 3 m ; une touche ne vise que le plus proche et n'en effraie aucun ; profil et surprise de la cible ; même graine, mêmes résultats ; aperçu sans tirage | ⬜ |
 | `MushroomCaptureResolveAttemptTests` (5 tests) | EditMode | Une réussite passe à Captured et déclenche `Captured` une seule fois ; un échec passe à Flee ; un champignon en Idle ou en fuite est accepté ; un champignon capturé ne bouge plus | ⬜ |
 | `NetThrowScenePlayModeTests.SceneLoad_BuildsThePlayerTheNetAndThreeMushrooms` | PlayMode | La scène se charge avec le joueur, le filet en main et 3 champignons | ⬜ |
@@ -136,11 +146,11 @@ Scène : `Assets/Scenes/Prototype/NetThrowScene.unity`, puis **Play** et un clic
 | 2 | Play | Vue à la première personne, sol vert, 4 blocs, 3 champignons devant (rouge à gauche, terne et penché au centre, violet plus gros au fond). Disque du filet en bas à droite. Aucune erreur rouge dans la Console | ⬜ |
 | 3 | Bouger la souris, puis ZQSD / WASD | La vue tourne, sans dépasser la verticale. Avancer va vers le regard. Shift sprinte, C accroupit (la vue descend), Espace fait un dodge | ⬜ |
 | 4 | Regarder le sol devant soi | Arc en pointillés blancs et cercle **gris** au point d'impact. Le cercle suit le regard | ⬜ |
-| 5 | Viser le champignon rouge sans s'approcher (il reste gris) | Le cercle devient **vert** (60 %). En s'approchant à moins de 3,5 m, le champignon passe au jaune et le cercle à l'**orange** (40 %) | ⬜ |
-| 6 | Viser le champignon violet, de loin puis de près | Cercle **rouge** dans les deux cas : 30 % s'il est calme, 10 % en alerte, tous deux sous le seuil de 35 % | ⬜ |
-| 7 | Viser le champignon terne de loin | Cercle **vert** (100 %) | ⬜ |
-| 8 | Lancer (clic gauche) sur le champignon terne | Le filet vole en arc et se pose sur lui. Filet et champignon se figent environ 0,5 s, champignon plus clair. On peut bouger pendant ce temps | ⬜ |
-| 9 | Suite de #8 | Le filet se referme en boule et revient en 1 s. Le champignon rétrécit dedans et disparaît. Le disque réapparaît en bas à droite | ⬜ |
+| 5 | Viser le champignon rouge sans s'approcher (il reste gris) | Cercle **jaune tirant sur le vert** (60 %). En s'approchant à moins de 3,5 m, le champignon passe au jaune et le cercle à un **jaune orangé** (40 %) | ⬜ |
+| 6 | Viser le champignon violet, de loin puis de près | Jamais rouge : **orange jaune** s'il est calme (30 %), **orange** franc en alerte (10 %) | ⬜ |
+| 7 | Viser le champignon terne de loin | Cercle du **vert le plus vert** (100 %). Même champignon en alerte : vert un peu moins franc (80 %) | ⬜ |
+| 8 | Lancer (clic gauche) sur le champignon terne | Un fil relie la main au filet pendant tout le vol. Le filet vole en arc et se pose sur lui. Filet et champignon se figent environ 0,5 s, champignon plus clair. On peut bouger pendant ce temps | ⬜ |
+| 9 | Suite de #8 | Le filet se referme en boule et revient en 1 s, le fil raccourcit avec lui. Le champignon rétrécit dedans et disparaît. Le disque réapparaît en bas à droite et le fil disparaît | ⬜ |
 | 10 | Cliquer plusieurs fois pendant le vol et le retour | Aucun second filet ne part avant que le disque soit revenu | ⬜ |
 | 11 | R, puis lancer plusieurs fois sur le champignon violet, R entre chaque essai | La plupart du temps, échec : le filet revient vide et le champignon devient rouge et s'éloigne du point d'impact. Il se calme (gris) environ 6 m plus loin | ⬜ |
 | 12 | R, puis lancer à environ 2 m du champignon rouge, sans le toucher | Cercle gris avant le lancer. Le filet revient vide tout de suite. Le champignon fuit | ⬜ |

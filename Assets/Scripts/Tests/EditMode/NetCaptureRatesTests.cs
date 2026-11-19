@@ -43,17 +43,6 @@ namespace Fungiiiii.Tests.EditMode
             Assert.Throws<ArgumentOutOfRangeException>(() => new NetCaptureRates(0.4f, 0.8f, -0.1f, 0.2f));
         }
 
-        [TestCase(0.1f, NetChanceBand.Low)]
-        [TestCase(0.3f, NetChanceBand.Low)]
-        [TestCase(0.35f, NetChanceBand.Medium)]
-        [TestCase(0.4f, NetChanceBand.Medium)]
-        [TestCase(0.6f, NetChanceBand.High)]
-        [TestCase(1f, NetChanceBand.High)]
-        public void Classify_SortsChancesIntoTheCircleColours(float chance, NetChanceBand expected)
-        {
-            Assert.That(NetCaptureRates.Classify(chance), Is.EqualTo(expected));
-        }
-
         [Test]
         public void Roll_IsDeterministic_WithASeededGenerator()
         {

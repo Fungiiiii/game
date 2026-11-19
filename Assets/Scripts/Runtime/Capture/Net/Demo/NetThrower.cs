@@ -36,7 +36,8 @@ namespace Fungiiiii.Capture
 
     /// <summary>
     /// Throws the capture net from the first-person view, previews its arc and impact
-    /// zone, and plays the hold, the capture and the return with placeholders.
+    /// zone, and plays the hold, the capture and the return with placeholders. A rope
+    /// links the hand to the net for as long as the net is out.
     ///
     /// The rules live in plain C# (<see cref="NetCycle"/>, <see cref="NetLandingResolver"/>,
     /// <see cref="NetTrajectory"/>); this component only feeds them input, physics casts
@@ -68,9 +69,14 @@ namespace Fungiiiii.Capture
         private static readonly Color NetColor = new Color(0.82f, 0.74f, 0.52f);
         private static readonly Color PreviewDotColor = new Color(1f, 1f, 1f);
         private static readonly Color NoTargetColor = new Color(0.85f, 0.85f, 0.85f);
-        private static readonly Color LowChanceColor = new Color(0.9f, 0.15f, 0.1f);
-        private static readonly Color MediumChanceColor = new Color(1f, 0.55f, 0.05f);
-        private static readonly Color HighChanceColor = new Color(0.2f, 0.85f, 0.25f);
+        private static readonly Color RopeColor = new Color(0.55f, 0.45f, 0.3f);
+
+        /// <summary>Rope placeholder between the hand and the net.</summary>
+        private const int RopePointCount = 12;
+        private const float RopeWidth = 0.012f;
+
+        /// <summary>Sag at the middle of the rope, per metre of rope.</summary>
+        private const float RopeSagPerMetre = 0.04f;
 
         private readonly List<NetCandidate> candidates = new List<NetCandidate>();
         private readonly List<NetDemoMushroom> candidateOwners = new List<NetDemoMushroom>();
@@ -99,6 +105,8 @@ namespace Fungiiiii.Capture
         private Material netMaterial;
         private Material dotMaterial;
         private Material circleMaterial;
+        private Material ropeMaterial;
+        private LineRenderer rope;
 
         public NetCycle Cycle { get; private set; }
 
@@ -189,6 +197,7 @@ namespace Fungiiiii.Capture
             DestroyMaterial(netMaterial);
             DestroyMaterial(dotMaterial);
             DestroyMaterial(circleMaterial);
+            DestroyMaterial(ropeMaterial);
         }
 
         private void Update()
@@ -320,7 +329,7 @@ namespace Fungiiiii.Capture
 
             CollectCandidates();
             circleMaterial.color = resolver.TryPreview(landing.Point, candidates, out _, out var chance)
-                ? ChanceColor(NetCaptureRates.Classify(chance))
+                ? NetChanceColors.Evaluate(chance)
                 : NoTargetColor;
         }
 
@@ -431,6 +440,27 @@ namespace Fungiiiii.Capture
             {
                 impactCircle.gameObject.SetActive(false);
             }
+
+            rope.enabled = !ready;
+            if (!ready)
+            {
+                UpdateRope();
+            }
+        }
+
+        /// <summary>Stretches the rope from the hand to the net, with a slight sag.</summary>
+        private void UpdateRope()
+        {
+            var hand = aimCamera.transform.TransformPoint(HandNetLocalPosition);
+            var net = netVisual.position;
+            var sag = Vector3.Distance(hand, net) * RopeSagPerMetre;
+
+            for (var index = 0; index < RopePointCount; index++)
+            {
+                var along = index / (float)(RopePointCount - 1);
+                var droop = 4f * along * (1f - along) * sag;
+                rope.SetPosition(index, Vector3.Lerp(hand, net, along) + Vector3.down * droop);
+            }
         }
 
         private void BuildVisuals()
@@ -470,6 +500,18 @@ namespace Fungiiiii.Capture
                 keepCollider: false).transform;
             impactCircle.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 
+            ropeMaterial = NetDemoPrimitives.CreateUnlitMaterial("Net Rope", RopeColor);
+            var ropeObject = new GameObject("Net Rope");
+            ropeObject.transform.SetParent(root, false);
+            rope = ropeObject.AddComponent<LineRenderer>();
+            rope.useWorldSpace = true;
+            rope.positionCount = RopePointCount;
+            rope.startWidth = RopeWidth;
+            rope.endWidth = RopeWidth;
+            rope.sharedMaterial = ropeMaterial;
+            rope.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            rope.enabled = false;
+
             previewDots = new Transform[PreviewDotCount];
             for (var index = 0; index < PreviewDotCount; index++)
             {
@@ -489,19 +531,6 @@ namespace Fungiiiii.Capture
         private static Vector3 OpenNetScale()
         {
             return new Vector3(NetDiameter, NetThickness, NetDiameter);
-        }
-
-        private static Color ChanceColor(NetChanceBand band)
-        {
-            switch (band)
-            {
-                case NetChanceBand.High:
-                    return HighChanceColor;
-                case NetChanceBand.Medium:
-                    return MediumChanceColor;
-                default:
-                    return LowChanceColor;
-            }
         }
 
         private static void DestroyMaterial(Material material)

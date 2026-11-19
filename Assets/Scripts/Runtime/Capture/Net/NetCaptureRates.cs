@@ -14,14 +14,6 @@ namespace Fungiiiii.Capture
         Rare
     }
 
-    /// <summary>How likely a capture is, as shown by the colour of the impact circle.</summary>
-    public enum NetChanceBand
-    {
-        Low,
-        Medium,
-        High
-    }
-
     /// <summary>
     /// PROVISIONAL capture odds for the net, from the validated design note: one rate per
     /// prototype profile, plus a bonus when the mushroom has not noticed the player.
@@ -30,12 +22,6 @@ namespace Fungiiiii.Capture
     [Serializable]
     public struct NetCaptureRates
     {
-        /// <summary>Below this chance the impact circle is red.</summary>
-        public const float MediumChanceThreshold = 0.35f;
-
-        /// <summary>From this chance on the impact circle is green.</summary>
-        public const float HighChanceThreshold = 0.6f;
-
         [Range(0f, 1f)]
         [SerializeField]
         private float common;
@@ -93,16 +79,6 @@ namespace Fungiiiii.Capture
         {
             var chance = RateFor(profile) + (isUnaware ? surpriseBonus : 0f);
             return Mathf.Clamp01(chance);
-        }
-
-        public static NetChanceBand Classify(float chance)
-        {
-            if (chance >= HighChanceThreshold)
-            {
-                return NetChanceBand.High;
-            }
-
-            return chance >= MediumChanceThreshold ? NetChanceBand.Medium : NetChanceBand.Low;
         }
 
         /// <summary>
