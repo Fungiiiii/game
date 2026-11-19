@@ -127,6 +127,15 @@ namespace Fungiiiii.Capture
 
         public NetCycle Cycle { get; private set; }
 
+        /// <summary>Raised when the net is back in hand with a catch, with the mushroom caught.</summary>
+        public event System.Action<NetDemoMushroom> CatchReturned;
+
+        /// <summary>
+        /// False ignores the ThrowNet input, for instance while a menu uses the mouse.
+        /// The net in flight carries on. <see cref="TryThrow"/> is not affected.
+        /// </summary>
+        public bool ThrowInputEnabled { get; set; } = true;
+
         /// <summary>Where the net is now: in flight, on the ground or on its way back.</summary>
         public Vector3 NetPosition => netVisual != null ? netVisual.position : transform.position;
 
@@ -226,7 +235,7 @@ namespace Fungiiiii.Capture
                 return;
             }
 
-            if (throwAction.WasPressedThisFrame())
+            if (ThrowInputEnabled && throwAction.WasPressedThisFrame())
             {
                 TryThrow(ThrowOrigin(), aimCamera.transform.forward);
             }
@@ -446,8 +455,10 @@ namespace Fungiiiii.Capture
         {
             if (caughtTarget != null)
             {
-                caughtTarget.CarryInNet(netVisual.position, 1f);
+                var caught = caughtTarget;
                 caughtTarget = null;
+                caught.CarryInNet(netVisual.position, 1f);
+                CatchReturned?.Invoke(caught);
             }
         }
 

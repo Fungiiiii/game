@@ -183,3 +183,5 @@ Scène : `Assets/Scenes/Prototype/NetThrowScene.unity`, puis **Play** et un clic
 - Placeholders partout : `Shader.Find` sur les shaders URP, valable dans l'Editor, pas garanti dans un build.
 
 ## Modifié par
+
+- [12487v2nnw4-demo-boucle](./12487v2nnw4-demo-boucle.md) — `NetDemoMushroom` peut porter un modèle, se promener et suivre le relief ; `NetThrower` signale la prise ramenée (`CatchReturned`) et son entrée de lancer peut être coupée (`ThrowInputEnabled`). Sans effet sur `NetThrowScene`.
