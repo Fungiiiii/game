@@ -135,6 +135,34 @@ namespace Fungiiiii.Capture
         }
 
         /// <summary>
+        /// Applies the outcome of a capture attempt whose success was decided elsewhere,
+        /// such as a net landing on the mushroom. It knows nothing of capture methods or
+        /// success rates: a success captures the mushroom, a failure makes it flee.
+        ///
+        /// Accepted from every state except Captured, Idle included: a mushroom that has
+        /// not noticed the player can still be caught by surprise.
+        /// </summary>
+        /// <returns>True if the state changed.</returns>
+        public bool ResolveCaptureAttempt(bool succeeded)
+        {
+            if (CurrentState == MushroomCaptureState.Captured)
+            {
+                return false;
+            }
+
+            alertElapsedSeconds = 0f;
+
+            if (!succeeded)
+            {
+                return SetState(MushroomCaptureState.Flee);
+            }
+
+            SetState(MushroomCaptureState.Captured);
+            Captured?.Invoke();
+            return true;
+        }
+
+        /// <summary>
         /// Returns the prototype to its initial state for another demonstration run.
         /// </summary>
         public bool Reset()
