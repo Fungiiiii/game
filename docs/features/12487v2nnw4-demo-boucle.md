@@ -24,7 +24,7 @@ La boucle : explorer → cueillir → capturer → nourrir le réseau. Scène : 
 - [ ] **Champignons :** 2 Spongeus et 2 Champoule (modèles de Hugo) se promènent lentement autour de leur point de départ, dans la clairière du spawn. Comme dans le prototype du filet : alerte à 3,5 m (disque jaune sous eux), fuite après 1,5 s (rouge), calme à 6 m (gris). Ils suivent le relief.
 - [ ] **Capture :** au filet, tel que validé (clic gauche). Spongeus est un champignon commun (60 % s'il n'a pas repéré le joueur, 40 % sinon), Champoule un rare (30 % / 10 %). Quand le filet revient avec une prise, le champignon entre dans l'inventaire tel quel (RG_CA_03).
 - [ ] **Inventaire :** Tab ouvre et ferme l'inventaire, qui démarre vide. Ouvert, la souris sert à l'inventaire : la vue ne tourne plus, le filet ne part pas, E ne fait rien. Chaque objet est un carré de couleur et un nombre : violet = spore, brun = bois, bleu clair = Spongeus, jaune pâle = Champoule.
-- [ ] **Champimaison :** un trou sombre dans le sol, sur `ChampimaisonSite_01`, l'emplacement de Hugo le plus proche du spawn (environ 47 m vers le nord-est). E au bord du trou y dépose le bois et les spores de l'étape suivante, et le réseau fongique grandit autour en deux étapes : 7 filaments cyan au sol, puis 12 de plus, deux fois plus longs.
+- [ ] **Champimaison :** un trou sombre dans le sol, sur `ChampimaisonSite_01`, l'emplacement de Hugo le plus proche du spawn (environ 47 m vers le nord-est). E au bord du trou y dépose le bois et les spores de l'étape suivante, et le réseau fongique grandit autour en deux étapes : 7 filaments couleur mycélium (crème, palette « Body light ») posés à plat sur le sol, puis 12 de plus, deux fois plus longs. L'anneau du trou est de la même couleur.
   - Étape 1 : 2 bois + 2 spores. Étape 2 : 4 bois + 4 spores.
   - Sans assez de l'un ou de l'autre, rien n'est pris et l'anneau du trou clignote orange.
   - Une fois l'étape 2 atteinte, l'anneau du trou disparaît.
@@ -104,7 +104,7 @@ La démo utilise la [Forêt mystique](./12487v2byt9-mystic-forest.md) **sans la 
 
 Ces choix ne figurent pas dans la note, ou la précisent. À confirmer par Hugo :
 
-1. **Cyan de la charte introuvable.** Ni la palette du repo ni Confluence ne donnent ce cyan. L'anneau utilise un cyan provisoire (`#33F2FF`), réglable dans `DemoLoopBootstrap` (`highlightColor`). Les filaments du réseau utilisent le même.
+1. **Cyan de la charte introuvable.** Ni la palette du repo ni Confluence ne donnent ce cyan. L'anneau utilise un cyan provisoire (`#33F2FF`), réglable dans `DemoLoopBootstrap` (`highlightColor`).
 2. **Trou à environ 47 m du spawn** (`ChampimaisonSite_01`), et non dans la clairière du spawn : la note dit « près du spawn ».
 3. **Spores ajoutées par la démo :** 7 champignons du décor en plus de ceux de Hugo, pour qu'il y ait de quoi payer les deux étapes près du spawn.
 4. **Quantités :** 1 spore par champignon, 1 bois par bâton. 7 bâtons, 15 champignons cueillables. La note ne les fixe pas.
@@ -114,12 +114,13 @@ Ces choix ne figurent pas dans la note, ou la précisent. À confirmer par Hugo 
 8. **Ce qui montre les états des champignons :** le disque coloré sous eux, repris du filet (gris, jaune, rouge). Pendant le gel du filet, le modèle est éclairci.
 9. **Cône de visée de 25°** pour E : la note ne donne que la portée.
 10. **Pas d'affichage des coûts du réseau :** aucun texte n'est permis sans le système de localisation, et la maquette HUD n'existe pas encore.
+11. **Réseau couleur mycélium, pas cyan.** La note dit « filaments cyan au sol ». À la demande d'Ilyes (19/11), le réseau et l'anneau du trou sont crème, couleur « Body light » (#F2E6CC) de la palette, plus proche d'un vrai mycélium. Les filaments sont des rubans à plat, en matériau éclairé : ils prennent la lumière et le brouillard de la forêt. Réglable dans `DemoLoopBootstrap` (`networkColor`). Les objets cueillables gardent leur anneau cyan.
 
 ## Tests
 
 ### Automatisés (Unity Test Runner)
 
-Lancés en batchmode avec Unity 6000.3.21f1 le 19/11, sur la machine d'Ilyes. Relancés après le rebase sur `origin/develop` (22c3c96, bâton de Hugo) et le passage à `PF_Stick`, mêmes résultats. Log et XML lus : **EditMode 203/203, PlayMode 32/32**, tous les tests du projet compris (35 et 3 nouveaux). Aucune erreur ni aucun avertissement de compilation. PlayMode a tourné sans `-nographics`. Pendant les tests de la démo, seul le message « TerrainCollider: MeshCollider is not supported on terrain » est logué : il vient de `MysticForest`, qui le logue aussi dans ses propres tests.
+Lancés en batchmode avec Unity 6000.3.21f1 le 19/11, sur la machine d'Ilyes. Relancés après le rebase sur `origin/develop` (22c3c96, bâton de Hugo) et le passage à `PF_Stick`, puis après le passage du réseau en couleur mycélium : mêmes résultats. Log et XML lus : **EditMode 203/203, PlayMode 32/32**, tous les tests du projet compris (35 et 3 nouveaux). Aucune erreur ni aucun avertissement de compilation. PlayMode a tourné sans `-nographics`. Pendant les tests de la démo, seul le message « TerrainCollider: MeshCollider is not supported on terrain » est logué : il vient de `MysticForest`, qui le logue aussi dans ses propres tests.
 
 | Test | Mode | Couvre | Résultat |
 |---|---|---|---|
@@ -156,9 +157,9 @@ Scène : `Assets/Scenes/Prototype/DemoLoopScene.unity`, puis **Play** et un clic
 | 15 | S'approcher à moins de 3,5 m | Disque jaune, puis rouge après 1,5 s : il fuit. Plus loin, il se calme (gris) et reprend sa promenade | ⬜ |
 | 16 | Lancer le filet (clic gauche) sur un Spongeus calme | Gel de 0,5 s, modèle éclairci. Le plus souvent, capture : il rétrécit dans le filet qui revient. Tab : un carré bleu clair | ⬜ |
 | 17 | R, puis lancer plusieurs fois sur un Champoule, R entre chaque essai | Échecs fréquents (rare). Quand il est pris, carré jaune pâle dans l'inventaire | ⬜ |
-| 18 | Marcher jusqu'au trou (nord-est, environ 47 m) | Un disque sombre au sol entouré d'un anneau cyan, sur un sol plat et dégagé | ⬜ |
+| 18 | Marcher jusqu'au trou (nord-est, environ 47 m) | Un disque sombre au sol entouré d'un anneau crème, sur un sol plat et dégagé | ⬜ |
 | 19 | R, cueillir 1 bois et 1 spore, E au bord du trou | L'anneau clignote orange. Tab : le bois et la spore sont toujours là | ⬜ |
-| 20 | Avoir au moins 2 bois et 2 spores, E au bord du trou | Des filaments cyan apparaissent au sol autour du trou. Tab : 2 bois et 2 spores en moins | ⬜ |
+| 20 | Avoir au moins 2 bois et 2 spores, E au bord du trou | Des filaments crème apparaissent, à plat sur le sol autour du trou, éclairés et ombrés comme le sol (ni lumineux, ni noirs). Tab : 2 bois et 2 spores en moins | ⬜ |
 | 21 | Avoir au moins 4 bois et 4 spores, E au bord du trou | Le réseau s'étend plus loin. L'anneau du trou disparaît. Tab : 4 bois et 4 spores en moins | ⬜ |
 | 22 | R | Joueur au spawn, vue droite devant, endurance pleine, inventaire vide et fermé, tout revenu, champignons à leur place et gris, filet en main, trou vide sans filaments | ⬜ |
 | 23 | Console pendant tout le test | Aucune erreur rouge. Noter tout avertissement de Netcode lié au prefab joueur utilisé hors ligne | ⬜ |

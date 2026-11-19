@@ -9,7 +9,7 @@ namespace Fungiiiii.Demo
 {
     /// <summary>
     /// The Champimaison hole of the demo: a dark disc in the ground where the interact
-    /// control drops wood and spores, and the fungal network around it, drawn as cyan
+    /// control drops wood and spores, and the fungal network around it, drawn as cream
     /// filaments on the ground that spread further at each stage. All placeholders.
     /// The rules are in <see cref="FungalNetwork"/>.
     /// </summary>
@@ -47,13 +47,13 @@ namespace Fungiiiii.Demo
             FungalNetwork fungalNetwork,
             float interactionReach,
             Material filamentMaterial,
-            Material cyanRingMaterial,
+            Material holeRingMaterial,
             Material refusedRingMaterial,
             System.Func<Vector3, float> groundHeight)
         {
             network = fungalNetwork;
             reach = interactionReach + HoleRadius;
-            ringMaterial = cyanRingMaterial;
+            ringMaterial = holeRingMaterial;
             refusedMaterial = refusedRingMaterial;
 
             holeMaterial = NetDemoPrimitives.CreateUnlitMaterial("Champimaison Hole Placeholder", HoleColor);
@@ -183,6 +183,11 @@ namespace Fungiiiii.Demo
             line.widthCurve = AnimationCurve.Linear(0f, 1f, 1f, 0.2f);
             line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             line.receiveShadows = false;
+
+            // Normals and tangents, so a lit material shades the filament like the ground.
+            line.generateLightingData = true;
+            line.alignment = LineAlignment.TransformZ;
+            filamentObject.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
 
             var heading = angle;
             for (var index = 0; index < FilamentPointCount; index++)

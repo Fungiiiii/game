@@ -94,6 +94,10 @@ namespace Fungiiiii.Demo
         [SerializeField]
         private Color highlightColor = new Color(0.2f, 0.95f, 1f);
 
+        [Tooltip("Colour of the fungal network and of the hole's ring: palette \"Body light\", a mycelium cream.")]
+        [SerializeField]
+        private Color networkColor = new Color32(0xF2, 0xE6, 0xCC, 0xFF);
+
         [Header("Fungal network: starting values of the design note, without source")]
         [SerializeField, Min(0)]
         private int stageOneWood = 2;
@@ -293,7 +297,7 @@ namespace Fungiiiii.Demo
 
             SpawnPlayer(forestCamera);
             BuildHudAndInventory();
-            BuildHole(cyan, refused);
+            BuildHole(refused);
             BuildGatherables(forest, cyan);
             SpawnMushrooms();
             SetUpThrower();
@@ -388,7 +392,7 @@ namespace Fungiiiii.Demo
             inventoryObject.SetActive(false);
         }
 
-        private void BuildHole(Material cyan, Material refused)
+        private void BuildHole(Material refused)
         {
             var site = NearestChampimaisonSite();
             var centre = site != null ? site.transform.position : spawnPosition + Vector3.forward * 10f;
@@ -406,7 +410,10 @@ namespace Fungiiiii.Demo
             var holeObject = new GameObject("Champimaison Hole");
             holeObject.transform.position = centre;
             hole = holeObject.AddComponent<FungalHole>();
-            hole.Initialize(network, gatherReach, cyan, cyan, refused, GroundHeight);
+            // Lit filaments take the forest's light and fog, like the ground they lie on.
+            var filaments = CreateLit("Fungal Network", networkColor);
+            var holeRing = CreateUnlit("Champimaison Hole Ring", networkColor);
+            hole.Initialize(network, gatherReach, filaments, holeRing, refused, GroundHeight);
             interactables.Add(hole);
         }
 
@@ -666,6 +673,13 @@ namespace Fungiiiii.Demo
         private Material CreateUnlit(string materialName, Color color)
         {
             var material = NetDemoPrimitives.CreateUnlitMaterial(materialName, color);
+            materials.Add(material);
+            return material;
+        }
+
+        private Material CreateLit(string materialName, Color color)
+        {
+            var material = NetDemoPrimitives.CreateMaterial(materialName, color);
             materials.Add(material);
             return material;
         }
