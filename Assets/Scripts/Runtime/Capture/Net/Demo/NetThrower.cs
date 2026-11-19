@@ -36,7 +36,9 @@ namespace Fungiiiii.Capture
 
     /// <summary>
     /// Throws the capture net from the first-person view, previews its arc and impact
-    /// zone, and plays the hold, the capture and the return with placeholders. A rope
+    /// zone, and plays the hold, the capture and the return with placeholders. The net
+    /// and the impact circle are rings of points (<see cref="NetRim"/>) that drape on
+    /// the ground point by point, ready for a net model to bind to. A rope
     /// links the hand to the top of the net for as long as the net is out, following
     /// the arc the net flew.
     ///
@@ -56,10 +58,19 @@ namespace Fungiiiii.Capture
         private const float MaxFlightSeconds = 3f;
         private const int CastBufferSize = 8;
 
-        /// <summary>Net placeholder: a flat disc this wide in flight and on the ground.</summary>
-        private const float NetDiameter = 1.2f;
-        private const float NetThickness = 0.04f;
-        private const float ClosedNetSize = 0.45f;
+        /// <summary>The net: a centre and a ring of points, this wide open, this small closed on a catch.</summary>
+        private const float NetRadius = 0.6f;
+        private const float ClosedNetRadius = 0.15f;
+        private const int NetRimPointCount = 16;
+        private const float NetLineWidth = 0.02f;
+        private const float ImpactLineWidth = 0.04f;
+
+        /// <summary>
+        /// Draping: each point looks down from this high above the landing point, so it can
+        /// climb onto a mushroom cap or a slope, and lies this far above what it finds.
+        /// </summary>
+        private const float DrapeProbeHeight = 1.5f;
+        private const float DrapeLift = 0.03f;
 
         /// <summary>Share of the return during which a net with a catch closes up.</summary>
         private const float ClosingShareOfReturn = 0.25f;
@@ -88,6 +99,7 @@ namespace Fungiiiii.Capture
         private IReadOnlyList<NetDemoMushroom> mushrooms;
         private NetLandingResolver resolver;
         private NetSegmentCast segmentCast;
+        private NetGroundProbe groundProbe;
         private InputAction throwAction;
 
         private NetTrajectory flight;
@@ -100,8 +112,9 @@ namespace Fungiiiii.Capture
         private NetDemoMushroom caughtTarget;
 
         private Transform netVisual;
+        private NetRim netRim;
         private Transform handNet;
-        private Transform impactCircle;
+        private NetRim impactRim;
         private Transform[] previewDots;
         private Material netMaterial;
         private Material dotMaterial;
@@ -127,6 +140,7 @@ namespace Fungiiiii.Capture
             mushrooms = targets;
             resolver = new NetLandingResolver(settings.ImpactRadius, settings.ScareRadius, settings.Rates, random);
             segmentCast = CastSegment;
+            groundProbe = ProbeGround;
 
             Cycle = new NetCycle(settings.HoldSeconds, settings.ReturnSeconds);
             Cycle.CaptureSucceeded += HandleCaptureSucceeded;
@@ -153,6 +167,7 @@ namespace Fungiiiii.Capture
             flightSeconds = 0f;
             previousFlightPoint = origin;
             netVisual.position = origin;
+            netRim.ShowFlat(origin, NetRadius);
             ShowPhase();
             return true;
         }
@@ -259,12 +274,14 @@ namespace Fungiiiii.Capture
 
             previousFlightPoint = nextPoint;
             netVisual.position = nextPoint;
+            netRim.ShowFlat(nextPoint, NetRadius);
         }
 
         private void Land(Vector3 point)
         {
             landingPoint = point;
             netVisual.position = point;
+            netRim.ShowDraped(point, NetRadius, groundProbe, DrapeProbeHeight, DrapeLift);
             FreezeRopeArc();
 
             CollectCandidates();
@@ -292,16 +309,19 @@ namespace Fungiiiii.Capture
             var handPosition = aimCamera.transform.TransformPoint(HandNetLocalPosition);
             netVisual.position = Vector3.Lerp(landingPoint, handPosition, progress);
 
+            var radius = NetRadius;
             if (Cycle.IsCarryingCatch)
             {
                 var closing = Mathf.Clamp01(progress / ClosingShareOfReturn);
-                netVisual.localScale = Vector3.Lerp(OpenNetScale(), Vector3.one * ClosedNetSize, closing);
+                radius = Mathf.Lerp(NetRadius, ClosedNetRadius, closing);
 
                 if (caughtTarget != null)
                 {
                     caughtTarget.CarryInNet(netVisual.position, progress);
                 }
             }
+
+            netRim.ShowFlat(netVisual.position, radius);
         }
 
         private void UpdatePreview()
@@ -321,13 +341,13 @@ namespace Fungiiiii.Capture
                 previewDots[index].position = preview.PositionAt(time);
             }
 
-            impactCircle.gameObject.SetActive(hasLanding);
+            impactRim.gameObject.SetActive(hasLanding);
             if (!hasLanding)
             {
                 return;
             }
 
-            impactCircle.position = landing.Point + Vector3.up * 0.02f;
+            impactRim.ShowDraped(landing.Point, settings.ImpactRadius, groundProbe, DrapeProbeHeight, DrapeLift);
 
             CollectCandidates();
             circleMaterial.color = resolver.TryPreview(landing.Point, candidates, out _, out var chance)
@@ -358,14 +378,21 @@ namespace Fungiiiii.Capture
             var distance = offset.magnitude;
             hitPoint = to;
 
-            if (distance <= 0f)
-            {
-                return false;
-            }
+            return distance > 0f && NearestHit(from, offset / distance, distance, ref hitPoint);
+        }
 
+        private bool ProbeGround(Vector3 from, float maxDistance, out Vector3 groundPoint)
+        {
+            groundPoint = from;
+            return NearestHit(from, Vector3.down, maxDistance, ref groundPoint);
+        }
+
+        /// <summary>Nearest hit along a ray, ignoring the thrower's own capsule.</summary>
+        private bool NearestHit(Vector3 origin, Vector3 direction, float distance, ref Vector3 hitPoint)
+        {
             var count = Physics.RaycastNonAlloc(
-                from,
-                offset / distance,
+                origin,
+                direction,
                 castHits,
                 distance,
                 Physics.DefaultRaycastLayers,
@@ -426,12 +453,7 @@ namespace Fungiiiii.Capture
             var ready = Cycle.Phase == NetPhase.Ready;
 
             handNet.gameObject.SetActive(ready);
-            netVisual.gameObject.SetActive(!ready);
-
-            if (ready || !Cycle.IsCarryingCatch)
-            {
-                netVisual.localScale = OpenNetScale();
-            }
+            netRim.gameObject.SetActive(!ready);
 
             foreach (var dot in previewDots)
             {
@@ -440,7 +462,7 @@ namespace Fungiiiii.Capture
 
             if (!ready)
             {
-                impactCircle.gameObject.SetActive(false);
+                impactRim.gameObject.SetActive(false);
             }
 
             rope.enabled = !ready;
@@ -513,10 +535,10 @@ namespace Fungiiiii.Capture
             return aimCamera.transform.TransformPoint(HandNetLocalPosition);
         }
 
-        /// <summary>Top of the net placeholder: a Unity cylinder is two units tall at scale 1.</summary>
+        /// <summary>Where the rope ties on: the centre point of the net, on top of it.</summary>
         private Vector3 NetTop()
         {
-            return netVisual.position + Vector3.up * netVisual.localScale.y;
+            return netRim.Centre.position;
         }
 
         private void BuildVisuals()
@@ -527,14 +549,10 @@ namespace Fungiiiii.Capture
 
             var root = new GameObject("Net Visuals").transform;
 
-            netVisual = NetDemoPrimitives.Create(
-                PrimitiveType.Cylinder,
-                "Net",
-                root,
-                Vector3.zero,
-                OpenNetScale(),
-                netMaterial,
-                keepCollider: false).transform;
+            // The net's position, carried by an empty object; its shape is the rim of points.
+            netVisual = new GameObject("Net").transform;
+            netVisual.SetParent(root, false);
+            netRim = CreateRim("Net Rim", root, netMaterial, NetLineWidth, withSpokes: true);
 
             handNet = NetDemoPrimitives.Create(
                 PrimitiveType.Cylinder,
@@ -546,15 +564,7 @@ namespace Fungiiiii.Capture
                 keepCollider: false).transform;
             handNet.localRotation = Quaternion.Euler(-60f, 0f, 0f);
 
-            impactCircle = NetDemoPrimitives.Create(
-                PrimitiveType.Cylinder,
-                "Impact Circle",
-                root,
-                Vector3.zero,
-                new Vector3(settings.ImpactRadius * 2f, 0.005f, settings.ImpactRadius * 2f),
-                circleMaterial,
-                keepCollider: false).transform;
-            impactCircle.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            impactRim = CreateRim("Impact Circle", root, circleMaterial, ImpactLineWidth, withSpokes: false);
 
             ropeMaterial = NetDemoPrimitives.CreateUnlitMaterial("Net Rope", RopeColor);
             var ropeObject = new GameObject("Net Rope");
@@ -584,9 +594,14 @@ namespace Fungiiiii.Capture
             }
         }
 
-        private static Vector3 OpenNetScale()
+        private static NetRim CreateRim(string objectName, Transform parent, Material material, float width, bool withSpokes)
         {
-            return new Vector3(NetDiameter, NetThickness, NetDiameter);
+            var rimObject = new GameObject(objectName);
+            rimObject.transform.SetParent(parent, false);
+
+            var rim = rimObject.AddComponent<NetRim>();
+            rim.Build(NetRimPointCount, material, width, withSpokes);
+            return rim;
         }
 
         private static void DestroyMaterial(Material material)
