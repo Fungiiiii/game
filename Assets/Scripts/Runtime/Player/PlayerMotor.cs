@@ -89,6 +89,21 @@ namespace Fungiiiii.Runtime.Player
         /// <summary>True while the crouch control is held.</summary>
         public bool IsCrouching { get; set; }
 
+        /// <summary>
+        /// False keeps the player at walking speed even with sprint held, for instance
+        /// while stamina is exhausted. True by default: without a stamina owner, nothing changes.
+        /// </summary>
+        public bool SprintAllowed { get; set; } = true;
+
+        /// <summary>False refuses every dodge. True by default.</summary>
+        public bool DodgeAllowed { get; set; } = true;
+
+        /// <summary>True if the last tick moved the player at sprint speed.</summary>
+        public bool IsSprintMoving { get; private set; }
+
+        /// <summary>Raised each time a dodge starts.</summary>
+        public event System.Action Dodged;
+
         /// <summary>Horizontal velocity applied during the last tick, in world space.</summary>
         public Vector3 HorizontalVelocity { get; private set; }
 
@@ -109,7 +124,7 @@ namespace Fungiiiii.Runtime.Player
         /// </summary>
         public bool TryDodge()
         {
-            if (dodge == null)
+            if (dodge == null || !DodgeAllowed)
             {
                 return false;
             }
@@ -120,7 +135,13 @@ namespace Fungiiiii.Runtime.Player
             var dodgeDirection =
                 inputDirection.sqrMagnitude > NegligibleSqrMagnitude ? inputDirection : transform.forward;
 
-            return dodge.TryStart(dodgeDirection);
+            if (!dodge.TryStart(dodgeDirection))
+            {
+                return false;
+            }
+
+            Dodged?.Invoke();
+            return true;
         }
 
         /// <summary>
@@ -138,14 +159,19 @@ namespace Fungiiiii.Runtime.Player
 
             dodge.Tick(deltaTime);
 
+            var sprinting = IsSprinting && SprintAllowed;
+            IsSprintMoving = false;
+
             if (dodge.IsDodging)
             {
                 HorizontalVelocity = dodge.Velocity;
             }
             else
             {
+                IsSprintMoving = sprinting && !IsCrouching && MoveInput.sqrMagnitude > NegligibleSqrMagnitude;
+
                 var speed = PlayerMovementCalculator.SelectSpeed(
-                    IsSprinting,
+                    sprinting,
                     IsCrouching,
                     walkSpeed,
                     sprintSpeed,
