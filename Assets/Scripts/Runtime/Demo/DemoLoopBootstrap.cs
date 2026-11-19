@@ -41,10 +41,9 @@ namespace Fungiiiii.Demo
 
         private const float AimConeDegrees = 25f;
         private const float SporeRingRadius = 0.6f;
-        private const float WoodRingRadius = 0.45f;
+        private const float WoodRingRadius = 0.6f;
 
         private static readonly Color RefusedColor = new Color(1f, 0.45f, 0.1f);
-        private static readonly Color StickColor = new Color32(0x6B, 0x47, 0x30, 0xFF);
 
         [Header("Assets")]
         [Tooltip("The player prefab, used offline: no network session is started in this scene.")]
@@ -60,6 +59,10 @@ namespace Fungiiiii.Demo
         [Tooltip("Decor mushroom of the forest, placed again by the demo as extra spore spots.")]
         [SerializeField]
         private GameObject decorMushroomPrefab;
+
+        [Tooltip("Stick lying on the ground: the wood to gather, until a wood mushroom exists.")]
+        [SerializeField]
+        private GameObject stickPrefab;
 
         [Header("Stamina (RG_SU_03, RG_SU_04), in % of the maximum")]
         [SerializeField, Min(0f)]
@@ -253,7 +256,8 @@ namespace Fungiiiii.Demo
 
         private IEnumerator Start()
         {
-            if (playerPrefab == null || spongeusModel == null || champouleModel == null || decorMushroomPrefab == null)
+            if (playerPrefab == null || spongeusModel == null || champouleModel == null || decorMushroomPrefab == null ||
+                stickPrefab == null)
             {
                 Debug.LogError("DemoLoopBootstrap is missing one of its assets.", this);
                 enabled = false;
@@ -455,15 +459,14 @@ namespace Fungiiiii.Demo
                 AddDecorMushroom(OnGround(new Vector2(holeCentre.x + offset.x, holeCentre.z + offset.y)));
             }
 
-            var stickMaterial = CreateLit("Stick Placeholder", StickColor);
             foreach (var spot in WoodSpots)
             {
-                AddStick(OnGround(spot), stickMaterial);
+                AddStick(OnGround(spot));
             }
 
             foreach (var offset in WoodSpotsAroundHole)
             {
-                AddStick(OnGround(new Vector2(holeCentre.x + offset.x, holeCentre.z + offset.y)), stickMaterial);
+                AddStick(OnGround(new Vector2(holeCentre.x + offset.x, holeCentre.z + offset.y)));
             }
 
             void AddDecorMushroom(Vector3 position)
@@ -474,20 +477,14 @@ namespace Fungiiiii.Demo
                 AddGatherable("Spore Spot (demo)", position, decor, DemoItems.Spore, SporeRingRadius);
             }
 
-            void AddStick(Vector3 position, Material material)
+            void AddStick(Vector3 position)
             {
-                // Placeholder: a thin cylinder lying on the ground, until a wood mushroom exists.
+                // Hugo's stick, lying on the ground: temporary, until a wood mushroom exists (RG_CR_01).
                 var spotObject = new GameObject("Wood Spot");
                 spotObject.transform.position = position;
-                var stick = NetDemoPrimitives.Create(
-                    PrimitiveType.Cylinder,
-                    "Stick Placeholder",
-                    spotObject.transform,
-                    new Vector3(0f, 0.05f, 0f),
-                    new Vector3(0.08f, 0.45f, 0.08f),
-                    material,
-                    keepCollider: false);
-                stick.transform.localRotation = Quaternion.Euler(90f, (float)random.NextDouble() * 360f, 0f);
+                var yaw = (float)random.NextDouble() * 360f;
+                var stick = Instantiate(stickPrefab, position, Quaternion.Euler(0f, yaw, 0f), spotObject.transform);
+                stick.name = "Stick";
 
                 var gatherable = spotObject.AddComponent<Gatherable>();
                 gatherable.Initialize(
@@ -669,13 +666,6 @@ namespace Fungiiiii.Demo
         private Material CreateUnlit(string materialName, Color color)
         {
             var material = NetDemoPrimitives.CreateUnlitMaterial(materialName, color);
-            materials.Add(material);
-            return material;
-        }
-
-        private Material CreateLit(string materialName, Color color)
-        {
-            var material = NetDemoPrimitives.CreateMaterial(materialName, color);
             materials.Add(material);
             return material;
         }

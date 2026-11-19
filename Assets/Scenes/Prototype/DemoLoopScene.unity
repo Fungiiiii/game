@@ -152,6 +152,7 @@ MonoBehaviour:
   spongeusModel: {fileID: 919132149155446097, guid: 7a0f4631898ffc54a8dcfe6f8d8470df, type: 3}
   champouleModel: {fileID: 919132149155446097, guid: b5bd4e6adcded1242827b1a80de60a44, type: 3}
   decorMushroomPrefab: {fileID: 8709750313228204993, guid: e27606cd8d7d8d0459eaae41bc1ef239, type: 3}
+  stickPrefab: {fileID: 1302624085802783701, guid: 26dded4661f59f24eb889a78d80cc478, type: 3}
   sprintCostPerSecond: 15
   dodgeCost: 20
   regenerationPerSecond: 20

@@ -10,8 +10,6 @@
 
 - [86c9mnqy5-filet-capture](./86c9mnqy5-filet-capture.md) — le filet est réutilisé tel quel. Son champignon (`NetDemoMushroom`) gagne trois options, sans effet sur `NetThrowScene` : un modèle 3D à la place des primitives, une promenade autour de son point d'apparition, le suivi du relief. Le lanceur (`NetThrower`) prévient quand il ramène une prise, et son entrée de lancer peut être coupée.
 
-La démo utilise aussi la [Forêt mystique](./12487v2byt9-mystic-forest.md) **sans la modifier** : la scène est chargée telle quelle, et rien n'y est enregistré.
-
 ## Ce que fait la feature
 
 La boucle : explorer → cueillir → capturer → nourrir le réseau. Scène : `Assets/Scenes/Prototype/DemoLoopScene.unity`, lancée depuis l'Editor, en solo.
@@ -21,7 +19,7 @@ La boucle : explorer → cueillir → capturer → nourrir le réseau. Scène : 
 - [ ] **Endurance :** le sprint consomme 15 % par seconde, le dodge 20 % par usage. Elle remonte de 20 % par seconde dès que rien n'a été dépensé depuis 1 s, en marchant comme à l'arrêt. À 0 %, plus de sprint ni de dodge jusqu'à 20 %. Lancer le filet ne coûte rien.
 - [ ] **Cueillette :** E ramasse ce que le joueur vise, à 2 m au plus au sol, dans un cône de 25° autour du centre de la vue. Ce qui peut être cueilli est entouré d'un anneau cyan au sol, plus épais quand il est visé.
   - **Spores :** les champignons du décor posés par Hugo dans la forêt (2 au spawn, 6 au pied de l'arbre géant), plus 7 du même modèle placés par la démo (5 dans la clairière du spawn, 2 près du trou). 1 spore par champignon.
-  - **Bois :** 7 bâtons placeholder posés au sol (5 dans la clairière, 2 près du trou). 1 bois par bâton. Exception temporaire (RG_CR_01).
+  - **Bois :** 7 bâtons de Hugo (`PF_Stick`, 1 m) posés au sol, orientés au hasard (5 dans la clairière, 2 près du trou). 1 bois par bâton. Exception temporaire (RG_CR_01).
   - L'objet cueilli disparaît et réapparaît au même endroit après 30 à 60 s, au hasard. Inventaire plein : rien n'est cueilli.
 - [ ] **Champignons :** 2 Spongeus et 2 Champoule (modèles de Hugo) se promènent lentement autour de leur point de départ, dans la clairière du spawn. Comme dans le prototype du filet : alerte à 3,5 m (disque jaune sous eux), fuite après 1,5 s (rouge), calme à 6 m (gris). Ils suivent le relief.
 - [ ] **Capture :** au filet, tel que validé (clic gauche). Spongeus est un champignon commun (60 % s'il n'a pas repéré le joueur, 40 % sinon), Champoule un rare (30 % / 10 %). Quand le filet revient avec une prise, le champignon entre dans l'inventaire tel quel (RG_CA_03).
@@ -42,10 +40,12 @@ La SFD a été mise à jour par Hugo le 19/11 dans ce sens : RG_CR_01 (cueillett
 - Le champignon de bois, d'autres ressources, le craft.
 - Faim, toxicité, poison, combat, mort et respawn.
 - Toute modification de la scène `MysticForest` : elle est chargée sans être touchée.
-- Un nouvel art : seulement des placeholders (bâtons, trou, filaments, anneaux), et les modèles existants `Spongeus.fbx`, `Champoule.fbx` et `PF_MushroomCluster`.
+- Un nouvel art : seulement des placeholders (trou, filaments, anneaux), et les modèles existants de Hugo : `Spongeus.fbx`, `Champoule.fbx`, `PF_MushroomCluster` et `PF_Stick`.
 - Tout texte affiché au joueur.
 
 ## Implémentation
+
+La démo utilise la [Forêt mystique](./12487v2byt9-mystic-forest.md) **sans la modifier** : la scène est chargée telle quelle, et rien n'y est enregistré. Elle n'est donc pas dans « Docs précédents ».
 
 `DemoLoopScene` ne contient qu'un objet, `Demo Loop`, avec `DemoLoopBootstrap`. Elle a été écrite par l'API de l'Editor, pas à la main. Au lancement, le bootstrap :
 
@@ -88,6 +88,7 @@ La SFD a été mise à jour par Hugo le 19/11 dans ce sens : RG_CR_01 (cueillett
 
 - **La forêt est chargée en additif, puis devient la scène active.** Son brouillard, son ciel et sa lumière ambiante sont des réglages de scène : sans ça, ceux de `DemoLoopScene` s'appliqueraient.
 - **Dans l'Editor, la forêt est chargée par `EditorSceneManager.LoadSceneAsyncInPlayMode`.** Ni `MysticForest` ni `DemoLoopScene` ne sont dans les Build Settings, et l'exécutable est hors périmètre : les y ajouter aurait touché `ProjectSettings` sans besoin. Un build chargerait la forêt par `SceneManager`, ce qui demandera de l'ajouter aux Build Settings.
+- **Le bois est le bâton de Hugo (`PF_Stick`)**, fusionné dans `develop` le 19/11 (#37), à la place du cylindre placeholder. Il n'a pas de collider : seul E le ramasse, le filet ne s'y pose pas. Son anneau fait 0,6 m de rayon, pour entourer ses 1 m de long.
 - **La caméra de la forêt est réutilisée, détachée de son joueur de test.** Elle porte l'écouteur de l'audio de zone (`ZoneAmbience` suit sa position), les spores et la brume au sol. Le joueur de test est désactivé, pas détruit.
 - **Le joueur est le prefab réseau `Player`, hors ligne**, comme dans `NetThrowScene` : aucun `NetworkManager`.
 - **Les champignons cueillables sont des objets, pas les arbres du Terrain.** Les champignons du décor semés par le Terrain n'ont pas d'objet propre : les rendre cueillables aurait demandé de modifier les données du Terrain de Hugo. La démo utilise ceux que Hugo a posés à la main, et en ajoute du même modèle (`PF_MushroomCluster`). Arbitrage d'Ilyes, 19/11.
@@ -118,7 +119,7 @@ Ces choix ne figurent pas dans la note, ou la précisent. À confirmer par Hugo 
 
 ### Automatisés (Unity Test Runner)
 
-Lancés en batchmode avec Unity 6000.3.21f1 le 19/11, sur la machine d'Ilyes. Log et XML lus : **EditMode 203/203, PlayMode 32/32**, tous les tests du projet compris (35 et 3 nouveaux). Aucune erreur ni aucun avertissement de compilation. PlayMode a tourné sans `-nographics`. Pendant les tests de la démo, seul le message « TerrainCollider: MeshCollider is not supported on terrain » est logué : il vient de `MysticForest`, qui le logue aussi dans ses propres tests.
+Lancés en batchmode avec Unity 6000.3.21f1 le 19/11, sur la machine d'Ilyes. Relancés après le rebase sur `origin/develop` (22c3c96, bâton de Hugo) et le passage à `PF_Stick`, mêmes résultats. Log et XML lus : **EditMode 203/203, PlayMode 32/32**, tous les tests du projet compris (35 et 3 nouveaux). Aucune erreur ni aucun avertissement de compilation. PlayMode a tourné sans `-nographics`. Pendant les tests de la démo, seul le message « TerrainCollider: MeshCollider is not supported on terrain » est logué : il vient de `MysticForest`, qui le logue aussi dans ses propres tests.
 
 | Test | Mode | Couvre | Résultat |
 |---|---|---|---|
@@ -138,7 +139,7 @@ Scène : `Assets/Scenes/Prototype/DemoLoopScene.unity`, puis **Play** et un clic
 
 | # | Étapes | Résultat attendu | OK |
 |---|---|---|---|
-| 1 | Ouvrir `DemoLoopScene`, sans Play | Hierarchy : un seul objet, `Demo Loop`. Sur son `DemoLoopBootstrap`, `Player Prefab` = `Player`, `Spongeus Model` = `Spongeus`, `Champoule Model` = `Champoule`, `Decor Mushroom Prefab` = `PF_MushroomCluster`. Aucun « Missing » | ⬜ |
+| 1 | Ouvrir `DemoLoopScene`, sans Play | Hierarchy : un seul objet, `Demo Loop`. Sur son `DemoLoopBootstrap`, `Player Prefab` = `Player`, `Spongeus Model` = `Spongeus`, `Champoule Model` = `Champoule`, `Decor Mushroom Prefab` = `PF_MushroomCluster`, `Stick Prefab` = `PF_Stick`. Aucun « Missing » | ⬜ |
 | 2 | Play | La forêt apparaît, vue à la première personne depuis la clairière, face à la trouée vers l'arbre géant. Brouillard bleu-violet, spores qui tombent, son d'ambiance. Barres de vie et d'endurance pleines en haut à gauche. Aucune erreur rouge dans la Console | ⬜ |
 | 3 | Hierarchy pendant le Play | `MysticForest` chargée ; son `Player` (joueur de test) grisé ; une `Main Camera` à la racine de la forêt ; un seul `Player` actif | ⬜ |
 | 4 | Se déplacer : ZQSD / WASD, souris | Avancer va vers le regard. Le corps ne fait pas tourner la vue. On ne traverse pas les troncs | ⬜ |
@@ -148,7 +149,7 @@ Scène : `Assets/Scenes/Prototype/DemoLoopScene.unity`, puis **Play** et un clic
 | 8 | Regarder les champignons du décor près du spawn | Anneaux cyan au sol autour d'eux, et autour des bâtons. Les champignons du décor plus loin dans la forêt n'en ont pas | ⬜ |
 | 9 | S'approcher d'un champignon à anneau, le viser, E | L'anneau s'épaissit quand il est visé. E : le champignon et son anneau disparaissent | ⬜ |
 | 10 | Tab | L'inventaire s'ouvre au centre, avec 1 carré violet. La souris est libre et la vue ne tourne plus. Clic gauche : aucun filet ne part. Tab : il se ferme, la souris est recapturée | ⬜ |
-| 11 | Cueillir un bâton (E), puis Tab | Un carré brun en plus | ⬜ |
+| 11 | Cueillir un bâton (E), puis Tab | Le bâton (modèle de Hugo, couché au sol, couleur des troncs) disparaît avec son anneau. Un carré brun en plus | ⬜ |
 | 12 | Viser un objet à plus de 2 m, E | Rien ne se passe, l'anneau ne s'épaissit pas | ⬜ |
 | 13 | Attendre à côté d'un objet cueilli | Il réapparaît au même endroit entre 30 et 60 s après | ⬜ |
 | 14 | Regarder les Spongeus et les Champoule sans s'approcher | Ils se promènent lentement, posés sur le sol, sans flotter ni s'enfoncer. Ils regardent dans le sens où ils avancent. Disque gris sous eux | ⬜ |
