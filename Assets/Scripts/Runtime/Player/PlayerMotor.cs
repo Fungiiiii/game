@@ -13,12 +13,6 @@ namespace Fungiiiii.Runtime.Player
     [DisallowMultipleComponent]
     public sealed class PlayerMotor : MonoBehaviour
     {
-        /// <summary>
-        /// Movement is world relative for this prototype, because the demo camera never
-        /// rotates. A free camera will pass its own yaw here instead.
-        /// </summary>
-        private const float MovementYawDegrees = 0f;
-
         private const float NegligibleSqrMagnitude = 0.000001f;
 
         [Header("References")]
@@ -81,6 +75,13 @@ namespace Fungiiiii.Runtime.Player
         /// serialized reader, or directly by a test or another simulation driver.
         /// </summary>
         public Vector2 MoveInput { get; set; }
+
+        /// <summary>
+        /// Yaw, in degrees, the move input is expressed relative to. Zero keeps movement
+        /// world relative, as the overhead demo camera never rotates; a first-person
+        /// camera writes its own yaw here so that forward follows the view.
+        /// </summary>
+        public float MovementYawDegrees { get; set; }
 
         /// <summary>True while the sprint control is held.</summary>
         public bool IsSprinting { get; set; }
