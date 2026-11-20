@@ -3,6 +3,7 @@ using System.Linq;
 using Fungiiiii.Capture;
 using Fungiiiii.Demo;
 using Fungiiiii.Runtime.Player;
+using Fungiiiii.UI;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -26,6 +27,13 @@ namespace Fungiiiii.Tests.PlayMode
 
         /// <summary>A Spongeus caught by surprise has 60 %: 12 failures in a row are below 1 in 50 000.</summary>
         private const int MaxCaptureAttempts = 12;
+
+        [TearDown]
+        public void RestoreTime()
+        {
+            // A test that fails while the game is paused or sped up must not slow the next ones.
+            Time.timeScale = 1f;
+        }
 
         private static IEnumerator LoadDemo()
         {
@@ -74,7 +82,7 @@ namespace Fungiiiii.Tests.PlayMode
 
             Assert.That(demo.Mushrooms.Count, Is.GreaterThan(0));
             Assert.That(demo.Gatherables.Count, Is.GreaterThan(0));
-            Assert.That(demo.Hole, Is.Not.Null);
+            Assert.That(demo.Hole, Is.Null, "The Champimaison hole is left out of the playtest.");
             Assert.That(demo.IsInventoryOpen, Is.False);
 
             for (var index = 0; index < demo.Inventory.SlotCount; index++)
@@ -94,6 +102,245 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(demo.Inventory.Count(spot.Item.Id), Is.EqualTo(1));
             Assert.That(spot.IsAvailable, Is.False);
             Assert.That(spot.Interact(demo.Inventory), Is.False, "A gathered spot was gathered twice.");
+        }
+
+        [UnityTest]
+        public IEnumerator SticksAndMushrooms_AreSpreadOverTheWholeMap()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+            var terrain = Terrain.activeTerrain;
+
+            foreach (var itemId in new[] { DemoItems.WoodId, DemoItems.SporeId })
+            {
+                var positions = demo.Gatherables
+                    .Where(gatherable => gatherable.IsAvailable && gatherable.Item.Id == itemId)
+                    .Select(gatherable => gatherable.transform.position)
+                    .ToArray();
+
+                Assert.That(positions.Length, Is.GreaterThanOrEqualTo(40), $"Too few {itemId} on the map.");
+                Assert.That(
+                    positions.Max(position => position.x) - positions.Min(position => position.x),
+                    Is.GreaterThan(300f),
+                    $"{itemId} is not spread from west to east.");
+                Assert.That(
+                    positions.Max(position => position.z) - positions.Min(position => position.z),
+                    Is.GreaterThan(300f),
+                    $"{itemId} is not spread from south to north.");
+
+                foreach (var position in positions)
+                {
+                    var ground = terrain.SampleHeight(position) + terrain.GetPosition().y;
+                    Assert.That(position.y, Is.EqualTo(ground).Within(1f), $"A {itemId} is not on the ground.");
+                }
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator EveryStick_LiesAtTheFootOfATree()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+            var terrain = Terrain.activeTerrain;
+            var data = terrain.terrainData;
+            var prototypes = data.treePrototypes;
+            var trunks = data.treeInstances
+                .Where(tree => prototypes[tree.prototypeIndex].prefab.name.StartsWith("PF_Tree"))
+                .Select(tree => terrain.GetPosition() + Vector3.Scale(tree.position, data.size))
+                .ToArray();
+
+            foreach (var stick in demo.Gatherables.Where(gatherable => gatherable.IsAvailable && gatherable.Item.Id == DemoItems.WoodId))
+            {
+                var nearest = float.PositiveInfinity;
+                foreach (var trunk in trunks)
+                {
+                    var flat = trunk - stick.transform.position;
+                    flat.y = 0f;
+                    nearest = Mathf.Min(nearest, flat.magnitude);
+                }
+
+                // Its own tree is 1 to 2.5 m away; a neighbouring tree may be a little closer.
+                Assert.That(nearest, Is.LessThanOrEqualTo(2.6f), "A stick lies away from every tree.");
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator NoDecorMushroomIsLeft_ThatCannotBeGathered()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+            var data = Terrain.activeTerrain.terrainData;
+            var prototypes = data.treePrototypes;
+
+            Assert.That(
+                data.treeInstances.Count(tree => prototypes[tree.prototypeIndex].prefab.name == "PF_MushroomCluster"),
+                Is.Zero,
+                "The Terrain still draws decor mushrooms.");
+
+            // Every mushroom cluster left in view belongs to a gatherable.
+            var clusters = Object.FindObjectsByType<LODGroup>(FindObjectsSortMode.None)
+                .Where(group => group.name.StartsWith("PF_MushroomCluster"))
+                .ToArray();
+            Assert.That(clusters, Is.Not.Empty);
+            foreach (var cluster in clusters)
+            {
+                Assert.That(
+                    cluster.GetComponentInParent<Gatherable>(),
+                    Is.Not.Null,
+                    $"{cluster.name} is shown but cannot be gathered.");
+            }
+
+#if UNITY_EDITOR
+            // The forest keeps its mushrooms on disk: only this session's copy lost them.
+            var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<TerrainData>("Assets/Scenes/Biomes/MysticForestTerrainData.asset");
+            Assert.That(asset.treeInstanceCount, Is.GreaterThan(data.treeInstanceCount));
+#endif
+        }
+
+        [UnityTest]
+        public IEnumerator AGatheredStick_IsReplacedOnALaterTick_AwayFromThePlayer()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+            var player = Object.FindFirstObjectByType<PlayerMotor>().transform;
+            var sticks = demo.Gatherables.Where(gatherable => gatherable.Item.Id == DemoItems.WoodId).ToArray();
+            var maximum = sticks.Count(stick => stick.IsAvailable);
+            var before = sticks.Where(stick => stick.IsAvailable).Select(stick => stick.transform.position).ToArray();
+
+            Assert.That(sticks.First(stick => stick.IsAvailable).Interact(demo.Inventory), Is.True);
+            Assert.That(sticks.Count(stick => stick.IsAvailable), Is.EqualTo(maximum - 1));
+
+            // A tick is 10 s of game time: sped up, it comes within a second.
+            var timeScale = Time.timeScale;
+            Time.timeScale = 20f;
+            var elapsed = 0f;
+            while (elapsed < 5f && sticks.Count(stick => stick.IsAvailable) < maximum)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            Time.timeScale = timeScale;
+
+            Assert.That(sticks.Count(stick => stick.IsAvailable), Is.EqualTo(maximum), "No stick came back.");
+            var arrived = sticks.Where(stick => stick.IsAvailable).Select(stick => stick.transform.position).Except(before).ToArray();
+            Assert.That(arrived, Has.Length.EqualTo(1));
+            var toArrived = arrived[0] - player.position;
+            toArrived.y = 0f;
+            Assert.That(toArrived.magnitude, Is.GreaterThanOrEqualTo(20f), "The stick appeared next to the player.");
+        }
+
+        [UnityTest]
+        public IEnumerator WhatCanBeGathered_IsOutlined_AndTheOutlineChangesWhenAimedAt()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+
+            Assert.That(
+                Object.FindObjectsByType<LineRenderer>(FindObjectsSortMode.None).Where(line => line.name == "Ground Ring"),
+                Is.Empty,
+                "A ground ring is still drawn.");
+
+            foreach (var itemId in new[] { DemoItems.WoodId, DemoItems.SporeId })
+            {
+                var gatherable = demo.Gatherables.First(candidate => candidate.IsAvailable && candidate.Item.Id == itemId);
+                var outlines = gatherable.GetComponentsInChildren<MeshRenderer>()
+                    .Where(renderer => renderer.name == "Outline")
+                    .ToArray();
+
+                Assert.That(outlines, Is.Not.Empty, $"{itemId} has no outline.");
+                Assert.That(outlines[0].sharedMaterial.shader.name, Is.EqualTo("Fungiiiii/ItemOutline"));
+                Assert.That(outlines[0].GetComponent<MeshFilter>().sharedMesh.vertexCount, Is.GreaterThan(0));
+
+                var idle = outlines[0].sharedMaterial;
+                gatherable.SetTargeted(true);
+                Assert.That(outlines[0].sharedMaterial, Is.Not.SameAs(idle), "Aiming at it does not change its outline.");
+                gatherable.SetTargeted(false);
+                Assert.That(outlines[0].sharedMaterial, Is.SameAs(idle));
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator Pausing_FreezesTheGame_AndResumingGivesItBack()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+            var view = Object.FindFirstObjectByType<PrototypeFirstPersonCamera>();
+
+            Assert.That(demo.Pause.IsPaused, Is.False);
+            Assert.That(demo.Pause.ResumeButton.gameObject.activeInHierarchy, Is.False, "The pause menu shows before any pause.");
+
+            demo.Pause.SetPaused(true);
+            yield return null;
+
+            Assert.That(Time.timeScale, Is.Zero, "Time still runs.");
+            Assert.That(demo.Pause.ResumeButton.gameObject.activeInHierarchy, Is.True, "The pause menu is not shown.");
+            Assert.That(demo.Pause.HomeButton.gameObject.activeInHierarchy, Is.True);
+            Assert.That(demo.Pause.QuitButton.gameObject.activeInHierarchy, Is.True);
+            Assert.That(view.enabled, Is.False, "The view still turns.");
+            Assert.That(demo.Thrower.ThrowInputEnabled, Is.False, "The net can still be thrown.");
+            Assert.That(Cursor.lockState, Is.EqualTo(CursorLockMode.None), "The pointer is not free.");
+
+            demo.Pause.ResumeButton.Button.onClick.Invoke();
+            yield return null;
+
+            Assert.That(demo.Pause.IsPaused, Is.False);
+            Assert.That(Time.timeScale, Is.EqualTo(1f));
+            Assert.That(demo.Pause.ResumeButton.gameObject.activeInHierarchy, Is.False);
+            Assert.That(view.enabled, Is.True);
+            Assert.That(demo.Thrower.ThrowInputEnabled, Is.True);
+
+            // A second pause shows the menu as the first did, Resume standing out.
+            demo.Pause.SetPaused(true);
+            yield return new WaitForSecondsRealtime(0.5f);
+
+            Assert.That(
+                demo.Pause.ResumeButton.GetComponentInChildren<PlankGraphic>().Highlight,
+                Is.EqualTo(1f).Within(0.01f),
+                "Resume does not stand out on the second pause.");
+            demo.Pause.SetPaused(false);
+        }
+
+        [UnityTest]
+        public IEnumerator ResumingWithTheInventoryOpen_LeavesTheInventoryInCharge()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+            var view = Object.FindFirstObjectByType<PrototypeFirstPersonCamera>();
+
+            demo.SetInventoryOpen(true);
+            demo.Pause.SetPaused(true);
+            yield return null;
+            demo.Pause.SetPaused(false);
+            yield return null;
+
+            Assert.That(demo.IsInventoryOpen, Is.True);
+            Assert.That(view.enabled, Is.False, "The view turns while the inventory is open.");
+        }
+
+        [UnityTest]
+        public IEnumerator Home_GoesBackToTheHomeScreen_WithTimeRunning()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+
+            demo.Pause.SetPaused(true);
+            yield return null;
+            demo.Pause.HomeButton.Button.onClick.Invoke();
+
+            MainMenu menu = null;
+            var elapsed = 0f;
+            while (elapsed < LoadTimeoutSeconds && (menu == null || menu.PlayButton == null))
+            {
+                menu = Object.FindFirstObjectByType<MainMenu>();
+                elapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            Assert.That(menu, Is.Not.Null, "Home did not load the home screen.");
+            Assert.That(menu.PlayButton, Is.Not.Null);
+            Assert.That(Time.timeScale, Is.EqualTo(1f), "Time is still stopped on the home screen.");
+            Assert.That(Object.FindFirstObjectByType<DemoLoopBootstrap>(), Is.Null, "The game is still loaded.");
         }
 
         [UnityTest]

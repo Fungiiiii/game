@@ -153,15 +153,40 @@ MonoBehaviour:
   champouleModel: {fileID: 919132149155446097, guid: b5bd4e6adcded1242827b1a80de60a44, type: 3}
   decorMushroomPrefab: {fileID: 8709750313228204993, guid: e27606cd8d7d8d0459eaae41bc1ef239, type: 3}
   stickPrefab: {fileID: 1302624085802783701, guid: 26dded4661f59f24eb889a78d80cc478, type: 3}
+  stickTreePrefabs:
+  - {fileID: 3639511678845886649, guid: 65e03e28a12b3e248ae0862b5a2258aa, type: 3}
+  - {fileID: 3369927429339302039, guid: af0bac7eda3371b4f924a7249776f913, type: 3}
+  - {fileID: 243188325543710390, guid: 2e83ba6cb7ff23e45a54e73ba4117da2, type: 3}
+  outlineShader: {fileID: 4800000, guid: 683c7ba2d1058354c81938342679e1d5, type: 3}
+  menuFont: {fileID: 12800000, guid: d246a6494a6478c4e8b2eb1b70f14d8e, type: 3}
+  mainMenuScenePath: Assets/Scenes/Menu/MainMenu.unity
   sprintCostPerSecond: 15
   dodgeCost: 20
   regenerationPerSecond: 20
   regenerationDelaySeconds: 1
   recoveryThreshold: 20
   gatherReach: 2
-  minRespawnSeconds: 30
-  maxRespawnSeconds: 60
-  highlightColor: {r: 0.2, g: 0.95, b: 1, a: 1}
+  spawnTickSeconds: 10
+  spawnMinPlayerDistance: 20
+  maxSticks: 80
+  sticksPerTick: 1
+  maxSporeMushrooms: 120
+  sporeMushroomsPerTick: 2
+  stickTrunkDistance: {x: 1, y: 2.5}
+  stickMaxSlope: 30
+  playableArea:
+    serializedVersion: 2
+    x: -290
+    y: -290
+    width: 580
+    height: 580
+  outlineColor: {r: 0.9490196, g: 0.9019608, b: 0.8, a: 1}
+  outlineWidth: 2.5
+  targetedOutlineColor: {r: 1, g: 0.972549, b: 0.9098039, a: 1}
+  targetedOutlineWidth: 4
+  outlineFade: {x: 16, y: 30}
+  buildHole: 0
+  networkColor: {r: 0.9490196, g: 0.9019608, b: 0.8, a: 1}
   stageOneWood: 2
   stageOneSpores: 2
   stageTwoWood: 4

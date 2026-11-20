@@ -6,7 +6,9 @@
         "UnityEditor.TestRunner",
         "Fungiiiii.Runtime",
         "Unity.InputSystem",
-        "Unity.Netcode.Runtime"
+        "Unity.Netcode.Runtime",
+        "Unity.Localization",
+        "Unity.ResourceManager"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
