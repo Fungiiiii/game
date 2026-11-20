@@ -178,3 +178,5 @@ Scène : `Assets/Scenes/Prototype/DemoLoopScene.unity`, puis **Play** et un clic
 - **Shaders par `Shader.Find`** pour les placeholders, comme le filet : valable dans l'Editor, pas garanti dans un build.
 
 ## Modifié par
+
+- [playtest-base](./playtest-base.md) — la boucle sert de base au playtest : contour du modèle à la place de l'anneau cyan, bâtons et champignons répartis sur toute la map par tick, trou de la Champimaison retiré pour l'instant, menu pause sur Échap.
