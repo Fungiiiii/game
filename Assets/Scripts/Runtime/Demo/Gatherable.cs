@@ -1,3 +1,4 @@
+using System;
 using Fungiiiii.Gathering;
 using Fungiiiii.Inventory;
 using UnityEngine;
@@ -5,48 +6,60 @@ using UnityEngine;
 namespace Fungiiiii.Demo
 {
     /// <summary>
-    /// A spot the player gathers with the interact control: a decor mushroom for spores,
-    /// a stick for wood. Its visual disappears once gathered and comes back at the same
-    /// spot after a random delay. A cyan ring shows it can be gathered.
+    /// Something the player gathers with the interact control: a decor mushroom for spores,
+    /// a stick for wood. It appears on a spot of its <see cref="GatherableField"/>, shows an
+    /// outline so the player sees it can be taken, and disappears once gathered.
     /// </summary>
     internal sealed class Gatherable : MonoBehaviour, IDemoInteractable
     {
         private const float AimHeight = 0.3f;
 
         private InventoryItemDefinition item;
-        private RespawningResource resource;
-        private GameObject visual;
-        private DemoGroundRing ring;
+        private ItemOutline outline;
         private float reach;
+
+        /// <summary>Raised when the player has taken it, after it disappeared.</summary>
+        public event Action<Gatherable> Gathered;
 
         public InventoryItemDefinition Item => item;
 
-        public bool IsAvailable => resource != null && resource.IsAvailable;
+        public bool IsAvailable { get; private set; }
+
+        /// <summary>The spot of its field it stands on. Meaningless while it is not available.</summary>
+        public int Spot { get; private set; }
 
         public InteractionCandidate Candidate =>
             new InteractionCandidate(transform.position + Vector3.up * AimHeight, reach, IsAvailable);
 
-        /// <param name="gatheredVisual">Hidden while the resource is gone. Not owned: it may be a scene object.</param>
-        public void Initialize(
-            InventoryItemDefinition gatheredItem,
-            GameObject gatheredVisual,
-            RespawningResource respawningResource,
-            float interactionReach,
-            float ringRadius,
-            Material ringMaterial,
-            System.Func<Vector3, float> groundHeight)
+        public void Initialize(InventoryItemDefinition gatheredItem, ItemOutline itemOutline, float interactionReach)
         {
             item = gatheredItem;
-            visual = gatheredVisual;
-            resource = respawningResource;
+            outline = itemOutline;
             reach = interactionReach;
-            ring = new DemoGroundRing(transform, transform.position, ringRadius, ringMaterial, groundHeight);
-            Show(true);
+            Disappear();
+        }
+
+        /// <summary>Shows it on a spot.</summary>
+        public void Appear(int spot, Vector3 position, Quaternion rotation, Vector3 scale)
+        {
+            Spot = spot;
+            transform.SetPositionAndRotation(position, rotation);
+            transform.localScale = scale;
+            outline.SetTargeted(false);
+            IsAvailable = true;
+            gameObject.SetActive(true);
+        }
+
+        /// <summary>Hides it without giving anything, for a reset.</summary>
+        public void Disappear()
+        {
+            IsAvailable = false;
+            gameObject.SetActive(false);
         }
 
         public void SetTargeted(bool targeted)
         {
-            ring?.SetTargeted(targeted);
+            outline.SetTargeted(targeted && IsAvailable);
         }
 
         /// <summary>Puts one item in the inventory. Refused while gone, or if the inventory is full.</summary>
@@ -57,35 +70,9 @@ namespace Fungiiiii.Demo
                 return false;
             }
 
-            resource.TryGather();
-            Show(false);
+            Disappear();
+            Gathered?.Invoke(this);
             return true;
-        }
-
-        /// <summary>Back at once, for a demo reset.</summary>
-        public void ResetResource()
-        {
-            resource.Reset();
-            Show(true);
-        }
-
-        private void Update()
-        {
-            if (resource != null && resource.Tick(Time.deltaTime))
-            {
-                Show(true);
-            }
-        }
-
-        private void Show(bool available)
-        {
-            if (visual != null)
-            {
-                visual.SetActive(available);
-            }
-
-            ring?.SetVisible(available);
-            ring?.SetTargeted(false);
         }
     }
 }

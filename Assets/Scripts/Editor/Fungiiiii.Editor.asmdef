@@ -2,7 +2,9 @@
     "name": "Fungiiiii.Editor",
     "rootNamespace": "Fungiiiii.Editor",
     "references": [
-        "Fungiiiii.Runtime"
+        "Fungiiiii.Runtime",
+        "Unity.Localization",
+        "Unity.Localization.Editor"
     ],
     "includePlatforms": [
         "Editor"
