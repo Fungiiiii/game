@@ -13,6 +13,9 @@ namespace Fungiiiii.Demo
         /// <summary>Where the key to press is shown above it, in world space.</summary>
         Vector3 PromptPoint { get; }
 
+        /// <summary>What the interact control does with it, a key of the UI string table: « Ramasser ».</summary>
+        string HintKey { get; }
+
         /// <summary>Shows or hides that the player is aiming at it.</summary>
         void SetTargeted(bool targeted);
 

@@ -14,12 +14,13 @@ namespace Fungiiiii.Demo
     /// key to press above it, and uses it on a press. The key is that of the Interact
     /// action on the device the player used last.
     /// </summary>
-    internal sealed class PlayerInteractor : MonoBehaviour
+    internal sealed class PlayerInteractor : MonoBehaviour, IHintSource
     {
         private const InputControlPath.HumanReadableStringOptions KeyNameOptions =
             InputControlPath.HumanReadableStringOptions.OmitDevice | InputControlPath.HumanReadableStringOptions.UseShortNames;
 
         private readonly List<InteractionCandidate> candidates = new List<InteractionCandidate>();
+        private readonly List<ControlHint> hints = new List<ControlHint>();
 
         private Camera view;
         private PlayerInventory inventory;
@@ -36,6 +37,12 @@ namespace Fungiiiii.Demo
 
         /// <summary>What the player aims at, or null.</summary>
         public IInteractable Targeted => targeted;
+
+        /// <summary>Raised when the target changes, and with it the hint.</summary>
+        public event System.Action HintsChanged;
+
+        /// <summary>What the interact control does with the target; nothing without one.</summary>
+        public IReadOnlyList<ControlHint> Hints => hints;
 
         public void Initialize(
             Camera viewCamera,
@@ -112,6 +119,14 @@ namespace Fungiiiii.Demo
             targeted?.SetTargeted(false);
             targeted = next;
             targeted?.SetTargeted(true);
+
+            hints.Clear();
+            if (targeted != null && controls != null)
+            {
+                hints.Add(new ControlHint(targeted.HintKey, HintInput.Of(controls.Player.Interact)));
+            }
+
+            HintsChanged?.Invoke();
 
             // From one target straight to another, the key pops in again over the new one.
             if (previous != null && next != null && prompt != null)

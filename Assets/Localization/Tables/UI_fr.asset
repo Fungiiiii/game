@@ -82,6 +82,54 @@ MonoBehaviour:
     m_Localized: fermer
     m_Metadata:
       m_Items: []
+  - m_Id: 315545630007296
+    m_Localized: Lancer le filet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545655173120
+    m_Localized: Viser
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367424
+    m_Localized: Lancer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367425
+    m_Localized: "Rel\xE2cher : ne plus viser"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367426
+    m_Localized: "Changer d\u2019objet"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367427
+    m_Localized: Inventaire
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367428
+    m_Localized: Ramasser
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367429
+    m_Localized: "D\xE9poser"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367430
+    m_Localized: Prendre ou poser
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367431
+    m_Localized: "La moiti\xE9, ou un seul"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367432
+    m_Localized: Tout ramasser
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367433
+    m_Localized: Fermer
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

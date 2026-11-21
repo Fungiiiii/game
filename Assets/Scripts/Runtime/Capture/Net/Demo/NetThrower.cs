@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Fungiiiii.Items;
+using Fungiiiii.UI;
 using UnityEngine;
 
 namespace Fungiiiii.Capture
@@ -54,7 +55,7 @@ namespace Fungiiiii.Capture
     /// shared <see cref="AimZoom"/> of the camera narrows the view.
     /// </summary>
     [DisallowMultipleComponent]
-    internal sealed class NetThrower : MonoBehaviour, IHeldItem
+    internal sealed class NetThrower : MonoBehaviour, IHeldItem, IHeldItemHints
     {
         private const float MaxFlightSeconds = 3f;
         private const int CastBufferSize = 8;
@@ -112,6 +113,8 @@ namespace Fungiiiii.Capture
         private AimZoom zoom;
         private bool secondaryHeld;
         private bool controlsTaken;
+        private string shownPrimaryHint;
+        private string shownSecondaryHint;
 
         private NetTrajectory flight;
         private float flightSeconds;
@@ -138,6 +141,17 @@ namespace Fungiiiii.Capture
 
         /// <summary>Raised when the net is back in hand with a catch, with the mushroom caught.</summary>
         public event System.Action<NetDemoMushroom> CatchReturned;
+
+        /// <summary>Raised when what the use controls do changes: aiming, or the net leaving the hand.</summary>
+        public event System.Action HintsChanged;
+
+        /// <summary>Throwing, while the net is in hand: « Lancer » while aiming, « Lancer le filet » otherwise.</summary>
+        public string PrimaryHintKey => IsReadyInHand ? (IsAiming ? UiText.HintThrow : UiText.HintThrowNet) : null;
+
+        /// <summary>Aiming, while the net is in hand: releasing stops it.</summary>
+        public string SecondaryHintKey => IsReadyInHand ? (IsAiming ? UiText.HintStopAiming : UiText.HintAim) : null;
+
+        private bool IsReadyInHand => isEquipped && Cycle != null && Cycle.Phase == NetPhase.Ready;
 
         /// <summary>Aims as if the secondary action were held: for tests, which have no device.</summary>
         public bool HoldAim { get; set; }
@@ -292,6 +306,21 @@ namespace Fungiiiii.Capture
             }
 
             ShowPhase();
+            NotifyHintsIfChanged();
+        }
+
+        private void NotifyHintsIfChanged()
+        {
+            var primary = PrimaryHintKey;
+            var secondary = SecondaryHintKey;
+            if (primary == shownPrimaryHint && secondary == shownSecondaryHint)
+            {
+                return;
+            }
+
+            shownPrimaryHint = primary;
+            shownSecondaryHint = secondary;
+            HintsChanged?.Invoke();
         }
 
         private void DropAim()
@@ -308,6 +337,8 @@ namespace Fungiiiii.Capture
             {
                 ShowPhase();
             }
+
+            NotifyHintsIfChanged();
         }
 
         public void Equip()

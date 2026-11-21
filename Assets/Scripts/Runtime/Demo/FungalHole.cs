@@ -3,6 +3,7 @@ using Fungiiiii.Capture;
 using Fungiiiii.Champimaison;
 using Fungiiiii.Gathering;
 using Fungiiiii.Inventory;
+using Fungiiiii.UI;
 using UnityEngine;
 
 namespace Fungiiiii.Demo
@@ -42,6 +43,8 @@ namespace Fungiiiii.Demo
 
         /// <summary>The key to press floats a metre above the centre of the hole.</summary>
         public Vector3 PromptPoint => transform.position + Vector3.up;
+
+        public string HintKey => UiText.HintDeposit;
 
         public InteractionCandidate Candidate =>
             new InteractionCandidate(transform.position, reach, !network.IsComplete);

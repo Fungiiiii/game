@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Fungiiiii.Inventory;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -15,7 +16,7 @@ namespace Fungiiiii.UI
     /// and goes back to its slot when the screen closes. Items show as squares of their
     /// colour until their icons are drawn.
     /// </summary>
-    public sealed class InventoryDemoController : MonoBehaviour, IGameScreen
+    public sealed class InventoryDemoController : MonoBehaviour, IGameScreen, IHintSource
     {
         public const int MainColumnCount = 3;
         public const int MainRowCount = 4;
@@ -48,7 +49,6 @@ namespace Fungiiiii.UI
         private const float HeldSize = 64f;
         private const float HeldTiltDegrees = -6f;
         private const float HoverBrightness = 1.45f;
-        private const float HintsTop = 668f;
 
         // Palette: "Body light", "Wood dark", "Bark pale", the shadow brown and the night blue.
         private static readonly Color Cream = new Color32(0xF2, 0xE6, 0xCC, 0xFF);
@@ -62,15 +62,6 @@ namespace Fungiiiii.UI
         private static readonly Color SlotInnerShadow = new Color(0f, 0f, 0f, 0.4f);
         private static readonly Color Dashes = new Color(168f / 255f, 144f / 255f, 120f / 255f, 0.45f);
         private static readonly Color HeldShadow = new Color(30f / 255f, 38f / 255f, 48f / 255f, 0.55f);
-        private static readonly Color HintText = new Color(Cream.r, Cream.g, Cream.b, 0.82f);
-
-        private static readonly (string Key, string Action)[] Hints =
-        {
-            (UiText.InventoryHintLeftKey, UiText.InventoryHintLeft),
-            (UiText.InventoryHintRightKey, UiText.InventoryHintRight),
-            (UiText.InventoryHintDoubleKey, UiText.InventoryHintDouble),
-            (UiText.InventoryHintCloseKey, UiText.InventoryHintClose),
-        };
 
         private static Sprite uiSprite;
 
@@ -82,6 +73,7 @@ namespace Fungiiiii.UI
         private InputAction navigateAction;
         private InputAction takeHalfAction;
         private InputAction gatherAllAction;
+        private ControlHint[] hints = new ControlHint[0];
         private RectTransform canvasRect;
         private RectTransform held;
         private Image heldItem;
@@ -137,16 +129,36 @@ namespace Fungiiiii.UI
         }
 
         /// <summary>
-        /// The gamepad's controls on the screen: the first move selects a slot, X takes half
-        /// or puts down one, Y gathers every stack of the item. A and the stick are the
-        /// Submit and Navigate of the event system.
+        /// The controls of the screen. With a gamepad, the first move selects a slot, X takes
+        /// half or puts down one, Y gathers every stack of the item; A and the stick are the
+        /// Submit and Navigate of the event system. Close and Cancel only show in the key hints:
+        /// the screen stack closes the screen.
         /// </summary>
-        public void SetGamepadControls(InputAction navigate, InputAction takeHalf, InputAction gatherAll)
+        public void SetControls(InventoryScreenControls controls)
         {
-            navigateAction = navigate;
-            takeHalfAction = takeHalf;
-            gatherAllAction = gatherAll;
+            navigateAction = controls.Navigate;
+            takeHalfAction = controls.TakeHalf;
+            gatherAllAction = controls.GatherAll;
+
+            // The mouse buttons and A are read by the event system, not by an action of the game.
+            hints = new[]
+            {
+                new ControlHint(UiText.HintTakeOrPlace, HintInput.At("<Mouse>/leftButton"), HintInput.At("<Gamepad>/buttonSouth")),
+                new ControlHint(UiText.HintHalfOrOne, HintInput.At("<Mouse>/rightButton"), HintInput.Of(controls.TakeHalf)),
+                new ControlHint(UiText.HintGatherAll, HintInput.At("<Mouse>/leftButton"), HintInput.Of(controls.GatherAll), twiceWithMouse: true),
+                new ControlHint(UiText.HintClose, HintInput.Of(controls.Close), HintInput.Of(controls.Cancel)),
+            };
         }
+
+        // The screen's hints never change while it is open.
+        event Action IHintSource.HintsChanged
+        {
+            add { }
+            remove { }
+        }
+
+        /// <summary>What the mouse or the gamepad does on the screen, for the key hints.</summary>
+        public IReadOnlyList<ControlHint> Hints => hints;
 
         /// <summary>The slot the mouse is over or the gamepad has selected, -1 for none.</summary>
         internal int FocusedSlot => focusedSlot;
@@ -397,7 +409,6 @@ namespace Fungiiiii.UI
             }
 
             LinkSlotNavigation();
-            CreateHints();
             CreateHeld();
             RefreshSlots();
             RefreshHeld();
@@ -512,59 +523,6 @@ namespace Fungiiiii.UI
                 pieceRect.sizeDelta = new Vector2(Mathf.Min(dash, GridWidth - x), 2f);
                 pieceRect.anchoredPosition = new Vector2(x, 0f);
             }
-        }
-
-        /// <summary>The controls, at the bottom of the screen: each key in a wooden pill, then what it does.</summary>
-        private void CreateHints()
-        {
-            var rowObject = CreateUiObject("Hints", canvasRect);
-            var row = (RectTransform)rowObject.transform;
-            SetRect(row, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(ReferenceResolution.x, 28f), new Vector2(0f, -HintsTop));
-            var layout = rowObject.AddComponent<HorizontalLayoutGroup>();
-            layout.spacing = 28f;
-            layout.childAlignment = TextAnchor.MiddleCenter;
-            layout.childControlWidth = true;
-            layout.childControlHeight = true;
-            layout.childForceExpandWidth = false;
-            layout.childForceExpandHeight = false;
-
-            foreach (var (key, action) in Hints)
-            {
-                var hintObject = CreateUiObject("Hint", row);
-                var hint = hintObject.AddComponent<HorizontalLayoutGroup>();
-                hint.spacing = 8f;
-                hint.childAlignment = TextAnchor.MiddleCenter;
-                hint.childControlWidth = true;
-                hint.childControlHeight = true;
-                hint.childForceExpandWidth = false;
-                hint.childForceExpandHeight = false;
-
-                var pillObject = CreateUiObject("Key", hintObject.transform);
-                var pill = pillObject.AddComponent<CutCornerGraphic>();
-                pill.SetShape(5f, WoodDark);
-                pill.raycastTarget = false;
-                var pillLayout = pillObject.AddComponent<HorizontalLayoutGroup>();
-                pillLayout.padding = new RectOffset(10, 10, 2, 4);
-                pillLayout.childControlWidth = true;
-                pillLayout.childControlHeight = true;
-                // Forced expansion would make the pill flexible: the row's spare width would stretch it.
-                pillLayout.childForceExpandWidth = false;
-                pillLayout.childForceExpandHeight = false;
-                CreateHintText(pillObject.transform, key, Cream);
-
-                CreateHintText(hintObject.transform, action, HintText);
-            }
-        }
-
-        private void CreateHintText(Transform parent, string entryKey, Color textColor)
-        {
-            var text = CreateUiObject("Text", parent).AddComponent<Text>();
-            text.font = font;
-            text.fontSize = 17;
-            text.color = textColor;
-            text.alignment = TextAnchor.MiddleCenter;
-            text.raycastTarget = false;
-            text.gameObject.AddComponent<LocalizedLabel>().Initialize(entryKey);
         }
 
         /// <summary>What the mouse holds: its square, tilted, with a shadow under it and the number.</summary>
@@ -805,5 +763,30 @@ namespace Fungiiiii.UI
                 owner.PressSlot(index, PointerEventData.InputButton.Left, owner.ScreenPointOf(index));
             }
         }
+    }
+
+    /// <summary>The actions the inventory screen uses or shows.</summary>
+    public readonly struct InventoryScreenControls
+    {
+        public InventoryScreenControls(InputAction navigate, InputAction takeHalf, InputAction gatherAll, InputAction close, InputAction cancel)
+        {
+            Navigate = navigate;
+            TakeHalf = takeHalf;
+            GatherAll = gatherAll;
+            Close = close;
+            Cancel = cancel;
+        }
+
+        public InputAction Navigate { get; }
+
+        public InputAction TakeHalf { get; }
+
+        public InputAction GatherAll { get; }
+
+        /// <summary>Closes the screen with the keyboard: Tab.</summary>
+        public InputAction Close { get; }
+
+        /// <summary>Closes the screen with a gamepad: B.</summary>
+        public InputAction Cancel { get; }
     }
 }

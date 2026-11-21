@@ -82,6 +82,54 @@ MonoBehaviour:
     m_Localized: close
     m_Metadata:
       m_Items: []
+  - m_Id: 315545630007296
+    m_Localized: Throw the net
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545655173120
+    m_Localized: Aim
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367424
+    m_Localized: Throw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367425
+    m_Localized: 'Release: stop aiming'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367426
+    m_Localized: Switch item
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367427
+    m_Localized: Inventory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367428
+    m_Localized: Gather
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367429
+    m_Localized: Deposit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367430
+    m_Localized: Take or place
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367431
+    m_Localized: Half, or just one
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367432
+    m_Localized: Gather all
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367433
+    m_Localized: Close
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

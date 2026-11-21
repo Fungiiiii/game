@@ -79,6 +79,54 @@ MonoBehaviour:
     m_Key: inventory.hint.close
     m_Metadata:
       m_Items: []
+  - m_Id: 315545630007296
+    m_Key: hint.throw_net
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545655173120
+    m_Key: hint.aim
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367424
+    m_Key: hint.throw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367425
+    m_Key: hint.stop_aiming
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367426
+    m_Key: hint.switch_item
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367427
+    m_Key: hint.inventory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367428
+    m_Key: hint.gather
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367429
+    m_Key: hint.deposit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367430
+    m_Key: hint.take_or_place
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367431
+    m_Key: hint.half_or_one
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367432
+    m_Key: hint.gather_all
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367433
+    m_Key: hint.close
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
