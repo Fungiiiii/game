@@ -14,6 +14,9 @@ namespace Fungiiiii.Runtime.World
     [DisallowMultipleComponent]
     public sealed class ForestScatter : MonoBehaviour
     {
+        /// <summary>Row of the hash lattice the fade draws from, apart from any other use of the seed.</summary>
+        private const int FadeHashRow = 7;
+
         [SerializeField, Tooltip("The prefab to scatter, with an LODGroup on its root (PF_Tree, PF_Rock_Large...).")]
         private GameObject prefab;
 
@@ -50,6 +53,12 @@ namespace Fungiiiii.Runtime.World
         [SerializeField, Range(0f, 0.5f), Tooltip("Height drawn apart from the width, as a share: 0.15 makes some trees up to 15 % taller or shorter than their width suggests. Two trees of the same model never share a silhouette.")]
         private float heightVariation;
 
+        [SerializeField, Min(0f), Tooltip("Depth of the band along the area's south edge (lowest Z) over which the layer thins out to nothing, in metres. 0 keeps a hard edge. Two zones whose areas overlap fade into one another instead of stacking.")]
+        private float fadeSouth;
+
+        [SerializeField, Min(0f), Tooltip("Depth of the band along the area's north edge (highest Z) over which the layer thins out to nothing, in metres. 0 keeps a hard edge.")]
+        private float fadeNorth;
+
         public GameObject Prefab => prefab;
 
         public float MaxSlope => maxSlope;
@@ -69,8 +78,10 @@ namespace Fungiiiii.Runtime.World
             var random = new System.Random(unchecked(seed * 486187739 + 1));
             Vector3 origin = transform.position - new Vector3(areaSize.x * 0.5f, 0f, areaSize.y * 0.5f);
 
-            foreach (Vector2 sample in samples)
+            for (int index = 0; index < samples.Count; index++)
             {
+                Vector2 sample = samples[index];
+
                 // Always draw the random values, even for excluded points, so adding
                 // a zone doesn't reshuffle every other tree.
                 float scale = Mathf.Lerp(minScale, maxScale, (float)random.NextDouble());
@@ -78,7 +89,7 @@ namespace Fungiiiii.Runtime.World
                 float stretch = Mathf.Lerp(1f - heightVariation, 1f + heightVariation, (float)random.NextDouble());
 
                 var position = origin + new Vector3(sample.x, 0f, sample.y);
-                if (IsInHole(position) || !IsInGrove(position) || IsExcluded(position, exclusions))
+                if (IsInHole(position) || !IsInGrove(position) || IsExcluded(position, exclusions) || IsFadedOut(position, index))
                 {
                     continue;
                 }
@@ -114,6 +125,42 @@ namespace Fungiiiii.Runtime.World
         {
             groveSize = size;
             groveCoverage = coverage;
+        }
+
+        internal void ConfigureFade(float south, float north)
+        {
+            fadeSouth = south;
+            fadeNorth = north;
+        }
+
+        /// <summary>
+        /// Near a fading edge, an instance is kept with a chance that falls from 1 at
+        /// the inner side of the band to 0 at the edge. The draw is a hash of the
+        /// sample, not a value of the random stream: fading a layer removes instances
+        /// near its edge and moves none of the others.
+        /// </summary>
+        private bool IsFadedOut(Vector3 position, int sampleIndex)
+        {
+            if (fadeSouth <= 0f && fadeNorth <= 0f)
+            {
+                return false;
+            }
+
+            float south = transform.position.z - areaSize.y * 0.5f;
+            float north = transform.position.z + areaSize.y * 0.5f;
+            float keep = EdgeShare(position.z - south, fadeSouth) * EdgeShare(north - position.z, fadeNorth);
+            if (keep >= 1f)
+            {
+                return false;
+            }
+
+            return ValueNoise.Lattice(sampleIndex, FadeHashRow, unchecked(seed * 92821 + 3)) >= keep;
+        }
+
+        /// <summary>1 beyond the band, falling linearly to 0 at the edge.</summary>
+        private static float EdgeShare(float distanceToEdge, float band)
+        {
+            return band > 0f ? Mathf.Clamp01(distanceToEdge / band) : 1f;
         }
 
         /// <summary>
