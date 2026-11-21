@@ -41,15 +41,8 @@ namespace Fungiiiii.Demo
         /// <summary>The Player prefab's pivot is the centre of its 2 m capsule.</summary>
         private const float PlayerPivotAboveGround = 1.1f;
 
-        private const float AimConeDegrees = 25f;
-
-        private static readonly Color RefusedColor = new Color(1f, 0.45f, 0.1f);
-
-        /// <summary>How close the player must be to use the Champimaison hole, in metres.</summary>
-        private const float HoleReach = 2f;
-
         [Header("Player")]
-        [Tooltip("The player prefab, used offline: no network session is started in this scene.")]
+        [Tooltip("The player, with its hands, interact control, net and stamina; used offline: no network session is started in this scene.")]
         [SerializeField]
         private GameObject playerPrefab;
 
@@ -81,57 +74,28 @@ namespace Fungiiiii.Demo
         private OutlineSettings outlineSettings;
 
         [Header("Interface")]
+        [Tooltip("The quick bar: the item of its selected slot is the one in hand.")]
         [SerializeField]
         private Hotbar hotbar;
 
         [SerializeField]
-        private InventoryScreen inventoryView;
-
-        [SerializeField]
-        private PauseMenu pauseMenu;
-
-        [SerializeField]
-        private ControlHintsPanel hintsPanel;
+        private GameScreens screens;
 
         [Tooltip("The key shown over what the player aims at.")]
         [SerializeField]
         private KeyPrompt keyPrompt;
 
-        [Header("Champimaison")]
-        [Tooltip("Off for the playtest: the hole and its fungal network are not built.")]
+        [Tooltip("Builds the Champimaison hole while active; inactive for the playtest.")]
         [SerializeField]
-        private bool buildHole;
-
-        [Tooltip("Colour of the fungal network and of the hole's ring: palette \"Body light\", a mycelium cream.")]
-        [SerializeField]
-        private Color networkColor = new Color32(0xF2, 0xE6, 0xCC, 0xFF);
-
-        [Header("Fungal network: starting values of the design note, without source")]
-        [SerializeField, Min(0)]
-        private int stageOneWood = 2;
-
-        [SerializeField, Min(0)]
-        private int stageOneSpores = 2;
-
-        [SerializeField, Min(0)]
-        private int stageTwoWood = 4;
-
-        [SerializeField, Min(0)]
-        private int stageTwoSpores = 4;
+        private FungalHoleSpawner holeSpawner;
 
         [Tooltip("Seed of every random draw of the demo. 0 picks a different seed every run.")]
         [SerializeField]
         private int randomSeed;
 
         private readonly List<IInteractable> interactables = new List<IInteractable>();
-        private readonly List<Material> materials = new List<Material>();
 
         private PlayerControls controls;
-        private ScreenStack screens;
-        private FixedHints gameHints;
-        private InputAction menuAction;
-        private InputAction cancelAction;
-        private InputAction inventoryAction;
         private InputAction resetAction;
         private System.Random random;
         private Terrain terrain;
@@ -155,7 +119,7 @@ namespace Fungiiiii.Demo
         public PlayerInventory Inventory => backpack != null ? backpack.Inventory : null;
 
         /// <summary>The inventory screen, opened with Tab.</summary>
-        public InventoryScreen InventoryView => inventoryView;
+        public InventoryScreen InventoryView => screens.Inventory;
 
         public NetThrower Thrower { get; private set; }
 
@@ -170,22 +134,22 @@ namespace Fungiiiii.Demo
         /// <summary>Every place a stick may appear.</summary>
         public IReadOnlyList<GatherableSpot> StickSpots => gathering.StickSpots;
 
-        /// <summary>Null while the hole is left out (see buildHole).</summary>
+        /// <summary>Null while the hole is left out (see holeSpawner).</summary>
         public FungalHole Hole => hole;
 
-        public bool IsInventoryOpen => inventoryView != null && inventoryView.gameObject.activeSelf;
+        public bool IsInventoryOpen => screens.IsInventoryOpen;
 
         /// <summary>The key hints, bottom right of the screen.</summary>
-        public ControlHintsPanel Hints => hintsPanel;
+        public ControlHintsPanel Hints => screens.Hints;
 
         /// <summary>The player's controls: whether a menu has them, the device in use.</summary>
         public PlayerControls Controls => controls;
 
         /// <summary>The screens open over the game: Escape closes the top one, or pauses.</summary>
-        public ScreenStack Screens => screens;
+        public ScreenStack Screens => screens.Stack;
 
         /// <summary>The pause menu, opened with Escape.</summary>
-        public PauseMenu Pause => pauseMenu;
+        public PauseMenu Pause => screens.Pause;
 
         /// <summary>The outline of the mushroom the aimed net would catch.</summary>
         public NetTargetOutline TargetOutline => targetOutline;
@@ -207,34 +171,14 @@ namespace Fungiiiii.Demo
 
         private void OnDestroy()
         {
-            if (inventoryAction != null)
+            if (resetAction != null)
             {
-                inventoryAction.performed -= OnInventoryPerformed;
                 resetAction.performed -= OnResetPerformed;
             }
 
             if (Thrower != null)
             {
                 Thrower.CatchReturned -= HandleCatchReturned;
-            }
-
-            if (screens != null)
-            {
-                screens.Changed -= ApplyScreens;
-            }
-
-            if (menuAction != null)
-            {
-                menuAction.performed -= OnMenuPerformed;
-                cancelAction.performed -= OnMenuPerformed;
-            }
-
-            foreach (var material in materials)
-            {
-                if (material != null)
-                {
-                    Destroy(material);
-                }
             }
 
             outlines?.Dispose();
@@ -280,32 +224,25 @@ namespace Fungiiiii.Demo
             }
 
             SpawnPlayer(forestCamera);
-            BuildHudAndInventory();
+            SetUpVitals();
+            screens.Inventory.Bind(backpack.Inventory, backpack.Layout);
+            PutStartingItems();
 
-            if (buildHole)
+            if (holeSpawner != null && holeSpawner.isActiveAndEnabled)
             {
-                BuildHole(CreateUnlit("Demo Refused", RefusedColor));
+                hole = holeSpawner.Spawn(spawnPosition, GroundHeight, gathering.Sticks.Item.Id, gathering.SporeMushrooms.Item.Id);
+                interactables.Add(hole);
             }
 
             BuildGatherables(forest);
             SpawnMushrooms();
             SetUpThrower();
-            BuildHotbar();
+            SetUpHands();
 
-            interactor = player.AddComponent<PlayerInteractor>();
-            interactor.Initialize(firstPersonCamera.Camera, Inventory, interactables, AimConeDegrees, keyPrompt, controls);
+            interactor = player.GetComponent<PlayerInteractor>();
+            interactor.Initialize(firstPersonCamera, Inventory, interactables, keyPrompt, controls);
 
-            screens = new ScreenStack(pauseMenu);
-            screens.Changed += ApplyScreens;
-
-            BuildHints();
-            menuAction = controls.Screens.Menu;
-            menuAction.performed += OnMenuPerformed;
-            // B on a gamepad goes back too; it only acts in a screen, where the UI map is on.
-            cancelAction = controls.UI.Cancel;
-            cancelAction.performed += OnMenuPerformed;
-            inventoryAction = controls.Screens.Inventory;
-            inventoryAction.performed += OnInventoryPerformed;
+            screens.Bind(controls, interactor, hands);
             // Development shortcut, not a player-facing control.
             resetAction = controls.Player.ResetDemo;
             resetAction.performed += OnResetPerformed;
@@ -321,9 +258,18 @@ namespace Fungiiiii.Demo
                 return "the player prefab, the net item, or the stamina or net settings are missing.";
             }
 
-            if (hotbar == null || inventoryView == null || pauseMenu == null || hintsPanel == null || keyPrompt == null)
+            if (playerPrefab.GetComponent<PlayerHands>() == null
+                || playerPrefab.GetComponent<PlayerInteractor>() == null
+                || playerPrefab.GetComponent<NetThrower>() == null
+                || playerPrefab.GetComponent<NetTargetOutline>() == null
+                || playerPrefab.GetComponent<StaminaDriver>() == null)
             {
-                return "a piece of the interface is missing: quick bar, inventory, pause menu, key hints or key prompt.";
+                return "the player prefab lacks its hands, interact control, net, net target outline or stamina.";
+            }
+
+            if (screens == null || hotbar == null || keyPrompt == null)
+            {
+                return "the screens, the quick bar or the key prompt are missing.";
             }
 
             if (startingQuickBar.Length == 0 || System.Array.IndexOf(startingQuickBar, null) >= 0)
@@ -341,7 +287,7 @@ namespace Fungiiiii.Demo
                 return "the forest's gathering or its creatures are missing.";
             }
 
-            return gathering.FindProblem() ?? creatures.FindProblem();
+            return screens.FindProblem() ?? gathering.FindProblem() ?? creatures.FindProblem();
         }
 
         private static IEnumerator LoadForest()
@@ -406,24 +352,13 @@ namespace Fungiiiii.Demo
             firstPersonCamera.Initialize(player.GetComponent<PlayerMotor>(), spawnYaw, controls.Player.Look, controls.Player.UsePrimary, controls);
         }
 
-        private void BuildHudAndInventory()
+        private void SetUpVitals()
         {
             vitals = new PlayerVitals(100f, 100f);
             stamina = new StaminaRegulator(vitals, staminaSettings.ToRegulatorSettings());
-
             var hud = new GameObject("Vitals HUD").AddComponent<VitalsHud>();
             hud.Initialize(vitals);
-
-            player.AddComponent<StaminaDriver>().Initialize(player.GetComponent<PlayerMotor>(), stamina);
-
-            inventoryView.Bind(backpack.Inventory, backpack.Layout);
-            inventoryView.SetControls(new InventoryScreenControls(
-                controls.UI.Navigate,
-                controls.UI.TakeHalf,
-                controls.UI.GatherAll,
-                controls.Screens.Inventory,
-                controls.UI.Cancel));
-            PutStartingItems();
+            player.GetComponent<StaminaDriver>().Initialize(player.GetComponent<PlayerMotor>(), stamina);
         }
 
         /// <summary>The starting items, in the quick bar's slots from the first: the net.</summary>
@@ -435,8 +370,8 @@ namespace Fungiiiii.Demo
             }
         }
 
-        /// <summary>The quick bar shows the inventory's own quick bar slots.</summary>
-        private void BuildHotbar()
+        /// <summary>The quick bar shows the inventory's own quick bar slots; the hands hold the item of its selected slot.</summary>
+        private void SetUpHands()
         {
             var actions = controls.Player;
             hotbar.Initialize(
@@ -447,53 +382,9 @@ namespace Fungiiiii.Demo
                 actions.HotbarPrevious,
                 new[] { actions.HotbarSlot1, actions.HotbarSlot2, actions.HotbarSlot3 });
 
-            // The hands hold the item of the selected slot: the net does something there.
-            hands = player.AddComponent<PlayerHands>();
+            hands = player.GetComponent<PlayerHands>();
             hands.Register(netItem, Thrower);
             hands.Initialize(hotbar, controls, firstPersonCamera.transform);
-        }
-
-        private void BuildHole(Material refused)
-        {
-            var site = NearestChampimaisonSite();
-            var centre = site != null ? site.transform.position : spawnPosition + Vector3.forward * 10f;
-            centre.y = GroundHeight(centre);
-
-            var network = new FungalNetwork(
-                new[]
-                {
-                    new NetworkStageCost(stageOneWood, stageOneSpores),
-                    new NetworkStageCost(stageTwoWood, stageTwoSpores),
-                },
-                gathering.Sticks.Item.Id,
-                gathering.SporeMushrooms.Item.Id);
-
-            var holeObject = new GameObject("Champimaison Hole");
-            holeObject.transform.position = centre;
-            hole = holeObject.AddComponent<FungalHole>();
-            // Lit filaments take the forest's light and fog, like the ground they lie on.
-            var filaments = CreateLit("Fungal Network", networkColor);
-            var holeRing = CreateUnlit("Champimaison Hole Ring", networkColor);
-            hole.Initialize(network, HoleReach, filaments, holeRing, refused, GroundHeight);
-            interactables.Add(hole);
-        }
-
-        private ChampimaisonSite NearestChampimaisonSite()
-        {
-            ChampimaisonSite nearest = null;
-            var nearestDistance = float.PositiveInfinity;
-
-            foreach (var site in FindObjectsByType<ChampimaisonSite>(FindObjectsSortMode.None))
-            {
-                var distance = Vector3.Distance(site.transform.position, spawnPosition);
-                if (distance < nearestDistance)
-                {
-                    nearest = site;
-                    nearestDistance = distance;
-                }
-            }
-
-            return nearest;
         }
 
         /// <summary>The forest's sticks and spore mushrooms, kept around the player; each one can be gathered with E.</summary>
@@ -512,7 +403,7 @@ namespace Fungiiiii.Demo
 
         private void SetUpThrower()
         {
-            Thrower = player.AddComponent<NetThrower>();
+            Thrower = player.GetComponent<NetThrower>();
             Thrower.Initialize(
                 netSettings.ToThrowSettings(),
                 firstPersonCamera.Camera,
@@ -521,7 +412,7 @@ namespace Fungiiiii.Demo
                 new System.Random(random.Next()));
             Thrower.CatchReturned += HandleCatchReturned;
 
-            targetOutline = new GameObject("Net Target Outline").AddComponent<NetTargetOutline>();
+            targetOutline = player.GetComponent<NetTargetOutline>();
             targetOutline.Initialize(Thrower, creatures.Mushrooms, outlines);
         }
 
@@ -534,86 +425,15 @@ namespace Fungiiiii.Demo
             }
         }
 
-        /// <summary>Escape or B: closes the screen on top; Escape pauses when none is open.</summary>
-        private void OnMenuPerformed(InputAction.CallbackContext _)
-        {
-            if (IsReady)
-            {
-                screens.Back();
-            }
-        }
-
-        /// <summary>Tab: opens the inventory when no screen is open, closes it when it is on top.</summary>
-        private void OnInventoryPerformed(InputAction.CallbackContext _)
-        {
-            if (IsReady)
-            {
-                screens.Toggle(inventoryView);
-            }
-        }
-
         /// <summary>Opens or closes the inventory, as Tab does.</summary>
         public void SetInventoryOpen(bool open)
         {
-            if (open)
-            {
-                screens.Open(inventoryView);
-            }
-            else
-            {
-                screens.Close(inventoryView);
-            }
-        }
-
-        /// <summary>
-        /// While a screen is open the mouse is free for it: the view does not turn, and
-        /// neither the hands, the quick bar nor the interact control respond. The inventory
-        /// shows its own quick bar, so the game's one hides under it.
-        /// </summary>
-        private void ApplyScreens()
-        {
-            hotbar.SetVisible(!screens.IsOpen(inventoryView));
-            // Every system that stops under a menu listens to the controls itself.
-            controls.SetMenuOpen(screens.IsAnyOpen);
-            ShowHints();
-        }
-
-        /// <summary>
-        /// The key hints, bottom right. In game: what E does with the target, what the item
-        /// in hand does, then switching items and the inventory; switching is left out first
-        /// when there are too many.
-        /// </summary>
-        private void BuildHints()
-        {
-            var actions = controls.Player;
-            gameHints = new FixedHints(
-                new ControlHint(UiText.HintSwitchItem, HintInput.Of(actions.HotbarNext, actions.HotbarPrevious), optional: true),
-                new ControlHint(UiText.HintInventory, HintInput.Of(controls.Screens.Inventory)));
-
-            hintsPanel.Initialize(controls);
-            ShowHints();
-        }
-
-        /// <summary>The hints of the screen on top, or of the game when none is open; the pause shows none.</summary>
-        private void ShowHints()
-        {
-            if (!screens.IsAnyOpen)
-            {
-                hintsPanel.ShowFrom(interactor, hands, gameHints);
-            }
-            else if (screens.Top is IHintSource screenHints)
-            {
-                hintsPanel.ShowFrom(screenHints);
-            }
-            else
-            {
-                hintsPanel.ShowFrom();
-            }
+            screens.SetInventoryOpen(open);
         }
 
         private void OnResetPerformed(InputAction.CallbackContext _)
         {
-            if (IsReady && !screens.IsAnyOpen)
+            if (IsReady && !screens.Stack.IsAnyOpen)
             {
                 ResetDemo();
             }
@@ -622,7 +442,7 @@ namespace Fungiiiii.Demo
         /// <summary>Everything back to the start: player, gauges, inventory with only the net, resources, mushrooms.</summary>
         public void ResetDemo()
         {
-            screens.CloseAll();
+            screens.Stack.CloseAll();
             Thrower.ResetNet();
 
             creatures.ResetAll();
@@ -651,7 +471,7 @@ namespace Fungiiiii.Demo
 
         private void EmptyInventory()
         {
-            inventoryView.Hand.Clear();
+            screens.Inventory.Hand.Clear();
             var inventory = Inventory;
             for (var index = 0; index < inventory.SlotCount; index++)
             {
@@ -666,27 +486,6 @@ namespace Fungiiiii.Demo
         private float GroundHeight(Vector3 point)
         {
             return terrain != null ? terrain.SampleHeight(point) + terrain.GetPosition().y : point.y;
-        }
-
-        private Vector3 OnGround(Vector2 groundPoint)
-        {
-            var point = new Vector3(groundPoint.x, 0f, groundPoint.y);
-            point.y = GroundHeight(point);
-            return point;
-        }
-
-        private Material CreateUnlit(string materialName, Color color)
-        {
-            var material = NetDemoPrimitives.CreateUnlitMaterial(materialName, color);
-            materials.Add(material);
-            return material;
-        }
-
-        private Material CreateLit(string materialName, Color color)
-        {
-            var material = NetDemoPrimitives.CreateMaterial(materialName, color);
-            materials.Add(material);
-            return material;
         }
     }
 }

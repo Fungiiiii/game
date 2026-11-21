@@ -119,6 +119,55 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &123151325
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 123151327}
+  - component: {fileID: 123151326}
+  m_Layer: 0
+  m_Name: Champimaison Hole
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &123151326
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 123151325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5bb28341012411482365fa65a6928ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Demo.FungalHoleSpawner
+  networkColor: {r: 0.9490196, g: 0.9019608, b: 0.8, a: 1}
+  stageOneWood: 2
+  stageOneSpores: 2
+  stageTwoWood: 4
+  stageTwoSpores: 4
+--- !u!4 &123151327
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 123151325}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &167378461
 GameObject:
   m_ObjectHideFlags: 0
@@ -148,7 +197,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6186fbf8d397cc449a76429885b9c9f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Demo.DemoLoopBootstrap
-  playerPrefab: {fileID: 3378215888684738756, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
+  playerPrefab: {fileID: 115626252226540898, guid: 6b68423f1f9d42743a16adbd720a848c, type: 3}
   netItem: {fileID: 11400000, guid: 755566013f3545c1b999a2b65804c6c1, type: 2}
   startingQuickBar:
   - {fileID: 11400000, guid: 755566013f3545c1b999a2b65804c6c1, type: 2}
@@ -158,16 +207,9 @@ MonoBehaviour:
   creatures: {fileID: 1100000013}
   outlineSettings: {fileID: 11400000, guid: 99094421f9004a50a90f07cf3160e63b, type: 2}
   hotbar: {fileID: 1110914250}
-  inventoryView: {fileID: 329161194}
-  pauseMenu: {fileID: 1926559556}
-  hintsPanel: {fileID: 2105432305}
+  screens: {fileID: 1085797577}
   keyPrompt: {fileID: 1574012220}
-  buildHole: 0
-  networkColor: {r: 0.9490196, g: 0.9019608, b: 0.8, a: 1}
-  stageOneWood: 2
-  stageOneSpores: 2
-  stageTwoWood: 4
-  stageTwoSpores: 4
+  holeSpawner: {fileID: 123151326}
   randomSeed: 0
 --- !u!4 &167378463
 Transform:
@@ -367,6 +409,54 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 480836274}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1085797576
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1085797578}
+  - component: {fileID: 1085797577}
+  m_Layer: 0
+  m_Name: Game Screens
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1085797577
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1085797576}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c682de6a17e64c199edd8b7ef0fd73f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.GameScreens
+  hotbar: {fileID: 1110914250}
+  inventory: {fileID: 329161194}
+  pauseMenu: {fileID: 1926559556}
+  hints: {fileID: 2105432305}
+--- !u!4 &1085797578
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1085797576}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -945,3 +1035,5 @@ SceneRoots:
   - {fileID: 2105432304}
   - {fileID: 1574012219}
   - {fileID: 480836277}
+  - {fileID: 1085797578}
+  - {fileID: 123151327}
