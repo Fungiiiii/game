@@ -50,38 +50,6 @@ MonoBehaviour:
     m_Localized: Quick bar
     m_Metadata:
       m_Items: []
-  - m_Id: 141727229796353
-    m_Localized: Left click
-    m_Metadata:
-      m_Items: []
-  - m_Id: 141727229796354
-    m_Localized: take or place
-    m_Metadata:
-      m_Items: []
-  - m_Id: 141727229796355
-    m_Localized: Right click
-    m_Metadata:
-      m_Items: []
-  - m_Id: 141727229796356
-    m_Localized: half, or just one
-    m_Metadata:
-      m_Items: []
-  - m_Id: 141727229796357
-    m_Localized: Double click
-    m_Metadata:
-      m_Items: []
-  - m_Id: 141727229796358
-    m_Localized: gather all
-    m_Metadata:
-      m_Items: []
-  - m_Id: 141727229796359
-    m_Localized: Tab
-    m_Metadata:
-      m_Items: []
-  - m_Id: 141727229796360
-    m_Localized: close
-    m_Metadata:
-      m_Items: []
   - m_Id: 315545630007296
     m_Localized: Throw the net
     m_Metadata:

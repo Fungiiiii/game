@@ -13,9 +13,10 @@ namespace Fungiiiii.Editor.Playtest
     /// Creates what the Localization package needs for the menus: its settings, the
     /// French and English locales, and the "UI" string table with the menus' entries.
     ///
-    /// It only adds what is missing. A text already in the table is never overwritten:
-    /// once created, the table is the source of truth, edited in Window > Asset
-    /// Management > Localization Tables.
+    /// It only adds what is missing, and removes the entries it once added that the game
+    /// no longer uses. A text already in the table is never overwritten: once created, the
+    /// table is the source of truth, edited in Window > Asset Management > Localization
+    /// Tables.
     /// </summary>
     internal static class PlaytestLocalization
     {
@@ -50,6 +51,23 @@ namespace Fungiiiii.Editor.Playtest
             (UiText.HintHalfOrOne, "La moitié, ou un seul", "Half, or just one"),
             (UiText.HintGatherAll, "Tout ramasser", "Gather all"),
             (UiText.HintClose, "Fermer", "Close"),
+        };
+
+        /// <summary>
+        /// Entries this script once added and the game no longer uses: the old line of hints
+        /// of the inventory, replaced by the key hints. Removed, so the table keeps only texts
+        /// the game shows.
+        /// </summary>
+        private static readonly string[] RetiredKeys =
+        {
+            "inventory.hint.left.key",
+            "inventory.hint.left",
+            "inventory.hint.right.key",
+            "inventory.hint.right",
+            "inventory.hint.double.key",
+            "inventory.hint.double",
+            "inventory.hint.close.key",
+            "inventory.hint.close",
         };
 
         [MenuItem("Fungiiiii/Playtest/1. Set Up Localization")]
@@ -96,6 +114,11 @@ namespace Fungiiiii.Editor.Playtest
             {
                 AddIfMissing(frenchTable, key, frenchText);
                 AddIfMissing(englishTable, key, englishText);
+            }
+
+            foreach (var key in RetiredKeys)
+            {
+                collection.RemoveEntry(key);
             }
 
             EditorUtility.SetDirty(collection.SharedData);
