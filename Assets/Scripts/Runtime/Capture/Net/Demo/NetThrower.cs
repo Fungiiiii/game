@@ -49,9 +49,8 @@ namespace Fungiiiii.Capture
     ///
     /// The primary action throws the net; the secondary one, held, aims: only then are the
     /// arc and the impact circle shown, the view narrows and turns slower. A net can be
-    /// thrown without aiming, just without a preview. Both actions are built in code, like
-    /// Dodge in PlayerInputReader, and must be added to the shared InputSystem_Actions
-    /// asset before production.
+    /// thrown without aiming, just without a preview. Both actions are given by the owner,
+    /// from the player's controls.
     /// </summary>
     [DisallowMultipleComponent]
     internal sealed class NetThrower : MonoBehaviour
@@ -226,8 +225,12 @@ namespace Fungiiiii.Capture
             Camera viewCamera,
             Collider playerCollider,
             IReadOnlyList<NetDemoMushroom> targets,
-            System.Random random)
+            System.Random random,
+            InputAction primary,
+            InputAction secondary)
         {
+            primaryAction = primary;
+            secondaryAction = secondary;
             settings = netSettings;
             aimCamera = viewCamera;
             ownCollider = playerCollider;
@@ -277,29 +280,6 @@ namespace Fungiiiii.Capture
             ShowPhase();
         }
 
-        private void Awake()
-        {
-            primaryAction = new InputAction("NetPrimary", InputActionType.Button);
-            primaryAction.AddBinding("<Mouse>/leftButton");
-            primaryAction.AddBinding("<Gamepad>/rightTrigger");
-
-            secondaryAction = new InputAction("NetSecondary", InputActionType.Button);
-            secondaryAction.AddBinding("<Mouse>/rightButton");
-            secondaryAction.AddBinding("<Gamepad>/leftTrigger");
-        }
-
-        private void OnEnable()
-        {
-            primaryAction?.Enable();
-            secondaryAction?.Enable();
-        }
-
-        private void OnDisable()
-        {
-            primaryAction?.Disable();
-            secondaryAction?.Disable();
-        }
-
         private void OnDestroy()
         {
             if (Cycle != null)
@@ -308,11 +288,6 @@ namespace Fungiiiii.Capture
                 Cycle.CaptureFailed -= HandleCaptureFailed;
                 Cycle.Returned -= HandleReturned;
             }
-
-            primaryAction?.Dispose();
-            primaryAction = null;
-            secondaryAction?.Dispose();
-            secondaryAction = null;
 
             DestroyMaterial(netMaterial);
             DestroyMaterial(dotMaterial);

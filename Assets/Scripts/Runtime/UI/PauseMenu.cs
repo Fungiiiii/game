@@ -37,9 +37,12 @@ namespace Fungiiiii.UI
         public PlankButton QuitButton { get; private set; }
 
         /// <param name="homeScene">Path of the scene Home loads. It has to be in the build settings.</param>
-        public void Initialize(Font font, string homeScene)
+        /// <param name="toggle">Pauses and resumes: Escape, or Start on a gamepad.</param>
+        public void Initialize(Font font, string homeScene, InputAction toggle)
         {
             homeScenePath = homeScene;
+            pauseAction = toggle;
+            pauseAction.performed += OnPausePerformed;
 
             var canvas = WoodMenu.CreateCanvas("Pause Menu Canvas", CanvasSortingOrder);
             canvasObject = canvas.gameObject;
@@ -96,28 +99,12 @@ namespace Fungiiiii.UI
             }
         }
 
-        private void Awake()
-        {
-            pauseAction = new InputAction("Pause", InputActionType.Button);
-            pauseAction.AddBinding("<Keyboard>/escape");
-            pauseAction.AddBinding("<Gamepad>/start");
-            pauseAction.performed += OnPausePerformed;
-        }
-
-        private void OnEnable()
-        {
-            pauseAction.Enable();
-        }
-
-        private void OnDisable()
-        {
-            pauseAction.Disable();
-        }
-
         private void OnDestroy()
         {
-            pauseAction.performed -= OnPausePerformed;
-            pauseAction.Dispose();
+            if (pauseAction != null)
+            {
+                pauseAction.performed -= OnPausePerformed;
+            }
 
             // Leaving the scene while paused must not leave time stopped for the next one.
             if (IsPaused)

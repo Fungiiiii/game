@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Fungiiiii.Controls;
 using Fungiiiii.Runtime.Player;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -75,6 +76,7 @@ namespace Fungiiiii.Capture
         private InputAction resetAction;
         private GameObject player;
         private CharacterController playerController;
+        private PlayerControls controls;
         private PrototypeFirstPersonCamera firstPersonCamera;
 
         public IReadOnlyList<NetDemoMushroom> Mushrooms => mushrooms;
@@ -175,6 +177,7 @@ namespace Fungiiiii.Capture
             player = Instantiate(playerPrefab, PlayerSpawnPosition, Quaternion.Euler(0f, SpawnYawDegrees, 0f));
             player.name = "Player";
             playerController = player.GetComponent<CharacterController>();
+            controls = player.GetComponent<PlayerControls>();
 
             // First person: the body is not drawn for its own camera, but still casts its shadow.
             foreach (var bodyRenderer in player.GetComponentsInChildren<Renderer>())
@@ -190,7 +193,7 @@ namespace Fungiiiii.Capture
             }
 
             firstPersonCamera = viewCamera.gameObject.AddComponent<PrototypeFirstPersonCamera>();
-            firstPersonCamera.Initialize(player.GetComponent<PlayerMotor>(), SpawnYawDegrees);
+            firstPersonCamera.Initialize(player.GetComponent<PlayerMotor>(), SpawnYawDegrees, controls.Player.Look, controls.Player.UsePrimary);
         }
 
         private void SpawnMushrooms()
@@ -227,7 +230,7 @@ namespace Fungiiiii.Capture
             var random = randomSeed != 0 ? new System.Random(randomSeed) : new System.Random();
 
             Thrower = player.AddComponent<NetThrower>();
-            Thrower.Initialize(settings, firstPersonCamera.Camera, playerController, mushrooms, random);
+            Thrower.Initialize(settings, firstPersonCamera.Camera, playerController, mushrooms, random, controls.Player.UsePrimary, controls.Player.UseSecondary);
         }
 
         private void OnResetPerformed(InputAction.CallbackContext _)
