@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Fungiiiii.Demo
 {
     /// <summary>Something the interact control acts on: a resource to gather, the Champimaison hole.</summary>
-    internal interface IDemoInteractable
+    internal interface IInteractable
     {
         /// <summary>Where it is, how close the player must be, and whether it can be used now.</summary>
         InteractionCandidate Candidate { get; }

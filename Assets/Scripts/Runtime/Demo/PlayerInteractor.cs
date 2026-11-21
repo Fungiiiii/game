@@ -23,10 +23,10 @@ namespace Fungiiiii.Demo
 
         private Camera view;
         private PlayerInventory inventory;
-        private IReadOnlyList<IDemoInteractable> interactables;
+        private IReadOnlyList<IInteractable> interactables;
         private float maxAimAngleDegrees;
         private PlayerControls controls;
-        private IDemoInteractable targeted;
+        private IInteractable targeted;
         private KeyPrompt prompt;
         private InputDevice labelDevice;
         private string keyLabel;
@@ -35,12 +35,12 @@ namespace Fungiiiii.Demo
         public KeyPrompt Prompt => prompt;
 
         /// <summary>What the player aims at, or null.</summary>
-        public IDemoInteractable Targeted => targeted;
+        public IInteractable Targeted => targeted;
 
         public void Initialize(
             Camera viewCamera,
             PlayerInventory playerInventory,
-            IReadOnlyList<IDemoInteractable> usable,
+            IReadOnlyList<IInteractable> usable,
             float aimConeDegrees,
             Font promptFont,
             PlayerControls playerControls)
@@ -101,16 +101,24 @@ namespace Fungiiiii.Demo
             ShowPrompt();
         }
 
-        private void SetTarget(IDemoInteractable next)
+        private void SetTarget(IInteractable next)
         {
             if (next == targeted)
             {
                 return;
             }
 
+            var previous = targeted;
             targeted?.SetTargeted(false);
             targeted = next;
             targeted?.SetTargeted(true);
+
+            // From one target straight to another, the key pops in again over the new one.
+            if (previous != null && next != null && prompt != null)
+            {
+                prompt.PopIn();
+            }
+
             ShowPrompt();
         }
 

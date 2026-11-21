@@ -10,7 +10,7 @@ namespace Fungiiiii.Demo
     /// a stick for wood. It appears on a spot of its <see cref="GatherableField"/>, shows an
     /// outline so the player sees it can be taken, and disappears once gathered.
     /// </summary>
-    internal sealed class Gatherable : MonoBehaviour, IDemoInteractable
+    internal sealed class Gatherable : MonoBehaviour, IInteractable
     {
         private const float AimHeight = 0.3f;
 
@@ -33,22 +33,28 @@ namespace Fungiiiii.Demo
         public int Spot { get; private set; }
 
         public InteractionCandidate Candidate =>
-            new InteractionCandidate(transform.position + Vector3.up * AimHeight, reach, IsAvailable);
+            new InteractionCandidate(transform.position + Vector3.up * AimHeight, reach, IsAvailable, ModelBounds());
 
         public Vector3 PromptPoint
         {
             get
             {
-                var top = transform.position.y;
-                foreach (var modelRenderer in renderers)
-                {
-                    top = Mathf.Max(top, modelRenderer.bounds.max.y);
-                }
-
                 var point = transform.position;
-                point.y = top + PromptAboveTop;
+                point.y = Mathf.Max(point.y, ModelBounds().max.y) + PromptAboveTop;
                 return point;
             }
+        }
+
+        /// <summary>The box around every renderer of the model, outline included, in world space.</summary>
+        private Bounds ModelBounds()
+        {
+            var bounds = new Bounds(transform.position, Vector3.zero);
+            foreach (var modelRenderer in renderers)
+            {
+                bounds.Encapsulate(modelRenderer.bounds);
+            }
+
+            return bounds;
         }
 
         public void Initialize(ItemDefinition gatheredItem, ItemOutline itemOutline, float interactionReach)

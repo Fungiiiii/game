@@ -75,7 +75,7 @@ La démo utilise la [Forêt mystique](./12487v2byt9-mystic-forest.md) **sans la 
 | `FungalHole.cs` | Le trou et les filaments du réseau, en placeholders. |
 | `DemoGroundRing.cs` | Anneau au sol qui suit le relief. |
 | `DemoItems.cs` | Les objets de la démo : identifiants et couleurs d'inventaire (palette du projet). |
-| `IDemoInteractable.cs` | Ce que E peut utiliser. |
+| `IInteractable.cs` | Ce que E peut utiliser. |
 
 **Code existant modifié :**
 

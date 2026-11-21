@@ -7,10 +7,23 @@ namespace Fungiiiii.Gathering
     public readonly struct InteractionCandidate
     {
         public InteractionCandidate(Vector3 point, float reach, bool isEnabled)
+            : this(point, reach, isEnabled, default, hasBounds: false)
+        {
+        }
+
+        /// <param name="bounds">The box around its model, in world space: the crosshair on it targets it first.</param>
+        public InteractionCandidate(Vector3 point, float reach, bool isEnabled, Bounds bounds)
+            : this(point, reach, isEnabled, bounds, hasBounds: true)
+        {
+        }
+
+        private InteractionCandidate(Vector3 point, float reach, bool isEnabled, Bounds bounds, bool hasBounds)
         {
             Point = point;
             Reach = reach;
             IsEnabled = isEnabled;
+            Bounds = bounds;
+            HasBounds = hasBounds;
         }
 
         /// <summary>The point the player has to look at.</summary>
@@ -20,11 +33,18 @@ namespace Fungiiiii.Gathering
         public float Reach { get; }
 
         public bool IsEnabled { get; }
+
+        /// <summary>The box around its model, when it has one.</summary>
+        public Bounds Bounds { get; }
+
+        public bool HasBounds { get; }
     }
 
     /// <summary>
-    /// Picks what the player is aiming at, close by: the enabled candidate within reach
-    /// whose point is nearest the centre of the view, inside a cone around it.
+    /// Picks what the player is aiming at, close by, among the enabled candidates within
+    /// reach. What is right under the crosshair wins, the nearest first: the stick looked
+    /// at beats the mushroom at the player's feet. Otherwise it is the candidate whose
+    /// point is nearest the centre of the view, inside a cone around it.
     /// </summary>
     public static class InteractionTargeting
     {
@@ -40,29 +60,32 @@ namespace Fungiiiii.Gathering
             IReadOnlyList<InteractionCandidate> candidates,
             float maxAngleDegrees)
         {
+            var crosshair = new Ray(eye, forward);
+            var underCrosshair = None;
+            var nearestHit = float.PositiveInfinity;
             var best = None;
             var bestAngle = maxAngleDegrees;
 
             for (var index = 0; index < candidates.Count; index++)
             {
                 var candidate = candidates[index];
-                if (!candidate.IsEnabled)
+                if (!candidate.IsEnabled || !IsWithinReach(eye, candidate))
                 {
                     continue;
                 }
 
-                // Reach is measured on the ground: looking down at your feet is not further away.
-                var flat = candidate.Point - eye;
-                flat.y = 0f;
-                if (flat.magnitude > candidate.Reach)
+                if (candidate.HasBounds && candidate.Bounds.IntersectRay(crosshair, out var hit) && hit < nearestHit)
                 {
-                    continue;
+                    underCrosshair = index;
+                    nearestHit = hit;
                 }
 
                 var toPoint = candidate.Point - eye;
                 if (toPoint.sqrMagnitude <= 0f)
                 {
-                    return index;
+                    best = index;
+                    bestAngle = 0f;
+                    continue;
                 }
 
                 var angle = Vector3.Angle(forward, toPoint);
@@ -73,7 +96,15 @@ namespace Fungiiiii.Gathering
                 }
             }
 
-            return best;
+            return underCrosshair != None ? underCrosshair : best;
+        }
+
+        // Reach is measured on the ground: looking down at your feet is not further away.
+        private static bool IsWithinReach(Vector3 eye, InteractionCandidate candidate)
+        {
+            var flat = candidate.Point - eye;
+            flat.y = 0f;
+            return flat.magnitude <= candidate.Reach;
         }
     }
 }

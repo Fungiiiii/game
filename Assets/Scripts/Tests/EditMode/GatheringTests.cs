@@ -134,6 +134,49 @@ namespace Fungiiiii.Tests.EditMode
         }
 
         [Test]
+        public void Targeting_WhatIsUnderTheCrosshair_WinsOverAPointNearerTheCentre()
+        {
+            // A stick lying across the view, its middle off to the right, and a mushroom
+            // whose top is nearer the centre of the view but not under the crosshair.
+            var eye = new Vector3(0f, 1.6f, 0f);
+            var candidates = new[]
+            {
+                new InteractionCandidate(new Vector3(0.25f, 0.3f, 1f), 2f, true, new Bounds(new Vector3(0.25f, 0.15f, 1f), new Vector3(0.2f, 0.3f, 0.2f))),
+                new InteractionCandidate(new Vector3(0.8f, 0.05f, 1.5f), 2f, true, new Bounds(new Vector3(0.8f, 0.05f, 1.5f), new Vector3(1.8f, 0.1f, 0.1f))),
+            };
+            var atTheStick = (new Vector3(0f, 0.05f, 1.5f) - eye).normalized;
+
+            Assert.That(InteractionTargeting.Pick(eye, atTheStick, candidates, 25f), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Targeting_OfTwoThingsUnderTheCrosshair_TheNearerWins()
+        {
+            var eye = new Vector3(0f, 1.6f, 0f);
+            var candidates = new[]
+            {
+                new InteractionCandidate(new Vector3(0f, 0.3f, 1.8f), 2f, true, new Bounds(new Vector3(0f, 0.3f, 1.8f), Vector3.one * 0.4f)),
+                new InteractionCandidate(new Vector3(0f, 0.6f, 1f), 2f, true, new Bounds(new Vector3(0f, 0.6f, 1f), Vector3.one * 0.4f)),
+            };
+            var forward = (new Vector3(0f, 0.3f, 1.8f) - eye).normalized;
+
+            Assert.That(InteractionTargeting.Pick(eye, forward, candidates, 25f), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Targeting_WhatIsUnderTheCrosshair_StillHasToBeWithinReach()
+        {
+            var eye = new Vector3(0f, 1.6f, 0f);
+            var candidates = new[]
+            {
+                new InteractionCandidate(new Vector3(0f, 0.3f, 2.5f), 2f, true, new Bounds(new Vector3(0f, 0.3f, 2.5f), Vector3.one * 0.4f)),
+            };
+            var forward = (candidates[0].Point - eye).normalized;
+
+            Assert.That(InteractionTargeting.Pick(eye, forward, candidates, 25f), Is.EqualTo(InteractionTargeting.None));
+        }
+
+        [Test]
         public void Targeting_IgnoresDisabledCandidates()
         {
             var eye = new Vector3(0f, 1.6f, 0f);
