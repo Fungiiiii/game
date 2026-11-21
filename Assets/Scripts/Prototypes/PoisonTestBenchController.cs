@@ -1,8 +1,8 @@
+using Fungiiiii.Survival;
 using Fungiiiii.UI;
 using UnityEngine;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
 using UnityEngine.InputSystem;
-using Fungiiiii.Survival;
 #endif
 
 namespace Fungiiiii.Prototypes

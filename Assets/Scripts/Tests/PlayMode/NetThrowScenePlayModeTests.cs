@@ -1,13 +1,13 @@
 using System.Collections;
 using Fungiiiii.Capture;
+using Fungiiiii.Prototypes;
+using Fungiiiii.Runtime.Player;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 #if UNITY_EDITOR
 using UnityEditor.SceneManagement;
-using Fungiiiii.Prototypes;
-using Fungiiiii.Runtime.Player;
 #endif
 
 namespace Fungiiiii.Tests.PlayMode

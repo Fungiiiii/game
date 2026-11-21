@@ -2,7 +2,10 @@ using System.Collections;
 using System.Linq;
 using Fungiiiii.Capture;
 using Fungiiiii.Controls;
+using Fungiiiii.Game;
+using Fungiiiii.Gathering;
 using Fungiiiii.Inventory;
+using Fungiiiii.Outlines;
 using Fungiiiii.Runtime.Player;
 using Fungiiiii.Runtime.World;
 using Fungiiiii.UI;
@@ -13,9 +16,6 @@ using UnityEngine.TestTools;
 using UnityEngine.TestTools.Utils;
 #if UNITY_EDITOR
 using UnityEditor.SceneManagement;
-using Fungiiiii.Game;
-using Fungiiiii.Gathering;
-using Fungiiiii.Outlines;
 #endif
 
 namespace Fungiiiii.Tests.PlayMode

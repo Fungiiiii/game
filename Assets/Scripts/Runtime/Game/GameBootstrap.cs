@@ -5,8 +5,10 @@ using Fungiiiii.Champimaison;
 using Fungiiiii.Companions;
 using Fungiiiii.Controls;
 using Fungiiiii.Gathering;
+using Fungiiiii.Interaction;
 using Fungiiiii.Inventory;
 using Fungiiiii.Items;
+using Fungiiiii.Outlines;
 using Fungiiiii.Runtime.Champimaison;
 using Fungiiiii.Runtime.Player;
 using Fungiiiii.Runtime.World;
@@ -18,8 +20,6 @@ using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 #if UNITY_EDITOR
 using UnityEditor.SceneManagement;
-using Fungiiiii.Interaction;
-using Fungiiiii.Outlines;
 #endif
 
 namespace Fungiiiii.Game

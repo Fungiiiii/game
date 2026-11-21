@@ -1,5 +1,6 @@
 using System.Collections;
 using Fungiiiii.Inventory;
+using Fungiiiii.Prototypes;
 using Fungiiiii.UI;
 using NUnit.Framework;
 using UnityEngine;
@@ -9,7 +10,6 @@ using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 #if UNITY_EDITOR
 using UnityEditor.SceneManagement;
-using Fungiiiii.Prototypes;
 #endif
 
 namespace Fungiiiii.Tests.PlayMode
