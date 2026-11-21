@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Fungiiiii.Inventory;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -12,7 +13,7 @@ namespace Fungiiiii.UI
     /// gamepad shoulders change it, and the selected plank gets lighter and rises.
     /// What the selected slot holds is what the player has in hand.
     ///
-    /// The controls are built in code, like Dodge in PlayerInputReader.
+    /// The controls are given by the owner, from the player's controls.
     /// </summary>
     internal sealed class Hotbar : MonoBehaviour
     {
@@ -47,7 +48,7 @@ namespace Fungiiiii.UI
         private GameObject canvasObject;
         private InputAction nextAction;
         private InputAction previousAction;
-        private InputAction[] slotActions;
+        private IReadOnlyList<InputAction> slotActions;
 
         /// <summary>Raised when another slot is selected.</summary>
         public event Action SelectionChanged;
@@ -68,8 +69,21 @@ namespace Fungiiiii.UI
         /// <param name="slots">The inventory whose slots the bar shows.</param>
         /// <param name="first">Index of the bar's first slot in the inventory.</param>
         /// <param name="count">Number of slots in the bar.</param>
-        public void Initialize(PlayerInventory slots, int first, int count, Font font)
+        /// <param name="next">Selects the next slot, the last going round to the first.</param>
+        /// <param name="previous">Selects the previous slot.</param>
+        /// <param name="slotKeys">Select a slot directly: the first key the first slot, and so on.</param>
+        public void Initialize(
+            PlayerInventory slots,
+            int first,
+            int count,
+            Font font,
+            InputAction next,
+            InputAction previous,
+            IReadOnlyList<InputAction> slotKeys)
         {
+            nextAction = next;
+            previousAction = previous;
+            slotActions = slotKeys;
             inventory = slots;
             firstSlot = first;
 
@@ -115,57 +129,11 @@ namespace Fungiiiii.UI
             canvasObject.SetActive(visible);
         }
 
-        private void Awake()
-        {
-            // Wheel down goes to the next slot, as in most games with a quick bar.
-            nextAction = new InputAction("HotbarNext", InputActionType.Button);
-            nextAction.AddBinding("<Mouse>/scroll/down");
-            nextAction.AddBinding("<Gamepad>/rightShoulder");
-
-            previousAction = new InputAction("HotbarPrevious", InputActionType.Button);
-            previousAction.AddBinding("<Mouse>/scroll/up");
-            previousAction.AddBinding("<Gamepad>/leftShoulder");
-
-            slotActions = new InputAction[3];
-            for (var index = 0; index < slotActions.Length; index++)
-            {
-                slotActions[index] = new InputAction($"HotbarSlot{index + 1}", InputActionType.Button);
-                slotActions[index].AddBinding($"<Keyboard>/{index + 1}");
-            }
-        }
-
-        private void OnEnable()
-        {
-            nextAction.Enable();
-            previousAction.Enable();
-            foreach (var action in slotActions)
-            {
-                action.Enable();
-            }
-        }
-
-        private void OnDisable()
-        {
-            nextAction.Disable();
-            previousAction.Disable();
-            foreach (var action in slotActions)
-            {
-                action.Disable();
-            }
-        }
-
         private void OnDestroy()
         {
             if (inventory != null)
             {
                 inventory.Changed -= Refresh;
-            }
-
-            nextAction.Dispose();
-            previousAction.Dispose();
-            foreach (var action in slotActions)
-            {
-                action.Dispose();
             }
         }
 
@@ -198,7 +166,7 @@ namespace Fungiiiii.UI
                 Select((Selected + SlotCount - 1) % SlotCount);
             }
 
-            for (var index = 0; index < slotActions.Length && index < SlotCount; index++)
+            for (var index = 0; index < slotActions.Count && index < SlotCount; index++)
             {
                 if (slotActions[index].WasPressedThisFrame())
                 {

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Fungiiiii.Capture;
 using Fungiiiii.Champimaison;
+using Fungiiiii.Controls;
 using Fungiiiii.Gathering;
 using Fungiiiii.Inventory;
 using Fungiiiii.Runtime.Champimaison;
@@ -290,6 +291,7 @@ namespace Fungiiiii.Demo
         private readonly List<GatherableSpot> mushroomSpots = new List<GatherableSpot>();
         private readonly List<GatherableSpot> stickSpots = new List<GatherableSpot>();
 
+        private PlayerControls controls;
         private InputAction inventoryAction;
         private InputAction resetAction;
         private System.Random random;
@@ -351,38 +353,13 @@ namespace Fungiiiii.Demo
         /// <summary>The inventory item a mushroom becomes once caught.</summary>
         public InventoryItemDefinition ItemFor(NetDemoMushroom mushroom) => mushroomItems[mushroom];
 
-        private void Awake()
-        {
-            // Inventory and reset are demo controls built in code, like Dodge in PlayerInputReader.
-            inventoryAction = new InputAction("ToggleInventory", InputActionType.Button);
-            inventoryAction.AddBinding("<Keyboard>/tab");
-            inventoryAction.AddBinding("<Gamepad>/select");
-            inventoryAction.performed += OnInventoryPerformed;
-
-            // Development shortcut, not a player-facing control.
-            resetAction = new InputAction("ResetDemoLoop", InputActionType.Button);
-            resetAction.AddBinding("<Keyboard>/r");
-            resetAction.performed += OnResetPerformed;
-        }
-
-        private void OnEnable()
-        {
-            inventoryAction.Enable();
-            resetAction.Enable();
-        }
-
-        private void OnDisable()
-        {
-            inventoryAction.Disable();
-            resetAction.Disable();
-        }
-
         private void OnDestroy()
         {
-            inventoryAction.performed -= OnInventoryPerformed;
-            resetAction.performed -= OnResetPerformed;
-            inventoryAction.Dispose();
-            resetAction.Dispose();
+            if (inventoryAction != null)
+            {
+                inventoryAction.performed -= OnInventoryPerformed;
+                resetAction.performed -= OnResetPerformed;
+            }
 
             if (Thrower != null)
             {
@@ -470,11 +447,17 @@ namespace Fungiiiii.Demo
             BuildHotbar();
 
             interactor = player.AddComponent<PlayerInteractor>();
-            interactor.Initialize(firstPersonCamera.Camera, Inventory, interactables, AimConeDegrees, menuFont);
+            interactor.Initialize(firstPersonCamera.Camera, Inventory, interactables, AimConeDegrees, menuFont, controls);
 
             pauseMenu = new GameObject("Pause Menu").AddComponent<PauseMenu>();
-            pauseMenu.Initialize(menuFont, mainMenuScenePath);
+            pauseMenu.Initialize(menuFont, mainMenuScenePath, controls.Screens.Menu);
             pauseMenu.PausedChanged += HandlePausedChanged;
+
+            inventoryAction = controls.Screens.Inventory;
+            inventoryAction.performed += OnInventoryPerformed;
+            // Development shortcut, not a player-facing control.
+            resetAction = controls.Player.ResetDemo;
+            resetAction.performed += OnResetPerformed;
 
             IsReady = true;
         }
@@ -528,6 +511,7 @@ namespace Fungiiiii.Demo
             player = Instantiate(playerPrefab, spawnPosition, Quaternion.Euler(0f, spawnYaw, 0f));
             player.name = "Player";
             playerController = player.GetComponent<CharacterController>();
+            controls = player.GetComponent<PlayerControls>();
 
             // First person: the body is not drawn for its own camera, but still casts its shadow.
             foreach (var bodyRenderer in player.GetComponentsInChildren<Renderer>())
@@ -536,7 +520,7 @@ namespace Fungiiiii.Demo
             }
 
             firstPersonCamera = forestCamera.gameObject.AddComponent<PrototypeFirstPersonCamera>();
-            firstPersonCamera.Initialize(player.GetComponent<PlayerMotor>(), spawnYaw);
+            firstPersonCamera.Initialize(player.GetComponent<PlayerMotor>(), spawnYaw, controls.Player.Look, controls.Player.UsePrimary);
         }
 
         private void BuildHudAndInventory()
@@ -575,7 +559,15 @@ namespace Fungiiiii.Demo
         private void BuildHotbar()
         {
             hotbar = new GameObject("Hotbar").AddComponent<Hotbar>();
-            hotbar.Initialize(Inventory, InventoryDemoController.MainSlotCount, InventoryDemoController.HotbarSlotCount, menuFont);
+            var actions = controls.Player;
+            hotbar.Initialize(
+                Inventory,
+                InventoryDemoController.MainSlotCount,
+                InventoryDemoController.HotbarSlotCount,
+                menuFont,
+                actions.HotbarNext,
+                actions.HotbarPrevious,
+                new[] { actions.HotbarSlot1, actions.HotbarSlot2, actions.HotbarSlot3 });
             hotbar.SelectionChanged += UpdateItemInHand;
             Inventory.Changed += UpdateItemInHand;
             UpdateItemInHand();
@@ -856,7 +848,14 @@ namespace Fungiiiii.Demo
                 NetCaptureRates.Default);
 
             Thrower = player.AddComponent<NetThrower>();
-            Thrower.Initialize(settings, firstPersonCamera.Camera, playerController, mushrooms, new System.Random(random.Next()));
+            Thrower.Initialize(
+                settings,
+                firstPersonCamera.Camera,
+                playerController,
+                mushrooms,
+                new System.Random(random.Next()),
+                controls.Player.UsePrimary,
+                controls.Player.UseSecondary);
             Thrower.CatchReturned += HandleCatchReturned;
 
             targetOutline = new GameObject("Net Target Outline").AddComponent<NetTargetOutline>();
@@ -901,6 +900,7 @@ namespace Fungiiiii.Demo
         /// <summary>The view, the net, the quick bar and the interact control. Off, the pointer is free for a menu.</summary>
         private void SetGameplayInput(bool enabled)
         {
+            controls.SetMenuOpen(!enabled);
             firstPersonCamera.enabled = enabled;
             Thrower.ThrowInputEnabled = enabled;
             hotbar.InputEnabled = enabled;

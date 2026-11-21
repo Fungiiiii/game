@@ -10,7 +10,7 @@ namespace Fungiiiii.Capture
     /// so that forward follows the view.
     ///
     /// Not the game's camera: the definitive first-person camera belongs to the player
-    /// movement ticket. The Look action is built in code, like Dodge in PlayerInputReader.
+    /// movement ticket. Its actions come from the player's controls.
     /// </summary>
     [RequireComponent(typeof(Camera))]
     [DisallowMultipleComponent]
@@ -26,6 +26,7 @@ namespace Fungiiiii.Capture
         private const float EyeDepthBelowTop = 0.25f;
 
         private InputAction lookAction;
+        private InputAction cursorCaptureAction;
         private PlayerMotor motor;
         private CharacterController characterController;
         private float yaw;
@@ -36,8 +37,12 @@ namespace Fungiiiii.Capture
         /// <summary>Multiplies how fast the view turns: the net's aim slows it as it narrows the view.</summary>
         public float LookScale { get; set; } = 1f;
 
-        public void Initialize(PlayerMotor playerMotor, float initialYawDegrees)
+        /// <param name="look">Turns the view.</param>
+        /// <param name="cursorCapture">Takes the cursor back after Escape released it in the Editor.</param>
+        public void Initialize(PlayerMotor playerMotor, float initialYawDegrees, InputAction look, InputAction cursorCapture)
         {
+            lookAction = look;
+            cursorCaptureAction = cursorCapture;
             motor = playerMotor;
             characterController = playerMotor.GetComponent<CharacterController>();
             yaw = initialYawDegrees;
@@ -57,37 +62,29 @@ namespace Fungiiiii.Capture
         {
             Camera = GetComponent<Camera>();
             Camera.nearClipPlane = 0.05f;
-
-            lookAction = new InputAction("Look", InputActionType.Value, expectedControlType: "Vector2");
-            lookAction.AddBinding("<Mouse>/delta");
-            lookAction.AddBinding("<Gamepad>/rightStick");
         }
 
         private void OnEnable()
         {
-            lookAction?.Enable();
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
 
         private void OnDisable()
         {
-            lookAction?.Disable();
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
 
-        private void OnDestroy()
-        {
-            lookAction?.Dispose();
-            lookAction = null;
-        }
-
         private void Update()
         {
+            if (lookAction == null)
+            {
+                return;
+            }
+
             // Escape releases the cursor in the Editor: a click takes it back.
-            var mouse = Mouse.current;
-            if (mouse != null && mouse.leftButton.wasPressedThisFrame && Cursor.lockState != CursorLockMode.Locked)
+            if (cursorCaptureAction.WasPressedThisFrame() && Cursor.lockState != CursorLockMode.Locked)
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;

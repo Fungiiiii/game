@@ -1,3 +1,4 @@
+using Fungiiiii.Controls;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -8,8 +9,8 @@ namespace Fungiiiii.Runtime.Player
     ///
     /// Movement is owner-authoritative: only the owner reads input and runs the motor,
     /// and the NetworkTransform components replicate the result. Every other copy of
-    /// the player is driven by replication alone, so its input reader and motor are
-    /// switched off; left on, they would read this machine's keyboard and fight the
+    /// the player is driven by replication alone, so its controls, input reader and motor
+    /// are switched off; left on, they would read this machine's keyboard and fight the
     /// replicated position.
     /// </summary>
     [RequireComponent(typeof(PlayerMotor))]
@@ -51,6 +52,7 @@ namespace Fungiiiii.Runtime.Player
 
             motor.enabled = isLocalPlayer;
             inputReader.enabled = isLocalPlayer;
+            GetComponent<PlayerControls>().enabled = isLocalPlayer;
             Tint(isLocalPlayer ? localPlayerColour : remotePlayerColour);
 
             if (isLocalPlayer)

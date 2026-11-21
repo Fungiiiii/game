@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using Fungiiiii.Controls;
 using Fungiiiii.Gathering;
 using Fungiiiii.Inventory;
 using Fungiiiii.UI;
@@ -11,14 +11,11 @@ namespace Fungiiiii.Demo
 {
     /// <summary>
     /// The interact control of the demo: shows what the player aims at close by, with the
-    /// key to press above it, and uses it on a press. Interact is built in code, like Dodge
-    /// in PlayerInputReader.
+    /// key to press above it, and uses it on a press. The key is that of the Interact
+    /// action on the device the player used last.
     /// </summary>
     internal sealed class PlayerInteractor : MonoBehaviour
     {
-        private const int KeyboardBinding = 0;
-        private const int GamepadBinding = 1;
-
         private const InputControlPath.HumanReadableStringOptions KeyNameOptions =
             InputControlPath.HumanReadableStringOptions.OmitDevice | InputControlPath.HumanReadableStringOptions.UseShortNames;
 
@@ -28,11 +25,9 @@ namespace Fungiiiii.Demo
         private PlayerInventory inventory;
         private IReadOnlyList<IDemoInteractable> interactables;
         private float maxAimAngleDegrees;
-        private InputAction interactAction;
+        private PlayerControls controls;
         private IDemoInteractable targeted;
         private KeyPrompt prompt;
-        private IDisposable buttonWatch;
-        private InputDevice lastDevice;
         private InputDevice labelDevice;
         private string keyLabel;
 
@@ -47,8 +42,10 @@ namespace Fungiiiii.Demo
             PlayerInventory playerInventory,
             IReadOnlyList<IDemoInteractable> usable,
             float aimConeDegrees,
-            Font promptFont)
+            Font promptFont,
+            PlayerControls playerControls)
         {
+            controls = playerControls;
             view = viewCamera;
             inventory = playerInventory;
             interactables = usable;
@@ -58,33 +55,13 @@ namespace Fungiiiii.Demo
             prompt.Initialize(promptFont);
         }
 
-        private void Awake()
-        {
-            interactAction = new InputAction("Interact", InputActionType.Button);
-            interactAction.AddBinding("<Keyboard>/e");
-            interactAction.AddBinding("<Gamepad>/buttonNorth");
-
-            // The key shown is that of the device used last: keyboard and mouse, or a pad.
-            buttonWatch = InputSystem.onAnyButtonPress.Call(control => lastDevice = control.device);
-        }
-
-        private void OnEnable()
-        {
-            interactAction?.Enable();
-        }
-
         private void OnDisable()
         {
-            interactAction?.Disable();
             SetTarget(null);
         }
 
         private void OnDestroy()
         {
-            interactAction?.Dispose();
-            interactAction = null;
-            buttonWatch?.Dispose();
-
             if (prompt != null)
             {
                 Destroy(prompt.gameObject);
@@ -93,7 +70,7 @@ namespace Fungiiiii.Demo
 
         private void Update()
         {
-            if (view == null || interactables == null)
+            if (view == null || interactables == null || controls == null)
             {
                 return;
             }
@@ -113,7 +90,7 @@ namespace Fungiiiii.Demo
 
             SetTarget(index == InteractionTargeting.None ? null : interactables[index]);
 
-            if (targeted != null && interactAction.WasPressedThisFrame())
+            if (targeted != null && controls.Player.Interact.WasPressedThisFrame())
             {
                 targeted.Interact(inventory);
             }
@@ -164,15 +141,20 @@ namespace Fungiiiii.Demo
         /// <summary>The name of the interact key on the device used last, worked out again only when that device changes.</summary>
         private string KeyLabel()
         {
-            if (keyLabel != null && labelDevice == lastDevice)
+            var device = controls.CurrentDevice;
+            if (keyLabel != null && labelDevice == device)
             {
                 return keyLabel;
             }
 
-            labelDevice = lastDevice;
-            var onGamepad = lastDevice is Gamepad;
-            var path = interactAction.bindings[onGamepad ? GamepadBinding : KeyboardBinding].effectivePath;
-            keyLabel = ShortKeyName(InputControlPath.ToHumanReadableString(path, KeyNameOptions, onGamepad ? lastDevice : null));
+            labelDevice = device;
+            var interact = controls.Player.Interact;
+            var scheme = controls.CurrentScheme;
+            var index = interact.GetBindingIndex(InputBinding.MaskByGroup(scheme.bindingGroup));
+            var onGamepad = device is Gamepad;
+            keyLabel = index < 0
+                ? string.Empty
+                : ShortKeyName(InputControlPath.ToHumanReadableString(interact.bindings[index].effectivePath, KeyNameOptions, onGamepad ? device : null));
             return keyLabel;
         }
 

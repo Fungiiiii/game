@@ -152,6 +152,7 @@ GameObject:
   - component: {fileID: 7122779636474258140}
   - component: {fileID: 197616014687580458}
   - component: {fileID: 5656921746844737173}
+  - component: {fileID: 5337675983456430014}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -332,3 +333,15 @@ MonoBehaviour:
   remotePlayerColour: {r: 0.25, g: 0.55, b: 0.95, a: 1}
   firstSpawnPosition: {x: 0, y: 1.2, z: 0}
   spawnSpacing: 2
+--- !u!114 &5337675983456430014
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3378215888684738756}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75aa87cc747f453aa102e7c0d0389b0c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Controls.PlayerControls
