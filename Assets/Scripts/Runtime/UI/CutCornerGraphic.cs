@@ -9,6 +9,7 @@ namespace Fungiiiii.UI
     /// facet over its right part, leaning like a saw cut. The inventory's panel, slots and
     /// key pills are all drawn with it.
     /// </summary>
+    [RequireComponent(typeof(CanvasRenderer))]
     internal sealed class CutCornerGraphic : MaskableGraphic
     {
         private float corner = 10f;
