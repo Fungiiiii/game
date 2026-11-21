@@ -99,6 +99,7 @@
 - [ ] **Dans l'inventaire, une plaquette en bois donne le nom de l'objet de la case visée** (souris ou manette), juste en bas à droite de la case. Rien sur une case vide, ni quand un objet est en main (il cache la case). `ItemNamePlate`, dans le prefab `Inventory`.
 - [ ] **Le fil des objets ramassés passe en bas à gauche** (36 px des bords), lignes alignées à gauche : au-dessus de la barre rapide, c'est la place du nom de l'objet en main, et le bas droit est aux aides de touches. C'est le placement le plus courant dans les jeux.
 - [ ] **Le vent est moins fort** (Hugo, 21/11) : à l'accueil, la boucle de la lisière passe de 0,6 à 0,24 (−60 %) ; au spawn, le fond de lisière (`southVolume` de `Audio/Beds`, scène `MysticForest`) passe de 0,15 à 0,12 (−20 %). Les rafales ne changent pas.
+- [ ] **Le contour ne trace plus de traits sur le modèle** (Hugo, 21/11, sur le chapeau troué du Spongeus) : le contour est la face arrière du modèle poussée de quelques pixels, et celle des trous, juste sous la surface, passait au travers. Le shader `ItemOutline` marque d'abord la silhouette du modèle dans le stencil, ne dessine le contour qu'en dehors, puis efface sa marque : un objet contouré ne cache pas le contour du suivant.
 
 **Nettoyage du 21/11 (refactor, aucun comportement ne change)**
 
@@ -271,6 +272,7 @@ Lancés en batch sur le PC de Hugo (Unity 6000.3.21f1) à chaque étape.
 | 27 | Ramasser deux bâtons, puis un champignon | « +2 Bâton » puis « +1 Champignon » au-dessus de la barre rapide, qui s'effacent | ⬜ |
 | 28 | Espace, puis A à la manette ; accroupi, Espace | Saut ; pas de saut accroupi | ⬜ |
 | 29 | Clic droit maintenu, Tab | La vue s'élargit en douceur, comme au relâchement | ⬜ |
+| 30 | Viser de près un Spongeus sauvage, puis deux objets l'un devant l'autre | Contour autour de la silhouette seulement, aucun trait ni anneau sur le chapeau ; chacun garde son contour | ⬜ |
 
 ## Limitations connues
 

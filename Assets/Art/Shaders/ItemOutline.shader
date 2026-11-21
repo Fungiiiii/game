@@ -4,6 +4,13 @@
 //
 // The push follows smoothed normals stored in TEXCOORD3 (see ItemOutlineFactory): the
 // hard normals of a low poly model would split the rim at every edge.
+//
+// Only what lies outside the model's own silhouette is drawn. On a hollowed model (the
+// holes of the Spongeus' cap), the pushed back faces of a hole lie just under the surface
+// and would show through it as thin lines. So, for each object, URP draws the passes in
+// the order of its forward tags: the mask marks the model's silhouette in the stencil
+// (SRPDefaultUnlit), the outline skips what is marked (UniversalForward), and the clear
+// unmarks it (UniversalForwardOnly), so the next outlined object is not hidden by this one.
 Shader "Fungiiiii/ItemOutline"
 {
     Properties
@@ -24,28 +31,70 @@ Shader "Fungiiiii/ItemOutline"
             "IgnoreProjector" = "True"
         }
 
+        HLSLINCLUDE
+        #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+        CBUFFER_START(UnityPerMaterial)
+            half4 _Color;
+            half _Width;
+            float _FadeStart;
+            float _FadeEnd;
+        CBUFFER_END
+
+        // The model's silhouette, where it is drawn, for the mask and the clear.
+        float4 SilhouetteVert(float4 positionOS : POSITION) : SV_POSITION
+        {
+            return TransformObjectToHClip(positionOS.xyz);
+        }
+
+        half4 SilhouetteFrag() : SV_Target
+        {
+            return 0;
+        }
+        ENDHLSL
+
+        Pass
+        {
+            Name "SilhouetteMask"
+            Tags { "LightMode" = "SRPDefaultUnlit" }
+
+            Cull Off
+            ZWrite Off
+            ZTest Always
+            ColorMask 0
+            Stencil
+            {
+                Ref 128
+                WriteMask 128
+                Comp Always
+                Pass Replace
+            }
+
+            HLSLPROGRAM
+            #pragma vertex SilhouetteVert
+            #pragma fragment SilhouetteFrag
+            ENDHLSL
+        }
+
         Pass
         {
             Name "Outline"
-            Tags { "LightMode" = "SRPDefaultUnlit" }
+            Tags { "LightMode" = "UniversalForward" }
 
             Cull Front
             ZWrite Off
             ZTest LEqual
             Blend SrcAlpha OneMinusSrcAlpha
+            Stencil
+            {
+                Ref 128
+                ReadMask 128
+                Comp NotEqual
+            }
 
             HLSLPROGRAM
             #pragma vertex Vert
             #pragma fragment Frag
-
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-
-            CBUFFER_START(UnityPerMaterial)
-                half4 _Color;
-                half _Width;
-                float _FadeStart;
-                float _FadeEnd;
-            CBUFFER_END
 
             struct Attributes
             {
@@ -84,6 +133,29 @@ Shader "Fungiiiii/ItemOutline"
             {
                 return half4(_Color.rgb, _Color.a * input.alpha);
             }
+            ENDHLSL
+        }
+
+        Pass
+        {
+            Name "SilhouetteClear"
+            Tags { "LightMode" = "UniversalForwardOnly" }
+
+            Cull Off
+            ZWrite Off
+            ZTest Always
+            ColorMask 0
+            Stencil
+            {
+                Ref 0
+                WriteMask 128
+                Comp Always
+                Pass Zero
+            }
+
+            HLSLPROGRAM
+            #pragma vertex SilhouetteVert
+            #pragma fragment SilhouetteFrag
             ENDHLSL
         }
     }
