@@ -2,14 +2,14 @@ using UnityEngine;
 
 namespace Fungiiiii.UI
 {
-    /// <summary>One line of the key hints: the control, ×2 for a double click, then what it does.</summary>
+    /// <summary>One line of the key hints: the control, x2 for a double click, then what it does.</summary>
     internal sealed class HintRow : MonoBehaviour
     {
-        [Tooltip("Where the control is drawn, before the ×2.")]
+        [Tooltip("Where the control is drawn, before the x2.")]
         [SerializeField]
         private RectTransform control;
 
-        [Tooltip("The ×2 of a double click.")]
+        [Tooltip("The x2 of a double click.")]
         [SerializeField]
         private GameObject twice;
 

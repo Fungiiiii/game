@@ -14,7 +14,7 @@ namespace Fungiiiii.Editor.Playtest
     /// </summary>
     internal static class PlaytestSetup
     {
-        internal const string DemoLoopScenePath = "Assets/Scenes/Prototype/DemoLoopScene.unity";
+        internal const string GameScenePath = "Assets/Scenes/Game/Game.unity";
 
         private const string ForestScenePath = "Assets/Scenes/Biomes/MysticForest.unity";
         private const string PlayerPath = "Builds/Playtest/Fungiiiii.exe";
@@ -31,7 +31,7 @@ namespace Fungiiiii.Editor.Playtest
         private static readonly string[] BuildScenePaths =
         {
             MainMenuSceneBuilder.ScenePath,
-            DemoLoopScenePath,
+            GameScenePath,
             ForestScenePath,
         };
 
@@ -103,7 +103,6 @@ namespace Fungiiiii.Editor.Playtest
         [MenuItem("Fungiiiii/Playtest/Set Up Everything")]
         internal static void SetUpEverything()
         {
-            PlaytestLocalization.SetUp();
             MainMenuSceneBuilder.Build();
             SetBuildScenes();
             IncludePlaceholderShader();

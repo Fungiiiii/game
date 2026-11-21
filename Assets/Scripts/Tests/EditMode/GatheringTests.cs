@@ -3,6 +3,7 @@ using Fungiiiii.Gathering;
 using NUnit.Framework;
 using UnityEngine;
 using Random = System.Random;
+using Fungiiiii.Interaction;
 
 namespace Fungiiiii.Tests.EditMode
 {

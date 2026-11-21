@@ -88,7 +88,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bdf6f30a2cc368b448a09fe2d636ae1b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Demo.StaminaDriver
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Survival.StaminaDriver
 --- !u!114 &5016890492705991272
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -112,7 +112,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6baf0c6f51d56c948bcd6064a3b5f750, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Demo.PlayerInteractor
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Interaction.PlayerInteractor
   maxAimAngleDegrees: 25
 --- !u!114 &381707460519700226
 MonoBehaviour:
@@ -137,4 +137,4 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2b26c15c5d826784e88752ffe1499d34, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Demo.NetTargetOutline
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Capture.NetTargetOutline

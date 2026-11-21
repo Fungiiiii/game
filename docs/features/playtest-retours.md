@@ -90,6 +90,32 @@
 - [ ] **Saut** : Espace, ou A / ✕ à la manette, saute d'environ 1,2 m, au sol seulement et pas accroupi. Le dodge n'existe plus.
 - [ ] **Zoom** : ouvrir l'inventaire ou la pause en visant élargit la vue comme le relâchement du clic droit, sur 0,15 s, au lieu d'un coup.
 
+**Nettoyage du 21/11 (refactor, aucun comportement ne change)**
+
+Hugo : « tout ce qui est dans le playtest devrait être quelque chose de non expérimental », et les textes au bon endroit seulement.
+
+- **Les textes du joueur ne vivent que dans les tables de localisation** (`UI_fr`, `UI_en`). `PlaytestLocalization.cs`, qui les portait dans le code en français et en anglais, est supprimé, avec son menu « 1. Set Up Localization » : les tables existent, un nouveau texte s'ajoute dans la fenêtre *Localization Tables* de Unity. Les commentaires citent la clé (`hint.gather`) au lieu du texte français.
+- **Plus de « Demo » ni de « Prototype » dans le code du jeu.** Le dossier `Runtime/Demo` (espace de noms `Fungiiiii.Demo`) est réparti par domaine :
+
+| Avant | Après |
+|---|---|
+| `Demo/PlayerInteractor`, `IInteractable`, `IHoldInteractable`, `ILabelledInteractable`, `Gathering/InteractionTargeting` | `Interaction/` (`Fungiiiii.Interaction`) |
+| `Demo/ForestGathering`, `ForestResourceSpots`, `Gatherable`, `GatherableField`, `RefillingPlant(s)` | `Gathering/` |
+| `Demo/DroppedItem(s)` | `Items/` |
+| `Demo/SessionTerrain`, `Capture/Net/Demo/NetDemoPrimitives` | `World/SessionTerrain`, `World/Primitives` |
+| `Demo/Companion`, `CompanionKeeper`, `CompanionInHand` | `Companions/` |
+| `Demo/ItemOutline`, `OutlineSettings` | `Outlines/` (`Fungiiiii.Outlines`) |
+| `Demo/NetTargetOutline`, `Capture/Net/Demo/NetThrower` | `Capture/Net/` |
+| `Capture/Net/Demo/NetDemoMushroom` | `Capture/WildMushroom` |
+| `Capture/Net/Demo/PrototypeFirstPersonCamera` | `Player/FirstPersonCamera` |
+| `Demo/StaminaDriver` | `Survival/` |
+| `Demo/FungalHole`, `FungalHoleSpawner`, `DemoGroundRing` | `Champimaison/` (`GroundRing`) |
+| `Demo/DemoLoopBootstrap`, `Scenes/Prototype/DemoLoopScene.unity` | `Game/GameBootstrap` (`Fungiiiii.Game`), `Scenes/Game/Game.unity` |
+| Action `ResetDemo` (R) | `ResetGame`, toujours un raccourci de développement |
+
+- **Les bancs prototypes ont leur assembly**, `Fungiiiii.Prototypes` (`Assets/Scripts/Prototypes/`) : `MushroomCaptureDemo`, `NetThrowDemo`, `GenericPatrolDemoBootstrap`, `PlayerMovementDemoBootstrap`, `PoisonTestBenchController`, `PoisonPrototypeView`, `VitalGaugesPrototype*`, `InventoryPrototypeSeed`, `ChampimaisonPrototype` et son économie `ChampimaisonState`. Le jeu (`Fungiiiii.Runtime`) ne peut pas en dépendre ; eux s'appuient sur lui (`InternalsVisibleTo`). Leurs scènes restent dans `Scenes/Prototype/`. Rien n'est supprimé. Leurs textes affichés sont marqués `i18n-exempt` : ce sont des relevés de banc, pas le jeu.
+- Chaque fichier a été déplacé avec son `.meta` : les scènes et les prefabs gardent leurs références (GUID). Les `m_EditorClassIdentifier` des scènes et prefabs suivent les nouveaux noms.
+
 ## Hors périmètre
 
 - Les icônes des objets : chaque objet reste un carré de sa couleur (décision de Hugo, 21/11).

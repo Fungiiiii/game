@@ -548,7 +548,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8fddb952dc684ef0aeaf66c63f68bcf1, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.InventoryPrototypeSeed
+  m_EditorClassIdentifier: Fungiiiii.Prototypes::Fungiiiii.Prototypes.InventoryPrototypeSeed
   mushroomStackSize: 5
 --- !u!1 &2105432304
 GameObject:

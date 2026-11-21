@@ -7,3 +7,6 @@ using System.Runtime.CompilerServices;
 
 // The editor tooling wires internal components into the scenes it writes.
 [assembly: InternalsVisibleTo("Fungiiiii.Editor")]
+
+// The prototype benches build on the game's internal types; the game never uses theirs.
+[assembly: InternalsVisibleTo("Fungiiiii.Prototypes")]

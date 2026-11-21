@@ -163,7 +163,7 @@ namespace Fungiiiii.Capture
         }
 
         /// <summary>
-        /// Returns the prototype to its initial state for another demonstration run.
+        /// Returns it to its initial state, for a reset.
         /// </summary>
         public bool Reset()
         {

@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Fungiiiii.Capture
 {
     /// <summary>
-    /// The fixed mushroom profiles of the net prototype. PROVISIONAL: the CaptureSystem
+    /// The fixed mushroom profiles of the net. PROVISIONAL: the CaptureSystem
     /// will replace them with per-species data (MushroomData) and a real weakened state.
     /// </summary>
     public enum NetTargetProfile
@@ -16,7 +16,7 @@ namespace Fungiiiii.Capture
 
     /// <summary>
     /// PROVISIONAL capture odds for the net, from the validated design note: one rate per
-    /// prototype profile, plus a bonus when the mushroom has not noticed the player.
+    /// profile, plus a bonus when the mushroom has not noticed the player.
     /// The CaptureSystem's TryCapture will replace this table and its roll.
     /// </summary>
     [Serializable]

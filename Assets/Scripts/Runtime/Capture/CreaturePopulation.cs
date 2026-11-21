@@ -28,13 +28,13 @@ namespace Fungiiiii.Capture
         [SerializeField]
         private Rect area = new Rect(-30f, -260f, 80f, 65f);
 
-        private readonly List<NetDemoMushroom> mushrooms = new List<NetDemoMushroom>();
-        private readonly Dictionary<NetDemoMushroom, CreatureDefinition> species = new Dictionary<NetDemoMushroom, CreatureDefinition>();
+        private readonly List<WildMushroom> mushrooms = new List<WildMushroom>();
+        private readonly Dictionary<WildMushroom, CreatureDefinition> species = new Dictionary<WildMushroom, CreatureDefinition>();
 
-        public IReadOnlyList<NetDemoMushroom> Mushrooms => mushrooms;
+        public IReadOnlyList<WildMushroom> Mushrooms => mushrooms;
 
         /// <summary>The inventory item a mushroom becomes once caught.</summary>
-        public ItemDefinition ItemFor(NetDemoMushroom mushroom) => species[mushroom].CaughtItem;
+        public ItemDefinition ItemFor(WildMushroom mushroom) => species[mushroom].CaughtItem;
 
         /// <summary>What is missing for the component to work, or null when it is sound.</summary>
         public string FindProblem()
@@ -86,7 +86,7 @@ namespace Fungiiiii.Capture
             position.y = groundHeight(position);
             mushroomObject.transform.position = position;
 
-            var mushroom = mushroomObject.AddComponent<NetDemoMushroom>();
+            var mushroom = mushroomObject.AddComponent<WildMushroom>();
             mushroom.InitializeWithModel(creature.Profile, threat, area, creature.FleeSpeed, creature.Model);
             mushroom.FollowGround(groundHeight);
             mushroom.EnableWander(new MushroomWander(

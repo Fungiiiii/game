@@ -72,7 +72,7 @@ namespace Fungiiiii.Runtime.Player
 
         /// <summary>
         /// Yaw, in degrees, the move input is expressed relative to. Zero keeps movement
-        /// world relative, as the overhead demo camera never rotates; a first-person
+        /// world relative, as the overhead camera of the movement bench never rotates; a first-person
         /// camera writes its own yaw here so that forward follows the view.
         /// </summary>
         public float MovementYawDegrees { get; set; }

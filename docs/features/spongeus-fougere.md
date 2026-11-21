@@ -93,17 +93,17 @@ Trois couches, comme le reste du projet : la logique en C# pur, testée en EditM
 
 | Fichier | Rôle |
 |---|---|
-| `Runtime/Demo/Companion.cs` | Le Spongeus sorti : applique le cerveau, le pose sur le sol, le tourne, donne l'air mouillé à son chapeau (`_BaseColor` et `_Smoothness` par `MaterialPropertyBlock` sur les cases de matériau `SpongeusCap`). `IInteractable` (appui court : presser) et `IHoldInteractable` (appui long : reprendre). |
-| `Runtime/Demo/CompanionKeeper.cs` | Objet de scène « Companions » : la liste des compagnons possibles (Inspector), le compagnon sorti (un seul), sortie depuis la case sélectionnée, reprise, `Clear` pour R. Donne à la scène le comportement en main de chaque objet compagnon. |
-| `Runtime/Demo/CompanionInHand.cs` | `IHeldItem` du Spongeus en main : le clic gauche le sort ; aide « Sortir » tant qu'aucun n'est dehors. |
-| `Runtime/Demo/RefillingPlant.cs` | Sur la racine du prefab de la plante : son modèle et ce qui en goutte (références de l'Inspector). Pleine : air mouillé (`_BaseColor` et `_Smoothness` du shader de vent par `MaterialPropertyBlock`), gouttes émises, contour visible ; texte à la place de la touche (`ILabelledInteractable`), absorbable par un compagnon (`IAbsorbable`). |
-| `Runtime/Demo/RefillingPlants.cs` | Objet de scène « Refilling Plants » : quelle plante pousse dans quelle zone (Inspector : la fougère à eau dans la zone de la brume), dispersion au chargement, minuterie de toutes les plantes, `RestartAll` pour R. |
-| `Runtime/Demo/IHoldInteractable.cs`, `ILabelledInteractable.cs` | Interfaces facultatives à côté de `IInteractable` : seuls le Spongeus et la fougère les implémentent ; le bâton, le champignon et l'objet jeté ne changent pas. |
-| `Runtime/Demo/PlayerInteractor.cs` | Sur une cible qui se maintient, appui court au relâchement et appui long par `TapOrHold` ; ailleurs, à l'appui comme avant. Aides recalculées quand la cible change d'état ; texte à la place de la touche. Durées réglables sur le composant. |
+| `Runtime/Companions/Companion.cs` | Le Spongeus sorti : applique le cerveau, le pose sur le sol, le tourne, donne l'air mouillé à son chapeau (`_BaseColor` et `_Smoothness` par `MaterialPropertyBlock` sur les cases de matériau `SpongeusCap`). `IInteractable` (appui court : presser) et `IHoldInteractable` (appui long : reprendre). |
+| `Runtime/Companions/CompanionKeeper.cs` | Objet de scène « Companions » : la liste des compagnons possibles (Inspector), le compagnon sorti (un seul), sortie depuis la case sélectionnée, reprise, `Clear` pour R. Donne à la scène le comportement en main de chaque objet compagnon. |
+| `Runtime/Companions/CompanionInHand.cs` | `IHeldItem` du Spongeus en main : le clic gauche le sort ; aide « Sortir » tant qu'aucun n'est dehors. |
+| `Runtime/Gathering/RefillingPlant.cs` | Sur la racine du prefab de la plante : son modèle et ce qui en goutte (références de l'Inspector). Pleine : air mouillé (`_BaseColor` et `_Smoothness` du shader de vent par `MaterialPropertyBlock`), gouttes émises, contour visible ; texte à la place de la touche (`ILabelledInteractable`), absorbable par un compagnon (`IAbsorbable`). |
+| `Runtime/Gathering/RefillingPlants.cs` | Objet de scène « Refilling Plants » : quelle plante pousse dans quelle zone (Inspector : la fougère à eau dans la zone de la brume), dispersion au chargement, minuterie de toutes les plantes, `RestartAll` pour R. |
+| `Runtime/Interaction/IHoldInteractable.cs`, `ILabelledInteractable.cs` | Interfaces facultatives à côté de `IInteractable` : seuls le Spongeus et la fougère les implémentent ; le bâton, le champignon et l'objet jeté ne changent pas. |
+| `Runtime/Interaction/PlayerInteractor.cs` | Sur une cible qui se maintient, appui court au relâchement et appui long par `TapOrHold` ; ailleurs, à l'appui comme avant. Aides recalculées quand la cible change d'état ; texte à la place de la touche. Durées réglables sur le composant. |
 | `Runtime/UI/KeyPrompt.cs`, `HoldRingGraphic.cs` | La touche gagne un cercle de progression (graphisme low poly, piste sombre et cyan) et un mode texte (style des aides de touches). |
-| `Runtime/Demo/DemoLoopBootstrap.cs` | Reçoit les deux objets de scène et leur donne le joueur ; enregistre le Spongeus sur les mains ; R les remet à zéro. |
-| `Runtime/Demo/ForestResourceSpots.cs` | `TouchesTrunkOrRock`, sorti de `ForestGathering` pour être partagé avec les plantes ; `TakeLandmarks` cache les objets posés à la main d'un nom donné (avant : `ForestGathering.TakeHandPlacedMushrooms`). La dispersion réutilise `ScatterMushroomSpots`. |
-| `Runtime/Demo/SessionTerrain.cs` | Le Terrain de la forêt pour la partie : ce que le jeu en retire (champignons de décor, fougères de décor) l'est d'une seule copie de ses données, faite la première fois. Remplace la copie que faisait `ForestGathering` (`ForestResourceSpots.TakeDecorMushrooms`). |
+| `Runtime/Game/GameBootstrap.cs` | Reçoit les deux objets de scène et leur donne le joueur ; enregistre le Spongeus sur les mains ; R les remet à zéro. |
+| `Runtime/Gathering/ForestResourceSpots.cs` | `TouchesTrunkOrRock`, sorti de `ForestGathering` pour être partagé avec les plantes ; `TakeLandmarks` cache les objets posés à la main d'un nom donné (avant : `ForestGathering.TakeHandPlacedMushrooms`). La dispersion réutilise `ScatterMushroomSpots`. |
+| `Runtime/World/SessionTerrain.cs` | Le Terrain de la forêt pour la partie : ce que le jeu en retire (champignons de décor, fougères de décor) l'est d'une seule copie de ses données, faite la première fois. Remplace la copie que faisait `ForestGathering` (`ForestResourceSpots.TakeDecorMushrooms`). |
 
 **Assets**
 
@@ -111,8 +111,8 @@ Trois couches, comme le reste du projet : la logique en C# pur, testée en EditM
 - `Assets/Prefabs/Environment/PF_WaterFern.prefab` : `RefillingPlant`, `LODGroup` (un LOD, 3 %), le modèle, et `Drip`, un `ParticleSystem` : un cercle de 0,6 m à 0,36 m de haut (le bord des frondes), 0,8 goutte par seconde quand la fougère est pleine, chute par la gravité en 0,3 s, rendu étiré (`WaterDrip.mat`, `Particles/Unlit` de URP, bleu pâle `#CFE6F2`), sans ombre.
 - `Spongeus.fbx` : le chapeau a son propre matériau, `M_Fungi_Cap` (fait par une autre session, géométrie inchangée), remappé sur `Assets/Art/Materials/SpongeusCap.mat`, copie de `Palette.mat` : même rendu, mais une case de matériau que le code reconnaît.
 - `KeyPrompt.prefab` : `HoldRing` (70 × 70, sous la touche) et `Text` (copie du libellé de `HintRow` : Fredoka 26, crème, contour sombre).
-- `DemoLoopScene` : objets « Refilling Plants » et « Companions », reliés au `DemoLoopBootstrap`. À l'enregistrement, Unity a aussi remplacé le champ périmé `boxSize` de `DroppedItems` par `pictureSize` et `floatHeight`, avec les valeurs du code : pas de changement de comportement.
-- Table `UI` : `hint.release`, `hint.squeeze`, `hint.take_back`, `label.needs_spongeus`, `item.water`, ajoutés par `PlaytestLocalization`.
+- `Game` (ex-`DemoLoopScene`) : objets « Refilling Plants » et « Companions », reliés au `GameBootstrap`. À l'enregistrement, Unity a aussi remplacé le champ périmé `boxSize` de `DroppedItems` par `pictureSize` et `floatHeight`, avec les valeurs du code : pas de changement de comportement.
+- Table `UI` : `hint.release`, `hint.squeeze`, `hint.take_back`, `label.needs_spongeus`, `item.water`, ajoutés aux tables (le script `PlaytestLocalization`, qui les portait dans le code, a été retiré ensuite : voir « Nettoyage » dans playtest-retours).
 - Les assets et le câblage ont été écrits par un script d'éditeur à usage unique, lancé en batch, relu puis supprimé (règle *Scenes, prefabs and data*).
 
 ## Décisions

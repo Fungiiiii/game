@@ -116,7 +116,7 @@ namespace Fungiiiii.Champimaison
             return true;
         }
 
-        /// <summary>Back to an empty hole, for a demo reset.</summary>
+        /// <summary>Back to an empty hole, for a reset.</summary>
         public void Reset()
         {
             Stage = 0;

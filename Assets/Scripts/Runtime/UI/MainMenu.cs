@@ -23,7 +23,7 @@ namespace Fungiiiii.UI
 
         [Tooltip("Path of the scene Play loads. It has to be in the build settings.")]
         [SerializeField]
-        private string gameScenePath = "Assets/Scenes/Prototype/DemoLoopScene.unity";
+        private string gameScenePath = "Assets/Scenes/Game/Game.unity";
 
         [Tooltip("Seconds of the fade from black when the menu appears, and to black when Play is pressed.")]
         [SerializeField, Min(0f)]

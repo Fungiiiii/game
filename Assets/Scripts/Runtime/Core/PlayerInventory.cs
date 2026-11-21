@@ -116,7 +116,7 @@ namespace Fungiiiii.Inventory
         }
 
         /// <summary>
-        /// Adds items taken from the world — gathered, caught, picked up — as <see cref="Add"/>
+        /// Adds items taken from the world (gathered, caught, picked up) as <see cref="Add"/>
         /// does, and tells whoever shows the player what they collect. Moving items inside
         /// the inventory goes through <see cref="Add"/>, which tells nothing.
         /// </summary>

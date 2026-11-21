@@ -122,7 +122,7 @@ MonoBehaviour:
   playButton: {fileID: 4146637865866385842}
   quitButton: {fileID: 9153342746320711280}
   fade: {fileID: 9016591527044661476}
-  gameScenePath: Assets/Scenes/Prototype/DemoLoopScene.unity
+  gameScenePath: Assets/Scenes/Game/Game.unity
   fadeSeconds: 0.6
 --- !u!114 &7042925388525995409
 MonoBehaviour:

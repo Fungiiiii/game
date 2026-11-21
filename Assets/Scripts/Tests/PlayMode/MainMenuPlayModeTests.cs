@@ -1,6 +1,6 @@
 #if UNITY_EDITOR
 using System.Collections;
-using Fungiiiii.Demo;
+using Fungiiiii.Game;
 using Fungiiiii.UI;
 using NUnit.Framework;
 using UnityEditor.SceneManagement;
@@ -117,17 +117,17 @@ namespace Fungiiiii.Tests.PlayMode
             menu.Play();
             Assert.That(menu.IsLoadingGame, Is.True);
 
-            DemoLoopBootstrap demo = null;
+            GameBootstrap game = null;
             var elapsed = 0f;
-            while (elapsed < GameTimeoutSeconds && (demo == null || !demo.IsReady))
+            while (elapsed < GameTimeoutSeconds && (game == null || !game.IsReady))
             {
-                demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+                game = Object.FindFirstObjectByType<GameBootstrap>();
                 elapsed += Time.unscaledDeltaTime;
                 yield return null;
             }
 
-            Assert.That(demo, Is.Not.Null, "Play did not load the game.");
-            Assert.That(demo.IsReady, Is.True, "The game was not ready in time.");
+            Assert.That(game, Is.Not.Null, "Play did not load the game.");
+            Assert.That(game.IsReady, Is.True, "The game was not ready in time.");
             Assert.That(Object.FindFirstObjectByType<MainMenu>(), Is.Null, "The home screen is still there.");
         }
 

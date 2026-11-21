@@ -309,7 +309,7 @@ namespace Fungiiiii.Editor.Playtest
         {
             var menu = (GameObject)PrefabUtility.InstantiatePrefab(PlaytestSetup.Load<GameObject>(MainMenuPrefabPath));
             var serialized = new SerializedObject(menu.GetComponent<MainMenu>());
-            serialized.FindProperty("gameScenePath").stringValue = PlaytestSetup.DemoLoopScenePath;
+            serialized.FindProperty("gameScenePath").stringValue = PlaytestSetup.GameScenePath;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             _ = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
         }

@@ -1,4 +1,5 @@
 using Fungiiiii.Capture;
+using Fungiiiii.Runtime.Player;
 using UnityEngine;
 
 namespace Fungiiiii.Items
@@ -15,7 +16,7 @@ namespace Fungiiiii.Items
         private const float TransitionSeconds = 0.15f;
 
         private Camera view;
-        private PrototypeFirstPersonCamera look;
+        private FirstPersonCamera look;
         private float baseFieldOfView;
         private float aimFieldOfView;
         private float blend;

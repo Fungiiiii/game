@@ -225,7 +225,7 @@ namespace Fungiiiii.Controls
                     ""priority"": 0
                 },
                 {
-                    ""name"": ""ResetDemo"",
+                    ""name"": ""ResetGame"",
                     ""type"": ""Button"",
                     ""id"": ""0b6a4cfa-40f7-40ee-90a1-b3642fa131ff"",
                     ""expectedControlType"": ""Button"",
@@ -595,7 +595,7 @@ namespace Fungiiiii.Controls
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Keyboard&Mouse"",
-                    ""action"": ""ResetDemo"",
+                    ""action"": ""ResetGame"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1352,7 +1352,7 @@ namespace Fungiiiii.Controls
             m_Player_HotbarSlot1 = m_Player.FindAction("HotbarSlot1", throwIfNotFound: true);
             m_Player_HotbarSlot2 = m_Player.FindAction("HotbarSlot2", throwIfNotFound: true);
             m_Player_HotbarSlot3 = m_Player.FindAction("HotbarSlot3", throwIfNotFound: true);
-            m_Player_ResetDemo = m_Player.FindAction("ResetDemo", throwIfNotFound: true);
+            m_Player_ResetGame = m_Player.FindAction("ResetGame", throwIfNotFound: true);
             // Screens
             m_Screens = asset.FindActionMap("Screens", throwIfNotFound: true);
             m_Screens_Inventory = m_Screens.FindAction("Inventory", throwIfNotFound: true);
@@ -1467,7 +1467,7 @@ namespace Fungiiiii.Controls
         private readonly InputAction m_Player_HotbarSlot1;
         private readonly InputAction m_Player_HotbarSlot2;
         private readonly InputAction m_Player_HotbarSlot3;
-        private readonly InputAction m_Player_ResetDemo;
+        private readonly InputAction m_Player_ResetGame;
         /// <summary>
         /// Provides access to input actions defined in input action map "Player".
         /// </summary>
@@ -1532,9 +1532,9 @@ namespace Fungiiiii.Controls
             /// </summary>
             public InputAction @HotbarSlot3 => m_Wrapper.m_Player_HotbarSlot3;
             /// <summary>
-            /// Provides access to the underlying input action "Player/ResetDemo".
+            /// Provides access to the underlying input action "Player/ResetGame".
             /// </summary>
-            public InputAction @ResetDemo => m_Wrapper.m_Player_ResetDemo;
+            public InputAction @ResetGame => m_Wrapper.m_Player_ResetGame;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -1600,9 +1600,9 @@ namespace Fungiiiii.Controls
                 @HotbarSlot3.started += instance.OnHotbarSlot3;
                 @HotbarSlot3.performed += instance.OnHotbarSlot3;
                 @HotbarSlot3.canceled += instance.OnHotbarSlot3;
-                @ResetDemo.started += instance.OnResetDemo;
-                @ResetDemo.performed += instance.OnResetDemo;
-                @ResetDemo.canceled += instance.OnResetDemo;
+                @ResetGame.started += instance.OnResetGame;
+                @ResetGame.performed += instance.OnResetGame;
+                @ResetGame.canceled += instance.OnResetGame;
             }
 
             /// <summary>
@@ -1653,9 +1653,9 @@ namespace Fungiiiii.Controls
                 @HotbarSlot3.started -= instance.OnHotbarSlot3;
                 @HotbarSlot3.performed -= instance.OnHotbarSlot3;
                 @HotbarSlot3.canceled -= instance.OnHotbarSlot3;
-                @ResetDemo.started -= instance.OnResetDemo;
-                @ResetDemo.performed -= instance.OnResetDemo;
-                @ResetDemo.canceled -= instance.OnResetDemo;
+                @ResetGame.started -= instance.OnResetGame;
+                @ResetGame.performed -= instance.OnResetGame;
+                @ResetGame.canceled -= instance.OnResetGame;
             }
 
             /// <summary>
@@ -2188,12 +2188,12 @@ namespace Fungiiiii.Controls
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnHotbarSlot3(InputAction.CallbackContext context);
             /// <summary>
-            /// Method invoked when associated input action "ResetDemo" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// Method invoked when associated input action "ResetGame" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
             /// </summary>
             /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-            void OnResetDemo(InputAction.CallbackContext context);
+            void OnResetGame(InputAction.CallbackContext context);
         }
         /// <summary>
         /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Screens" which allows adding and removing callbacks.

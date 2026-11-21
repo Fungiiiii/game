@@ -7,7 +7,7 @@ namespace Fungiiiii.UI
     /// press, a square wooden key cap with a cyan rim and, in cream, the control as the key
     /// hints draw it (<see cref="Glyph"/>): a name, a PlayStation shape, a mouse. When the
     /// key can also be held, a ring around it fills while it is held. Where nothing can be
-    /// done, a short text takes the key's place instead (« Il faut un Spongeus »). It pops
+    /// done, a short text takes the key's place instead (<c>label.needs_spongeus</c>). It pops
     /// in when it appears. Where it goes and what it shows is told by its owner.
     /// </summary>
     internal sealed class KeyPrompt : MonoBehaviour

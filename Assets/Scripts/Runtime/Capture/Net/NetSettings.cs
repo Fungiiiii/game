@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace Fungiiiii.Capture
 {
-    /// <summary>The tuning of the capture net, as data: the values of the validated net prototype.</summary>
+    /// <summary>The tuning of the capture net, as data: the values validated in the net's design note.</summary>
     [CreateAssetMenu(fileName = "NetSettings", menuName = "Fungiiiii/Net Settings")]
     public sealed class NetSettings : ScriptableObject
     {

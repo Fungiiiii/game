@@ -9,7 +9,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Menu/MainMenu.unity
     guid: 2e455837c1e2ac14bb5f60f31914be87
   - enabled: 1
-    path: Assets/Scenes/Prototype/DemoLoopScene.unity
+    path: Assets/Scenes/Game/Game.unity
     guid: 30aed121863ef5a4ca1f6a74eb3fc44d
   - enabled: 1
     path: Assets/Scenes/Biomes/MysticForest.unity

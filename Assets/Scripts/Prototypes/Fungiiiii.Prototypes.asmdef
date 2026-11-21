@@ -1,0 +1,19 @@
+{
+    "name": "Fungiiiii.Prototypes",
+    "rootNamespace": "Fungiiiii.Prototypes",
+    "references": [
+        "Fungiiiii.Runtime",
+        "Unity.InputSystem",
+        "Unity.Netcode.Runtime",
+        "Unity.Localization"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 495597a28cda4c359ff0bb9f09ea875a, type: 3}
   m_Name: OutlineSettings
-  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Demo.OutlineSettings
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Outlines.OutlineSettings
   shader: {fileID: 4800000, guid: 683c7ba2d1058354c81938342679e1d5, type: 3}
   color: {r: 0.9490196, g: 0.9019608, b: 0.8, a: 1}
   width: 2.5

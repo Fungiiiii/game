@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Linq;
 using Fungiiiii.Capture;
-using Fungiiiii.Demo;
 using Fungiiiii.Inventory;
 using Fungiiiii.Runtime.Player;
 using Fungiiiii.UI;
@@ -11,6 +10,9 @@ using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 #if UNITY_EDITOR
 using UnityEditor.SceneManagement;
+using Fungiiiii.Companions;
+using Fungiiiii.Game;
+using Fungiiiii.Gathering;
 #endif
 
 namespace Fungiiiii.Tests.PlayMode
@@ -18,7 +20,7 @@ namespace Fungiiiii.Tests.PlayMode
     /// <summary>The Spongeus taken out to follow the player, and the water ferns of the mist (docs/features/spongeus-fougere.md).</summary>
     public sealed class SpongeusCompanionPlayModeTests
     {
-        private const string ScenePath = "Assets/Scenes/Prototype/DemoLoopScene.unity";
+        private const string ScenePath = "Assets/Scenes/Game/Game.unity";
         private const float LoadTimeoutSeconds = 60f;
         private const string SpongeusId = "spongeus";
         private const string WaterId = "water";
@@ -36,7 +38,7 @@ namespace Fungiiiii.Tests.PlayMode
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         private static readonly int SmoothnessId = Shader.PropertyToID("_Smoothness");
 
-        private DemoLoopBootstrap demo;
+        private GameBootstrap game;
 
         [TearDown]
         public void RestoreTime()
@@ -44,22 +46,22 @@ namespace Fungiiiii.Tests.PlayMode
             Time.timeScale = 1f;
         }
 
-        private IEnumerator LoadDemo()
+        private IEnumerator LoadGame()
         {
 #if UNITY_EDITOR
             yield return EditorSceneManager.LoadSceneAsyncInPlayMode(ScenePath, new LoadSceneParameters(LoadSceneMode.Single));
 #endif
             var elapsed = 0f;
-            demo = null;
-            while (elapsed < LoadTimeoutSeconds && (demo == null || !demo.IsReady))
+            game = null;
+            while (elapsed < LoadTimeoutSeconds && (game == null || !game.IsReady))
             {
-                demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+                game = Object.FindFirstObjectByType<GameBootstrap>();
                 elapsed += Time.unscaledDeltaTime;
                 yield return null;
             }
 
-            Assert.That(demo, Is.Not.Null, "The scene has no DemoLoopBootstrap.");
-            Assert.That(demo.IsReady, Is.True, "The demo was not ready in time.");
+            Assert.That(game, Is.Not.Null, "The scene has no GameBootstrap.");
+            Assert.That(game.IsReady, Is.True, "The game was not ready in time.");
         }
 
         private static IEnumerator Wait(float seconds)
@@ -94,21 +96,21 @@ namespace Fungiiiii.Tests.PlayMode
         {
             var catalogItem = FindItem(SpongeusId);
             var slot = Object.FindFirstObjectByType<PlayerMotor>().GetComponent<Backpack>().Layout.QuickBarSlot(1);
-            Assert.That(demo.Inventory.AddToSlot(slot, catalogItem, count), Is.EqualTo(count));
-            demo.Hotbar.Select(1);
+            Assert.That(game.Inventory.AddToSlot(slot, catalogItem, count), Is.EqualTo(count));
+            game.Hotbar.Select(1);
             yield return null;
-            Assert.That(demo.Hands.ItemInHand, Is.SameAs(catalogItem), "The Spongeus is not in hand.");
+            Assert.That(game.Hands.ItemInHand, Is.SameAs(catalogItem), "The Spongeus is not in hand.");
         }
 
         private ItemDefinition FindItem(string id)
         {
-            var companion = demo.Companions.HeldBehaviours.Select(held => held.Item).FirstOrDefault(item => item.Id == id);
+            var companion = game.Companions.HeldBehaviours.Select(held => held.Item).FirstOrDefault(item => item.Id == id);
             if (companion != null)
             {
                 return companion;
             }
 
-            var plant = demo.RefillingPlants.Plants.First();
+            var plant = game.RefillingPlants.Plants.First();
             Assert.That(plant.Yield.Id, Is.EqualTo(id), $"No item '{id}' found.");
             return plant.Yield;
         }
@@ -116,9 +118,9 @@ namespace Fungiiiii.Tests.PlayMode
         private IEnumerator TakeOut()
         {
             yield return HoldSpongeus(1);
-            demo.Hands.Behaviour.UsePrimary();
+            game.Hands.Behaviour.UsePrimary();
             yield return null;
-            Assert.That(demo.Companions.Active, Is.Not.Null, "The left click did not take the Spongeus out.");
+            Assert.That(game.Companions.Active, Is.Not.Null, "The left click did not take the Spongeus out.");
         }
 
         /// <summary>
@@ -127,16 +129,16 @@ namespace Fungiiiii.Tests.PlayMode
         /// </summary>
         private IEnumerator LookDown()
         {
-            demo.ViewCamera.GetComponent<PrototypeFirstPersonCamera>().SetView(demo.ViewCamera.transform.eulerAngles.y, LookDownDegrees);
+            game.ViewCamera.GetComponent<FirstPersonCamera>().SetView(game.ViewCamera.transform.eulerAngles.y, LookDownDegrees);
             yield return null;
         }
 
         /// <summary>Puts a plant on the ground in front of the camera, full or empty.</summary>
         private RefillingPlant PlantInView(bool full, float distance = 2f)
         {
-            var plant = demo.RefillingPlants.Plants.First();
+            var plant = game.RefillingPlants.Plants.First();
             plant.Restart(full ? 1f : 0f);
-            var view = demo.ViewCamera.transform;
+            var view = game.ViewCamera.transform;
             var forward = Vector3.ProjectOnPlane(view.forward, Vector3.up).normalized;
             var point = view.position + forward * distance;
             point.y = Player.position.y - 1.1f;
@@ -147,8 +149,8 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator WaterFerns_GrowOnlyInTheMist_SomeFullSomeNot()
         {
-            yield return LoadDemo();
-            var plants = demo.RefillingPlants.Plants;
+            yield return LoadGame();
+            var plants = game.RefillingPlants.Plants;
 
             Assert.That(plants.Count, Is.GreaterThan(30), "Too few water ferns.");
             foreach (var plant in plants)
@@ -164,8 +166,8 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator NoDecorFern_IsLeft_ThatCouldBeMistakenForAWaterFern()
         {
-            yield return LoadDemo();
-            var lookAlike = demo.RefillingPlants.Plants.First().Definition.LookAlikes.Single();
+            yield return LoadGame();
+            var lookAlike = game.RefillingPlants.Plants.First().Definition.LookAlikes.Single();
             var data = Terrain.activeTerrain.terrainData;
             var prototype = System.Array.FindIndex(data.treePrototypes, tree => tree.prefab == lookAlike);
 
@@ -180,20 +182,20 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator AFullFern_LooksWet_Drips_AndShowsATextInsteadOfAKey_AndEDoesNothing()
         {
-            yield return LoadDemo();
+            yield return LoadGame();
             yield return LookDown();
             var plant = PlantInView(full: true, AimedDistance);
             yield return null;
             yield return null;
 
-            var prompt = demo.Interactor.Prompt;
-            Assert.That(demo.Interactor.Targeted, Is.SameAs(plant), "A full fern in front of the player is not aimed at.");
+            var prompt = game.Interactor.Prompt;
+            Assert.That(game.Interactor.Targeted, Is.SameAs(plant), "A full fern in front of the player is not aimed at.");
             Assert.That(prompt.IsTextVisible, Is.True, "No text over the full fern.");
             Assert.That(prompt.TextKey, Is.EqualTo(NeedsSpongeus));
             Assert.That(prompt.IsKeyVisible, Is.False, "A key is shown over the fern.");
-            Assert.That(demo.Interactor.Hints, Is.Empty, "The fern adds a key hint.");
-            Assert.That(plant.Interact(demo.Inventory), Is.False);
-            Assert.That(demo.Inventory.Count(WaterId), Is.Zero, "The player took water themselves.");
+            Assert.That(game.Interactor.Hints, Is.Empty, "The fern adds a key hint.");
+            Assert.That(plant.Interact(game.Inventory), Is.False);
+            Assert.That(game.Inventory.Count(WaterId), Is.Zero, "The player took water themselves.");
             Assert.That(plant.IsDripping, Is.True, "No drop falls from the full fern.");
             var wet = ModelBlock(plant);
             Assert.That(wet.GetColor(BaseColorId).r, Is.EqualTo(plant.Definition.FullTint.r).Within(0.01f), "The full fern is not darker.");
@@ -203,13 +205,13 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator AnEmptyFern_LooksDry_DoesNotDrip_AndCannotBeAimedAt()
         {
-            yield return LoadDemo();
+            yield return LoadGame();
             yield return LookDown();
             var plant = PlantInView(full: false, AimedDistance);
             yield return null;
             yield return null;
 
-            Assert.That(demo.Interactor.Targeted, Is.Not.SameAs(plant));
+            Assert.That(game.Interactor.Targeted, Is.Not.SameAs(plant));
             Assert.That(plant.IsDripping, Is.False, "A drop falls from an empty fern.");
             Assert.That(plant.Model.GetComponentInChildren<Renderer>().HasPropertyBlock(), Is.False, "An empty fern still looks wet.");
         }
@@ -217,32 +219,32 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator ALeftClick_TakesTheSpongeusOut_AndOnlyOneAtATime()
         {
-            yield return LoadDemo();
+            yield return LoadGame();
             yield return HoldSpongeus(2);
-            var hints = demo.Hands.Hints.Select(hint => hint.LabelKey).ToArray();
+            var hints = game.Hands.Hints.Select(hint => hint.LabelKey).ToArray();
             Assert.That(hints, Does.Contain(UiText.HintRelease), "No take-out hint with the Spongeus in hand.");
 
-            demo.Hands.Behaviour.UsePrimary();
+            game.Hands.Behaviour.UsePrimary();
             yield return null;
 
-            var companion = demo.Companions.Active;
+            var companion = game.Companions.Active;
             Assert.That(companion, Is.Not.Null);
-            Assert.That(demo.Inventory.Count(SpongeusId), Is.EqualTo(1), "The Spongeus did not leave the inventory.");
+            Assert.That(game.Inventory.Count(SpongeusId), Is.EqualTo(1), "The Spongeus did not leave the inventory.");
             Assert.That(Flat(companion.transform.position, Player.position), Is.LessThan(2.5f), "It is not put down in front of the player.");
-            Assert.That(demo.Hands.Hints.Select(hint => hint.LabelKey), Does.Not.Contain(UiText.HintRelease), "The take-out hint is still shown with a Spongeus out.");
+            Assert.That(game.Hands.Hints.Select(hint => hint.LabelKey), Does.Not.Contain(UiText.HintRelease), "The take-out hint is still shown with a Spongeus out.");
 
-            demo.Hands.Behaviour.UsePrimary();
+            game.Hands.Behaviour.UsePrimary();
             yield return null;
-            Assert.That(demo.Inventory.Count(SpongeusId), Is.EqualTo(1), "A second Spongeus was taken out.");
+            Assert.That(game.Inventory.Count(SpongeusId), Is.EqualTo(1), "A second Spongeus was taken out.");
             Assert.That(Object.FindObjectsByType<Companion>(FindObjectsSortMode.None), Has.Length.EqualTo(1));
         }
 
         [UnityTest]
         public IEnumerator TheSpongeus_FollowsThePlayer_AndComesBackWhenLeftFarBehind()
         {
-            yield return LoadDemo();
+            yield return LoadGame();
             yield return TakeOut();
-            var companion = demo.Companions.Active;
+            var companion = game.Companions.Active;
 
             companion.transform.position = Player.position + new Vector3(10f, 0f, 0f);
             yield return Wait(2.5f);
@@ -257,9 +259,9 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator TheSpongeus_SoaksUpAFullFernNearThePlayer_ItsCapDarkens_AndASqueezeGivesWater()
         {
-            yield return LoadDemo();
+            yield return LoadGame();
             yield return TakeOut();
-            var companion = demo.Companions.Active;
+            var companion = game.Companions.Active;
             var plant = PlantInView(full: true, distance: 5f);
 
             yield return WaitUntil(() => companion.Brain.IsFull, 5f);
@@ -272,12 +274,12 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(cap.r, Is.EqualTo(companion.Definition.FullTint.r).Within(0.01f), "The cap is not darker.");
             Assert.That(companion.HintKey, Is.EqualTo(UiText.HintSqueeze));
 
-            Assert.That(companion.Interact(demo.Inventory), Is.True);
-            Assert.That(demo.Inventory.Count(WaterId), Is.EqualTo(1), "Squeezing gave no water.");
+            Assert.That(companion.Interact(game.Inventory), Is.True);
+            Assert.That(game.Inventory.Count(WaterId), Is.EqualTo(1), "Squeezing gave no water.");
             Assert.That(companion.Brain.IsFull, Is.False);
             Assert.That(companion.HintKey, Is.Null, "An empty Spongeus can still be squeezed.");
-            Assert.That(companion.Interact(demo.Inventory), Is.False, "An empty Spongeus was squeezed.");
-            Assert.That(demo.Pickups.Lines.Count, Is.GreaterThan(0), "The water was not shown as collected.");
+            Assert.That(companion.Interact(game.Inventory), Is.False, "An empty Spongeus was squeezed.");
+            Assert.That(game.Pickups.Lines.Count, Is.GreaterThan(0), "The water was not shown as collected.");
 
             yield return Wait(1.3f);
             Assert.That(companion.ShownFullness, Is.Zero, "The cap did not go back to its colour.");
@@ -286,53 +288,53 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator Aimed_TheSpongeus_ShowsTheKeyWithItsRing_AndTheHoldHint()
         {
-            yield return LoadDemo();
+            yield return LoadGame();
             yield return TakeOut();
-            var companion = demo.Companions.Active;
+            var companion = game.Companions.Active;
             yield return LookDown();
-            var view = demo.ViewCamera.transform;
+            var view = game.ViewCamera.transform;
             var forward = Vector3.ProjectOnPlane(view.forward, Vector3.up).normalized;
             // Close in front of the player: it stays, being within its follow distance.
             companion.transform.position = Player.position + forward * AimedDistance;
             yield return null;
             yield return null;
 
-            Assert.That(demo.Interactor.Targeted, Is.SameAs(companion));
-            var prompt = demo.Interactor.Prompt;
+            Assert.That(game.Interactor.Targeted, Is.SameAs(companion));
+            var prompt = game.Interactor.Prompt;
             Assert.That(prompt.IsKeyVisible, Is.True);
             Assert.That(prompt.IsHoldRingVisible, Is.True, "No ring around the key of a Spongeus.");
-            Assert.That(demo.Interactor.Hints.Select(hint => hint.LabelKey), Is.EqualTo(new[] { UiText.HintTakeBack }));
+            Assert.That(game.Interactor.Hints.Select(hint => hint.LabelKey), Is.EqualTo(new[] { UiText.HintTakeBack }));
         }
 
         [UnityTest]
         public IEnumerator HoldingE_TakesItBack_SqueezedFirstWhenFull()
         {
-            yield return LoadDemo();
+            yield return LoadGame();
             yield return TakeOut();
-            var companion = demo.Companions.Active;
+            var companion = game.Companions.Active;
             PlantInView(full: true, distance: 5f);
             yield return WaitUntil(() => companion.Brain.IsFull, 5f);
             Assert.That(companion.Brain.IsFull, Is.True);
 
-            Assert.That(companion.InteractHold(demo.Inventory), Is.True);
+            Assert.That(companion.InteractHold(game.Inventory), Is.True);
             yield return null;
 
-            Assert.That(demo.Companions.Active, Is.Null);
+            Assert.That(game.Companions.Active, Is.Null);
             Assert.That(companion == null, Is.True, "The Spongeus is still in the world.");
-            Assert.That(demo.Inventory.Count(SpongeusId), Is.EqualTo(1), "The Spongeus did not come back.");
-            Assert.That(demo.Inventory.Count(WaterId), Is.EqualTo(1), "Its water was lost.");
+            Assert.That(game.Inventory.Count(SpongeusId), Is.EqualTo(1), "The Spongeus did not come back.");
+            Assert.That(game.Inventory.Count(WaterId), Is.EqualTo(1), "Its water was lost.");
         }
 
         [UnityTest]
         public IEnumerator Reset_RemovesTheSpongeusOut()
         {
-            yield return LoadDemo();
+            yield return LoadGame();
             yield return TakeOut();
 
-            demo.ResetDemo();
+            game.ResetGame();
             yield return null;
 
-            Assert.That(demo.Companions.Active, Is.Null);
+            Assert.That(game.Companions.Active, Is.Null);
             Assert.That(Object.FindObjectsByType<Companion>(FindObjectsSortMode.None), Is.Empty);
         }
 

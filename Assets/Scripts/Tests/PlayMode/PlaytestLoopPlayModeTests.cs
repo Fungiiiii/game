@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Linq;
-using Fungiiiii.Demo;
+using Fungiiiii.Game;
 using Fungiiiii.UI;
 using NUnit.Framework;
 using UnityEngine;
@@ -42,24 +42,24 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(playLabel.text, Does.Not.Contain("No translation"), "The Play button's text is missing from the table.");
 
             menu.Play();
-            DemoLoopBootstrap demo = null;
-            yield return WaitFor(GameTimeoutSeconds, () => (demo = Object.FindFirstObjectByType<DemoLoopBootstrap>()) != null && demo.IsReady);
-            Assert.That(demo, Is.Not.Null, "Play did not load the game.");
-            Assert.That(demo.IsReady, Is.True, "The game was not ready in time.");
+            GameBootstrap game = null;
+            yield return WaitFor(GameTimeoutSeconds, () => (game = Object.FindFirstObjectByType<GameBootstrap>()) != null && game.IsReady);
+            Assert.That(game, Is.Not.Null, "Play did not load the game.");
+            Assert.That(game.IsReady, Is.True, "The game was not ready in time.");
 
             // Since the playtest of 20/11, 4 sticks and 5 mushrooms are kept around the player.
-            Assert.That(demo.Gatherables.Count(gatherable => gatherable.IsAvailable), Is.EqualTo(9), "Not everything to gather is around the player.");
-            var outline = demo.Gatherables
+            Assert.That(game.Gatherables.Count(gatherable => gatherable.IsAvailable), Is.EqualTo(9), "Not everything to gather is around the player.");
+            var outline = game.Gatherables
                 .First(gatherable => gatherable.IsAvailable)
                 .GetComponentsInChildren<MeshRenderer>()
                 .FirstOrDefault(renderer => renderer.name == "Outline");
             Assert.That(outline, Is.Not.Null, "What can be gathered has no outline.");
             Assert.That(outline.sharedMaterial.shader.isSupported, Is.True, "The outline shader does not run here.");
 
-            demo.Screens.Open(demo.Pause);
+            game.Screens.Open(game.Pause);
             yield return null;
             Assert.That(Time.timeScale, Is.Zero);
-            demo.Pause.HomeButton.Button.onClick.Invoke();
+            game.Pause.HomeButton.Button.onClick.Invoke();
 
             menu = null;
             yield return WaitFor(MenuTimeoutSeconds, () => (menu = Object.FindFirstObjectByType<MainMenu>()) != null && menu.PlayButton != null);

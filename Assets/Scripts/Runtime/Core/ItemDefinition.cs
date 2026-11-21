@@ -48,7 +48,7 @@ namespace Fungiiiii.Inventory
         /// <summary>Null when the item does nothing in hand.</summary>
         public GameObject HeldPrefab => heldPrefab;
 
-        /// <summary>An item that exists only at runtime, for prototypes and tests.</summary>
+        /// <summary>An item that exists only at runtime, for tests and the prototype benches.</summary>
         public static ItemDefinition Create(string id, Color color, int maxStackSize, string nameKey = null)
         {
             if (string.IsNullOrWhiteSpace(id))

@@ -5,6 +5,7 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "Fungiiiii.Runtime",
+        "Fungiiiii.Prototypes",
         "Unity.InputSystem",
         "Unity.Netcode.Runtime",
         "Unity.Localization",

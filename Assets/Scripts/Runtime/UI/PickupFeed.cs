@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Fungiiiii.UI
 {
     /// <summary>
-    /// What the player just collected, a short line each above the quick bar: « +1 Bâton ».
+    /// What the player just collected, a short line each above the quick bar: the amount, such as +1, then the item's name.
     /// Collecting the same item again adds to its line; a line fades out after a moment,
     /// and only the last few stay, so that the feed never weighs on the screen.
     /// </summary>

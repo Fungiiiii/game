@@ -158,7 +158,7 @@ namespace Fungiiiii.Capture
             }
         }
 
-        /// <summary>Puts the net back in hand at once, for a demo reset.</summary>
+        /// <summary>Puts the net back in hand at once, for a reset.</summary>
         public void Reset()
         {
             EnterPhase(NetPhase.Ready);

@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 #if UNITY_EDITOR
 using UnityEditor.SceneManagement;
+using Fungiiiii.Prototypes;
 #endif
 
 namespace Fungiiiii.Tests.PlayMode

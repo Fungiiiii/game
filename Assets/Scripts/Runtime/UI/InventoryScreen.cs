@@ -69,7 +69,7 @@ namespace Fungiiiii.UI
 
         /// <summary>
         /// Shows the inventory a player carries, once. Without it, the screen makes its own
-        /// inventory when it first shows, for the standalone prototype scene.
+        /// inventory when it first shows, for the inventory's own bench scene.
         /// </summary>
         public void Bind(PlayerInventory playerInventory, InventoryLayout inventoryLayout)
         {

@@ -10,6 +10,7 @@ using UnityEngine.TestTools;
 using UnityEngine.UI;
 #if UNITY_EDITOR
 using UnityEditor.SceneManagement;
+using Fungiiiii.Prototypes;
 #endif
 
 namespace Fungiiiii.Tests.PlayMode

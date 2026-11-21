@@ -6,8 +6,8 @@ using UnityEngine.InputSystem.DualShock;
 namespace Fungiiiii.UI
 {
     /// <summary>
-    /// The key hints, bottom right of the screen, without a background (artboard « Aides ·
-    /// 2 · textes collés »): one line per hint, the control drawn for the device in hand
+    /// The key hints, bottom right of the screen, without a background (as on the key
+    /// hints mockup): one line per hint, the control drawn for the device in hand
     /// and, right after it, what it does. The lines come from the sources in charge, in
     /// their order; with too many, optional ones are left out first.
     ///

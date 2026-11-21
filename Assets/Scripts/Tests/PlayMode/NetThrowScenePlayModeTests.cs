@@ -6,6 +6,8 @@ using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 #if UNITY_EDITOR
 using UnityEditor.SceneManagement;
+using Fungiiiii.Prototypes;
+using Fungiiiii.Runtime.Player;
 #endif
 
 namespace Fungiiiii.Tests.PlayMode
@@ -40,7 +42,7 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(demo.Thrower, Is.Not.Null, "The net thrower was not set up.");
             Assert.That(demo.Thrower.Cycle.Phase, Is.EqualTo(NetPhase.Ready));
             Assert.That(demo.Mushrooms.Count, Is.EqualTo(3));
-            Assert.That(Object.FindFirstObjectByType<PrototypeFirstPersonCamera>(), Is.Not.Null);
+            Assert.That(Object.FindFirstObjectByType<FirstPersonCamera>(), Is.Not.Null);
         }
 
         [UnityTest]

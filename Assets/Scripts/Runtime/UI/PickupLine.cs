@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace Fungiiiii.UI
 {
-    /// <summary>One line of the <see cref="PickupFeed"/>: the item, then « +2 Bâton » in the current language.</summary>
+    /// <summary>One line of the <see cref="PickupFeed"/>: the item, then the amount and its name in the current language.</summary>
     internal sealed class PickupLine : MonoBehaviour
     {
         [SerializeField]
