@@ -30,11 +30,10 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator FromTheHomeScreen_PlayReachesTheGame_AndPauseComesBackHome()
         {
-            SceneManager.LoadScene(MenuScenePath, LoadSceneMode.Single);
-            MainMenu menu = null;
-            yield return WaitFor(MenuTimeoutSeconds, () => (menu = Object.FindFirstObjectByType<MainMenu>()) != null && menu.PlayButton != null);
+            // Waited for: the scene of a previous test, and its menu, go away only once it is loaded.
+            yield return SceneManager.LoadSceneAsync(MenuScenePath, LoadSceneMode.Single);
+            var menu = Object.FindFirstObjectByType<MainMenu>();
             Assert.That(menu, Is.Not.Null, "The home screen did not load.");
-            Assert.That(menu.PlayButton, Is.Not.Null, "The home screen was not built.");
 
             // The texts come from the string tables: empty labels mean they did not load.
             var playLabel = menu.PlayButton.Label.GetComponent<Text>();

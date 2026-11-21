@@ -15,8 +15,7 @@ namespace Fungiiiii.Tests.PlayMode
         [SetUp]
         public void SetUp()
         {
-            prompt = new GameObject("Key Prompt").AddComponent<KeyPrompt>();
-            prompt.Initialize(Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"));
+            prompt = UiPrefabs.Instantiate<KeyPrompt>("KeyPrompt");
         }
 
         [TearDown]

@@ -47,7 +47,7 @@ namespace Fungiiiii.Demo
             PlayerInventory playerInventory,
             IReadOnlyList<IInteractable> usable,
             float aimConeDegrees,
-            Font promptFont,
+            KeyPrompt keyPrompt,
             PlayerControls playerControls)
         {
             controls = playerControls;
@@ -56,9 +56,7 @@ namespace Fungiiiii.Demo
             inventory = playerInventory;
             interactables = usable;
             maxAimAngleDegrees = aimConeDegrees;
-
-            prompt = new GameObject("Interact Prompt").AddComponent<KeyPrompt>();
-            prompt.Initialize(promptFont);
+            prompt = keyPrompt;
         }
 
         private void OnDisable()
@@ -76,11 +74,6 @@ namespace Fungiiiii.Demo
             if (controls != null)
             {
                 controls.MenuOpenChanged -= OnMenuOpenChanged;
-            }
-
-            if (prompt != null)
-            {
-                Destroy(prompt.gameObject);
             }
         }
 

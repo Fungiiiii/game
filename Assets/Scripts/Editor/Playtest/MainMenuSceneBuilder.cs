@@ -5,6 +5,8 @@ using Fungiiiii.UI;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
 
 namespace Fungiiiii.Editor.Playtest
@@ -22,7 +24,7 @@ namespace Fungiiiii.Editor.Playtest
         private const string SceneFolder = "Assets/Scenes/Menu";
         private const string TerrainDataPath = SceneFolder + "/MainMenuTerrainData.asset";
         private const string ForestScenePath = "Assets/Scenes/Biomes/MysticForest.unity";
-        private const string FontPath = "Assets/Art/Fonts/Fredoka_SemiBold.ttf";
+        private const string MainMenuPrefabPath = "Assets/Prefabs/UI/MainMenu.prefab";
         private const string AmbiencePath = "Assets/Audio/MysticForest/AMB_MysticForest_ZoneA.wav";
         private const string GrassTuftPath = "Assets/Art/Models/Environment/GrassTuft.fbx";
         private const string PrefabFolder = "Assets/Prefabs/Environment/";
@@ -305,11 +307,11 @@ namespace Fungiiiii.Editor.Playtest
 
         private static void AddMenu()
         {
-            var menu = new GameObject("Main Menu").AddComponent<MainMenu>();
-            var serialized = new SerializedObject(menu);
-            serialized.FindProperty("font").objectReferenceValue = PlaytestSetup.Load<Font>(FontPath);
+            var menu = (GameObject)PrefabUtility.InstantiatePrefab(PlaytestSetup.Load<GameObject>(MainMenuPrefabPath));
+            var serialized = new SerializedObject(menu.GetComponent<MainMenu>());
             serialized.FindProperty("gameScenePath").stringValue = PlaytestSetup.DemoLoopScenePath;
             serialized.ApplyModifiedPropertiesWithoutUndo();
+            _ = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
         }
 
         private static T FindInScene<T>(Scene scene)

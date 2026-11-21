@@ -28,11 +28,11 @@ namespace Fungiiiii.Demo
     /// zone audio, the spores and the ground mist, becomes the first-person view of the
     /// real Player prefab, used offline as in NetThrowScene.
     ///
-    /// The world is made of the scene's components, set in the Inspector: the forest's
-    /// sticks and spore mushrooms (<see cref="ForestGathering"/>) and the mushrooms to catch
-    /// (<see cref="CreaturePopulation"/>), tuned by data assets. The rest is still built
-    /// here at runtime: HUD, inventory, quick bar, net, screens and key hints. The
-    /// Champimaison hole is left out of the playtest.
+    /// The world and the interface are the scene's objects, set in the Inspector: the
+    /// forest's sticks and spore mushrooms (<see cref="ForestGathering"/>), the mushrooms
+    /// to catch (<see cref="CreaturePopulation"/>), tuned by data assets, and the screens,
+    /// quick bar and key hints, instances of their prefabs. This hands them the player
+    /// once it is spawned. The Champimaison hole is left out of the playtest.
     /// </summary>
     internal sealed class DemoLoopBootstrap : MonoBehaviour
     {
@@ -80,14 +80,22 @@ namespace Fungiiiii.Demo
         [SerializeField]
         private OutlineSettings outlineSettings;
 
-        [Header("Menus")]
-        [Tooltip("Font of the pause menu's buttons.")]
+        [Header("Interface")]
         [SerializeField]
-        private Font menuFont;
+        private Hotbar hotbar;
 
-        [Tooltip("Path of the home screen's scene, which the pause menu goes back to.")]
         [SerializeField]
-        private string mainMenuScenePath = "Assets/Scenes/Menu/MainMenu.unity";
+        private InventoryScreen inventoryView;
+
+        [SerializeField]
+        private PauseMenu pauseMenu;
+
+        [SerializeField]
+        private ControlHintsPanel hintsPanel;
+
+        [Tooltip("The key shown over what the player aims at.")]
+        [SerializeField]
+        private KeyPrompt keyPrompt;
 
         [Header("Champimaison")]
         [Tooltip("Off for the playtest: the hole and its fungal network are not built.")]
@@ -120,7 +128,6 @@ namespace Fungiiiii.Demo
 
         private PlayerControls controls;
         private ScreenStack screens;
-        private ControlHintsPanel hintsPanel;
         private FixedHints gameHints;
         private InputAction menuAction;
         private InputAction cancelAction;
@@ -135,13 +142,10 @@ namespace Fungiiiii.Demo
         private PrototypeFirstPersonCamera firstPersonCamera;
         private PlayerVitals vitals;
         private StaminaRegulator stamina;
-        private InventoryScreen inventoryView;
         private Backpack backpack;
         private PlayerInteractor interactor;
         private FungalHole hole;
         private ItemOutlineFactory outlines;
-        private PauseMenu pauseMenu;
-        private Hotbar hotbar;
         private PlayerHands hands;
         private NetTargetOutline targetOutline;
 
@@ -289,10 +293,7 @@ namespace Fungiiiii.Demo
             BuildHotbar();
 
             interactor = player.AddComponent<PlayerInteractor>();
-            interactor.Initialize(firstPersonCamera.Camera, Inventory, interactables, AimConeDegrees, menuFont, controls);
-
-            pauseMenu = new GameObject("Pause Menu").AddComponent<PauseMenu>();
-            pauseMenu.Initialize(menuFont, mainMenuScenePath);
+            interactor.Initialize(firstPersonCamera.Camera, Inventory, interactables, AimConeDegrees, keyPrompt, controls);
 
             screens = new ScreenStack(pauseMenu);
             screens.Changed += ApplyScreens;
@@ -315,9 +316,14 @@ namespace Fungiiiii.Demo
         /// <summary>What is missing for the demo to start, or null when nothing is.</summary>
         private string FindProblem()
         {
-            if (playerPrefab == null || netItem == null || staminaSettings == null || netSettings == null || menuFont == null)
+            if (playerPrefab == null || netItem == null || staminaSettings == null || netSettings == null)
             {
-                return "the player prefab, the net item, the stamina or net settings, or the menu font is missing.";
+                return "the player prefab, the net item, or the stamina or net settings are missing.";
+            }
+
+            if (hotbar == null || inventoryView == null || pauseMenu == null || hintsPanel == null || keyPrompt == null)
+            {
+                return "a piece of the interface is missing: quick bar, inventory, pause menu, key hints or key prompt.";
             }
 
             if (startingQuickBar.Length == 0 || System.Array.IndexOf(startingQuickBar, null) >= 0)
@@ -410,10 +416,6 @@ namespace Fungiiiii.Demo
 
             player.AddComponent<StaminaDriver>().Initialize(player.GetComponent<PlayerMotor>(), stamina);
 
-            // Built inactive so that the player's inventory is bound before Awake builds the screen.
-            var inventoryObject = new GameObject("Inventory");
-            inventoryObject.SetActive(false);
-            inventoryView = inventoryObject.AddComponent<InventoryScreen>();
             inventoryView.Bind(backpack.Inventory, backpack.Layout);
             inventoryView.SetControls(new InventoryScreenControls(
                 controls.UI.Navigate,
@@ -421,9 +423,6 @@ namespace Fungiiiii.Demo
                 controls.UI.GatherAll,
                 controls.Screens.Inventory,
                 controls.UI.Cancel));
-            inventoryView.Font = menuFont;
-            inventoryObject.SetActive(true);
-            inventoryObject.SetActive(false);
             PutStartingItems();
         }
 
@@ -439,13 +438,11 @@ namespace Fungiiiii.Demo
         /// <summary>The quick bar shows the inventory's own quick bar slots.</summary>
         private void BuildHotbar()
         {
-            hotbar = new GameObject("Hotbar").AddComponent<Hotbar>();
             var actions = controls.Player;
             hotbar.Initialize(
                 Inventory,
                 backpack.Layout.QuickBarFirstSlot,
                 backpack.Layout.QuickBarSlotCount,
-                menuFont,
                 actions.HotbarNext,
                 actions.HotbarPrevious,
                 new[] { actions.HotbarSlot1, actions.HotbarSlot2, actions.HotbarSlot3 });
@@ -593,19 +590,13 @@ namespace Fungiiiii.Demo
                 new ControlHint(UiText.HintSwitchItem, HintInput.Of(actions.HotbarNext, actions.HotbarPrevious), optional: true),
                 new ControlHint(UiText.HintInventory, HintInput.Of(controls.Screens.Inventory)));
 
-            hintsPanel = new GameObject("Key Hints").AddComponent<ControlHintsPanel>();
-            hintsPanel.Initialize(menuFont, controls);
+            hintsPanel.Initialize(controls);
             ShowHints();
         }
 
         /// <summary>The hints of the screen on top, or of the game when none is open; the pause shows none.</summary>
         private void ShowHints()
         {
-            if (hintsPanel == null)
-            {
-                return;
-            }
-
             if (!screens.IsAnyOpen)
             {
                 hintsPanel.ShowFrom(interactor, hands, gameHints);
