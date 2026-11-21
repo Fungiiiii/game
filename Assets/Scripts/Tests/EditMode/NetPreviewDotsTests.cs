@@ -36,26 +36,32 @@ namespace Fungiiiii.Tests.EditMode
             return true;
         }
 
-        [Test]
-        public void TwoDotsInARow_AreAtLeastTheSpacingApart()
+        // A millimetre: the dots must not jump by a sample when the aim moves slightly.
+        private const float Tolerance = 0.001f;
+
+        [TestCase(-20f)]
+        [TestCase(0f)]
+        [TestCase(15f)]
+        [TestCase(30f)]
+        public void TwoDotsInARow_AreExactlyTheSpacingApart(float pitchDegrees)
         {
-            var dots = DotsFor(15f);
+            var dots = DotsFor(pitchDegrees);
 
             for (var index = 1; index < dots.Count; index++)
             {
-                Assert.That(Vector3.Distance(dots[index - 1], dots[index]), Is.GreaterThanOrEqualTo(NetPreviewDots.Spacing));
+                Assert.That(Vector3.Distance(dots[index - 1], dots[index]), Is.EqualTo(NetPreviewDots.Spacing).Within(Tolerance));
             }
         }
 
-        [Test]
-        public void NoDot_IsInTheFirstMetreFromTheHand()
+        [TestCase(-20f)]
+        [TestCase(15f)]
+        public void TheFirstDot_IsExactlyTheClearanceFromTheHand(float pitchDegrees)
         {
             var hand = new Vector3(0f, HandHeight, 0f);
 
-            foreach (var dot in DotsFor(-20f))
-            {
-                Assert.That(Vector3.Distance(dot, hand), Is.GreaterThanOrEqualTo(NetPreviewDots.Clearance));
-            }
+            var dots = DotsFor(pitchDegrees);
+
+            Assert.That(Vector3.Distance(dots[0], hand), Is.EqualTo(NetPreviewDots.Clearance).Within(Tolerance));
         }
 
         [Test]
