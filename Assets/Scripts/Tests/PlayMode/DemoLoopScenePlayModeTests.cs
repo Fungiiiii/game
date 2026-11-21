@@ -219,36 +219,96 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(spot.Interact(demo.Inventory), Is.False, "A gathered spot was gathered twice.");
         }
 
+        /// <summary>
+        /// Replaces SticksAndMushrooms_AreSpreadOverTheWholeMap: since the playtest of
+        /// 20/11 they are kept around the player instead of over the whole map.
+        /// </summary>
         [UnityTest]
-        public IEnumerator SticksAndMushrooms_AreSpreadOverTheWholeMap()
+        public IEnumerator SticksAndMushrooms_AreAroundThePlayer()
         {
             yield return LoadDemo();
             var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
             var terrain = Terrain.activeTerrain;
+            var player = Object.FindFirstObjectByType<PlayerMotor>().transform.position;
 
-            foreach (var itemId in new[] { DemoItems.WoodId, DemoItems.SporeId })
+            foreach (var (itemId, expected) in new[] { (DemoItems.WoodId, 4), (DemoItems.SporeId, 5) })
             {
                 var positions = demo.Gatherables
                     .Where(gatherable => gatherable.IsAvailable && gatherable.Item.Id == itemId)
                     .Select(gatherable => gatherable.transform.position)
                     .ToArray();
 
-                Assert.That(positions.Length, Is.GreaterThanOrEqualTo(40), $"Too few {itemId} on the map.");
-                Assert.That(
-                    positions.Max(position => position.x) - positions.Min(position => position.x),
-                    Is.GreaterThan(300f),
-                    $"{itemId} is not spread from west to east.");
-                Assert.That(
-                    positions.Max(position => position.z) - positions.Min(position => position.z),
-                    Is.GreaterThan(300f),
-                    $"{itemId} is not spread from south to north.");
+                Assert.That(positions.Count(position => GroundDistance(position, player) <= 50f), Is.EqualTo(expected), $"Not {expected} {itemId} within 50 m.");
 
                 foreach (var position in positions)
                 {
                     var ground = terrain.SampleHeight(position) + terrain.GetPosition().y;
                     Assert.That(position.y, Is.EqualTo(ground).Within(1f), $"A {itemId} is not on the ground.");
+                    Assert.That(GroundDistance(position, player), Is.GreaterThanOrEqualTo(8f), $"A {itemId} starts right next to the player.");
                 }
             }
+        }
+
+        [UnityTest]
+        public IEnumerator NoMushroomSpot_IsCloseToAStickSpot()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+
+            var sticks = demo.StickSpots.Select(spot => spot.Position).ToArray();
+            foreach (var mushroom in demo.MushroomSpots)
+            {
+                foreach (var stick in sticks)
+                {
+                    Assert.That(GroundDistance(mushroom.Position, stick), Is.GreaterThanOrEqualTo(1.5f), "A mushroom stands on a stick.");
+                }
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator MushroomsAppear_InSeveralModels_AllOutlined()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+            var timeScale = Time.timeScale;
+
+            // Gathered over and over, they come back in models drawn at random.
+            Time.timeScale = 20f;
+            for (var round = 0; round < 12; round++)
+            {
+                var available = demo.Gatherables.Where(candidate => candidate.IsAvailable && candidate.Item.Id == DemoItems.SporeId).ToArray();
+                Assert.That(available, Is.Not.Empty);
+                Assert.That(available[0].Interact(demo.Inventory), Is.True);
+
+                var elapsed = 0f;
+                while (elapsed < 3f && demo.Gatherables.Count(candidate => candidate.IsAvailable && candidate.Item.Id == DemoItems.SporeId) < available.Length)
+                {
+                    elapsed += Time.unscaledDeltaTime;
+                    yield return null;
+                }
+            }
+
+            Time.timeScale = timeScale;
+
+            var mushrooms = demo.Gatherables.Where(candidate => candidate.Item.Id == DemoItems.SporeId).ToArray();
+            var models = mushrooms.Select(mushroom => mushroom.GetComponentInChildren<LODGroup>(true).name).Distinct().ToArray();
+            Assert.That(models, Has.Length.GreaterThanOrEqualTo(2), "Every mushroom has the same model.");
+            Assert.That(models, Is.SubsetOf(new[] { "PF_MushroomCluster", "PF_MushroomCluster_02", "PF_MushroomCluster_03", "PF_MushroomCluster_04" }));
+
+            foreach (var mushroom in mushrooms)
+            {
+                Assert.That(
+                    mushroom.GetComponentsInChildren<MeshRenderer>(true).Any(renderer => renderer.name == "Outline"),
+                    Is.True,
+                    $"{mushroom.GetComponentInChildren<LODGroup>(true).name} has no outline.");
+            }
+        }
+
+        private static float GroundDistance(Vector3 a, Vector3 b)
+        {
+            var flat = a - b;
+            flat.y = 0f;
+            return flat.magnitude;
         }
 
         [UnityTest]
@@ -325,7 +385,7 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(sticks.First(stick => stick.IsAvailable).Interact(demo.Inventory), Is.True);
             Assert.That(sticks.Count(stick => stick.IsAvailable), Is.EqualTo(maximum - 1));
 
-            // A tick is 10 s of game time: sped up, it comes within a second.
+            // A tick is 5 s of game time: sped up, it comes within a second.
             var timeScale = Time.timeScale;
             Time.timeScale = 20f;
             var elapsed = 0f;
