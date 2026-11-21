@@ -68,6 +68,14 @@ namespace Fungiiiii.Tests.PlayMode
             UnityEngine.UI.Button[] controls = subject.GetComponentsInChildren<UnityEngine.UI.Button>();
             Assert.That(controls, Is.Empty);
 
+            // Without a CanvasRenderer, the panel, the slots and the key pills are not drawn.
+            var shapes = subject.GetComponentsInChildren<CutCornerGraphic>();
+            Assert.That(shapes, Is.Not.Empty);
+            foreach (var shape in shapes)
+            {
+                Assert.That(shape.GetComponent<CanvasRenderer>(), Is.Not.Null, $"{shape.name} cannot be drawn.");
+            }
+
             Assert.That(controller.Inventory.GetSlot(InventoryDemoController.MainSlotCount).ItemId, Is.EqualTo("demo_mushroom"));
             Assert.That(controller.Inventory.GetSlot(InventoryDemoController.MainSlotCount).Quantity, Is.EqualTo(5));
             Assert.That(controller.Inventory.GetSlot(InventoryDemoController.MainSlotCount + 1).ItemId, Is.EqualTo("demo_herb"));

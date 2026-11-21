@@ -362,6 +362,9 @@ namespace Fungiiiii.UI
                 pillLayout.padding = new RectOffset(10, 10, 2, 4);
                 pillLayout.childControlWidth = true;
                 pillLayout.childControlHeight = true;
+                // Forced expansion would make the pill flexible: the row's spare width would stretch it.
+                pillLayout.childForceExpandWidth = false;
+                pillLayout.childForceExpandHeight = false;
                 CreateHintText(pillObject.transform, key, Cream);
 
                 CreateHintText(hintObject.transform, action, HintText);
@@ -451,7 +454,9 @@ namespace Fungiiiii.UI
             label.alignment = TextAnchor.MiddleCenter;
             label.color = textColor;
             label.raycastTarget = false;
+            // A line taller than its box would be dropped, not clipped.
             label.horizontalOverflow = HorizontalWrapMode.Overflow;
+            label.verticalOverflow = VerticalWrapMode.Overflow;
             SetRect(label.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), size, top);
             label.gameObject.AddComponent<LocalizedLabel>().Initialize(entryKey);
             return label;
