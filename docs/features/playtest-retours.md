@@ -45,7 +45,7 @@
 
 - [ ] Clic gauche (gâchette droite) lance le filet, en visant ou non. Sans viser, aucun aperçu.
 - [ ] Clic droit (gâchette gauche) maintenu : l'arc et le cercle d'impact s'affichent, la vue se resserre de 60 à 45° en 0,15 s et tourne moins vite d'autant.
-- [ ] Les points de l'arc sont espacés de 75 cm, aucun dans le premier mètre, 24 au plus : leur nombre dit la portée.
+- [ ] Les points de l'arc sont espacés d'exactement 75 cm, le premier à 1 m de la main, 24 au plus : leur nombre dit la portée. Ils glissent sans sauter quand on bouge doucement la visée.
 - [ ] La pause et l'inventaire annulent la visée et remettent la vue à 60°.
 
 **#6 Chance de capture**
