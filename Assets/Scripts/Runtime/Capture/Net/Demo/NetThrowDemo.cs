@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
 using Fungiiiii.Controls;
+using Fungiiiii.Inventory;
+using Fungiiiii.Items;
 using Fungiiiii.Runtime.Player;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -77,6 +80,7 @@ namespace Fungiiiii.Capture
         private GameObject player;
         private CharacterController playerController;
         private PlayerControls controls;
+        private ItemDefinition netItem;
         private PrototypeFirstPersonCamera firstPersonCamera;
 
         public IReadOnlyList<NetDemoMushroom> Mushrooms => mushrooms;
@@ -106,6 +110,11 @@ namespace Fungiiiii.Capture
         {
             resetAction.performed -= OnResetPerformed;
             resetAction.Dispose();
+
+            if (netItem != null)
+            {
+                Destroy(netItem);
+            }
 
             foreach (var material in sceneMaterials)
             {
@@ -230,7 +239,32 @@ namespace Fungiiiii.Capture
             var random = randomSeed != 0 ? new System.Random(randomSeed) : new System.Random();
 
             Thrower = player.AddComponent<NetThrower>();
-            Thrower.Initialize(settings, firstPersonCamera.Camera, playerController, mushrooms, random, controls.Player.UsePrimary, controls.Player.UseSecondary);
+            Thrower.Initialize(settings, firstPersonCamera.Camera, playerController, mushrooms, random);
+
+            // No inventory in this prototype: the hands always hold the net.
+            netItem = ItemDefinition.Create("net", NetThrower.NetColor, 1);
+            var hands = player.AddComponent<PlayerHands>();
+            hands.Register(netItem, Thrower);
+            hands.Initialize(new NetOnlySelection(netItem), controls, firstPersonCamera.transform);
+        }
+
+        /// <summary>A quick bar of one slot that holds the net and never changes.</summary>
+        private sealed class NetOnlySelection : IItemSelection
+        {
+            private readonly PlayerInventory slots = new PlayerInventory(1);
+
+            public NetOnlySelection(ItemDefinition net)
+            {
+                slots.Add(net, 1);
+            }
+
+            event Action IItemSelection.SelectedSlotChanged
+            {
+                add { }
+                remove { }
+            }
+
+            public InventorySlot SelectedSlot => slots.GetSlot(0);
         }
 
         private void OnResetPerformed(InputAction.CallbackContext _)

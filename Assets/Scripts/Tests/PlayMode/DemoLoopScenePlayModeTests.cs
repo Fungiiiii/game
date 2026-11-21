@@ -710,7 +710,7 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(demo.Pause.HomeButton.gameObject.activeInHierarchy, Is.True);
             Assert.That(demo.Pause.QuitButton.gameObject.activeInHierarchy, Is.True);
             Assert.That(view.enabled, Is.False, "The view still turns.");
-            Assert.That(demo.Thrower.ThrowInputEnabled, Is.False, "The net can still be thrown.");
+            Assert.That(demo.Hands.InputEnabled, Is.False, "The net can still be thrown.");
             Assert.That(Cursor.lockState, Is.EqualTo(CursorLockMode.None), "The pointer is not free.");
 
             demo.Pause.ResumeButton.Button.onClick.Invoke();
@@ -720,7 +720,7 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(Time.timeScale, Is.EqualTo(1f));
             Assert.That(demo.Pause.ResumeButton.gameObject.activeInHierarchy, Is.False);
             Assert.That(view.enabled, Is.True);
-            Assert.That(demo.Thrower.ThrowInputEnabled, Is.True);
+            Assert.That(demo.Hands.InputEnabled, Is.True);
 
             // A second pause shows the menu as the first did, Resume standing out.
             demo.Pause.SetPaused(true);
