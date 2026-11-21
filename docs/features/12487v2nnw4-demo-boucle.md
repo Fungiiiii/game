@@ -80,7 +80,7 @@ La démo utilise la [Forêt mystique](./12487v2byt9-mystic-forest.md) **sans la 
 **Code existant modifié :**
 
 - `PlayerMotor` : `SprintAllowed` et `DodgeAllowed` (vrais par défaut), `IsSprintMoving`, événement `Dodged`. Sans propriétaire d'endurance, rien ne change : `MouvementJoueurScene` et `NetThrowScene` gardent leur comportement.
-- `InventoryDemoController` (Pol-Mattis) : `SeedsDemoItems`, vrai par défaut. Faux, l'inventaire démarre vide. `InventaireScene` ne change pas. Le risque n° 4 de la note est couvert par ce seul ajout : `Inventory.Add` existait déjà.
+- `InventoryScreen` (Pol-Mattis) : `SeedsDemoItems`, vrai par défaut. Faux, l'inventaire démarre vide. `InventaireScene` ne change pas. Le risque n° 4 de la note est couvert par ce seul ajout : `Inventory.Add` existait déjà.
 - `NetDemoMushroom` : `InitializeWithModel`, `EnableWander`, `FollowGround` (voir « Docs précédents »).
 - `NetThrower` : événement `CatchReturned`, propriété `ThrowInputEnabled`.
 
@@ -132,7 +132,7 @@ Lancés en batchmode avec Unity 6000.3.21f1 le 19/11, sur la machine d'Ilyes. Re
 | `DemoLoopScenePlayModeTests.GatheringASpot_PutsOneItemInTheInventory_AndHidesIt` | PlayMode | Cueillir donne 1 objet, le point disparaît et ne se cueille pas deux fois | ✅ |
 | `DemoLoopScenePlayModeTests.ACapture_PutsTheMushroomInTheInventory` | PlayMode | Un filet lâché sur un Spongeus finit par le capturer, et il entre dans l'inventaire (jusqu'à 12 essais, reset entre chaque) | ✅ |
 
-Les tests existants ne sont pas modifiés et doivent rester verts, en particulier `NetThrowScenePlayModeTests`, `PlayerMovementDemoPlayModeTests` et `InventoryDemoControllerPlayModeTests`.
+Les tests existants ne sont pas modifiés et doivent rester verts, en particulier `NetThrowScenePlayModeTests`, `PlayerMovementDemoPlayModeTests` et `InventoryScreenPlayModeTests`.
 
 ### Manuels (dans Unity)
 
