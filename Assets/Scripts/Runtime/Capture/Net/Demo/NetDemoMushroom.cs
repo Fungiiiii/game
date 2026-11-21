@@ -55,6 +55,9 @@ namespace Fungiiiii.Capture
 
         public NetTargetProfile Profile { get; private set; }
 
+        /// <summary>The model shown as its body, or null while it is drawn with primitives.</summary>
+        public GameObject Model { get; private set; }
+
         public MushroomCaptureState State => stateMachine.CurrentState;
 
         /// <summary>True while the net may target this mushroom: present and not captured.</summary>
@@ -375,6 +378,7 @@ namespace Fungiiiii.Capture
         {
             var model = Instantiate(modelPrefab, transform, false);
             model.name = "Model";
+            Model = model;
             modelRenderers = model.GetComponentsInChildren<Renderer>();
             highlightBlock = new MaterialPropertyBlock();
 

@@ -405,6 +405,144 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(prompt.IsVisible, Is.False, "The key shows over the inventory.");
         }
 
+        private static IEnumerator Wait(float seconds)
+        {
+            var elapsed = 0f;
+            while (elapsed < seconds)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator TheArc_ShowsOnlyWhileAiming()
+        {
+            yield return LoadDemo();
+            var thrower = Object.FindFirstObjectByType<DemoLoopBootstrap>().Thrower;
+
+            yield return null;
+            Assert.That(thrower.VisibleDotCount, Is.Zero, "The arc shows without aiming.");
+            Assert.That(thrower.IsImpactCircleShown, Is.False, "The impact circle shows without aiming.");
+
+            thrower.HoldAim = true;
+            yield return null;
+            yield return null;
+            Assert.That(thrower.IsAiming, Is.True);
+            Assert.That(thrower.VisibleDotCount, Is.InRange(1, 24));
+            Assert.That(thrower.IsImpactCircleShown, Is.True, "No impact circle while aiming at the ground ahead.");
+
+            thrower.HoldAim = false;
+            yield return null;
+            yield return null;
+            Assert.That(thrower.VisibleDotCount, Is.Zero);
+            Assert.That(thrower.IsImpactCircleShown, Is.False);
+        }
+
+        [UnityTest]
+        public IEnumerator Aiming_NarrowsTheViewTo45_AndReleasingWidensItBackTo60()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+            var camera = demo.ViewCamera;
+            Assert.That(camera.fieldOfView, Is.EqualTo(60f).Within(0.01f));
+
+            demo.Thrower.HoldAim = true;
+            yield return Wait(0.3f);
+            Assert.That(camera.fieldOfView, Is.EqualTo(45f).Within(0.01f));
+            Assert.That(camera.GetComponent<PrototypeFirstPersonCamera>().LookScale, Is.EqualTo(45f / 60f).Within(0.001f), "The look is not slowed while aiming.");
+
+            demo.Thrower.HoldAim = false;
+            yield return Wait(0.3f);
+            Assert.That(camera.fieldOfView, Is.EqualTo(60f).Within(0.01f));
+            Assert.That(camera.GetComponent<PrototypeFirstPersonCamera>().LookScale, Is.EqualTo(1f).Within(0.001f));
+        }
+
+        [UnityTest]
+        public IEnumerator ThePauseAndTheInventory_DropTheAim_AndWidenTheViewAtOnce()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+            var camera = demo.ViewCamera;
+            demo.Thrower.HoldAim = true;
+            yield return Wait(0.3f);
+
+            demo.Pause.SetPaused(true);
+            Assert.That(demo.Thrower.IsAiming, Is.False, "The pause kept the aim.");
+            Assert.That(camera.fieldOfView, Is.EqualTo(60f).Within(0.01f));
+            Assert.That(demo.Thrower.VisibleDotCount, Is.Zero);
+
+            demo.Pause.SetPaused(false);
+            yield return Wait(0.3f);
+            Assert.That(demo.Thrower.IsAiming, Is.True);
+
+            demo.SetInventoryOpen(true);
+            Assert.That(demo.Thrower.IsAiming, Is.False, "The inventory kept the aim.");
+            Assert.That(camera.fieldOfView, Is.EqualTo(60f).Within(0.01f));
+        }
+
+        [UnityTest]
+        public IEnumerator TheNet_IsThrownWhileAiming_AsWithoutAiming()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+            var origin = Object.FindFirstObjectByType<PlayerMotor>().transform.position + Vector3.forward * 2f;
+
+            demo.Thrower.HoldAim = true;
+            yield return null;
+            Assert.That(demo.Thrower.TryThrow(origin, Vector3.down), Is.True);
+            yield return null;
+            Assert.That(demo.Thrower.VisibleDotCount, Is.Zero, "The arc stays while the net is out.");
+        }
+
+        [UnityTest]
+        public IEnumerator OnlyTheMushroomAimedAt_IsOutlined_InTheColourOfItsChance()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+            var thrower = demo.Thrower;
+            var target = demo.Mushrooms[0];
+
+            foreach (var mushroom in demo.Mushrooms)
+            {
+                Assert.That(OutlinesOf(mushroom), Is.Not.Empty, $"{mushroom.name} has no outline: is its model readable?");
+                Assert.That(OutlinesOf(mushroom).Any(renderer => renderer.enabled), Is.False, $"{mushroom.name} is outlined without aiming.");
+            }
+
+            thrower.HoldAim = true;
+            yield return null;
+            yield return null;
+            Assert.That(thrower.IsImpactCircleShown, Is.True);
+            target.transform.position = thrower.PreviewLandingPoint;
+            yield return null;
+            yield return null;
+
+            Assert.That(thrower.PreviewTarget, Is.SameAs(target));
+            Assert.That(demo.TargetOutline.Shown, Is.SameAs(target));
+            Assert.That(OutlinesOf(target).All(renderer => renderer.enabled), Is.True, "The mushroom aimed at is not outlined.");
+            foreach (var other in demo.Mushrooms.Where(mushroom => mushroom != target))
+            {
+                Assert.That(OutlinesOf(other).Any(renderer => renderer.enabled), Is.False, $"{other.name} is outlined but not aimed at.");
+            }
+
+            Assert.That(
+                demo.TargetOutline.Color,
+                Is.EqualTo(NetChanceColors.Evaluate(thrower.PreviewChance)).Using(ColorEqualityComparer.Instance),
+                "The outline is not the colour of the chance.");
+            Assert.That(OutlinesOf(target)[0].sharedMaterial.GetColor("_Color"), Is.EqualTo(demo.TargetOutline.Color).Using(ColorEqualityComparer.Instance));
+
+            thrower.HoldAim = false;
+            yield return null;
+            yield return null;
+            Assert.That(demo.TargetOutline.Shown, Is.Null);
+            Assert.That(OutlinesOf(target).Any(renderer => renderer.enabled), Is.False, "The outline stays after the aim.");
+        }
+
+        private static MeshRenderer[] OutlinesOf(NetDemoMushroom mushroom)
+        {
+            return mushroom.Model.GetComponentsInChildren<MeshRenderer>(true).Where(renderer => renderer.name == "Outline").ToArray();
+        }
+
         private static float GroundDistance(Vector3 a, Vector3 b)
         {
             var flat = a - b;

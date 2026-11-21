@@ -44,6 +44,21 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator TheArc_ShowsOnlyWhileAiming()
+        {
+            yield return LoadNetScene();
+            var thrower = Object.FindFirstObjectByType<NetThrowDemo>().Thrower;
+
+            yield return null;
+            Assert.That(thrower.VisibleDotCount, Is.Zero, "The arc shows without aiming.");
+
+            thrower.HoldAim = true;
+            yield return null;
+            yield return null;
+            Assert.That(thrower.VisibleDotCount, Is.InRange(1, 24));
+        }
+
+        [UnityTest]
         public IEnumerator ANetDroppedOnAMushroom_LandsOnIt_AndChangesItsState()
         {
             yield return LoadNetScene();

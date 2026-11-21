@@ -33,6 +33,9 @@ namespace Fungiiiii.Capture
 
         public Camera Camera { get; private set; }
 
+        /// <summary>Multiplies how fast the view turns: the net's aim slows it as it narrows the view.</summary>
+        public float LookScale { get; set; } = 1f;
+
         public void Initialize(PlayerMotor playerMotor, float initialYawDegrees)
         {
             motor = playerMotor;
@@ -92,7 +95,7 @@ namespace Fungiiiii.Capture
 
             var look = lookAction.ReadValue<Vector2>();
             var fromMouse = lookAction.activeControl != null && lookAction.activeControl.device is Mouse;
-            var scale = fromMouse ? MouseDegreesPerPixel : StickDegreesPerSecond * Time.deltaTime;
+            var scale = (fromMouse ? MouseDegreesPerPixel : StickDegreesPerSecond * Time.deltaTime) * LookScale;
 
             yaw += look.x * scale;
             pitch = Mathf.Clamp(pitch - look.y * scale, -MaxPitchDegrees, MaxPitchDegrees);
