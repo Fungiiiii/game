@@ -37,6 +37,41 @@ namespace Fungiiiii.Tests.EditMode
         }
 
         [Test]
+        public void WithTheLayoutsFillOrder_PickedUpItemsGoToTheQuickBarFirst_ThenTheBag()
+        {
+            var layout = new InventoryLayout(4, 2);
+            var inventory = new PlayerInventory(layout.SlotCount, layout.FillOrder());
+            var stick = CreateItem(maxStackSize: 2);
+
+            inventory.Add(stick, 2);
+            Assert.That(inventory.GetSlot(layout.QuickBarSlot(0)).Quantity, Is.EqualTo(2), "A picked-up item did not go to the quick bar.");
+
+            inventory.Add(stick, 3);
+            Assert.That(inventory.GetSlot(layout.QuickBarSlot(1)).Quantity, Is.EqualTo(2), "The quick bar did not fill before the bag.");
+            Assert.That(inventory.GetSlot(0).Quantity, Is.EqualTo(1), "Once the quick bar is full, the bag does not take the rest.");
+        }
+
+        [Test]
+        public void ExistingStacks_AreToppedUpFirst_EvenInTheBag()
+        {
+            var layout = new InventoryLayout(4, 2);
+            var inventory = new PlayerInventory(layout.SlotCount, layout.FillOrder());
+            var stick = CreateItem(maxStackSize: 5);
+            inventory.AddToSlot(2, stick, 1);
+
+            inventory.Add(stick, 1);
+
+            Assert.That(inventory.GetSlot(2).Quantity, Is.EqualTo(2), "A new stack was opened next to one that had room.");
+            Assert.That(inventory.GetSlot(layout.QuickBarSlot(0)).IsEmpty, Is.True);
+        }
+
+        [Test]
+        public void AFillOrderThatMissesASlot_IsRefused()
+        {
+            Assert.Throws<ArgumentException>(() => new PlayerInventory(3, new[] { 0, 1, 1 }));
+        }
+
+        [Test]
         public void Add_FillsExistingStackBeforeOpeningAnotherSlot()
         {
             var inventory = new PlayerInventory(3);

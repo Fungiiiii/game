@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Fungiiiii.Inventory
 {
@@ -29,15 +30,18 @@ namespace Fungiiiii.Inventory
     }
 
     /// <summary>
-    /// Small, scene-independent inventory implementation for the player POC.
-    /// A slot holds a definition and a quantity: two stacks are the same item when they
-    /// point to the same <see cref="ItemDefinition"/>.
+    /// The player's inventory, without Unity: a row of slots, each holding a definition
+    /// and a quantity. Two stacks are the same item when they point to the same
+    /// <see cref="ItemDefinition"/>. Items added fill the slots in its fill order: the
+    /// player's quick bar first, so that what they pick up is in hand at once.
     /// </summary>
     public sealed class PlayerInventory
     {
         private readonly SlotData[] slots;
+        private readonly int[] fillOrder;
 
-        public PlayerInventory(int slotCount)
+        /// <param name="order">The order in which added items fill the slots, every slot once; null for the slots' own order.</param>
+        public PlayerInventory(int slotCount, IReadOnlyList<int> order = null)
         {
             if (slotCount <= 0)
             {
@@ -45,6 +49,16 @@ namespace Fungiiiii.Inventory
             }
 
             slots = new SlotData[slotCount];
+            fillOrder = new int[slotCount];
+            for (var position = 0; position < slotCount; position++)
+            {
+                fillOrder[position] = order != null ? order[position] : position;
+            }
+
+            if (order != null && (order.Count != slotCount || fillOrder.Distinct().Count() != slotCount || fillOrder.Any(slot => slot < 0 || slot >= slotCount)))
+            {
+                throw new ArgumentException("The fill order must name every slot once.", nameof(order));
+            }
         }
 
         public event Action Changed;
@@ -79,7 +93,7 @@ namespace Fungiiiii.Inventory
 
         /// <summary>
         /// Adds as many items as fit and returns the number that was added.
-        /// Existing stacks of the item are filled before empty slots are used.
+        /// Existing stacks of the item are filled before empty slots are used, each in the fill order.
         /// </summary>
         public int Add(ItemDefinition item, int quantity)
         {
@@ -90,17 +104,17 @@ namespace Fungiiiii.Inventory
             }
 
             int remaining = quantity;
-            for (int i = 0; i < slots.Length && remaining > 0; i++)
+            foreach (var i in fillOrder)
             {
-                if (slots[i].Item == item)
+                if (remaining > 0 && slots[i].Item == item)
                 {
                     remaining -= Fill(i, item, remaining);
                 }
             }
 
-            for (int i = 0; i < slots.Length && remaining > 0; i++)
+            foreach (var i in fillOrder)
             {
-                if (slots[i].IsEmpty)
+                if (remaining > 0 && slots[i].IsEmpty)
                 {
                     remaining -= Fill(i, item, remaining);
                 }

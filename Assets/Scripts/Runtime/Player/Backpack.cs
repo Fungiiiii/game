@@ -24,6 +24,6 @@ namespace Fungiiiii.Runtime.Player
         public InventoryLayout Layout => new InventoryLayout(bagSlotCount, quickBarSlotCount);
 
         // Built on first use: the screens may ask for it before this component's Awake.
-        public PlayerInventory Inventory => inventory ??= new PlayerInventory(Layout.SlotCount);
+        public PlayerInventory Inventory => inventory ??= new PlayerInventory(Layout.SlotCount, Layout.FillOrder());
     }
 }

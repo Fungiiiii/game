@@ -90,6 +90,11 @@
 - [ ] **Saut** : Espace, ou A / ✕ à la manette, saute d'environ 1,2 m, au sol seulement et pas accroupi. Le dodge n'existe plus.
 - [ ] **Zoom** : ouvrir l'inventaire ou la pause en visant élargit la vue comme le relâchement du clic droit, sur 0,15 s, au lieu d'un coup.
 
+**Retours du 21/11, troisième vague**
+
+- [ ] **Les objets ramassés vont d'abord dans la barre rapide** (Hugo, 21/11), comme dans Minecraft : d'abord compléter une pile du même objet où qu'elle soit, puis les cases libres de la barre rapide, puis le sac. `InventoryLayout.FillOrder`, que `Backpack` donne à `PlayerInventory`.
+- [ ] **Le cercle de l'appui long n'apparaît qu'après le temps d'un appui court** (0,3 s), puis se remplit : voir [spongeus-fougere](./spongeus-fougere.md).
+
 **Nettoyage du 21/11 (refactor, aucun comportement ne change)**
 
 Hugo : « tout ce qui est dans le playtest devrait être quelque chose de non expérimental », et les textes au bon endroit seulement.

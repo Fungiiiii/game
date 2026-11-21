@@ -50,6 +50,23 @@ namespace Fungiiiii.Inventory
 
         public bool IsInQuickBar(int slot) => slot >= BagSlotCount && slot < SlotCount;
 
+        /// <summary>The order in which picked-up items fill the slots: the quick bar first, then the bag, as in Minecraft.</summary>
+        public int[] FillOrder()
+        {
+            var order = new int[SlotCount];
+            for (var position = 0; position < QuickBarSlotCount; position++)
+            {
+                order[position] = QuickBarSlot(position);
+            }
+
+            for (var slot = 0; slot < BagSlotCount; slot++)
+            {
+                order[QuickBarSlotCount + slot] = slot;
+            }
+
+            return order;
+        }
+
         public bool Equals(InventoryLayout other) => BagSlotCount == other.BagSlotCount && QuickBarSlotCount == other.QuickBarSlotCount;
 
         public override bool Equals(object obj) => obj is InventoryLayout other && Equals(other);
