@@ -30,6 +30,7 @@ namespace Fungiiiii.UI
         private static readonly Color32 DimWood = new Color32(0x6B, 0x4A, 0x36, 0xFF);
         private static readonly Color32 Cyan = new Color32(0x6F, 0xD6, 0xEA, 0xFF);
 
+        [SerializeField]
         private Shape shape;
 
         public Shape Drawn
@@ -39,6 +40,30 @@ namespace Fungiiiii.UI
             {
                 shape = value;
                 SetVerticesDirty();
+            }
+        }
+
+        /// <summary>The drawn shape of a control without a name; null when it has one, or is the triangle.</summary>
+        public static Shape? Of(Glyph glyph)
+        {
+            switch (glyph.Kind)
+            {
+                case GlyphKind.MouseLeft:
+                    return Shape.MouseLeft;
+                case GlyphKind.MouseRight:
+                    return Shape.MouseRight;
+                case GlyphKind.MouseWheel:
+                    return Shape.MouseWheel;
+                case GlyphKind.View:
+                    return Shape.View;
+                case GlyphKind.Face when glyph.Face == FaceShape.Cross:
+                    return Shape.Cross;
+                case GlyphKind.Face when glyph.Face == FaceShape.Circle:
+                    return Shape.Circle;
+                case GlyphKind.Face when glyph.Face == FaceShape.Square:
+                    return Shape.Square;
+                default:
+                    return null;
             }
         }
 

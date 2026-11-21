@@ -24,13 +24,15 @@ namespace Fungiiiii.Tests.PlayMode
         private static readonly int Spores = InventoryLayout.Standard.QuickBarFirstSlot + 2;
 
         private GameObject subject;
+        private GameObject eventSystem;
         private InventoryScreen controller;
 
         [UnitySetUp]
         public IEnumerator CreateTheScreen()
         {
-            subject = new GameObject("Inventory Under Test");
-            controller = subject.AddComponent<InventoryScreen>();
+            eventSystem = UiPrefabs.CreateEventSystem();
+            controller = UiPrefabs.Instantiate<InventoryScreen>("Inventory");
+            subject = controller.gameObject;
             subject.AddComponent<InventoryPrototypeSeed>();
             yield return null;
         }
@@ -43,15 +45,14 @@ namespace Fungiiiii.Tests.PlayMode
                 Object.Destroy(subject);
             }
 
+            Object.Destroy(eventSystem);
+
             yield return null;
         }
 
         private void Press(int slot, PointerEventData.InputButton button)
         {
-            var slotObject = subject.transform.Find(
-                slot < InventoryLayout.Standard.QuickBarFirstSlot
-                    ? $"InventoryCanvas/InventoryPanel/InventoryGrid_3x4/InventorySlot_{slot}"
-                    : $"InventoryCanvas/InventoryPanel/Hotbar_3Slots/InventorySlot_{slot}").gameObject;
+            var slotObject = SlotObject(slot);
             var press = new PointerEventData(EventSystem.current) { button = button, position = new Vector2(100f, 100f) };
             ExecuteEvents.Execute(slotObject, press, ExecuteEvents.pointerDownHandler);
         }
@@ -60,10 +61,7 @@ namespace Fungiiiii.Tests.PlayMode
 
         private GameObject SlotObject(int slot)
         {
-            return subject.transform.Find(
-                slot < InventoryLayout.Standard.QuickBarFirstSlot
-                    ? $"InventoryCanvas/InventoryPanel/InventoryGrid_3x4/InventorySlot_{slot}"
-                    : $"InventoryCanvas/InventoryPanel/Hotbar_3Slots/InventorySlot_{slot}").gameObject;
+            return controller.SlotObject(slot);
         }
 
         private UnityEngine.UI.Selectable SelectableOf(int slot) => SlotObject(slot).GetComponent<UnityEngine.UI.Selectable>();
@@ -142,9 +140,8 @@ namespace Fungiiiii.Tests.PlayMode
         {
             Assert.That(controller.Inventory.SlotCount, Is.EqualTo(InventoryLayout.Standard.SlotCount));
             Assert.That(controller.Inventory.Count("demo_mushroom"), Is.EqualTo(6));
-            Assert.That(subject.transform.Find("InventoryCanvas/InventoryPanel/InventoryGrid_3x4"), Is.Not.Null);
-            Assert.That(subject.transform.Find("InventoryCanvas/InventoryPanel/Hotbar_3Slots"), Is.Not.Null);
-            Assert.That(subject.GetComponentInChildren<UnityEngine.UI.Image>().sprite, Is.Not.Null);
+            Assert.That(subject.transform.Find("InventoryPanel/Bag").childCount, Is.EqualTo(InventoryLayout.Standard.BagSlotCount));
+            Assert.That(subject.transform.Find("InventoryPanel/QuickBar").childCount, Is.EqualTo(InventoryLayout.Standard.QuickBarSlotCount));
 
             UnityEngine.UI.Button[] controls = subject.GetComponentsInChildren<UnityEngine.UI.Button>();
             Assert.That(controls, Is.Empty);
@@ -189,7 +186,7 @@ namespace Fungiiiii.Tests.PlayMode
             Press(Spores, PointerEventData.InputButton.Left);
 
             Assert.That(controller.Hand.Quantity, Is.EqualTo(8), "The press waited before taking the stack.");
-            Assert.That(subject.transform.Find("InventoryCanvas/HeldItem").gameObject.activeSelf, Is.True, "Nothing follows the mouse.");
+            Assert.That(subject.transform.Find("HeldItem").gameObject.activeSelf, Is.True, "Nothing follows the mouse.");
             yield return null;
         }
 

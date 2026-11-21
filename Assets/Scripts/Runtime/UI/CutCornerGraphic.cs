@@ -12,15 +12,33 @@ namespace Fungiiiii.UI
     [RequireComponent(typeof(CanvasRenderer))]
     internal sealed class CutCornerGraphic : MaskableGraphic
     {
+        [SerializeField, Min(0f), Tooltip("Size of the cut corners, in canvas units.")]
         private float corner = 10f;
+
+        [SerializeField]
         private Color face = Color.white;
+
+        [SerializeField]
         private Color topBand = Color.clear;
+
+        [SerializeField, Min(0f), Tooltip("No deeper than the corners.")]
         private float topBandHeight;
+
+        [SerializeField]
         private Color bottomBand = Color.clear;
+
+        [SerializeField, Min(0f), Tooltip("No deeper than the corners.")]
         private float bottomBandHeight;
+
+        [SerializeField, Tooltip("A see-through facet over the right part; clear for none.")]
         private Color facet = Color.clear;
+
+        [SerializeField, Range(0f, 1f), Tooltip("Where the facet starts along the top edge, as a share of the width.")]
         private float facetTopShare = 1f;
+
+        [SerializeField, Range(0f, 1f), Tooltip("Where the facet starts along the bottom edge, as a share of the width.")]
         private float facetBottomShare = 1f;
+
         private float brightness = 1f;
 
         /// <summary>Multiplies every colour, for a slot under the pointer.</summary>
@@ -35,32 +53,6 @@ namespace Fungiiiii.UI
                     SetVerticesDirty();
                 }
             }
-        }
-
-        public void SetShape(float cornerSize, Color faceColor)
-        {
-            corner = cornerSize;
-            face = faceColor;
-            SetVerticesDirty();
-        }
-
-        /// <summary>Bands no deeper than the corners, along the top and the bottom edges.</summary>
-        public void SetBands(Color topColor, float topHeight, Color bottomColor, float bottomHeight)
-        {
-            topBand = topColor;
-            topBandHeight = topHeight;
-            bottomBand = bottomColor;
-            bottomBandHeight = bottomHeight;
-            SetVerticesDirty();
-        }
-
-        /// <summary>A facet over the right part, from a share of the width at the top to another at the bottom.</summary>
-        public void SetFacet(Color facetColor, float topShare, float bottomShare)
-        {
-            facet = facetColor;
-            facetTopShare = topShare;
-            facetBottomShare = bottomShare;
-            SetVerticesDirty();
         }
 
         protected override void OnPopulateMesh(VertexHelper vertexHelper)

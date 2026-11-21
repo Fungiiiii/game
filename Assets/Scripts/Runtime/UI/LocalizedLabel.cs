@@ -6,49 +6,65 @@ namespace Fungiiiii.UI
 {
     /// <summary>
     /// Shows one entry of the "UI" string table in a label, in the current language, and
-    /// again whenever the language changes.
+    /// again whenever the language changes. The entry is set in the Inspector, or by the
+    /// owner of a label made at runtime.
     /// </summary>
     [RequireComponent(typeof(Text))]
     internal sealed class LocalizedLabel : MonoBehaviour
     {
+        [Tooltip("Key of the entry in the \"UI\" string table.")]
+        [SerializeField]
+        private string entryKey;
+
         private LocalizedString localized;
-        private Text label;
 
-        /// <summary>The key of the entry shown, for tests.</summary>
-        public string EntryKey { get; private set; }
+        /// <summary>The key of the entry shown.</summary>
+        public string EntryKey => entryKey;
 
-        public void Initialize(string entryKey)
+        /// <summary>Shows another entry of the table.</summary>
+        public void Show(string key)
         {
-            label = GetComponent<Text>();
-            EntryKey = entryKey;
-            localized = new LocalizedString(UiText.Table, entryKey);
-
-            // OnEnable ran before the entry was known, if the label is already shown.
+            StopListening();
+            entryKey = key;
             if (isActiveAndEnabled)
             {
-                localized.StringChanged += Apply;
+                Listen();
             }
         }
 
         private void OnEnable()
         {
-            if (localized != null)
-            {
-                localized.StringChanged += Apply;
-            }
+            Listen();
         }
 
         private void OnDisable()
         {
+            StopListening();
+        }
+
+        private void Listen()
+        {
+            if (string.IsNullOrEmpty(entryKey))
+            {
+                return;
+            }
+
+            localized = new LocalizedString(UiText.Table, entryKey);
+            localized.StringChanged += Apply;
+        }
+
+        private void StopListening()
+        {
             if (localized != null)
             {
                 localized.StringChanged -= Apply;
+                localized = null;
             }
         }
 
         private void Apply(string text)
         {
-            label.text = text;
+            GetComponent<Text>().text = text;
         }
     }
 }

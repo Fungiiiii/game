@@ -15,26 +15,26 @@ namespace Fungiiiii.UI
         /// <summary>Seconds to go from rest to fully highlighted. Runs on real time: menus work while the game is paused.</summary>
         private const float TransitionSeconds = 0.14f;
 
+        [Tooltip("Holds the plank and its label: it slides, while the button's own rectangle stays put under the pointer.")]
+        [SerializeField]
         private RectTransform face;
+
+        [SerializeField]
         private PlankGraphic plank;
-        private Vector2 slide;
+
+        [SerializeField]
+        private LocalizedLabel label;
+
+        [Tooltip("How far the face slides when the plank is selected, in canvas units.")]
+        [SerializeField]
+        private Vector2 slide = new Vector2(0f, 6f);
+
         private float target;
         private float current;
 
-        public Button Button { get; private set; }
+        public Button Button => GetComponent<Button>();
 
-        public LocalizedLabel Label { get; private set; }
-
-        /// <param name="movingFace">Holds the plank and its label: it slides, while the button's own rectangle stays put under the pointer.</param>
-        public void Initialize(RectTransform movingFace, PlankGraphic plankGraphic, LocalizedLabel label, Vector2 slideWhenHighlighted)
-        {
-            Button = GetComponent<Button>();
-            face = movingFace;
-            plank = plankGraphic;
-            Label = label;
-            slide = slideWhenHighlighted;
-            Apply();
-        }
+        public LocalizedLabel Label => label;
 
         public void OnPointerEnter(PointerEventData eventData)
         {
@@ -77,11 +77,6 @@ namespace Fungiiiii.UI
 
         private void Apply()
         {
-            if (face == null)
-            {
-                return;
-            }
-
             // Ease out: quick start, soft landing.
             var eased = 1f - (1f - current) * (1f - current);
             face.anchoredPosition = slide * eased;

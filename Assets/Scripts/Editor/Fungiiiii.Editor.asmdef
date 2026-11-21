@@ -3,6 +3,7 @@
     "rootNamespace": "Fungiiiii.Editor",
     "references": [
         "Fungiiiii.Runtime",
+        "Unity.InputSystem",
         "Unity.Localization",
         "Unity.Localization.Editor"
     ],

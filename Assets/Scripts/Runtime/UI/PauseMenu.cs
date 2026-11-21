@@ -12,16 +12,23 @@ namespace Fungiiiii.UI
     /// </summary>
     internal sealed class PauseMenu : MonoBehaviour, IGameScreen
     {
-        /// <summary>Above the HUD and the inventory.</summary>
-        private const int CanvasSortingOrder = 200;
+        [Tooltip("The veil and the planks, hidden while the game runs.")]
+        [SerializeField]
+        private GameObject content;
 
-        /// <summary>The darkest tone of the forest's sky, at two thirds strength.</summary>
-        private static readonly Color Veil = new Color32(0x1E, 0x26, 0x30, 0xA8);
+        [SerializeField]
+        private PlankButton resumeButton;
 
-        private static readonly Vector2 ButtonSlide = new Vector2(0f, 6f);
+        [SerializeField]
+        private PlankButton homeButton;
 
-        private GameObject canvasObject;
-        private string homeScenePath;
+        [SerializeField]
+        private PlankButton quitButton;
+
+        [Tooltip("Path of the scene Home loads. It has to be in the build settings.")]
+        [SerializeField]
+        private string homeScenePath = "Assets/Scenes/Menu/MainMenu.unity";
+
         private float timeScaleBeforePause = 1f;
 
         /// <summary>Raised by Resume: the screen stack closes the menu.</summary>
@@ -29,33 +36,18 @@ namespace Fungiiiii.UI
 
         public bool IsPaused { get; private set; }
 
-        public PlankButton ResumeButton { get; private set; }
+        public PlankButton ResumeButton => resumeButton;
 
-        public PlankButton HomeButton { get; private set; }
+        public PlankButton HomeButton => homeButton;
 
-        public PlankButton QuitButton { get; private set; }
+        public PlankButton QuitButton => quitButton;
 
-        /// <param name="homeScene">Path of the scene Home loads. It has to be in the build settings.</param>
-        public void Initialize(Font font, string homeScene)
+        private void Awake()
         {
-            homeScenePath = homeScene;
-
-            var canvas = WoodMenu.CreateCanvas("Pause Menu Canvas", CanvasSortingOrder);
-            canvasObject = canvas.gameObject;
-            canvasObject.transform.SetParent(transform, false);
-            var root = (RectTransform)canvas.transform;
-
-            // The veil catches the pointer: nothing under the pause menu can be clicked.
-            WoodMenu.CreateVeil(root, "Veil", Veil).raycastTarget = true;
-
-            var centre = new Vector2(0.5f, 0.5f);
-            var step = Vector2.down * (WoodMenu.ButtonSize.y + WoodMenu.ButtonSpacing);
-            var first = -step;
-            ResumeButton = WoodMenu.CreateButton(root, font, UiText.PauseResume, centre, first, ButtonSlide, 0.74f, Resume);
-            HomeButton = WoodMenu.CreateButton(root, font, UiText.PauseHome, centre, first + step, ButtonSlide, 0.82f, GoHome);
-            QuitButton = WoodMenu.CreateButton(root, font, UiText.PauseQuit, centre, first + step * 2f, ButtonSlide, 0.68f, GameExit.Quit);
-
-            canvasObject.SetActive(false);
+            resumeButton.Button.onClick.AddListener(Resume);
+            homeButton.Button.onClick.AddListener(GoHome);
+            quitButton.Button.onClick.AddListener(GameExit.Quit);
+            content.SetActive(false);
         }
 
         /// <summary>Freezes the game and shows the menu.</summary>
@@ -72,7 +64,7 @@ namespace Fungiiiii.UI
 
         private void SetPaused(bool paused)
         {
-            if (paused == IsPaused || canvasObject == null)
+            if (paused == IsPaused)
             {
                 return;
             }
@@ -89,13 +81,13 @@ namespace Fungiiiii.UI
                 Time.timeScale = timeScaleBeforePause;
             }
 
-            canvasObject.SetActive(paused);
+            content.SetActive(paused);
 
             if (paused)
             {
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
-                EventSystem.current.SetSelectedGameObject(ResumeButton.gameObject);
+                EventSystem.current.SetSelectedGameObject(resumeButton.gameObject);
             }
             else
             {
