@@ -1,5 +1,6 @@
 using Fungiiiii.Gathering;
 using Fungiiiii.Inventory;
+using UnityEngine;
 
 namespace Fungiiiii.Demo
 {
@@ -8,6 +9,9 @@ namespace Fungiiiii.Demo
     {
         /// <summary>Where it is, how close the player must be, and whether it can be used now.</summary>
         InteractionCandidate Candidate { get; }
+
+        /// <summary>Where the key to press is shown above it, in world space.</summary>
+        Vector3 PromptPoint { get; }
 
         /// <summary>Shows or hides that the player is aiming at it.</summary>
         void SetTargeted(bool targeted);

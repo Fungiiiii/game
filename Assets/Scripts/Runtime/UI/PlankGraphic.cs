@@ -82,7 +82,7 @@ namespace Fungiiiii.UI
             // The face, between the lit edge and the underside.
             var faceTop = top - lit;
             var faceBottom = bottom + under;
-            AddPolygon(
+            Polygon.Add(
                 vertexHelper,
                 face,
                 new Vector2(left + cut - lit, faceTop),
@@ -99,7 +99,7 @@ namespace Fungiiiii.UI
             var facetBottom = facetTop - (faceTop - faceBottom) * 0.27f;
             if (facetTop < right - cut + lit)
             {
-                AddPolygon(
+                Polygon.Add(
                     vertexHelper,
                     endFacet,
                     new Vector2(facetTop, faceTop),
@@ -110,7 +110,7 @@ namespace Fungiiiii.UI
                     new Vector2(facetBottom, faceBottom));
             }
 
-            AddPolygon(
+            Polygon.Add(
                 vertexHelper,
                 Shade(LitEdge),
                 new Vector2(left + cut, top),
@@ -118,7 +118,7 @@ namespace Fungiiiii.UI
                 new Vector2(right - cut + lit, faceTop),
                 new Vector2(left + cut - lit, faceTop));
 
-            AddPolygon(
+            Polygon.Add(
                 vertexHelper,
                 Shade(Underside),
                 new Vector2(left + cut - under, faceBottom),
@@ -131,21 +131,6 @@ namespace Fungiiiii.UI
         {
             Color lit = Color.Lerp(baseColor, Color.white, HighlightGain * highlight);
             return lit * color;
-        }
-
-        /// <summary>A convex polygon in one flat colour, as a fan around its first corner.</summary>
-        private static void AddPolygon(VertexHelper vertexHelper, Color32 flatColor, params Vector2[] corners)
-        {
-            var first = vertexHelper.currentVertCount;
-            foreach (var point in corners)
-            {
-                vertexHelper.AddVert(point, flatColor, Vector4.zero);
-            }
-
-            for (var index = 1; index < corners.Length - 1; index++)
-            {
-                vertexHelper.AddTriangle(first, first + index, first + index + 1);
-            }
         }
     }
 }

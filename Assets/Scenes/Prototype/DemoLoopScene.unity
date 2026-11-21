@@ -198,7 +198,7 @@ MonoBehaviour:
     height: 580
   outlineColor: {r: 0.9490196, g: 0.9019608, b: 0.8, a: 1}
   outlineWidth: 2.5
-  targetedOutlineColor: {r: 1, g: 0.972549, b: 0.9098039, a: 1}
+  targetedOutlineColor: {r: 0.43529412, g: 0.8392157, b: 0.91764706, a: 1}
   targetedOutlineWidth: 4
   outlineFade: {x: 16, y: 30}
   buildHole: 0
