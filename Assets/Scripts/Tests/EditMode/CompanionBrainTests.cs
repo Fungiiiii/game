@@ -10,6 +10,7 @@ namespace Fungiiiii.Tests.EditMode
     {
         private const float Frame = 1f / 60f;
         private const float FollowDistance = 2.5f;
+        private const float StopDistance = 3f;
         private const float StartDistance = 5f;
         private const float SideOffset = 1f;
         private const float WalkSpeed = 3.5f;
@@ -74,7 +75,7 @@ namespace Fungiiiii.Tests.EditMode
         private CompanionBrain NewBrain()
         {
             return new CompanionBrain(
-                new CompanionTuning(FollowDistance, StartDistance, SideOffset, WalkSpeed, RunSpeed, CatchUpGain, Acceleration, CatchUp, SeekRadius, SoakSeconds, Arrival),
+                new CompanionTuning(FollowDistance, StopDistance, StartDistance, SideOffset, WalkSpeed, RunSpeed, CatchUpGain, Acceleration, CatchUp, SeekRadius, SoakSeconds, Arrival),
                 water);
         }
 
@@ -89,6 +90,20 @@ namespace Fungiiiii.Tests.EditMode
             return position;
         }
 
+        /// <summary>Runs the brain with the player standing still and turning the view round and round.</summary>
+        private static Vector3 RunSpinningView(CompanionBrain brain, Vector3 position, float seconds)
+        {
+            var angle = 0f;
+            for (var elapsed = 0f; elapsed < seconds; elapsed += Frame)
+            {
+                angle += 360f * Frame;
+                var view = Quaternion.Euler(0f, angle, 0f) * Vector3.forward;
+                position = brain.Step(position, Vector3.zero, view, None, Frame).Position;
+            }
+
+            return position;
+        }
+
         private static float Flat(Vector3 a, Vector3 b)
         {
             return new Vector2(a.x - b.x, a.z - b.z).magnitude;
@@ -97,14 +112,53 @@ namespace Fungiiiii.Tests.EditMode
         private static readonly IAbsorbable[] None = new IAbsorbable[0];
 
         [Test]
-        public void Far_ItGoesToItsPlaceBehindAndBesideThePlayer_AndRestsThere()
+        public void Far_ItComesBack_AndRestsAsSoonAsItIsWithinReach()
         {
             var brain = NewBrain();
             var end = Run(brain, new Vector3(-12f, 0f, 6f), Vector3.zero, None, 5f);
 
-            Assert.That(Flat(end, PlaceAtOrigin), Is.LessThan(0.35f), "It did not reach its place behind and beside the player.");
+            Assert.That(Flat(end, Vector3.zero), Is.InRange(StopDistance - 0.5f, StopDistance + 0.05f), "It did not stop at the edge of its reach.");
             Assert.That(brain.IsResting, Is.True);
             Assert.That(brain.Velocity.magnitude, Is.LessThan(0.01f), "It did not stop.");
+        }
+
+        [Test]
+        public void Resting_ThePlayerTurningTheViewRoundAndRound_DoesNotMoveIt()
+        {
+            var brain = NewBrain();
+            var start = PlaceAtOrigin;
+            var end = RunSpinningView(brain, start, 5f);
+
+            Assert.That(end, Is.EqualTo(start), "Turning the view made it move.");
+            Assert.That(brain.IsResting, Is.True);
+        }
+
+        [Test]
+        public void ComingBack_WhileThePlayerTurnsTheView_ItStopsWithinReach_InsteadOfCirclingThem()
+        {
+            var brain = NewBrain();
+            var end = RunSpinningView(brain, new Vector3(0f, 0f, -9f), 6f);
+
+            Assert.That(brain.IsResting, Is.True, "It keeps chasing a place that turns with the view.");
+            Assert.That(Flat(end, Vector3.zero), Is.LessThanOrEqualTo(StopDistance + 0.05f));
+            Assert.That(brain.Velocity.magnitude, Is.LessThan(0.01f));
+        }
+
+        [Test]
+        public void ItsPlaceIsBehindWhereThePlayerWalks_NotWhereTheyLook()
+        {
+            var brain = NewBrain();
+            var position = PlaceAtOrigin;
+            var player = Vector3.zero;
+            // The player walks along +Z, looking to their left the whole time.
+            for (var elapsed = 0f; elapsed < 6f; elapsed += Frame)
+            {
+                player += Vector3.forward * 4f * Frame;
+                position = brain.Step(position, player, Vector3.left, None, Frame).Position;
+            }
+
+            Assert.That(position.z, Is.LessThan(player.z - StartDistance * 0.9f), "It does not follow behind where the player walks.");
+            Assert.That(Mathf.Abs(position.x - SideOffset), Is.LessThan(0.6f), "It drifts to where the player looks.");
         }
 
         [Test]
@@ -195,7 +249,8 @@ namespace Fungiiiii.Tests.EditMode
             Assert.That(brain.IsFull, Is.True);
             Assert.That(brain.Fullness, Is.EqualTo(1f));
             Assert.That(brain.Activity, Is.EqualTo(CompanionActivity.Following));
-            Assert.That(Flat(end, PlaceAtOrigin), Is.LessThan(0.35f), "Full, it did not come back to its place.");
+            Assert.That(brain.IsResting, Is.True, "Full, it did not come back to rest by the player.");
+            Assert.That(Flat(end, Vector3.zero), Is.LessThanOrEqualTo(StartDistance), "Full, it stays away from the player.");
         }
 
         [Test]

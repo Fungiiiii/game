@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Companions.CompanionDefinition
   creature: {fileID: 11400000, guid: bf402ca1399e42a197ecead4d6f4bd22, type: 2}
   followDistance: 2.5
+  stopDistance: 3
   sideOffset: 1
   startDistance: 5
   walkSpeed: 3.5

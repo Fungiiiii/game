@@ -23,6 +23,7 @@ namespace Fungiiiii.Companions
     {
         public CompanionTuning(
             float followDistance,
+            float stopDistance,
             float startDistance,
             float sideOffset,
             float walkSpeed,
@@ -34,7 +35,7 @@ namespace Fungiiiii.Companions
             float soakSeconds,
             float arrivalDistance)
         {
-            if (followDistance < 0f || startDistance <= followDistance || walkSpeed <= 0f || runSpeed < walkSpeed
+            if (followDistance < 0f || stopDistance <= 0f || startDistance <= stopDistance || walkSpeed <= 0f || runSpeed < walkSpeed
                 || catchUpGain < 0f || acceleration <= 0f || catchUpDistance <= startDistance
                 || seekRadius < 0f || soakSeconds < 0f || arrivalDistance <= 0f)
             {
@@ -42,6 +43,7 @@ namespace Fungiiiii.Companions
             }
 
             FollowDistance = followDistance;
+            StopDistance = stopDistance;
             StartDistance = startDistance;
             SideOffset = sideOffset;
             WalkSpeed = walkSpeed;
@@ -54,8 +56,11 @@ namespace Fungiiiii.Companions
             ArrivalDistance = arrivalDistance;
         }
 
-        /// <summary>Its place is this far behind the player, in metres.</summary>
+        /// <summary>Its place is this far behind the player, in metres: where it heads for.</summary>
         public float FollowDistance { get; }
+
+        /// <summary>It rests as soon as it is this close to the player, wherever it is around them: close enough, it does not insist on its place.</summary>
+        public float StopDistance { get; }
 
         /// <summary>Resting, it sets off only once the player is further than this: a step or a turn does not move it.</summary>
         public float StartDistance { get; }
@@ -118,8 +123,10 @@ namespace Fungiiiii.Companions
     /// <summary>
     /// What a companion does, without Unity, as pets follow in other games: resting near
     /// the player, it sets off only once they have really gone (two distances, so that it
-    /// does not fidget at every step), then heads for its place behind and beside them,
-    /// walking when close and running to catch up, speeding up and braking smoothly. When
+    /// does not fidget at every step), then heads for its place behind and beside where
+    /// they walk, walking when close and running to catch up, speeding up and braking
+    /// smoothly, and rests as soon as it is within reach of them. Turning the view does not
+    /// move it. When
     /// it is empty, it goes by itself to the nearest thing it can soak up close to the
     /// player, soaks it up, then follows again, full. Squeezing it empties it. It moves on
     /// the ground plane; the caller keeps it on the ground.
@@ -129,12 +136,17 @@ namespace Fungiiiii.Companions
         /// <summary>Following, it rests once this close to its place.</summary>
         private const float PlaceReachedDistance = 0.3f;
 
+        /// <summary>The player walks, rather than stands, above this speed: their heading follows their steps.</summary>
+        private const float MovingSpeed = 0.5f;
+
         private readonly CompanionTuning tuning;
         private readonly ItemDefinition carried;
         private IAbsorbable target;
         private float soakElapsed;
         private Vector3 velocity;
         private bool resting = true;
+        private Vector3 heading;
+        private Vector3? lastPlayer;
 
         /// <param name="carriedItem">What it carries once full: it only goes for what yields this.</param>
         public CompanionBrain(CompanionTuning tuning, ItemDefinition carriedItem)
@@ -163,7 +175,7 @@ namespace Fungiiiii.Companions
 
         /// <param name="position">Where it stands.</param>
         /// <param name="player">Where the player stands.</param>
-        /// <param name="playerForward">Where the player looks: its place is behind them, and catching up puts it there, out of sight.</param>
+        /// <param name="playerForward">Where the player looks: catching up puts it behind them, out of sight. Its place while following is behind where the player walks, not where they look, so turning the view does not move it.</param>
         /// <param name="sources">What could be soaked up.</param>
         public CompanionStep Step(
             Vector3 position,
@@ -172,6 +184,8 @@ namespace Fungiiiii.Companions
             IReadOnlyList<IAbsorbable> sources,
             float deltaTime)
         {
+            FollowHeading(player, playerForward, deltaTime);
+
             if (FlatDistance(position, player) > tuning.CatchUpDistance)
             {
                 StopSeeking();
@@ -206,7 +220,7 @@ namespace Fungiiiii.Companions
                 case CompanionActivity.Seeking:
                     return Seek(position, deltaTime);
                 default:
-                    return Follow(position, player, playerForward, deltaTime);
+                    return Follow(position, player, deltaTime);
             }
         }
 
@@ -249,11 +263,11 @@ namespace Fungiiiii.Companions
             }
 
             // Aims a little inside its arrival distance, so that it gets there while still moving.
-            var next = MoveTowards(position, goal, tuning.WalkSpeed, tuning.ArrivalDistance * 0.5f, deltaTime);
+            var next = MoveTowards(position, goal, tuning.WalkSpeed, FlatDistance(position, goal) - tuning.ArrivalDistance * 0.5f, deltaTime);
             return new CompanionStep(next, velocity, caughtUp: false, soaked: false);
         }
 
-        private CompanionStep Follow(Vector3 position, Vector3 player, Vector3 playerForward, float deltaTime)
+        private CompanionStep Follow(Vector3 position, Vector3 player, float deltaTime)
         {
             var toPlayer = FlatDistance(position, player);
             if (resting && toPlayer > tuning.StartDistance)
@@ -261,37 +275,62 @@ namespace Fungiiiii.Companions
                 resting = false;
             }
 
+            var place = Place(player, heading, position.y);
+            var toPlace = FlatDistance(position, place);
+            if (!resting && (toPlayer <= tuning.StopDistance || toPlace <= PlaceReachedDistance))
+            {
+                resting = true;
+            }
+
             if (resting)
             {
                 return new CompanionStep(Brake(position, deltaTime), velocity, caughtUp: false, soaked: false);
             }
 
-            var place = Place(player, playerForward, position.y);
-            if (FlatDistance(position, place) <= PlaceReachedDistance)
-            {
-                resting = true;
-                return new CompanionStep(Brake(position, deltaTime), velocity, caughtUp: false, soaked: false);
-            }
-
-            // Walking close by, faster the further behind it is, up to its run.
+            // Walking close by, faster the further behind it is, up to its run. It brakes
+            // to stop at the edge of its reach, or at its place if that comes first; aiming a
+            // little inside, it gets there while still moving, and rests.
             var speed = Mathf.Min(
                 tuning.RunSpeed,
                 tuning.WalkSpeed + Mathf.Max(0f, toPlayer - tuning.StartDistance) * tuning.CatchUpGain);
-            var next = MoveTowards(position, place, speed, PlaceReachedDistance * 0.5f, deltaTime);
+            var left = Mathf.Min(toPlace - PlaceReachedDistance * 0.5f, toPlayer - tuning.StopDistance * 0.9f);
+            var next = MoveTowards(position, place, speed, left, deltaTime);
             return new CompanionStep(next, velocity, caughtUp: false, soaked: false);
         }
 
         /// <summary>
-        /// Heads for <paramref name="goal"/> at up to <paramref name="speed"/>, braking in
-        /// time to stop at <paramref name="stopDistance"/> from it: arrive steering.
+        /// Where the player walks, from how they move: their place is behind it. Standing
+        /// still or only turning the view, it does not change.
         /// </summary>
-        private Vector3 MoveTowards(Vector3 position, Vector3 goal, float speed, float stopDistance, float deltaTime)
+        private void FollowHeading(Vector3 player, Vector3 viewForward, float deltaTime)
+        {
+            if (!lastPlayer.HasValue)
+            {
+                heading = Flatten(viewForward);
+            }
+            else if (deltaTime > 0f)
+            {
+                var moved = player - lastPlayer.Value;
+                moved.y = 0f;
+                if (moved.magnitude > MovingSpeed * deltaTime)
+                {
+                    heading = moved.normalized;
+                }
+            }
+
+            lastPlayer = player;
+        }
+
+        /// <summary>
+        /// Heads for <paramref name="goal"/> at up to <paramref name="speed"/>, braking in
+        /// time to stop once it has gone <paramref name="left"/> metres: arrive steering.
+        /// </summary>
+        private Vector3 MoveTowards(Vector3 position, Vector3 goal, float speed, float left, float deltaTime)
         {
             var offset = goal - position;
             offset.y = 0f;
             var distance = offset.magnitude;
-            var left = Mathf.Max(0f, distance - stopDistance);
-            var arriving = Mathf.Sqrt(2f * tuning.Acceleration * left);
+            var arriving = Mathf.Sqrt(2f * tuning.Acceleration * Mathf.Max(0f, left));
             var desired = distance > 0.0001f ? offset / distance * Mathf.Min(speed, arriving) : Vector3.zero;
             velocity = Vector3.MoveTowards(velocity, desired, tuning.Acceleration * deltaTime);
             return position + velocity * deltaTime;
@@ -343,15 +382,20 @@ namespace Fungiiiii.Companions
             resting = false;
         }
 
-        /// <summary>Its place: behind the player and beside them.</summary>
-        private Vector3 Place(Vector3 player, Vector3 playerForward, float height)
+        /// <summary>Its place: behind the player, seen along <paramref name="direction"/>, and beside them.</summary>
+        private Vector3 Place(Vector3 player, Vector3 direction, float height)
         {
-            var forward = new Vector3(playerForward.x, 0f, playerForward.z);
-            forward = forward.sqrMagnitude > 0.0001f ? forward.normalized : Vector3.forward;
+            var forward = Flatten(direction);
             var right = new Vector3(forward.z, 0f, -forward.x);
             var place = player - forward * tuning.FollowDistance + right * tuning.SideOffset;
             place.y = height;
             return place;
+        }
+
+        private static Vector3 Flatten(Vector3 direction)
+        {
+            var flat = new Vector3(direction.x, 0f, direction.z);
+            return flat.sqrMagnitude > 0.0001f ? flat.normalized : Vector3.forward;
         }
 
         private static float FlatDistance(Vector3 a, Vector3 b)

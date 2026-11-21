@@ -22,6 +22,10 @@ namespace Fungiiiii.Companions
         [SerializeField, Min(0f)]
         private float followDistance = 2.5f;
 
+        [Tooltip("It rests as soon as it is this close to the player, in metres, wherever it is around them.")]
+        [SerializeField, Min(0.1f)]
+        private float stopDistance = 3f;
+
         [Tooltip("Its place is this far to the player's right (negative: left), in metres: it walks beside them.")]
         [SerializeField]
         private float sideOffset = 1f;
@@ -134,6 +138,7 @@ namespace Fungiiiii.Companions
         {
             return new CompanionTuning(
                 followDistance,
+                stopDistance,
                 startDistance,
                 sideOffset,
                 walkSpeed,
@@ -169,9 +174,9 @@ namespace Fungiiiii.Companions
                 return $"'{name}' has no material for the part that darkens once full.";
             }
 
-            if (startDistance <= followDistance || catchUpDistance <= startDistance)
+            if (startDistance <= stopDistance || catchUpDistance <= startDistance)
             {
-                return $"'{name}' must follow closer than it sets off, and set off closer than it catches up.";
+                return $"'{name}' must stop closer than it sets off, and set off closer than it catches up.";
             }
 
             return runSpeed < walkSpeed ? $"'{name}' runs slower than it walks." : null;
