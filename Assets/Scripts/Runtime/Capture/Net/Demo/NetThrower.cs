@@ -47,14 +47,15 @@ namespace Fungiiiii.Capture
     /// and mushroom positions, and shows the result. Subscribe to <see cref="Cycle"/> for
     /// the Thrown, Landed, CaptureSucceeded and CaptureFailed events.
     ///
-    /// ThrowNet is built in code, like Dodge in PlayerInputReader, and must be added to the
-    /// shared InputSystem_Actions asset before production.
+    /// The primary action throws the net; the secondary one, held, aims: only then are the
+    /// arc and the impact circle shown, the view narrows and turns slower. A net can be
+    /// thrown without aiming, just without a preview. Both actions are built in code, like
+    /// Dodge in PlayerInputReader, and must be added to the shared InputSystem_Actions
+    /// asset before production.
     /// </summary>
     [DisallowMultipleComponent]
     internal sealed class NetThrower : MonoBehaviour
     {
-        private const int PreviewDotCount = 30;
-        private const float PreviewTimeStep = 0.04f;
         private const float MaxFlightSeconds = 3f;
         private const int CastBufferSize = 8;
 
@@ -87,6 +88,10 @@ namespace Fungiiiii.Capture
         private static readonly Color NoTargetColor = new Color(0.85f, 0.85f, 0.85f);
         private static readonly Color RopeColor = new Color(0.55f, 0.45f, 0.3f);
 
+        /// <summary>While aiming, the view narrows to this, in degrees, over this time.</summary>
+        private const float AimFieldOfView = 45f;
+        private const float AimTransitionSeconds = 0.15f;
+
         /// <summary>Rope placeholder between the hand and the net.</summary>
         private const int RopePointCount = 12;
         private const float RopeWidth = 0.012f;
@@ -96,6 +101,7 @@ namespace Fungiiiii.Capture
         private readonly List<NetDemoMushroom> candidateOwners = new List<NetDemoMushroom>();
         private readonly List<int> scaredIndices = new List<int>();
         private readonly RaycastHit[] castHits = new RaycastHit[CastBufferSize];
+        private readonly List<Vector3> dotPositions = new List<Vector3>(NetPreviewDots.MaxDots);
 
         private NetThrowSettings settings;
         private Camera aimCamera;
@@ -104,7 +110,12 @@ namespace Fungiiiii.Capture
         private NetLandingResolver resolver;
         private NetSegmentCast segmentCast;
         private NetGroundProbe groundProbe;
-        private InputAction throwAction;
+        private InputAction primaryAction;
+        private InputAction secondaryAction;
+        private PrototypeFirstPersonCamera look;
+        private float baseFieldOfView;
+        private float aimBlend;
+        private bool throwInputEnabled = true;
 
         private NetTrajectory flight;
         private float flightSeconds;
@@ -133,10 +144,54 @@ namespace Fungiiiii.Capture
         public event System.Action<NetDemoMushroom> CatchReturned;
 
         /// <summary>
-        /// False ignores the ThrowNet input, for instance while a menu uses the mouse.
-        /// The net in flight carries on. <see cref="TryThrow"/> is not affected.
+        /// False ignores the primary and secondary actions, for instance while a menu uses
+        /// the mouse: the aim is dropped and the view widens back at once. The net in
+        /// flight carries on. <see cref="TryThrow"/> is not affected.
         /// </summary>
-        public bool ThrowInputEnabled { get; set; } = true;
+        public bool ThrowInputEnabled
+        {
+            get => throwInputEnabled;
+            set
+            {
+                throwInputEnabled = value;
+                if (!value)
+                {
+                    DropAim();
+                }
+            }
+        }
+
+        /// <summary>Aims as if the secondary action were held: for tests, which have no device.</summary>
+        public bool HoldAim { get; set; }
+
+        /// <summary>True while the secondary action aims the net in hand.</summary>
+        public bool IsAiming { get; private set; }
+
+        /// <summary>How many dots of the arc are shown.</summary>
+        public int VisibleDotCount
+        {
+            get
+            {
+                var count = 0;
+                foreach (var dot in previewDots)
+                {
+                    count += dot.gameObject.activeSelf ? 1 : 0;
+                }
+
+                return count;
+            }
+        }
+
+        public bool IsImpactCircleShown => impactRim != null && impactRim.gameObject.activeSelf;
+
+        /// <summary>Where the aimed net would land, while <see cref="IsImpactCircleShown"/>.</summary>
+        public Vector3 PreviewLandingPoint { get; private set; }
+
+        /// <summary>The mushroom the aimed net would catch, or null.</summary>
+        public NetDemoMushroom PreviewTarget { get; private set; }
+
+        /// <summary>The chance the aimed net would catch <see cref="PreviewTarget"/>, from 0 to 1.</summary>
+        public float PreviewChance { get; private set; }
 
         /// <summary>
         /// Whether the net is the item in hand. Put away, the net in hand and the aim are
@@ -148,6 +203,11 @@ namespace Fungiiiii.Capture
             set
             {
                 isEquipped = value;
+                if (!value)
+                {
+                    DropAim();
+                }
+
                 if (Cycle != null)
                 {
                     ShowPhase();
@@ -173,6 +233,8 @@ namespace Fungiiiii.Capture
             ownCollider = playerCollider;
             mushrooms = targets;
             resolver = new NetLandingResolver(settings.ImpactRadius, settings.ScareRadius, settings.Rates, random);
+            baseFieldOfView = aimCamera.fieldOfView;
+            aimCamera.TryGetComponent(out look);
             segmentCast = CastSegment;
             groundProbe = ProbeGround;
 
@@ -187,7 +249,7 @@ namespace Fungiiiii.Capture
 
         /// <summary>
         /// Throws the net from <paramref name="origin"/> along <paramref name="direction"/>.
-        /// Called by the ThrowNet input, and by tests to throw without a device.
+        /// Called by the primary action, and by tests to throw without a device.
         /// </summary>
         /// <returns>False while the net is not back in hand, or not equipped.</returns>
         public bool TryThrow(Vector3 origin, Vector3 direction)
@@ -217,19 +279,25 @@ namespace Fungiiiii.Capture
 
         private void Awake()
         {
-            throwAction = new InputAction("ThrowNet", InputActionType.Button);
-            throwAction.AddBinding("<Mouse>/leftButton");
-            throwAction.AddBinding("<Gamepad>/rightTrigger");
+            primaryAction = new InputAction("NetPrimary", InputActionType.Button);
+            primaryAction.AddBinding("<Mouse>/leftButton");
+            primaryAction.AddBinding("<Gamepad>/rightTrigger");
+
+            secondaryAction = new InputAction("NetSecondary", InputActionType.Button);
+            secondaryAction.AddBinding("<Mouse>/rightButton");
+            secondaryAction.AddBinding("<Gamepad>/leftTrigger");
         }
 
         private void OnEnable()
         {
-            throwAction?.Enable();
+            primaryAction?.Enable();
+            secondaryAction?.Enable();
         }
 
         private void OnDisable()
         {
-            throwAction?.Disable();
+            primaryAction?.Disable();
+            secondaryAction?.Disable();
         }
 
         private void OnDestroy()
@@ -241,8 +309,10 @@ namespace Fungiiiii.Capture
                 Cycle.Returned -= HandleReturned;
             }
 
-            throwAction?.Dispose();
-            throwAction = null;
+            primaryAction?.Dispose();
+            primaryAction = null;
+            secondaryAction?.Dispose();
+            secondaryAction = null;
 
             DestroyMaterial(netMaterial);
             DestroyMaterial(dotMaterial);
@@ -257,17 +327,22 @@ namespace Fungiiiii.Capture
                 return;
             }
 
-            if (ThrowInputEnabled && throwAction.WasPressedThisFrame())
+            if (throwInputEnabled && primaryAction.WasPressedThisFrame())
             {
                 TryThrow(ThrowOrigin(), aimCamera.transform.forward);
             }
 
+            IsAiming = throwInputEnabled && isEquipped && (HoldAim || secondaryAction.IsPressed());
+            UpdateZoom(Time.deltaTime);
+
             Cycle.Tick(Time.deltaTime);
+            PreviewTarget = null;
+            PreviewChance = 0f;
 
             switch (Cycle.Phase)
             {
                 case NetPhase.Ready:
-                    if (isEquipped)
+                    if (IsAiming)
                     {
                         UpdatePreview();
                     }
@@ -285,6 +360,39 @@ namespace Fungiiiii.Capture
             }
 
             ShowPhase();
+        }
+
+        /// <summary>Narrows the view while aiming and slows the look by as much, widens it back otherwise.</summary>
+        private void UpdateZoom(float deltaTime)
+        {
+            aimBlend = Mathf.MoveTowards(aimBlend, IsAiming ? 1f : 0f, deltaTime / AimTransitionSeconds);
+            ApplyZoom();
+        }
+
+        private void DropAim()
+        {
+            IsAiming = false;
+            PreviewTarget = null;
+            PreviewChance = 0f;
+            aimBlend = 0f;
+            if (aimCamera != null)
+            {
+                ApplyZoom();
+            }
+
+            if (Cycle != null)
+            {
+                ShowPhase();
+            }
+        }
+
+        private void ApplyZoom()
+        {
+            aimCamera.fieldOfView = Mathf.Lerp(baseFieldOfView, AimFieldOfView, aimBlend);
+            if (look != null)
+            {
+                look.LookScale = aimCamera.fieldOfView / baseFieldOfView;
+            }
         }
 
         private Vector3 ThrowOrigin()
@@ -370,13 +478,18 @@ namespace Fungiiiii.Capture
                 settings.LaunchSpeed,
                 settings.Gravity);
 
-            var hasLanding = preview.TryFindLanding(PreviewTimeStep, MaxFlightSeconds, segmentCast, out var landing);
+            var hasLanding = preview.TryFindLanding(NetPreviewDots.TimeStep, MaxFlightSeconds, segmentCast, out var landing);
             var previewSeconds = hasLanding ? landing.FlightSeconds : MaxFlightSeconds;
 
+            NetPreviewDots.Place(preview, previewSeconds, dotPositions);
             for (var index = 0; index < previewDots.Length; index++)
             {
-                var time = previewSeconds * (index + 1) / (previewDots.Length + 1);
-                previewDots[index].position = preview.PositionAt(time);
+                var shown = index < dotPositions.Count;
+                previewDots[index].gameObject.SetActive(shown);
+                if (shown)
+                {
+                    previewDots[index].position = dotPositions[index];
+                }
             }
 
             impactRim.gameObject.SetActive(hasLanding);
@@ -385,12 +498,20 @@ namespace Fungiiiii.Capture
                 return;
             }
 
+            PreviewLandingPoint = landing.Point;
             impactRim.ShowDraped(landing.Point, settings.ImpactRadius, groundProbe, DrapeProbeHeight, DrapeLift);
 
             CollectCandidates();
-            circleMaterial.color = resolver.TryPreview(landing.Point, candidates, out _, out var chance)
-                ? NetChanceColors.Evaluate(chance)
-                : NoTargetColor;
+            if (resolver.TryPreview(landing.Point, candidates, out var targetIndex, out var chance))
+            {
+                PreviewTarget = candidateOwners[targetIndex];
+                PreviewChance = chance;
+                circleMaterial.color = NetChanceColors.Evaluate(chance);
+            }
+            else
+            {
+                circleMaterial.color = NoTargetColor;
+            }
         }
 
         private void CollectCandidates()
@@ -491,18 +612,19 @@ namespace Fungiiiii.Capture
         private void ShowPhase()
         {
             var ready = Cycle.Phase == NetPhase.Ready;
-            var aiming = ready && isEquipped;
+            var inHand = ready && isEquipped;
 
-            handNet.gameObject.SetActive(aiming);
+            handNet.gameObject.SetActive(inHand);
             netRim.gameObject.SetActive(!ready);
 
-            foreach (var dot in previewDots)
+            // The dots and the circle are placed by the preview, and shown only while aiming.
+            if (!inHand || !IsAiming)
             {
-                dot.gameObject.SetActive(aiming);
-            }
+                foreach (var dot in previewDots)
+                {
+                    dot.gameObject.SetActive(false);
+                }
 
-            if (!aiming)
-            {
                 impactRim.gameObject.SetActive(false);
             }
 
@@ -619,8 +741,8 @@ namespace Fungiiiii.Capture
             rope.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             rope.enabled = false;
 
-            previewDots = new Transform[PreviewDotCount];
-            for (var index = 0; index < PreviewDotCount; index++)
+            previewDots = new Transform[NetPreviewDots.MaxDots];
+            for (var index = 0; index < previewDots.Length; index++)
             {
                 var dot = NetDemoPrimitives.Create(
                     PrimitiveType.Sphere,

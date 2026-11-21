@@ -307,6 +307,7 @@ namespace Fungiiiii.Demo
         private ItemOutlineFactory outlines;
         private PauseMenu pauseMenu;
         private Hotbar hotbar;
+        private NetTargetOutline targetOutline;
         private TerrainData sessionTerrainData;
 
         /// <summary>True once the forest is loaded and the loop is built.</summary>
@@ -334,6 +335,9 @@ namespace Fungiiiii.Demo
 
         /// <summary>The pause menu, opened with Escape.</summary>
         public PauseMenu Pause => pauseMenu;
+
+        /// <summary>The outline of the mushroom the aimed net would catch.</summary>
+        public NetTargetOutline TargetOutline => targetOutline;
 
         /// <summary>The interact control, and the key it shows above its target.</summary>
         public PlayerInteractor Interactor => interactor;
@@ -853,6 +857,9 @@ namespace Fungiiiii.Demo
             Thrower = player.AddComponent<NetThrower>();
             Thrower.Initialize(settings, firstPersonCamera.Camera, playerController, mushrooms, new System.Random(random.Next()));
             Thrower.CatchReturned += HandleCatchReturned;
+
+            targetOutline = new GameObject("Net Target Outline").AddComponent<NetTargetOutline>();
+            targetOutline.Initialize(Thrower, mushrooms, outlines);
         }
 
         private void HandleCatchReturned(NetDemoMushroom caught)

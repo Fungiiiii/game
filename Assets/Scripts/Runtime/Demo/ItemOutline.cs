@@ -6,8 +6,9 @@ using UnityEngine.Rendering;
 namespace Fungiiiii.Demo
 {
     /// <summary>
-    /// The outline of one thing the player can gather: thin while it is merely in view,
-    /// stronger while it is aimed at within reach.
+    /// The outline of one thing in the world: thin while it is merely in view, stronger
+    /// while it is aimed at within reach; or hidden until it is shown, for the mushroom
+    /// the net is aimed at.
     /// </summary>
     internal sealed class ItemOutline
     {
@@ -20,6 +21,17 @@ namespace Fungiiiii.Demo
             renderers = outlineRenderers;
             idle = idleMaterial;
             targeted = targetedMaterial;
+        }
+
+        public void SetVisible(bool visible)
+        {
+            foreach (var outlineRenderer in renderers)
+            {
+                if (outlineRenderer != null)
+                {
+                    outlineRenderer.enabled = visible;
+                }
+            }
         }
 
         public void SetTargeted(bool isTargeted)
@@ -57,6 +69,7 @@ namespace Fungiiiii.Demo
         private readonly Dictionary<Mesh, Mesh> outlineMeshes = new Dictionary<Mesh, Mesh>();
         private readonly Material idle;
         private readonly Material targeted;
+        private readonly Material chance;
 
         public ItemOutlineFactory(Shader shader, Settings settings)
         {
@@ -67,10 +80,34 @@ namespace Fungiiiii.Demo
 
             idle = CreateMaterial(shader, "Item Outline", settings.Color, settings.Width, settings);
             targeted = CreateMaterial(shader, "Item Outline (targeted)", settings.TargetedColor, settings.TargetedWidth, settings);
+            chance = CreateMaterial(shader, "Item Outline (capture chance)", settings.TargetedColor, settings.TargetedWidth, settings);
         }
 
         /// <summary>Outlines every mesh of a model. Meshes that cannot be read are skipped, with an error.</summary>
         public ItemOutline Create(GameObject model)
+        {
+            return new ItemOutline(BuildRenderers(model, idle), idle, targeted);
+        }
+
+        /// <summary>
+        /// Outlines a mushroom to catch, hidden until shown, in the colour of the capture
+        /// chance: one material for all of them, since the net aims at one at a time.
+        /// </summary>
+        public ItemOutline CreateChanceOutline(GameObject model)
+        {
+            var outline = new ItemOutline(BuildRenderers(model, chance), chance, chance);
+            outline.SetVisible(false);
+            return outline;
+        }
+
+        public void SetChanceColor(Color color)
+        {
+            chance.SetColor(ColorId, color);
+        }
+
+        public Color ChanceColor => chance.GetColor(ColorId);
+
+        private List<MeshRenderer> BuildRenderers(GameObject model, Material material)
         {
             var renderers = new List<MeshRenderer>();
 
@@ -87,7 +124,7 @@ namespace Fungiiiii.Demo
                 outlineObject.AddComponent<MeshFilter>().sharedMesh = outlineMesh;
 
                 var outlineRenderer = outlineObject.AddComponent<MeshRenderer>();
-                outlineRenderer.sharedMaterial = idle;
+                outlineRenderer.sharedMaterial = material;
                 outlineRenderer.shadowCastingMode = ShadowCastingMode.Off;
                 outlineRenderer.receiveShadows = false;
                 outlineRenderer.lightProbeUsage = LightProbeUsage.Off;
@@ -95,7 +132,7 @@ namespace Fungiiiii.Demo
                 renderers.Add(outlineRenderer);
             }
 
-            return new ItemOutline(renderers, idle, targeted);
+            return renderers;
         }
 
         public void Dispose()
@@ -111,6 +148,7 @@ namespace Fungiiiii.Demo
             outlineMeshes.Clear();
             UnityEngine.Object.Destroy(idle);
             UnityEngine.Object.Destroy(targeted);
+            UnityEngine.Object.Destroy(chance);
         }
 
         private Mesh OutlineMeshOf(Mesh source)
