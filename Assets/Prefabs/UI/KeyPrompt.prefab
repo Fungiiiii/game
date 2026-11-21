@@ -105,6 +105,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4814847386553386274}
   - component: {fileID: 5401693985196775816}
+  - component: {fileID: 3804718224780023269}
   m_Layer: 0
   m_Name: Shape
   m_TagString: Untagged
@@ -152,6 +153,14 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   shape: 0
+--- !u!222 &3804718224780023269
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 804832601143779640}
+  m_CullTransparentMesh: 1
 --- !u!1 &3388366762389376039
 GameObject:
   m_ObjectHideFlags: 0
@@ -162,6 +171,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7386157983784199341}
   - component: {fileID: 9112567575383275696}
+  - component: {fileID: 3943157779959129509}
   m_Layer: 0
   m_Name: Triangle
   m_TagString: Untagged
@@ -209,6 +219,14 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   stroke: 0.16
+--- !u!222 &3943157779959129509
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3388366762389376039}
+  m_CullTransparentMesh: 1
 --- !u!1 &6082693528581963997
 GameObject:
   m_ObjectHideFlags: 0
@@ -319,6 +337,7 @@ GameObject:
   - component: {fileID: 5884371019317609190}
   - component: {fileID: 4749860697040230061}
   - component: {fileID: 4718984055632988292}
+  - component: {fileID: 7296048486973880827}
   m_Layer: 0
   m_Name: Key
   m_TagString: Untagged
@@ -383,3 +402,11 @@ MonoBehaviour:
   text: {fileID: 1423727159234075602}
   shape: {fileID: 5401693985196775816}
   triangle: {fileID: 9112567575383275696}
+--- !u!222 &7296048486973880827
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6241791028003608452}
+  m_CullTransparentMesh: 1

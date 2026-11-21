@@ -122,6 +122,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7298982618728875193}
   - component: {fileID: 7084191340880595324}
+  - component: {fileID: 3329317159647640630}
   m_Layer: 0
   m_Name: Shape
   m_TagString: Untagged
@@ -169,3 +170,11 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   shape: 6
+--- !u!222 &3329317159647640630
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6733900657625157962}
+  m_CullTransparentMesh: 1
