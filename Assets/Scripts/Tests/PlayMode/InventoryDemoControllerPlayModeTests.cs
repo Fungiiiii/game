@@ -56,6 +56,85 @@ namespace Fungiiiii.Tests.PlayMode
 
         private int QuantityIn(int slot) => controller.Inventory.GetSlot(slot).Quantity;
 
+        private GameObject SlotObject(int slot)
+        {
+            return subject.transform.Find(
+                slot < InventoryDemoController.MainSlotCount
+                    ? $"InventoryCanvas/InventoryPanel/InventoryGrid_3x4/InventorySlot_{slot}"
+                    : $"InventoryCanvas/InventoryPanel/Hotbar_3Slots/InventorySlot_{slot}").gameObject;
+        }
+
+        private UnityEngine.UI.Selectable SelectableOf(int slot) => SlotObject(slot).GetComponent<UnityEngine.UI.Selectable>();
+
+        [UnityTest]
+        public IEnumerator TheSlots_AreLinkedForTheGamepad_TheGridThenTheQuickBar()
+        {
+            yield return null;
+            var first = SelectableOf(0).navigation;
+            Assert.That(first.selectOnRight, Is.SameAs(SelectableOf(1)));
+            Assert.That(first.selectOnDown, Is.SameAs(SelectableOf(3)));
+            Assert.That(first.selectOnLeft, Is.Null);
+            Assert.That(first.selectOnUp, Is.Null);
+
+            var bottomLeft = SelectableOf(9).navigation;
+            Assert.That(bottomLeft.selectOnDown, Is.SameAs(SelectableOf(InventoryDemoController.MainSlotCount)), "The grid does not lead to the quick bar.");
+
+            var quickBar = SelectableOf(InventoryDemoController.MainSlotCount + 2).navigation;
+            Assert.That(quickBar.selectOnUp, Is.SameAs(SelectableOf(11)));
+            Assert.That(quickBar.selectOnRight, Is.Null);
+            Assert.That(quickBar.selectOnDown, Is.Null);
+        }
+
+        [UnityTest]
+        public IEnumerator ASelectedSlot_HasTheFocus_AndClosingTheScreen_ClearsIt()
+        {
+            EventSystem.current.SetSelectedGameObject(SlotObject(4));
+            yield return null;
+            Assert.That(controller.FocusedSlot, Is.EqualTo(4));
+
+            subject.SetActive(false);
+            subject.SetActive(true);
+            yield return null;
+
+            Assert.That(controller.FocusedSlot, Is.EqualTo(-1), "The slot kept the focus after the screen closed.");
+            Assert.That(EventSystem.current.currentSelectedGameObject, Is.Not.SameAs(SlotObject(4)));
+        }
+
+        [UnityTest]
+        public IEnumerator Submit_OnTheSelectedSlot_TakesItsStack_AsALeftClick()
+        {
+            EventSystem.current.SetSelectedGameObject(SlotObject(Spores));
+            ExecuteEvents.Execute(SlotObject(Spores), new BaseEventData(EventSystem.current), ExecuteEvents.submitHandler);
+            yield return null;
+
+            Assert.That(controller.Hand.Quantity, Is.EqualTo(8));
+            Assert.That(controller.Inventory.GetSlot(Spores).IsEmpty, Is.True);
+        }
+
+        [UnityTest]
+        public IEnumerator X_OnTheFocusedSlot_TakesHalf()
+        {
+            EventSystem.current.SetSelectedGameObject(SlotObject(Spores));
+            yield return null;
+
+            controller.TakeHalfOnFocusedSlot();
+
+            Assert.That(controller.Hand.Quantity, Is.EqualTo(4));
+            Assert.That(QuantityIn(Spores), Is.EqualTo(4));
+        }
+
+        [UnityTest]
+        public IEnumerator Y_OnTheFocusedSlot_GathersEveryStackOfTheItem()
+        {
+            EventSystem.current.SetSelectedGameObject(SlotObject(LoneMushroom));
+            yield return null;
+
+            controller.GatherAllOnFocusedSlot();
+
+            Assert.That(controller.Hand.Item.Id, Is.EqualTo("demo_mushroom"));
+            Assert.That(controller.Hand.Quantity, Is.EqualTo(5), "Not a full stack gathered.");
+        }
+
         [UnityTest]
         public IEnumerator Controller_CreatesThreeByFourInventoryAndQuickBar()
         {

@@ -776,6 +776,26 @@ namespace Fungiiiii.Controls
                     ""interactions"": """",
                     ""initialStateCheck"": false,
                     ""priority"": 0
+                },
+                {
+                    ""name"": ""TakeHalf"",
+                    ""type"": ""Button"",
+                    ""id"": ""9180ca10-bfcb-4ed7-81bb-d08985853979"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""GatherAll"",
+                    ""type"": ""Button"",
+                    ""id"": ""716f1296-1f7a-4768-83be-7819e9e3c17f"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
                 }
             ],
             ""bindings"": [
@@ -1056,17 +1076,6 @@ namespace Fungiiiii.Controls
                 },
                 {
                     ""name"": """",
-                    ""id"": ""82627dcc-3b13-4ba9-841d-e4b746d6553e"",
-                    ""path"": ""*/{Cancel}"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Keyboard&Mouse;Gamepad;Touch;Joystick;XR"",
-                    ""action"": ""Cancel"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""c52c8e0b-8179-41d3-b8a1-d149033bbe86"",
                     ""path"": ""<Mouse>/position"",
                     ""interactions"": """",
@@ -1196,6 +1205,39 @@ namespace Fungiiiii.Controls
                     ""action"": ""TrackedDeviceOrientation"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""2e10aa17-a41d-4061-a407-adeceef1d27f"",
+                    ""path"": ""<Gamepad>/buttonEast"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Gamepad"",
+                    ""action"": ""Cancel"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""48d00fb0-520b-4049-8b6e-d75925fe853c"",
+                    ""path"": ""<Gamepad>/buttonWest"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Gamepad"",
+                    ""action"": ""TakeHalf"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""00a5b50c-8b9f-4b50-8bdd-0c1d480e538e"",
+                    ""path"": ""<Gamepad>/buttonNorth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Gamepad"",
+                    ""action"": ""GatherAll"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -1295,6 +1337,8 @@ namespace Fungiiiii.Controls
             m_UI_ScrollWheel = m_UI.FindAction("ScrollWheel", throwIfNotFound: true);
             m_UI_TrackedDevicePosition = m_UI.FindAction("TrackedDevicePosition", throwIfNotFound: true);
             m_UI_TrackedDeviceOrientation = m_UI.FindAction("TrackedDeviceOrientation", throwIfNotFound: true);
+            m_UI_TakeHalf = m_UI.FindAction("TakeHalf", throwIfNotFound: true);
+            m_UI_GatherAll = m_UI.FindAction("GatherAll", throwIfNotFound: true);
         }
 
         ~@GameControls()
@@ -1733,6 +1777,8 @@ namespace Fungiiiii.Controls
         private readonly InputAction m_UI_ScrollWheel;
         private readonly InputAction m_UI_TrackedDevicePosition;
         private readonly InputAction m_UI_TrackedDeviceOrientation;
+        private readonly InputAction m_UI_TakeHalf;
+        private readonly InputAction m_UI_GatherAll;
         /// <summary>
         /// Provides access to input actions defined in input action map "UI".
         /// </summary>
@@ -1784,6 +1830,14 @@ namespace Fungiiiii.Controls
             /// Provides access to the underlying input action "UI/TrackedDeviceOrientation".
             /// </summary>
             public InputAction @TrackedDeviceOrientation => m_Wrapper.m_UI_TrackedDeviceOrientation;
+            /// <summary>
+            /// Provides access to the underlying input action "UI/TakeHalf".
+            /// </summary>
+            public InputAction @TakeHalf => m_Wrapper.m_UI_TakeHalf;
+            /// <summary>
+            /// Provides access to the underlying input action "UI/GatherAll".
+            /// </summary>
+            public InputAction @GatherAll => m_Wrapper.m_UI_GatherAll;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -1840,6 +1894,12 @@ namespace Fungiiiii.Controls
                 @TrackedDeviceOrientation.started += instance.OnTrackedDeviceOrientation;
                 @TrackedDeviceOrientation.performed += instance.OnTrackedDeviceOrientation;
                 @TrackedDeviceOrientation.canceled += instance.OnTrackedDeviceOrientation;
+                @TakeHalf.started += instance.OnTakeHalf;
+                @TakeHalf.performed += instance.OnTakeHalf;
+                @TakeHalf.canceled += instance.OnTakeHalf;
+                @GatherAll.started += instance.OnGatherAll;
+                @GatherAll.performed += instance.OnGatherAll;
+                @GatherAll.canceled += instance.OnGatherAll;
             }
 
             /// <summary>
@@ -1881,6 +1941,12 @@ namespace Fungiiiii.Controls
                 @TrackedDeviceOrientation.started -= instance.OnTrackedDeviceOrientation;
                 @TrackedDeviceOrientation.performed -= instance.OnTrackedDeviceOrientation;
                 @TrackedDeviceOrientation.canceled -= instance.OnTrackedDeviceOrientation;
+                @TakeHalf.started -= instance.OnTakeHalf;
+                @TakeHalf.performed -= instance.OnTakeHalf;
+                @TakeHalf.canceled -= instance.OnTakeHalf;
+                @GatherAll.started -= instance.OnGatherAll;
+                @GatherAll.performed -= instance.OnGatherAll;
+                @GatherAll.canceled -= instance.OnGatherAll;
             }
 
             /// <summary>
@@ -2184,6 +2250,20 @@ namespace Fungiiiii.Controls
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnTrackedDeviceOrientation(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "TakeHalf" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnTakeHalf(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "GatherAll" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnGatherAll(InputAction.CallbackContext context);
         }
     }
 }
