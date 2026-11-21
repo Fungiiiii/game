@@ -9,6 +9,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: M_Fungi_Palette
     second: {fileID: 2100000, guid: 4f8015b89819208438e3bea0fc6b20a8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Fungi_Cap
+    second: {fileID: 2100000, guid: 5a832d89a2094b06ac6dd3781fcf6d21, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
