@@ -20,6 +20,11 @@ namespace Fungiiiii.Tests.PlayMode
     public sealed class DemoLoopScenePlayModeTests
     {
         private const string ScenePath = "Assets/Scenes/Prototype/DemoLoopScene.unity";
+
+        // Ids of the demo's items in the item catalog: stable keys, saved and sent over the network.
+        private const string NetId = "net";
+        private const string WoodId = "wood";
+        private const string SporeId = "spore";
         private const string ForestScenePath = "Assets/Scenes/Biomes/MysticForest.unity";
 
         /// <summary>The forest is large: loading it additively takes a few seconds in batch mode.</summary>
@@ -116,9 +121,9 @@ namespace Fungiiiii.Tests.PlayMode
             var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
 
             var first = demo.Inventory.GetSlot(InventoryLayout.Standard.QuickBarFirstSlot);
-            Assert.That(first.ItemId, Is.EqualTo(DemoItems.NetId));
+            Assert.That(first.ItemId, Is.EqualTo(NetId));
             Assert.That(first.Quantity, Is.EqualTo(1));
-            Assert.That(demo.Inventory.Count(DemoItems.NetId), Is.EqualTo(1), "There must be one net.");
+            Assert.That(demo.Inventory.Count(NetId), Is.EqualTo(1), "There must be one net.");
 
             Assert.That(demo.Hotbar.IsVisible, Is.True, "The quick bar is not on screen.");
             Assert.That(demo.Hotbar.SlotCount, Is.EqualTo(3));
@@ -215,8 +220,8 @@ namespace Fungiiiii.Tests.PlayMode
             demo.ResetDemo();
             yield return null;
 
-            Assert.That(demo.Inventory.GetSlot(InventoryLayout.Standard.QuickBarFirstSlot).ItemId, Is.EqualTo(DemoItems.NetId));
-            Assert.That(demo.Inventory.Count(DemoItems.NetId), Is.EqualTo(1), "Reset made a second net.");
+            Assert.That(demo.Inventory.GetSlot(InventoryLayout.Standard.QuickBarFirstSlot).ItemId, Is.EqualTo(NetId));
+            Assert.That(demo.Inventory.Count(NetId), Is.EqualTo(1), "Reset made a second net.");
             Assert.That(demo.Hotbar.Selected, Is.EqualTo(0));
             Assert.That(demo.Thrower.IsEquipped, Is.True);
         }
@@ -246,7 +251,7 @@ namespace Fungiiiii.Tests.PlayMode
             var terrain = Terrain.activeTerrain;
             var player = Object.FindFirstObjectByType<PlayerMotor>().transform.position;
 
-            foreach (var (itemId, expected) in new[] { (DemoItems.WoodId, 4), (DemoItems.SporeId, 5) })
+            foreach (var (itemId, expected) in new[] { (WoodId, 4), (SporeId, 5) })
             {
                 var positions = demo.Gatherables
                     .Where(gatherable => gatherable.IsAvailable && gatherable.Item.Id == itemId)
@@ -291,12 +296,12 @@ namespace Fungiiiii.Tests.PlayMode
             Time.timeScale = 20f;
             for (var round = 0; round < 12; round++)
             {
-                var available = demo.Gatherables.Where(candidate => candidate.IsAvailable && candidate.Item.Id == DemoItems.SporeId).ToArray();
+                var available = demo.Gatherables.Where(candidate => candidate.IsAvailable && candidate.Item.Id == SporeId).ToArray();
                 Assert.That(available, Is.Not.Empty);
                 Assert.That(available[0].Interact(demo.Inventory), Is.True);
 
                 var elapsed = 0f;
-                while (elapsed < 3f && demo.Gatherables.Count(candidate => candidate.IsAvailable && candidate.Item.Id == DemoItems.SporeId) < available.Length)
+                while (elapsed < 3f && demo.Gatherables.Count(candidate => candidate.IsAvailable && candidate.Item.Id == SporeId) < available.Length)
                 {
                     elapsed += Time.unscaledDeltaTime;
                     yield return null;
@@ -305,7 +310,7 @@ namespace Fungiiiii.Tests.PlayMode
 
             Time.timeScale = timeScale;
 
-            var mushrooms = demo.Gatherables.Where(candidate => candidate.Item.Id == DemoItems.SporeId).ToArray();
+            var mushrooms = demo.Gatherables.Where(candidate => candidate.Item.Id == SporeId).ToArray();
             var models = mushrooms.Select(mushroom => mushroom.GetComponentInChildren<LODGroup>(true).name).Distinct().ToArray();
             Assert.That(models, Has.Length.GreaterThanOrEqualTo(2), "Every mushroom has the same model.");
             Assert.That(models, Is.SubsetOf(new[] { "PF_MushroomCluster", "PF_MushroomCluster_02", "PF_MushroomCluster_03", "PF_MushroomCluster_04" }));
@@ -643,7 +648,7 @@ namespace Fungiiiii.Tests.PlayMode
                 .Select(tree => terrain.GetPosition() + Vector3.Scale(tree.position, data.size))
                 .ToArray();
 
-            foreach (var stick in demo.Gatherables.Where(gatherable => gatherable.IsAvailable && gatherable.Item.Id == DemoItems.WoodId))
+            foreach (var stick in demo.Gatherables.Where(gatherable => gatherable.IsAvailable && gatherable.Item.Id == WoodId))
             {
                 var nearest = float.PositiveInfinity;
                 foreach (var trunk in trunks)
@@ -697,7 +702,7 @@ namespace Fungiiiii.Tests.PlayMode
             yield return LoadDemo();
             var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
             var player = Object.FindFirstObjectByType<PlayerMotor>().transform;
-            var sticks = demo.Gatherables.Where(gatherable => gatherable.Item.Id == DemoItems.WoodId).ToArray();
+            var sticks = demo.Gatherables.Where(gatherable => gatherable.Item.Id == WoodId).ToArray();
             var maximum = sticks.Count(stick => stick.IsAvailable);
             var gathered = sticks.First(stick => stick.IsAvailable);
 
@@ -741,7 +746,7 @@ namespace Fungiiiii.Tests.PlayMode
                 Is.Empty,
                 "A ground ring is still drawn.");
 
-            foreach (var itemId in new[] { DemoItems.WoodId, DemoItems.SporeId })
+            foreach (var itemId in new[] { WoodId, SporeId })
             {
                 var gatherable = demo.Gatherables.First(candidate => candidate.IsAvailable && candidate.Item.Id == itemId);
                 var outlines = gatherable.GetComponentsInChildren<MeshRenderer>()
