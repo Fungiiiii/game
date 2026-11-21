@@ -1125,6 +1125,8 @@ MonoBehaviour:
   groveSize: 0
   groveCoverage: 0
   heightVariation: 0
+  fadeSouth: 0
+  fadeNorth: 0
 --- !u!4 &267572759
 Transform:
   m_ObjectHideFlags: 0
@@ -1196,6 +1198,8 @@ MonoBehaviour:
   groveSize: 28
   groveCoverage: 0.3
   heightVariation: 0
+  fadeSouth: 0
+  fadeNorth: 0
 --- !u!1 &320765991
 GameObject:
   m_ObjectHideFlags: 0
@@ -1252,6 +1256,8 @@ MonoBehaviour:
   groveSize: 0
   groveCoverage: 0
   heightVariation: 0
+  fadeSouth: 0
+  fadeNorth: 0
 --- !u!1001 &364797473
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1672,6 +1678,8 @@ MonoBehaviour:
   groveSize: 0
   groveCoverage: 0
   heightVariation: 0
+  fadeSouth: 0
+  fadeNorth: 0
 --- !u!4 &502172139
 Transform:
   m_ObjectHideFlags: 0
@@ -1817,6 +1825,8 @@ MonoBehaviour:
   groveSize: 0
   groveCoverage: 0
   heightVariation: 0.15
+  fadeSouth: 0
+  fadeNorth: 0
 --- !u!1001 &583796672
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3983,6 +3993,8 @@ MonoBehaviour:
   groveSize: 0
   groveCoverage: 0
   heightVariation: 0.15
+  fadeSouth: 0
+  fadeNorth: 0
 --- !u!1 &1197866672
 GameObject:
   m_ObjectHideFlags: 0
@@ -10423,6 +10435,8 @@ MonoBehaviour:
   groveSize: 0
   groveCoverage: 0
   heightVariation: 0
+  fadeSouth: 0
+  fadeNorth: 0
 --- !u!4 &1893068245
 Transform:
   m_ObjectHideFlags: 0
