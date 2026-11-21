@@ -5,8 +5,9 @@ namespace Fungiiiii.UI
 {
     /// <summary>
     /// The key to press, shown over what the player aims at, as on the Ramassage artboard:
-    /// a square wooden key cap with a cyan rim and the key's name in cream. It pops in when
-    /// it appears. Where it goes and what it reads is told by its owner.
+    /// a square wooden key cap with a cyan rim and, in cream, the control as the key hints
+    /// draw it (<see cref="Glyph"/>): a name, a PlayStation shape, a mouse. It pops in when
+    /// it appears. Where it goes and what it shows is told by its owner.
     /// </summary>
     internal sealed class KeyPrompt : MonoBehaviour
     {
@@ -17,12 +18,10 @@ namespace Fungiiiii.UI
         private const float KeySize = 44f;
         private const float LetterShare = 0.62f;
         private const float TriangleShare = 0.42f;
+        private const float ShapeShare = 0.7f;
 
         private const float PopStartScale = 0.85f;
         private const float PopSeconds = 0.1f;
-
-        /// <summary>The label that is drawn as a triangle instead of a letter.</summary>
-        public const string TriangleLabel = "△";
 
         private static readonly Color32 Cream = new Color32(0xF2, 0xE6, 0xCC, 0xFF);
         private static readonly Color32 Shadow = new Color32(0x2B, 0x27, 0x23, 0xFF);
@@ -31,12 +30,17 @@ namespace Fungiiiii.UI
         private RectTransform key;
         private Text letter;
         private TriangleGlyphGraphic triangle;
+        private GlyphShapeGraphic shape;
+        private Glyph shown;
         private float popElapsed = PopSeconds;
 
         public bool IsVisible => canvasObject != null && canvasObject.activeSelf;
 
-        /// <summary>What the key reads, empty while hidden.</summary>
+        /// <summary>What the key reads, empty while hidden or when the control is drawn.</summary>
         public string Label { get; private set; } = string.Empty;
+
+        /// <summary>The control shown, while the key is visible.</summary>
+        public Glyph Shown => shown;
 
         /// <summary>Where it stands on the screen, in pixels.</summary>
         public Vector2 ScreenPoint => key != null ? (Vector2)key.position : Vector2.zero;
@@ -81,11 +85,18 @@ namespace Fungiiiii.UI
             triangle.color = Cream;
             triangle.raycastTarget = false;
 
+            var shapeObject = new GameObject("Shape", typeof(RectTransform), typeof(CanvasRenderer));
+            var shapeRect = (RectTransform)shapeObject.transform;
+            shapeRect.SetParent(key, false);
+            shapeRect.sizeDelta = Vector2.one * (KeySize * ShapeShare);
+            shape = shapeObject.AddComponent<GlyphShapeGraphic>();
+            shape.raycastTarget = false;
+
             Hide();
         }
 
         /// <summary>Shows the key at a point of the screen, in pixels. It pops in if it was hidden.</summary>
-        public void Show(Vector2 screenPoint, string label)
+        public void Show(Vector2 screenPoint, Glyph glyph)
         {
             if (!IsVisible)
             {
@@ -94,15 +105,51 @@ namespace Fungiiiii.UI
             }
 
             key.position = screenPoint;
-            if (label != Label)
+            if (!glyph.Equals(shown))
             {
-                Label = label;
-                var isTriangle = label == TriangleLabel;
-                letter.text = isTriangle ? string.Empty : label;
-                triangle.enabled = isTriangle;
+                Draw(glyph);
             }
 
             ApplyPop();
+        }
+
+        private void Draw(Glyph glyph)
+        {
+            shown = glyph;
+            Label = glyph.Text ?? string.Empty;
+            letter.text = Label;
+            triangle.enabled = glyph.Kind == GlyphKind.Face && glyph.Face == FaceShape.Triangle;
+
+            var drawn = ShapeOf(glyph);
+            shape.enabled = drawn.HasValue;
+            if (drawn.HasValue)
+            {
+                shape.Drawn = drawn.Value;
+            }
+        }
+
+        /// <summary>The drawn shape of a control without a name; null when it has one, or is the triangle.</summary>
+        private static GlyphShapeGraphic.Shape? ShapeOf(Glyph glyph)
+        {
+            switch (glyph.Kind)
+            {
+                case GlyphKind.MouseLeft:
+                    return GlyphShapeGraphic.Shape.MouseLeft;
+                case GlyphKind.MouseRight:
+                    return GlyphShapeGraphic.Shape.MouseRight;
+                case GlyphKind.MouseWheel:
+                    return GlyphShapeGraphic.Shape.MouseWheel;
+                case GlyphKind.View:
+                    return GlyphShapeGraphic.Shape.View;
+                case GlyphKind.Face when glyph.Face == FaceShape.Cross:
+                    return GlyphShapeGraphic.Shape.Cross;
+                case GlyphKind.Face when glyph.Face == FaceShape.Circle:
+                    return GlyphShapeGraphic.Shape.Circle;
+                case GlyphKind.Face when glyph.Face == FaceShape.Square:
+                    return GlyphShapeGraphic.Shape.Square;
+                default:
+                    return null;
+            }
         }
 
         /// <summary>Plays the pop again, for a key that moves to another target.</summary>
@@ -122,6 +169,7 @@ namespace Fungiiiii.UI
         {
             canvasObject.SetActive(false);
             Label = string.Empty;
+            shown = default;
         }
 
         private void Update()
