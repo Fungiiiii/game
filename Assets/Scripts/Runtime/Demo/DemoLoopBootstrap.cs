@@ -313,6 +313,7 @@ namespace Fungiiiii.Demo
         private PlayerVitals vitals;
         private StaminaRegulator stamina;
         private InventoryDemoController inventoryView;
+        private Backpack backpack;
         private PlayerInteractor interactor;
         private FungalHole hole;
         private ItemOutlineFactory outlines;
@@ -324,7 +325,10 @@ namespace Fungiiiii.Demo
         /// <summary>True once the forest is loaded and the loop is built.</summary>
         public bool IsReady { get; private set; }
 
-        public PlayerInventory Inventory => inventoryView != null ? inventoryView.Inventory : null;
+        public PlayerInventory Inventory => backpack != null ? backpack.Inventory : null;
+
+        /// <summary>The inventory screen, opened with Tab.</summary>
+        public InventoryDemoController InventoryView => inventoryView;
 
         public NetThrower Thrower { get; private set; }
 
@@ -550,6 +554,7 @@ namespace Fungiiiii.Demo
             player.name = "Player";
             playerController = player.GetComponent<CharacterController>();
             controls = player.GetComponent<PlayerControls>();
+            backpack = player.GetComponent<Backpack>();
 
             // First person: the body is not drawn for its own camera, but still casts its shadow.
             foreach (var bodyRenderer in player.GetComponentsInChildren<Renderer>())
@@ -576,11 +581,11 @@ namespace Fungiiiii.Demo
 
             player.AddComponent<StaminaDriver>().Initialize(player.GetComponent<PlayerMotor>(), stamina);
 
-            // Built inactive so that Awake does not seed sample items: the inventory starts empty.
+            // Built inactive so that the player's inventory is bound before Awake builds the screen.
             var inventoryObject = new GameObject("Inventory");
             inventoryObject.SetActive(false);
             inventoryView = inventoryObject.AddComponent<InventoryDemoController>();
-            inventoryView.SeedsDemoItems = false;
+            inventoryView.Bind(backpack.Inventory);
             inventoryView.Font = menuFont;
             inventoryObject.SetActive(true);
             inventoryObject.SetActive(false);

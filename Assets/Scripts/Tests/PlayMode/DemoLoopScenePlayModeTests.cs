@@ -96,6 +96,18 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator TheInventory_IsTheOneThePlayerCarries_AndTheScreenShowsIt()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+            var backpack = Object.FindFirstObjectByType<PlayerMotor>().GetComponent<Backpack>();
+
+            Assert.That(backpack, Is.Not.Null, "The player carries no backpack.");
+            Assert.That(demo.Inventory, Is.SameAs(backpack.Inventory));
+            Assert.That(demo.InventoryView.Inventory, Is.SameAs(backpack.Inventory));
+        }
+
+        [UnityTest]
         public IEnumerator TheNet_StartsInTheFirstSlotOfTheQuickBar_InHand()
         {
             yield return LoadDemo();
