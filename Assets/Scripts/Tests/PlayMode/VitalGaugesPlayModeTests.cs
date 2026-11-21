@@ -11,55 +11,55 @@ using UnityEditor.SceneManagement;
 
 namespace Fungiiiii.Tests.PlayMode
 {
-    public sealed class VitalsHudPlayModeTests
+    public sealed class VitalGaugesPlayModeTests
     {
         [UnityTest]
-        public IEnumerator PoisonBar_ReflectsThePoisonPercentage()
+        public IEnumerator PoisonGauge_ReflectsThePoisonPercentage()
         {
-            var root = new GameObject(nameof(PoisonBar_ReflectsThePoisonPercentage));
+            var hud = UiPrefabs.Instantiate<VitalGauges>("VitalGauges");
+            var root = hud.gameObject;
             var model = new PlayerVitals(100f, 100f);
-            var hud = root.AddComponent<VitalsHud>();
             hud.Initialize(model);
 
             yield return null;
 
-            Assert.That(hud.HealthBarVisible, Is.True);
-            Assert.That(hud.StaminaBarVisible, Is.True);
-            Assert.That(hud.PoisonBarVisible, Is.False);
+            Assert.That(hud.HealthGaugeVisible, Is.True);
+            Assert.That(hud.StaminaGaugeVisible, Is.True);
+            Assert.That(hud.PoisonGaugeVisible, Is.False);
 
             model.Poison.SetIntensity(25f);
             yield return null;
-            Assert.That(hud.PoisonBarVisible, Is.True);
+            Assert.That(hud.PoisonGaugeVisible, Is.True);
             Assert.That(hud.PoisonPercentage, Is.EqualTo(25f).Within(0.01f));
 
             model.Poison.Clear();
             yield return null;
-            Assert.That(hud.PoisonBarVisible, Is.False);
+            Assert.That(hud.PoisonGaugeVisible, Is.False);
 
             Object.Destroy(root);
         }
 
         [UnityTest]
-        public IEnumerator PoisonStateChanges_RefreshTheDisplayedHud()
+        public IEnumerator PoisonStateChanges_RefreshTheGauges()
         {
-            var root = new GameObject(nameof(PoisonStateChanges_RefreshTheDisplayedHud));
+            var hud = UiPrefabs.Instantiate<VitalGauges>("VitalGauges");
+            var root = hud.gameObject;
             var model = new PlayerVitals(100f, 100f);
-            var hud = root.AddComponent<VitalsHud>();
             hud.Initialize(model);
 
             model.Poison.Apply(40f);
             yield return null;
-            Assert.That(hud.PoisonBarVisible, Is.True);
+            Assert.That(hud.PoisonGaugeVisible, Is.True);
             Assert.That(hud.PoisonPercentage, Is.EqualTo(40f).Within(0.01f));
 
             model.Poison.Remove(15f);
             yield return null;
-            Assert.That(hud.PoisonBarVisible, Is.True);
+            Assert.That(hud.PoisonGaugeVisible, Is.True);
             Assert.That(hud.PoisonPercentage, Is.EqualTo(25f).Within(0.01f));
 
             model.Poison.Clear();
             yield return null;
-            Assert.That(hud.PoisonBarVisible, Is.False);
+            Assert.That(hud.PoisonGaugeVisible, Is.False);
             Assert.That(hud.PoisonPercentage, Is.EqualTo(0f).Within(0.01f));
 
             Object.Destroy(root);
@@ -74,10 +74,10 @@ namespace Fungiiiii.Tests.PlayMode
             yield return load;
             yield return null;
 
-            VitalsHud hud = Object.FindFirstObjectByType<VitalsHud>();
+            VitalGauges hud = Object.FindFirstObjectByType<VitalGauges>();
             Assert.That(hud, Is.Not.Null);
-            Assert.That(hud.HealthBarVisible, Is.True);
-            Assert.That(hud.StaminaBarVisible, Is.True);
+            Assert.That(hud.HealthGaugeVisible, Is.True);
+            Assert.That(hud.StaminaGaugeVisible, Is.True);
         }
     }
 }

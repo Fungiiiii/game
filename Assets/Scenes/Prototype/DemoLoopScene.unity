@@ -209,6 +209,7 @@ MonoBehaviour:
   hotbar: {fileID: 1110914250}
   screens: {fileID: 1085797577}
   keyPrompt: {fileID: 1574012220}
+  vitalGauges: {fileID: 1335842181}
   holeSpawner: {fileID: 123151326}
   randomSeed: 0
 --- !u!4 &167378463
@@ -698,6 +699,114 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1cf4f10b9b200c48806ad5c7cd0a714, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.Hotbar
+--- !u!1001 &1335842180
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 6628490668563547782, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+      propertyPath: m_Name
+      value: VitalGauges
+      objectReference: {fileID: 0}
+    - target: {fileID: 8583013982502493638, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8583013982502493638, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8583013982502493638, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8583013982502493638, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8583013982502493638, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8583013982502493638, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8583013982502493638, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8583013982502493638, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8583013982502493638, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8583013982502493638, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8583013982502493638, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8583013982502493638, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8583013982502493638, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8583013982502493638, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8583013982502493638, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8583013982502493638, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8583013982502493638, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8583013982502493638, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8583013982502493638, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8583013982502493638, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+--- !u!114 &1335842181 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4078875859992307567, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+  m_PrefabInstance: {fileID: 1335842180}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a192fed0b6a4a28921f24e2a18e5d02, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.VitalGauges
 --- !u!1001 &1574012219
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1037,3 +1146,4 @@ SceneRoots:
   - {fileID: 480836277}
   - {fileID: 1085797578}
   - {fileID: 123151327}
+  - {fileID: 1335842180}

@@ -11,6 +11,7 @@
 
 - [playtest-base](./playtest-base.md) — les bâtons et les champignons ne sont plus répartis sur toute la carte : ils sont gardés autour du joueur. Le contour visé devient cyan, avec la touche au-dessus. L'inventaire est refait. Le filet ne montre son arc qu'en visant.
 - [12487v2byt9-mystic-forest](./12487v2byt9-mystic-forest.md) — le générateur écarte les arbres des rochers selon leur emprise, et les calques se fondent en bord de zone (`fadeSouth`, `fadeNorth`). `Border_Rocks` passe avant `Border_TreePine`. Le Terrain est regénéré. `MushroomCluster` est régénéré (même GUID) et trois variantes s'ajoutent.
+- [12487v29zj5-poison-test-bench](./12487v29zj5-poison-test-bench.md) — les jauges du joueur (`VitalsHud`) deviennent `VitalGauges`, un prefab placé dans `PoisonScene`, `HUDScene` et `DemoLoopScene`. Le banc poison les reçoit dans l'Inspector.
 - [86c9mnqy5-filet-capture](./86c9mnqy5-filet-capture.md) — action principale et secondaire, visée avec zoom, points de l'arc espacés, contour de chance sur le champignon visé. `NetThrowScene` est concernée : c'est le même `NetThrower`.
 
 ## Ce que fait la feature
@@ -109,7 +110,8 @@
   - fiches : `GatherableDefinition`, `GatheringSettings`, `CreatureDefinition`, `NetSettings`, `StaminaSettings`, `OutlineSettings`, dans `Assets/Data/{Gathering,Creatures,Settings}` ;
   - interface : `GameScreens` (pile d'écrans, Échap, Tab, aides) et les prefabs de `Assets/Prefabs/UI/` (`KeyPrompt`, `ControlHints` et ses lignes et touches dans `Hints/`, `Hotbar` et `HotbarSlot`, `Inventory` et ses deux cases, `PauseMenu`, `MainMenu`, `PlankButton`), avec `GlyphView`, `HintRow`, `HotbarSlot`, `InventorySlotView`, `StackLabel` ;
   - joueur : le variant `PlaytestPlayer` du prefab Player porte `PlayerHands`, `PlayerInteractor`, `NetThrower`, `NetTargetOutline` et `StaminaDriver` ; Netcode l'a ajouté à `DefaultNetworkPrefabs`.
-  - Retirés : `WoodMenu`, `DemoItems`, le menu **3. Wire Demo Loop Scene**. `PrototypeFirstPersonCamera.Moved` place la touche E.
+  - jauges : `VitalsHud` devient `VitalGauges` (prefab `VitalGauges`, trois instances du prefab `Gauge`), dans `DemoLoopScene`, `HUDScene` (`VitalGaugesPrototypeBootstrap`, `VitalGaugesPrototypeControls`) et `PoisonScene` ;
+  - Retirés : `WoodMenu`, `DemoItems`, le menu **3. Wire Demo Loop Scene**, `VitalsHudPrototypeInstaller` (doublon du bootstrap de `HUDScene`). `PrototypeFirstPersonCamera.Moved` place la touche E.
 
 ## Décisions
 
@@ -129,6 +131,7 @@
 - **Les icônes d'objets se posent dans les fiches** : un `Sprite` dans `ItemDefinition.Icon` s'affiche partout via `ItemIcon` ; sans icône, le carré de couleur reste.
 - **`PlaytestLocalization` retire les textes qu'il avait ajoutés et que le jeu n'utilise plus** (`RetiredKeys`), en plus d'ajouter les manquants.
 - **Ce qui se règle dans l'Editor se fait dans l'Editor** (Hugo, 21/11, « on respecte les règles de Unity ») : l'interface est en prefabs, le monde en objets de scène, les réglages et le contenu en fiches ; le point d'entrée reste petit. Une nouvelle espèce ou ressource est une fiche, pas du code. Les prefabs et les scènes font foi : les scripts qui les ont écrits ont été supprimés une fois lancés. La règle est dans `CLAUDE.md` (*Scenes, prefabs and data*).
+- **`VitalsHud` devient `VitalGauges`** (proposé le 21/11, Hugo ayant demandé de critiquer le nom ; à confirmer) : « Vitals » reste, c'est le nom du modèle (`PlayerVitals`) et le terme usuel pour la vie et l'endurance ; « valeurs de personnage » désignerait plutôt des caractéristiques permanentes (force, vitesse). « Hud » était trop large : la barre rapide, les aides et la touche E font aussi partie du HUD. Ce composant n'en montre que les jauges, le mot des docs.
 - **Les composants du joueur de la partie sont sur un variant** (`PlaytestPlayer`) : le prefab Player de base reste celui des autres scènes et du réseau.
 - **La touche E se place quand la caméra a suivi le joueur** (`PrototypeFirstPersonCamera.Moved`), pas dans son propre `LateUpdate` : Unity ne garantit pas l'ordre de deux `LateUpdate`, et la touche affichait la position de l'image précédente quand l'interaction passait avant la caméra.
 - **Pas de note validée dans ClickUp** : voir l'en-tête.
@@ -168,7 +171,7 @@ Lancés en batch sur le PC de Hugo (Unity 6000.3.21f1) à chaque étape.
 | `InventoryScreenPlayModeTests` (navigation, focus, A, X, Y) | PlayMode | Inventaire à la manette | ✅ |
 | `InputGlyphsTests`, `ControlHintTests` | EditMode | Dessin des touches, schémas, réassignation | ✅ |
 | `DemoLoopScenePlayModeTests.InGame_TheHints_*`, `WhileAiming_*`, `WithATarget_*`, `TheInventory_ShowsItsOwnHints_*` | PlayMode | Aides de touches | ✅ |
-| `DemoLoopScenePlayModeTests`, `PlaytestLoopPlayModeTests`, `MainMenuPlayModeTests`, `KeyPromptPlayModeTests`, `InventoryScreenPlayModeTests` (prefabs et objets de scène) | PlayMode | Architecture : même comportement après le passage en prefabs, objets de scène et fiches | ✅ |
+| `DemoLoopScenePlayModeTests`, `PlaytestLoopPlayModeTests`, `MainMenuPlayModeTests`, `KeyPromptPlayModeTests`, `InventoryScreenPlayModeTests`, `VitalGaugesPlayModeTests`, `PoisonTestBenchTests` (prefabs et objets de scène) | PlayMode | Architecture : même comportement après le passage en prefabs, objets de scène et fiches | ✅ |
 
 ### Manuels (dans Unity)
 
@@ -207,7 +210,6 @@ Lancés en batch sur le PC de Hugo (Unity 6000.3.21f1) à chaque étape.
 
 - La police Fredoka Medium n'est pas dans le projet : « Barre rapide » et les aides sont en Fredoka SemiBold.
 - Rien n'a été testé dans un exécutable : les tests ont tourné dans l'Editor en batch.
-- `VitalsHud` (barres de vie et d'endurance) est encore construit par code : c'est un placeholder partagé avec les bancs de test, qui gardent leur code.
-- L'apparence des prefabs n'a été vérifiée que par les tests : à regarder dans l'Editor (touche E, aides, barre rapide, inventaire, pause, accueil).
+- L'apparence des prefabs n'a été vérifiée que par les tests : à regarder dans l'Editor (touche E, aides, barre rapide, inventaire, pause, accueil, jauges).
 
 ## Modifié par

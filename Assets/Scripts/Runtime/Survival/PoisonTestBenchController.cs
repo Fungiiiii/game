@@ -1,6 +1,6 @@
+using Fungiiiii.UI;
 using UnityEngine;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-using Fungiiiii.UI;
 using UnityEngine.InputSystem;
 #endif
 
@@ -14,6 +14,10 @@ namespace Fungiiiii.Survival
         private const float DemoMaxStamina = 100f;
         private const float DemoDose = 10f;
 
+        [Tooltip("The player's gauges, shown over the bench.")]
+        [SerializeField]
+        private VitalGauges gauges;
+
         private PlayerVitals vitals;
         private bool isPaused;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -21,6 +25,7 @@ namespace Fungiiiii.Survival
 #endif
 
         public PlayerVitals Vitals => vitals;
+        public VitalGauges Gauges => gauges;
         public PoisonState Poison => vitals.Poison;
         public float MaxHealth => vitals.MaxHealth;
         public float CurrentHealth => vitals.Current.Health;
@@ -41,7 +46,7 @@ namespace Fungiiiii.Survival
             vitals = new PlayerVitals(DemoMaxHealth, DemoMaxStamina);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             view = gameObject.AddComponent<PoisonPrototypeView>();
-            view.Initialize(this);
+            view.Initialize(this, gauges);
 #endif
         }
 
