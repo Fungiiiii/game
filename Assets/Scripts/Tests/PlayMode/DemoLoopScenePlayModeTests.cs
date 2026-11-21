@@ -2,6 +2,7 @@ using System.Collections;
 using System.Linq;
 using Fungiiiii.Capture;
 using Fungiiiii.Demo;
+using Fungiiiii.Inventory;
 using Fungiiiii.Runtime.Player;
 using Fungiiiii.UI;
 using NUnit.Framework;
@@ -88,7 +89,7 @@ namespace Fungiiiii.Tests.PlayMode
 
             for (var index = 0; index < demo.Inventory.SlotCount; index++)
             {
-                if (index != InventoryDemoController.MainSlotCount)
+                if (index != InventoryLayout.Standard.QuickBarFirstSlot)
                 {
                     Assert.That(demo.Inventory.GetSlot(index).IsEmpty, Is.True, "The inventory must start with the net only.");
                 }
@@ -113,7 +114,7 @@ namespace Fungiiiii.Tests.PlayMode
             yield return LoadDemo();
             var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
 
-            var first = demo.Inventory.GetSlot(InventoryDemoController.MainSlotCount);
+            var first = demo.Inventory.GetSlot(InventoryLayout.Standard.QuickBarFirstSlot);
             Assert.That(first.ItemId, Is.EqualTo(DemoItems.NetId));
             Assert.That(first.Quantity, Is.EqualTo(1));
             Assert.That(demo.Inventory.Count(DemoItems.NetId), Is.EqualTo(1), "There must be one net.");
@@ -174,7 +175,7 @@ namespace Fungiiiii.Tests.PlayMode
             yield return LoadDemo();
             var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
 
-            Assert.That(demo.Inventory.MoveOrSwap(InventoryDemoController.MainSlotCount, InventoryDemoController.MainSlotCount + 1), Is.True);
+            Assert.That(demo.Inventory.MoveOrSwap(InventoryLayout.Standard.QuickBarFirstSlot, InventoryLayout.Standard.QuickBarFirstSlot + 1), Is.True);
             Assert.That(demo.Thrower.IsEquipped, Is.False, "The net is in hand from an unselected slot.");
 
             demo.Hotbar.Select(1);
@@ -208,12 +209,12 @@ namespace Fungiiiii.Tests.PlayMode
             yield return LoadDemo();
             var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
 
-            demo.Inventory.MoveOrSwap(InventoryDemoController.MainSlotCount, 0);
+            demo.Inventory.MoveOrSwap(InventoryLayout.Standard.QuickBarFirstSlot, 0);
             demo.Hotbar.Select(2);
             demo.ResetDemo();
             yield return null;
 
-            Assert.That(demo.Inventory.GetSlot(InventoryDemoController.MainSlotCount).ItemId, Is.EqualTo(DemoItems.NetId));
+            Assert.That(demo.Inventory.GetSlot(InventoryLayout.Standard.QuickBarFirstSlot).ItemId, Is.EqualTo(DemoItems.NetId));
             Assert.That(demo.Inventory.Count(DemoItems.NetId), Is.EqualTo(1), "Reset made a second net.");
             Assert.That(demo.Hotbar.Selected, Is.EqualTo(0));
             Assert.That(demo.Thrower.IsEquipped, Is.True);

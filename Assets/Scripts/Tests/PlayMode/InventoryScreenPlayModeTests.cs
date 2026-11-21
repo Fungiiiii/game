@@ -1,4 +1,5 @@
 using System.Collections;
+using Fungiiiii.Inventory;
 using Fungiiiii.UI;
 using NUnit.Framework;
 using UnityEngine;
@@ -12,24 +13,25 @@ using UnityEditor.SceneManagement;
 
 namespace Fungiiiii.Tests.PlayMode
 {
-    public sealed class InventoryDemoControllerPlayModeTests
+    public sealed class InventoryScreenPlayModeTests
     {
         private const float TextTimeoutSeconds = 5f;
 
         // The sample items: 5 mushrooms (a full stack) in the quick bar's first slot and
         // 1 more in slot 1, 8 spores in the quick bar's third slot.
-        private const int FullMushrooms = InventoryDemoController.MainSlotCount;
+        private static readonly int FullMushrooms = InventoryLayout.Standard.QuickBarFirstSlot;
         private const int LoneMushroom = 1;
-        private const int Spores = InventoryDemoController.MainSlotCount + 2;
+        private static readonly int Spores = InventoryLayout.Standard.QuickBarFirstSlot + 2;
 
         private GameObject subject;
-        private InventoryDemoController controller;
+        private InventoryScreen controller;
 
         [UnitySetUp]
         public IEnumerator CreateTheScreen()
         {
             subject = new GameObject("Inventory Under Test");
-            controller = subject.AddComponent<InventoryDemoController>();
+            controller = subject.AddComponent<InventoryScreen>();
+            subject.AddComponent<InventoryPrototypeSeed>();
             yield return null;
         }
 
@@ -47,7 +49,7 @@ namespace Fungiiiii.Tests.PlayMode
         private void Press(int slot, PointerEventData.InputButton button)
         {
             var slotObject = subject.transform.Find(
-                slot < InventoryDemoController.MainSlotCount
+                slot < InventoryLayout.Standard.QuickBarFirstSlot
                     ? $"InventoryCanvas/InventoryPanel/InventoryGrid_3x4/InventorySlot_{slot}"
                     : $"InventoryCanvas/InventoryPanel/Hotbar_3Slots/InventorySlot_{slot}").gameObject;
             var press = new PointerEventData(EventSystem.current) { button = button, position = new Vector2(100f, 100f) };
@@ -59,7 +61,7 @@ namespace Fungiiiii.Tests.PlayMode
         private GameObject SlotObject(int slot)
         {
             return subject.transform.Find(
-                slot < InventoryDemoController.MainSlotCount
+                slot < InventoryLayout.Standard.QuickBarFirstSlot
                     ? $"InventoryCanvas/InventoryPanel/InventoryGrid_3x4/InventorySlot_{slot}"
                     : $"InventoryCanvas/InventoryPanel/Hotbar_3Slots/InventorySlot_{slot}").gameObject;
         }
@@ -77,9 +79,9 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(first.selectOnUp, Is.Null);
 
             var bottomLeft = SelectableOf(9).navigation;
-            Assert.That(bottomLeft.selectOnDown, Is.SameAs(SelectableOf(InventoryDemoController.MainSlotCount)), "The grid does not lead to the quick bar.");
+            Assert.That(bottomLeft.selectOnDown, Is.SameAs(SelectableOf(InventoryLayout.Standard.QuickBarFirstSlot)), "The grid does not lead to the quick bar.");
 
-            var quickBar = SelectableOf(InventoryDemoController.MainSlotCount + 2).navigation;
+            var quickBar = SelectableOf(InventoryLayout.Standard.QuickBarFirstSlot + 2).navigation;
             Assert.That(quickBar.selectOnUp, Is.SameAs(SelectableOf(11)));
             Assert.That(quickBar.selectOnRight, Is.Null);
             Assert.That(quickBar.selectOnDown, Is.Null);
@@ -138,7 +140,7 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator Controller_CreatesThreeByFourInventoryAndQuickBar()
         {
-            Assert.That(controller.Inventory.SlotCount, Is.EqualTo(InventoryDemoController.TotalSlotCount));
+            Assert.That(controller.Inventory.SlotCount, Is.EqualTo(InventoryLayout.Standard.SlotCount));
             Assert.That(controller.Inventory.Count("demo_mushroom"), Is.EqualTo(6));
             Assert.That(subject.transform.Find("InventoryCanvas/InventoryPanel/InventoryGrid_3x4"), Is.Not.Null);
             Assert.That(subject.transform.Find("InventoryCanvas/InventoryPanel/Hotbar_3Slots"), Is.Not.Null);
@@ -155,12 +157,12 @@ namespace Fungiiiii.Tests.PlayMode
                 Assert.That(shape.GetComponent<CanvasRenderer>(), Is.Not.Null, $"{shape.name} cannot be drawn.");
             }
 
-            Assert.That(controller.Inventory.GetSlot(InventoryDemoController.MainSlotCount).ItemId, Is.EqualTo("demo_mushroom"));
-            Assert.That(controller.Inventory.GetSlot(InventoryDemoController.MainSlotCount).Quantity, Is.EqualTo(5));
-            Assert.That(controller.Inventory.GetSlot(InventoryDemoController.MainSlotCount + 1).ItemId, Is.EqualTo("demo_herb"));
-            Assert.That(controller.Inventory.GetSlot(InventoryDemoController.MainSlotCount + 2).ItemId, Is.EqualTo("demo_spore"));
+            Assert.That(controller.Inventory.GetSlot(InventoryLayout.Standard.QuickBarFirstSlot).ItemId, Is.EqualTo("demo_mushroom"));
+            Assert.That(controller.Inventory.GetSlot(InventoryLayout.Standard.QuickBarFirstSlot).Quantity, Is.EqualTo(5));
+            Assert.That(controller.Inventory.GetSlot(InventoryLayout.Standard.QuickBarFirstSlot + 1).ItemId, Is.EqualTo("demo_herb"));
+            Assert.That(controller.Inventory.GetSlot(InventoryLayout.Standard.QuickBarFirstSlot + 2).ItemId, Is.EqualTo("demo_spore"));
 
-            Assert.That(controller.Inventory.MoveOrSwap(InventoryDemoController.MainSlotCount, 0), Is.True);
+            Assert.That(controller.Inventory.MoveOrSwap(InventoryLayout.Standard.QuickBarFirstSlot, 0), Is.True);
             Assert.That(controller.Inventory.GetSlot(0).ItemId, Is.EqualTo("demo_mushroom"));
             yield return null;
         }
@@ -172,11 +174,13 @@ namespace Fungiiiii.Tests.PlayMode
                 "Assets/Scenes/Prototype/InventaireScene.unity",
                 new LoadSceneParameters(LoadSceneMode.Single));
             yield return load;
+            // The sample items are put in on Start, the frame after the scene's Awake.
+            yield return null;
 
-            InventoryDemoController sceneController = Object.FindFirstObjectByType<InventoryDemoController>();
+            InventoryScreen sceneController = Object.FindFirstObjectByType<InventoryScreen>();
             Assert.That(sceneController, Is.Not.Null);
             Assert.That(sceneController.Inventory.Count("demo_mushroom"), Is.EqualTo(6));
-            Assert.That(sceneController.Inventory.SlotCount, Is.EqualTo(InventoryDemoController.TotalSlotCount));
+            Assert.That(sceneController.Inventory.SlotCount, Is.EqualTo(InventoryLayout.Standard.SlotCount));
         }
 
         [UnityTest]

@@ -95,15 +95,15 @@
 - **Ressources** : `ResourceSpawner` réécrit (bulles par joueur, `ResourceViewer`) ; `GatherableField` (liste de joueurs `FieldPlayer`, variantes avec leur réserve, disparition) ; `ForestResourceSpots` (`FindTreeFootMushroomSpots`, `ScatterMushroomSpots`, `RemoveOverlaps`, `MushroomPose`) ; réglages dans `DemoLoopBootstrap` et `DemoLoopScene.unity`.
 - **Touche E** : `IInteractable.PromptPoint`, `PlayerInteractor` (cible, libellé du binding), `KeyPrompt`, `KeyCapGraphic`, `TriangleGlyphGraphic`, `Polygon` (partagé avec `PlankGraphic`).
 - **Filet** : `NetThrower` (actions `NetPrimary` / `NetSecondary`, `HoldAim`, zoom, `PreviewTarget`, `PreviewChance`), `NetPreviewDots`, `PrototypeFirstPersonCamera.LookScale`, `NetTargetOutline`, `ItemOutlineFactory.CreateChanceOutline`, `ItemOutline.SetVisible` ; `Spongeus.fbx` et `Champoule.fbx` en Read/Write.
-- **Inventaire** : `InventoryHand` (logique des clics, C# pur), `InventoryDemoController` (écran refait), `CutCornerGraphic` ; dix textes dans la table `UI` (`UiText`, `PlaytestLocalization`).
+- **Inventaire** : `InventoryHand` (logique des clics, C# pur), `InventoryScreen` (écran refait), `CutCornerGraphic` ; dix textes dans la table `UI` (`UiText`, `PlaytestLocalization`).
 - **Commandes** : toutes les actions du jeu dans `InputSystem_Actions` (cartes `Player`, `Screens`, `UI`), classe `GameControls` générée ; `ControlMaps` (cartes actives, schéma du dernier appareil, C# pur) et `PlayerControls` sur le prefab Player.
 - **Objets** : `ItemDefinition` (ScriptableObject) et `ItemCatalog`, dans `Assets/Data/` ; `PlayerInventory` stocke une fiche et une quantité ; `Backpack` sur le prefab Player porte l'inventaire, que l'écran reçoit par `Bind`.
 - **Main** : `IHeldItem`, `HeldItemSwitch` (C# pur), `PlayerHands`, `IItemSelection` (la barre rapide), `AimZoom` (zoom partagé de la caméra) ; `NetThrower` est le premier `IHeldItem`.
-- **Écrans** : `IGameScreen`, `ScreenStack` (C# pur) ; `PauseMenu` et `InventoryDemoController` sont des écrans.
+- **Écrans** : `IGameScreen`, `ScreenStack` (C# pur) ; `PauseMenu` et `InventoryScreen` sont des écrans.
 - **Interaction** : `InteractionTargeting` (boîte du modèle sous le viseur d'abord), `IInteractable` (ex-`IDemoInteractable`), `KeyPrompt.PopIn`.
 - **Apparitions** : `ArrivalCurves`, `GrowIn`, `FallIn` ; `GatherableSpot.DropHeight`, `ResourceSpawner.Settings.AheadWeight`.
 - **Icône d'objet** : `ItemIcon`, seul endroit qui dessine un objet dans l'interface (barre rapide, cases, objet tenu) : l'icône de la fiche (`ItemDefinition.Icon`), sinon le carré de sa couleur.
-- **Aides de touches** : `InputGlyphs` (contrôle → dessin, C# pur), `ControlHint`, `HintInput`, `IHintSource`, `FixedHints`, `ControlHintsPanel`, `GlyphShapeGraphic` ; `IHeldItemHints` (le filet) ; sources : `PlayerInteractor`, `PlayerHands`, `InventoryDemoController`, `IInteractable.HintKey` ; douze textes `hint.*` dans la table `UI`.
+- **Aides de touches** : `InputGlyphs` (contrôle → dessin, C# pur), `ControlHint`, `HintInput`, `IHintSource`, `FixedHints`, `ControlHintsPanel`, `GlyphShapeGraphic` ; `IHeldItemHints` (le filet) ; sources : `PlayerInteractor`, `PlayerHands`, `InventoryScreen`, `IInteractable.HintKey` ; douze textes `hint.*` dans la table `UI`.
 
 ## Décisions
 
@@ -144,7 +144,7 @@ Lancés en batch sur le PC de Hugo (Unity 6000.3.21f1) à chaque étape.
 | `DemoLoopScenePlayModeTests.TheTarget_IsOutlinedInCyan_...`, `TheKey_ShowsEAboveTheTarget_AndFollowsIt`, `TheKey_IsHidden_...` | PlayMode | #1 | ✅ |
 | `DemoLoopScenePlayModeTests.TheArc_ShowsOnlyWhileAiming`, `Aiming_NarrowsTheViewTo45_...`, `ThePauseAndTheInventory_DropTheAim_...`, `TheNet_IsThrownWhileAiming_...` ; `NetThrowScenePlayModeTests.TheArc_ShowsOnlyWhileAiming` | PlayMode | #4 | ✅ |
 | `DemoLoopScenePlayModeTests.OnlyTheMushroomAimedAt_IsOutlined_InTheColourOfItsChance` | PlayMode | #6 | ✅ |
-| `InventoryDemoControllerPlayModeTests` (appui, double appui, 300 ms, clic droit, fermeture, nombre, langue) | PlayMode | #2 | ✅ |
+| `InventoryScreenPlayModeTests` (appui, double appui, 300 ms, clic droit, fermeture, nombre, langue) | PlayMode | #2 | ✅ |
 | `PlaytestLoopPlayModeTests.FromTheHomeScreen_...` (9 objets au départ au lieu de plus de 50 : l'exigence a changé) | PlayMode | #5 | ✅ |
 | `ControlMapsTests` | EditMode | Cartes actives, schéma clavier ↔ manette, sticks | ✅ |
 | `ItemCatalogTests`, `PlayerInventoryTests` (fiches) | EditMode | Fiches, catalogue, piles | ✅ |
@@ -156,7 +156,7 @@ Lancés en batch sur le PC de Hugo (Unity 6000.3.21f1) à chaque étape.
 | `InventoryHandTests.GatherAll_*` | EditMode | Y à la manette | ✅ |
 | `KeyPromptPlayModeTests` | PlayMode | Rebond de la touche | ✅ |
 | `DemoLoopScenePlayModeTests.TheInventory_IsTheOneThePlayerCarries_...`, `Escape_*` | PlayMode | Sac, écrans | ✅ |
-| `InventoryDemoControllerPlayModeTests` (navigation, focus, A, X, Y) | PlayMode | Inventaire à la manette | ✅ |
+| `InventoryScreenPlayModeTests` (navigation, focus, A, X, Y) | PlayMode | Inventaire à la manette | ✅ |
 | `InputGlyphsTests`, `ControlHintTests` | EditMode | Dessin des touches, schémas, réassignation | ✅ |
 | `DemoLoopScenePlayModeTests.InGame_TheHints_*`, `WhileAiming_*`, `WithATarget_*`, `TheInventory_ShowsItsOwnHints_*` | PlayMode | Aides de touches | ✅ |
 

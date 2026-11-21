@@ -220,7 +220,7 @@ Barre d'objets, décidée par Hugo le 20/11 en conversation (même branche, pas 
 
 Prises pendant l'implémentation :
 
-- **La barre affiche les cases de la barre rapide existante** de l'inventaire (`InventoryDemoController`), pas une deuxième liste : déplacer le filet avec Tab change ce qu'on a en main.
+- **La barre affiche les cases de la barre rapide existante** de l'inventaire (`InventoryScreen`), pas une deuxième liste : déplacer le filet avec Tab change ce qu'on a en main.
 - **La molette est liée comme un bouton** (`<Mouse>/scroll/down` et `/up`, Input System 1.20) : un cran, une case, sans seuil à régler.
 - **Molette vers le bas = case suivante**, comme dans la plupart des jeux à barre rapide.
 - **`TryThrow` refuse un filet rangé**, en plus de l'entrée : un filet qu'on ne tient pas ne part pas.

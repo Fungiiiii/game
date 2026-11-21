@@ -322,7 +322,7 @@ namespace Fungiiiii.Demo
         private PrototypeFirstPersonCamera firstPersonCamera;
         private PlayerVitals vitals;
         private StaminaRegulator stamina;
-        private InventoryDemoController inventoryView;
+        private InventoryScreen inventoryView;
         private Backpack backpack;
         private PlayerInteractor interactor;
         private FungalHole hole;
@@ -339,7 +339,7 @@ namespace Fungiiiii.Demo
         public PlayerInventory Inventory => backpack != null ? backpack.Inventory : null;
 
         /// <summary>The inventory screen, opened with Tab.</summary>
-        public InventoryDemoController InventoryView => inventoryView;
+        public InventoryScreen InventoryView => inventoryView;
 
         public NetThrower Thrower { get; private set; }
 
@@ -608,8 +608,8 @@ namespace Fungiiiii.Demo
             // Built inactive so that the player's inventory is bound before Awake builds the screen.
             var inventoryObject = new GameObject("Inventory");
             inventoryObject.SetActive(false);
-            inventoryView = inventoryObject.AddComponent<InventoryDemoController>();
-            inventoryView.Bind(backpack.Inventory);
+            inventoryView = inventoryObject.AddComponent<InventoryScreen>();
+            inventoryView.Bind(backpack.Inventory, backpack.Layout);
             inventoryView.SetControls(new InventoryScreenControls(
                 controls.UI.Navigate,
                 controls.UI.TakeHalf,
@@ -625,7 +625,7 @@ namespace Fungiiiii.Demo
         /// <summary>The net starts in the quick bar's first slot.</summary>
         private void PutNetInHotbar()
         {
-            Inventory.AddToSlot(InventoryDemoController.MainSlotCount, netItem, 1);
+            Inventory.AddToSlot(backpack.Layout.QuickBarFirstSlot, netItem, 1);
         }
 
         /// <summary>The quick bar shows the inventory's own quick bar slots.</summary>
@@ -635,8 +635,8 @@ namespace Fungiiiii.Demo
             var actions = controls.Player;
             hotbar.Initialize(
                 Inventory,
-                InventoryDemoController.MainSlotCount,
-                InventoryDemoController.HotbarSlotCount,
+                backpack.Layout.QuickBarFirstSlot,
+                backpack.Layout.QuickBarSlotCount,
                 menuFont,
                 actions.HotbarNext,
                 actions.HotbarPrevious,

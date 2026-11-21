@@ -16,25 +16,12 @@ namespace Fungiiiii.UI
     /// and goes back to its slot when the screen closes. Items show as squares of their
     /// colour until their icons are drawn.
     /// </summary>
-    public sealed class InventoryDemoController : MonoBehaviour, IGameScreen, IHintSource
+    public sealed class InventoryScreen : MonoBehaviour, IGameScreen, IHintSource
     {
-        public const int MainColumnCount = 3;
-        public const int MainRowCount = 4;
-        public const int MainSlotCount = MainColumnCount * MainRowCount;
-        public const int HotbarSlotCount = 3;
-        public const int TotalSlotCount = MainSlotCount + HotbarSlotCount;
-
-        [SerializeField] private int demoMaxStackSize = 5;
-
-        [Tooltip("Fills the screen's own inventory with sample items on Awake, when no inventory is bound (InventaireScene).")]
-        [SerializeField] private bool seedDemoItems = true;
+        /// <summary>The bag is drawn 3 slots wide, as on the artboard; the panel is sized for its 4 rows.</summary>
+        private const int BagColumnCount = 3;
 
         private const int NoSlot = -1;
-
-        private const string DemoMushroomId = "demo_mushroom";
-        private const string DemoHerbId = "demo_herb";
-        private const string DemoSporeId = "demo_spore";
-        private const string DemoCrystalId = "demo_crystal";
 
         // Sizes of the Inventaire artboard, drawn on a 1280 x 720 canvas.
         private static readonly Vector2 ReferenceResolution = new Vector2(1280f, 720f);
@@ -66,6 +53,7 @@ namespace Fungiiiii.UI
         private static Sprite uiSprite;
 
         private PlayerInventory inventory;
+        private InventoryLayout layout = InventoryLayout.Standard;
         private InventoryHand hand;
         private SlotView[] slotViews;
         private Selectable[] slotSelectables;
@@ -83,26 +71,32 @@ namespace Fungiiiii.UI
 
         public PlayerInventory Inventory => inventory;
 
+        /// <summary>Which slots the screen draws as the bag and which as the quick bar.</summary>
+        public InventoryLayout Layout => layout;
+
+        private int BagRowCount => (layout.BagSlotCount + BagColumnCount - 1) / BagColumnCount;
+
         /// <summary>
         /// Shows the inventory a player carries. Call it before Awake runs, that is on an
         /// inactive GameObject. Without it, the screen makes its own inventory, for the
         /// standalone prototype scene.
         /// </summary>
-        public void Bind(PlayerInventory playerInventory)
+        public void Bind(PlayerInventory playerInventory, InventoryLayout inventoryLayout)
         {
             if (playerInventory == null)
             {
                 throw new System.ArgumentNullException(nameof(playerInventory));
             }
 
-            if (playerInventory.SlotCount < TotalSlotCount)
+            if (playerInventory.SlotCount < inventoryLayout.SlotCount)
             {
                 throw new System.ArgumentException(
-                    $"The screen shows {TotalSlotCount} slots; this inventory has {playerInventory.SlotCount}.",
+                    $"The layout has {inventoryLayout.SlotCount} slots; this inventory has {playerInventory.SlotCount}.",
                     nameof(playerInventory));
             }
 
             inventory = playerInventory;
+            layout = inventoryLayout;
         }
 
         /// <summary>
@@ -177,10 +171,9 @@ namespace Fungiiiii.UI
 
         private void Awake()
         {
-            var standalone = inventory == null;
-            if (standalone)
+            if (inventory == null)
             {
-                inventory = new PlayerInventory(TotalSlotCount);
+                inventory = new PlayerInventory(layout.SlotCount);
             }
 
             hand = new InventoryHand(inventory);
@@ -194,15 +187,7 @@ namespace Fungiiiii.UI
             inventory.Changed += RefreshSlots;
             hand.Changed += RefreshHeld;
 
-            // A player's inventory is theirs: only the screen's own one gets sample items.
-            if (standalone && seedDemoItems)
-            {
-                SeedDemoItems();
-            }
-            else
-            {
-                RefreshSlots();
-            }
+            RefreshSlots();
         }
 
         private void OnDisable()
@@ -339,24 +324,6 @@ namespace Fungiiiii.UI
         /// <summary>The number shown on a slot, empty when there is none.</summary>
         internal string QuantityTextOf(int index) => slotViews[index].QuantityText;
 
-        private void SeedDemoItems()
-        {
-            var mushroom = ItemDefinition.Create(DemoMushroomId, new Color(0.95f, 0.52f, 0.18f, 1f), demoMaxStackSize);
-            var herb = ItemDefinition.Create(DemoHerbId, new Color(0.25f, 0.78f, 0.35f, 1f), 10);
-            var spore = ItemDefinition.Create(DemoSporeId, new Color(0.55f, 0.35f, 0.92f, 1f), 16);
-            var crystal = ItemDefinition.Create(DemoCrystalId, new Color(0.25f, 0.75f, 0.95f, 1f), 4);
-
-            inventory.Add(mushroom, 6);
-            inventory.Add(herb, 3);
-            inventory.Add(spore, 8);
-            inventory.Add(crystal, 2);
-
-            // Put three sample items in the quick bar so the move flow is visible immediately.
-            inventory.MoveOrSwap(0, MainSlotCount);
-            inventory.MoveOrSwap(2, MainSlotCount + 1);
-            inventory.MoveOrSwap(3, MainSlotCount + 2);
-        }
-
         private void BuildUi()
         {
             var canvasObject = CreateUiObject("InventoryCanvas", transform);
@@ -391,10 +358,10 @@ namespace Fungiiiii.UI
             title = CreateLabel("InventoryTitle", panel, UiText.InventoryTitle, 40, Cream, new Vector2(0f, -26f), new Vector2(GridWidth, 46f));
             AddShadow(title, Shadow, 3f);
 
-            var grid = CreateGrid("InventoryGrid_3x4", panel, MainColumnCount, MainRowCount, -84f);
-            slotViews = new SlotView[TotalSlotCount];
-            slotSelectables = new Selectable[TotalSlotCount];
-            for (var index = 0; index < MainSlotCount; index++)
+            var grid = CreateGrid("InventoryGrid_3x4", panel, BagColumnCount, BagRowCount, -84f);
+            slotViews = new SlotView[layout.SlotCount];
+            slotSelectables = new Selectable[layout.SlotCount];
+            for (var index = 0; index < layout.BagSlotCount; index++)
             {
                 slotViews[index] = CreateSlot(grid, index, 0.22f);
             }
@@ -402,10 +369,11 @@ namespace Fungiiiii.UI
             CreateDashes(panel, -452f);
             CreateLabel("HotbarTitle", panel, UiText.InventoryHotbar, 20, Sand, new Vector2(0f, -464f), new Vector2(GridWidth, 26f));
 
-            var hotbar = CreateGrid("Hotbar_3Slots", panel, HotbarSlotCount, 1, -500f);
-            for (var index = 0; index < HotbarSlotCount; index++)
+            var hotbar = CreateGrid("Hotbar_3Slots", panel, layout.QuickBarSlotCount, 1, -500f);
+            for (var index = 0; index < layout.QuickBarSlotCount; index++)
             {
-                slotViews[MainSlotCount + index] = CreateSlot(hotbar, MainSlotCount + index, 0.5f);
+                var slot = layout.QuickBarSlot(index);
+                slotViews[slot] = CreateSlot(hotbar, slot, 0.5f);
             }
 
             LinkSlotNavigation();
@@ -459,24 +427,25 @@ namespace Fungiiiii.UI
         /// </summary>
         private void LinkSlotNavigation()
         {
-            for (var index = 0; index < TotalSlotCount; index++)
+            var rows = BagRowCount;
+            for (var index = 0; index < layout.SlotCount; index++)
             {
-                var isMain = index < MainSlotCount;
-                var column = isMain ? index % MainColumnCount : index - MainSlotCount;
-                var row = isMain ? index / MainColumnCount : MainRowCount;
-                var lastColumn = isMain ? MainColumnCount - 1 : HotbarSlotCount - 1;
+                var isBag = !layout.IsInQuickBar(index);
+                var column = isBag ? index % BagColumnCount : index - layout.QuickBarFirstSlot;
+                var row = isBag ? index / BagColumnCount : rows;
+                var lastColumn = isBag ? Mathf.Min(BagColumnCount, layout.BagSlotCount - row * BagColumnCount) - 1 : layout.QuickBarSlotCount - 1;
 
                 var navigation = new Navigation { mode = Navigation.Mode.Explicit };
                 navigation.selectOnLeft = column > 0 ? slotSelectables[index - 1] : null;
                 navigation.selectOnRight = column < lastColumn ? slotSelectables[index + 1] : null;
-                navigation.selectOnUp = row > 0 ? slotSelectables[(row - 1) * MainColumnCount + Mathf.Min(column, MainColumnCount - 1)] : null;
-                if (row < MainRowCount - 1)
+                navigation.selectOnUp = row > 0 ? slotSelectables[Mathf.Min((row - 1) * BagColumnCount + column, layout.BagSlotCount - 1)] : null;
+                if (isBag && index + BagColumnCount < layout.BagSlotCount)
                 {
-                    navigation.selectOnDown = slotSelectables[index + MainColumnCount];
+                    navigation.selectOnDown = slotSelectables[index + BagColumnCount];
                 }
-                else if (row == MainRowCount - 1)
+                else if (isBag)
                 {
-                    navigation.selectOnDown = slotSelectables[MainSlotCount + Mathf.Min(column, HotbarSlotCount - 1)];
+                    navigation.selectOnDown = slotSelectables[layout.QuickBarSlot(Mathf.Min(column, layout.QuickBarSlotCount - 1))];
                 }
 
                 slotSelectables[index].navigation = navigation;
@@ -702,10 +671,10 @@ namespace Fungiiiii.UI
     /// <summary>Hands the presses and the hovering of one slot to the inventory screen.</summary>
     internal sealed class InventorySlotPointer : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerExitHandler, ISelectHandler, IDeselectHandler, ISubmitHandler
     {
-        private InventoryDemoController owner;
+        private InventoryScreen owner;
         private int index;
 
-        public void Initialize(InventoryDemoController controller, int slotIndex)
+        public void Initialize(InventoryScreen controller, int slotIndex)
         {
             owner = controller;
             index = slotIndex;

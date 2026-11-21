@@ -358,4 +358,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0630a2855e8345c8b3ccf4b46626dda9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Runtime.Player.Backpack
-  slotCount: 15
+  bagSlotCount: 12
+  quickBarSlotCount: 3
