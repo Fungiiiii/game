@@ -131,6 +131,8 @@
 - **Les icônes d'objets se posent dans les fiches** : un `Sprite` dans `ItemDefinition.Icon` s'affiche partout via `ItemIcon` ; sans icône, le carré de couleur reste.
 - **`PlaytestLocalization` retire les textes qu'il avait ajoutés et que le jeu n'utilise plus** (`RetiredKeys`), en plus d'ajouter les manquants.
 - **Ce qui se règle dans l'Editor se fait dans l'Editor** (Hugo, 21/11, « on respecte les règles de Unity ») : l'interface est en prefabs, le monde en objets de scène, les réglages et le contenu en fiches ; le point d'entrée reste petit. Une nouvelle espèce ou ressource est une fiche, pas du code. Les prefabs et les scènes font foi : les scripts qui les ont écrits ont été supprimés une fois lancés. La règle est dans `CLAUDE.md` (*Scenes, prefabs and data*).
+- **Les jauges ont le style des menus** (Hugo, 21/11) : sans plaque, comme les aides ; chacune est une petite planche (arête claire, dessous sombre, coins coupés) autour d'un creux sombre que remplit une couleur de la palette des maquettes : rouge chapeau `#D94F3D` pour la vie, doré `#E8CF7E` pour l'endurance, violet `#8E6CB8` pour le poison. En haut à gauche, à 36 px du bord comme la barre rapide.
+- **Chaque graphisme maison exige son `CanvasRenderer`** (`[RequireComponent]`, comme `CutCornerGraphic`) : sans lui, Unity ne dessine rien et ne dit rien. Les prefabs des planches, de la touche E et de trois aides avaient été enregistrés sans ; un rendu de contrôle l'a montré.
 - **`VitalsHud` devient `VitalGauges`** (proposé le 21/11, Hugo ayant demandé de critiquer le nom ; à confirmer) : « Vitals » reste, c'est le nom du modèle (`PlayerVitals`) et le terme usuel pour la vie et l'endurance ; « valeurs de personnage » désignerait plutôt des caractéristiques permanentes (force, vitesse). « Hud » était trop large : la barre rapide, les aides et la touche E font aussi partie du HUD. Ce composant n'en montre que les jauges, le mot des docs.
 - **Les composants du joueur de la partie sont sur un variant** (`PlaytestPlayer`) : le prefab Player de base reste celui des autres scènes et du réseau.
 - **La touche E se place quand la caméra a suivi le joueur** (`PrototypeFirstPersonCamera.Moved`), pas dans son propre `LateUpdate` : Unity ne garantit pas l'ordre de deux `LateUpdate`, et la touche affichait la position de l'image précédente quand l'interaction passait avant la caméra.
@@ -171,6 +173,7 @@ Lancés en batch sur le PC de Hugo (Unity 6000.3.21f1) à chaque étape.
 | `InventoryScreenPlayModeTests` (navigation, focus, A, X, Y) | PlayMode | Inventaire à la manette | ✅ |
 | `InputGlyphsTests`, `ControlHintTests` | EditMode | Dessin des touches, schémas, réassignation | ✅ |
 | `DemoLoopScenePlayModeTests.InGame_TheHints_*`, `WhileAiming_*`, `WithATarget_*`, `TheInventory_ShowsItsOwnHints_*` | PlayMode | Aides de touches | ✅ |
+| `UiPrefabTests.EveryGraphicOfTheInterface_IsSavedWithTheCanvasRendererThatDrawsIt` (lit les fichiers : en mémoire, Unity ajoute le composant exigé et masque l'oubli) | EditMode | Chaque graphisme des prefabs d'interface est dessiné | ✅ |
 | `DemoLoopScenePlayModeTests`, `PlaytestLoopPlayModeTests`, `MainMenuPlayModeTests`, `KeyPromptPlayModeTests`, `InventoryScreenPlayModeTests`, `VitalGaugesPlayModeTests`, `PoisonTestBenchTests` (prefabs et objets de scène) | PlayMode | Architecture : même comportement après le passage en prefabs, objets de scène et fiches | ✅ |
 
 ### Manuels (dans Unity)
@@ -210,6 +213,6 @@ Lancés en batch sur le PC de Hugo (Unity 6000.3.21f1) à chaque étape.
 
 - La police Fredoka Medium n'est pas dans le projet : « Barre rapide » et les aides sont en Fredoka SemiBold.
 - Rien n'a été testé dans un exécutable : les tests ont tourné dans l'Editor en batch.
-- L'apparence des prefabs n'a été vérifiée que par les tests : à regarder dans l'Editor (touche E, aides, barre rapide, inventaire, pause, accueil, jauges).
+- L'apparence des prefabs n'a été vue que sur un rendu de contrôle dans l'Editor, sans textes traduits : jauges, barre rapide, touche E, planches de la pause. Les aides, l'inventaire et l'accueil restent à regarder en jeu.
 
 ## Modifié par
