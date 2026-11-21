@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Ramassage</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&display=swap">
+<style>
+body{margin:0}
+.keycap{animation:pop .1s ease-out}
+@keyframes pop{from{transform:translate(-50%,-50%) scale(.85)}to{transform:translate(-50%,-50%) scale(1)}}
+.hit:focus-visible{outline:3px solid #F2E6CC;outline-offset:2px}
+.reset:hover{color:#F2E6CC}
+@media (prefers-reduced-motion:reduce){.keycap{animation:none}}
+</style>
+</helmet>
+<div style="width: 1280px; height: 720px; position: relative; overflow: hidden; background: #1E2630; font-family: 'Fredoka', sans-serif; user-select: none">
+<svg viewBox="0 0 1280 720" width="1280" height="720" aria-hidden="true" style="position: absolute; inset: 0; display: block">
+<defs>
+<linearGradient id="rsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#748093"></stop><stop offset="1" stop-color="#344758"></stop></linearGradient>
+<linearGradient id="rground" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3A4829"></stop><stop offset="0.45" stop-color="#46562F"></stop><stop offset="1" stop-color="#5E7036"></stop></linearGradient>
+<linearGradient id="rfog" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#748093" stop-opacity="0"></stop><stop offset="0.5" stop-color="#748093" stop-opacity="0.55"></stop><stop offset="1" stop-color="#748093" stop-opacity="0"></stop></linearGradient>
+<filter id="fAc" x="-25%" y="-30%" width="150%" height="160%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.3" result="d"></feMorphology><feFlood flood-color="#6FD6EA"></feFlood><feComposite in2="d" operator="in" result="o"></feComposite><feMerge><feMergeNode in="o"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter>
+<filter id="fAm" x="-25%" y="-30%" width="150%" height="160%"><feMorphology in="SourceAlpha" operator="dilate" radius="0.8" result="d"></feMorphology><feFlood flood-color="#F2E6CC"></feFlood><feComposite in2="d" operator="in" result="o"></feComposite><feMerge><feMergeNode in="o"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter>
+<filter id="fBc" x="-25%" y="-30%" width="150%" height="160%"><feMorphology in="SourceAlpha" operator="dilate" radius="2.4" result="d"></feMorphology><feFlood flood-color="#6FD6EA"></feFlood><feComposite in2="d" operator="in" result="o"></feComposite><feMerge><feMergeNode in="o"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter>
+<filter id="fBm" x="-25%" y="-30%" width="150%" height="160%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.5" result="d"></feMorphology><feFlood flood-color="#F2E6CC"></feFlood><feComposite in2="d" operator="in" result="o"></feComposite><feMerge><feMergeNode in="o"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter>
+<filter id="fSm" x="-25%" y="-60%" width="150%" height="220%"><feMorphology in="SourceAlpha" operator="dilate" radius="1.4" result="d"></feMorphology><feFlood flood-color="#F2E6CC" flood-opacity="0.75"></feFlood><feComposite in2="d" operator="in" result="o"></feComposite><feMerge><feMergeNode in="o"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter>
+<g id="cluster">
+<polygon points="-4,0 4,0 3,-30 -3,-30" fill="#E0CBA4"></polygon>
+<polygon points="0,0 4,0 3,-30 0,-30" fill="#C2A67C"></polygon>
+<polygon points="-24,-27 -16,-40 0,-47 16,-40 24,-27" fill="#D94F3D"></polygon>
+<polygon points="0,-47 16,-40 24,-27 0,-27" fill="#B8402F"></polygon>
+<polygon points="-22,-26 22,-26 18,-23 -18,-23" fill="#E0CBA4"></polygon>
+<polygon points="-10,-39 -6,-41 -5,-37 -9,-36" fill="#FFFFFF"></polygon>
+<polygon points="5,-43 8,-43 8,-40 5,-40" fill="#FFFFFF"></polygon>
+<polygon points="15,0 19,0 18.5,-17 15.5,-17" fill="#E0CBA4"></polygon>
+<polygon points="7,-15 12,-23 17,-26 22,-23 28,-15" fill="#8E6CB8"></polygon>
+<polygon points="17,-26 22,-23 28,-15 17,-15" fill="#6F5394"></polygon>
+<polygon points="13,-21 15,-22 15.5,-20 13.5,-19" fill="#FFFFFF"></polygon>
+<polygon points="-19,0 -15.5,0 -16,-12 -18.5,-12" fill="#E0CBA4"></polygon>
+<polygon points="-27,-10 -22,-17 -17,-19 -12,-17 -8,-10" fill="#D94F3D"></polygon>
+<polygon points="-17,-19 -12,-17 -8,-10 -17,-10" fill="#B8402F"></polygon>
+<polygon points="-6,1 -3,1 -3.5,-8 -5.5,-8" fill="#E0CBA4"></polygon>
+<polygon points="-12,-7 -8,-12 -4.5,-13 -1,-12 2,-7" fill="#8E6CB8"></polygon>
+</g>
+<g id="tuft">
+<polygon points="-10,0 -14,-16 -5,0" fill="#5F7E38"></polygon>
+<polygon points="-4,0 -2,-22 3,0" fill="#8BAA4F"></polygon>
+<polygon points="-2,-22 0,-17 -1,-13" fill="#B7C463"></polygon>
+<polygon points="2,0 10,-18 8,0" fill="#6F9E5C"></polygon>
+<polygon points="7,0 15,-11 12,0" fill="#5F7E38"></polygon>
+</g>
+</defs>
+<rect width="1280" height="720" fill="url(#rsky)"></rect>
+<polygon points="0,330 180,300 360,320 560,290 760,312 980,286 1280,318 1280,420 0,420" fill="#2D4150"></polygon>
+<g opacity="0.55">
+<polygon points="250,400 256,400 255,250 251,250" fill="#2B2723"></polygon>
+<polygon points="230,290 253,220 276,290" fill="#2E5248"></polygon>
+<polygon points="236,250 253,190 270,250" fill="#3F6E5A"></polygon>
+<polygon points="780,404 786,404 785,240 781,240" fill="#2B2723"></polygon>
+<polygon points="758,290 783,210 808,290" fill="#2E5248"></polygon>
+<polygon points="764,250 783,180 802,250" fill="#3F6E5A"></polygon>
+<polygon points="1040,402 1047,402 1046,230 1041,230" fill="#2B2723"></polygon>
+<polygon points="1015,280 1043,190 1071,280" fill="#2E5248"></polygon>
+</g>
+<rect y="392" width="1280" height="328" fill="url(#rground)"></rect>
+<rect y="330" width="1280" height="140" fill="url(#rfog)"></rect>
+<polygon points="520,720 760,720 690,470 650,440 610,470" fill="#8C7A55" opacity="0.55"></polygon>
+<polygon points="900,420 912,420 910,300 902,300" fill="#4F3424"></polygon>
+<polygon points="906,420 912,420 910,300 906,300" fill="#8A5F42"></polygon>
+<polygon points="850,320 880,262 920,246 960,266 980,316 940,340 880,338" fill="#6E8A3E" opacity="0.9"></polygon>
+<polygon points="880,262 920,246 960,266 925,290 892,292" fill="#9CB955" opacity="0.9"></polygon>
+<use href="#tuft" transform="translate(180 470) scale(1.1)"></use>
+<use href="#tuft" transform="translate(420 455) scale(0.9)"></use>
+<use href="#tuft" transform="translate(1010 480) scale(1.2)"></use>
+<use href="#tuft" transform="translate(1150 520) scale(1.5)"></use>
+<use href="#tuft" transform="translate(80 560) scale(1.8)"></use>
+<sc-if value="{{ showB }}" hint-placeholder-val="{{ true }}">
+<g filter="{{ filterB }}"><use href="#cluster" transform="translate(330 482) scale(1.6)"></use></g>
+</sc-if>
+<sc-if value="{{ showS }}" hint-placeholder-val="{{ true }}">
+<g filter="url(#fSm)"><g transform="translate(1000 498) rotate(-8) scale(1.6)"><polygon points="-30,-2 30,-4 31,0 -30,2" fill="#4F3424"></polygon><polygon points="-30,-2 30,-4 30,-2 -30,0" fill="#8A5F42"></polygon><polygon points="6,-3 14,-9 15,-8 8,-2" fill="#8A5F42"></polygon></g></g>
+</sc-if>
+<sc-if value="{{ showA }}" hint-placeholder-val="{{ true }}">
+<g filter="{{ filterA }}"><use href="#cluster" transform="translate(640 600) scale(3.1)"></use></g>
+</sc-if>
+<use href="#tuft" transform="translate(560 606) scale(2.2)"></use>
+<use href="#tuft" transform="translate(735 610) scale(1.9)"></use>
+<use href="#tuft" transform="translate(300 488) scale(1.1)"></use>
+<use href="#tuft" transform="translate(360 490) scale(1)"></use>
+<polygon points="0,720 0,120 40,60 112,40 170,90 190,720" fill="#4F3424"></polygon>
+<polygon points="112,40 170,90 190,720 130,720 120,90" fill="#8A5F42"></polygon>
+<polygon points="1180,720 1196,0 1280,0 1280,720" fill="#4F3424"></polygon>
+<polygon points="1196,0 1230,0 1222,720 1180,720" fill="#8A5F42"></polygon>
+<g fill="#BFD9F2"><circle cx="420" cy="210" r="2.5" opacity="0.8"></circle><circle cx="868" cy="140" r="2" opacity="0.6"></circle><circle cx="702" cy="300" r="3" opacity="0.7"></circle><circle cx="1010" cy="380" r="2" opacity="0.5"></circle></g>
+<g fill="#CDB8EA"><circle cx="560" cy="250" r="3" opacity="0.7"></circle><circle cx="960" cy="200" r="2" opacity="0.6"></circle><circle cx="300" cy="360" r="2.5" opacity="0.7"></circle></g>
+</svg>
+
+<sc-if value="{{ showA }}" hint-placeholder-val="{{ true }}">
+<button class="hit" type="button" aria-label="Viser le champignon proche" onClick="{{ aimA }}" style="position: absolute; left: 550px; top: 440px; width: 180px; height: 170px; border: 0; padding: 0; background: transparent; cursor: crosshair"></button>
+</sc-if>
+<sc-if value="{{ showB }}" hint-placeholder-val="{{ true }}">
+<button class="hit" type="button" aria-label="Viser le champignon du fond" onClick="{{ aimB }}" style="position: absolute; left: 280px; top: 400px; width: 100px; height: 90px; border: 0; padding: 0; background: transparent; cursor: crosshair"></button>
+</sc-if>
+
+<sc-if value="{{ targetA }}" hint-placeholder-val="{{ true }}">
+<button class="keycap" type="button" aria-label="{{ keyLabel }}" onClick="{{ gather }}" style="position: absolute; left: 640px; top: 418px; width: {{ keyPx }}px; height: {{ keyPx }}px; transform: translate(-50%, -50%); box-sizing: border-box; padding: 0 0 2px; border: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: inherit; font-size: {{ keyFont }}px; font-weight: 600; color: #F2E6CC; text-shadow: 0 1px 0 #2B2723; background: linear-gradient(180deg, #6FD6EA 0 2px, #4F3424 2px calc(100% - 4px), #2B2723 calc(100% - 4px) 100%); clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px), 0 6px); box-shadow: inset 2px 0 0 #6FD6EA, inset -2px 0 0 #6FD6EA">
+<sc-if value="{{ isPs }}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 20 20" width="62%" height="62%" aria-hidden="true"><polygon points="10,3 18,17 2,17" fill="none" stroke="#F2E6CC" stroke-width="2.4" stroke-linejoin="round"></polygon></svg></sc-if>
+<sc-if value="{{ isLetter }}" hint-placeholder-val="{{ true }}">{{ keyText }}</sc-if>
+</button>
+</sc-if>
+<sc-if value="{{ targetB }}" hint-placeholder-val="{{ false }}">
+<button class="keycap" type="button" aria-label="{{ keyLabel }}" onClick="{{ gather }}" style="position: absolute; left: 330px; top: 386px; width: {{ keyPx }}px; height: {{ keyPx }}px; transform: translate(-50%, -50%); box-sizing: border-box; padding: 0 0 2px; border: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: inherit; font-size: {{ keyFont }}px; font-weight: 600; color: #F2E6CC; text-shadow: 0 1px 0 #2B2723; background: linear-gradient(180deg, #6FD6EA 0 2px, #4F3424 2px calc(100% - 4px), #2B2723 calc(100% - 4px) 100%); clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0 calc(100% - 6px), 0 6px); box-shadow: inset 2px 0 0 #6FD6EA, inset -2px 0 0 #6FD6EA">
+<sc-if value="{{ isPs }}" hint-placeholder-val="{{ false }}"><svg viewBox="0 0 20 20" width="62%" height="62%" aria-hidden="true"><polygon points="10,3 18,17 2,17" fill="none" stroke="#F2E6CC" stroke-width="2.4" stroke-linejoin="round"></polygon></svg></sc-if>
+<sc-if value="{{ isLetter }}" hint-placeholder-val="{{ true }}">{{ keyText }}</sc-if>
+</button>
+</sc-if>
+
+<button class="reset" type="button" onClick="{{ reset }}" style="position: absolute; right: 120px; top: 20px; padding: 6px 4px; border: 0; background: none; cursor: pointer; font-family: inherit; font-size: 15px; font-weight: 500; color: rgba(242, 230, 204, 0.6); text-decoration: underline">Remettre la scène</button>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"glyph":{"editor":"enum","options":["Clavier","Manette Xbox","Manette PlayStation"],"default":"Clavier"},"keySize":{"editor":"int","min":24,"max":96,"step":2,"unit":"px à 1080p","default":44},"$preview":{"width":1280,"height":720}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { target: 'A', goneA: false, goneB: false };
+  }
+
+  renderVals() {
+    var self = this;
+    var s = this.state;
+    var glyph = this.props.glyph || 'Clavier';
+    var size = Math.round((this.props.keySize || 44) * 720 / 1080);
+    var keyText = glyph === 'Manette Xbox' ? 'Y' : 'E';
+    var isPs = glyph === 'Manette PlayStation';
+    return {
+      showA: !s.goneA,
+      showB: !s.goneB,
+      showS: true,
+      targetA: s.target === 'A' && !s.goneA,
+      targetB: s.target === 'B' && !s.goneB,
+      filterA: s.target === 'A' ? 'url(#fAc)' : 'url(#fAm)',
+      filterB: s.target === 'B' ? 'url(#fBc)' : 'url(#fBm)',
+      keyPx: size,
+      keyFont: Math.round(size * 0.62),
+      keyText: keyText,
+      isPs: isPs,
+      isLetter: !isPs,
+      keyLabel: 'Ramasser (' + (isPs ? 'triangle' : keyText) + ')',
+      aimA: function () { if (!self.state.goneA) self.setState({ target: 'A' }); },
+      aimB: function () { if (!self.state.goneB) self.setState({ target: 'B' }); },
+      gather: function () {
+        if (self.state.target === 'A') self.setState({ goneA: true, target: null });
+        else if (self.state.target === 'B') self.setState({ goneB: true, target: null });
+      },
+      reset: function () { self.setState({ target: 'A', goneA: false, goneB: false }); }
+    };
+  }
+}
+</script>
+</body>
+</html>
