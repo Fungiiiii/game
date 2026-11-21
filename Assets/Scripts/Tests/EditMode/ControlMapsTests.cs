@@ -68,6 +68,19 @@ namespace Fungiiiii.Tests.EditMode
         }
 
         [Test]
+        public void OpeningAndClosingAMenu_SaysSo_OnlyWhenItChanges()
+        {
+            var changes = new System.Collections.Generic.List<bool>();
+            maps.MenuOpenChanged += changes.Add;
+
+            maps.SetMenuOpen(true);
+            maps.SetMenuOpen(true);
+            maps.SetMenuOpen(false);
+
+            Assert.That(changes, Is.EqualTo(new[] { true, false }));
+        }
+
+        [Test]
         public void TheSchemeStartsOnKeyboardAndMouse()
         {
             Assert.That(maps.CurrentScheme.name, Is.EqualTo(maps.KeyboardMouseScheme.name));

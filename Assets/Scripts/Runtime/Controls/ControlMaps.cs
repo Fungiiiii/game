@@ -33,6 +33,9 @@ namespace Fungiiiii.Controls
         /// <summary>Raised when the control scheme in use changes.</summary>
         public event Action SchemeChanged;
 
+        /// <summary>Raised when a menu opens (true) or closes (false).</summary>
+        public event Action<bool> MenuOpenChanged;
+
         public GameControls.PlayerActions Player => controls.Player;
 
         public GameControls.ScreensActions Screens => controls.Screens;
@@ -60,8 +63,14 @@ namespace Fungiiiii.Controls
 
         public void SetMenuOpen(bool open)
         {
+            if (open == isMenuOpen)
+            {
+                return;
+            }
+
             isMenuOpen = open;
             Apply();
+            MenuOpenChanged?.Invoke(open);
         }
 
         public void Dispose()

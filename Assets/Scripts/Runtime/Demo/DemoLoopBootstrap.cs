@@ -362,6 +362,9 @@ namespace Fungiiiii.Demo
         /// <summary>The key hints, bottom right of the screen.</summary>
         public ControlHintsPanel Hints => hintsPanel;
 
+        /// <summary>The player's controls: whether a menu has them, the device in use.</summary>
+        public PlayerControls Controls => controls;
+
         /// <summary>The screens open over the game: Escape closes the top one, or pauses.</summary>
         public ScreenStack Screens => screens;
 
@@ -587,7 +590,7 @@ namespace Fungiiiii.Demo
             }
 
             firstPersonCamera = forestCamera.gameObject.AddComponent<PrototypeFirstPersonCamera>();
-            firstPersonCamera.Initialize(player.GetComponent<PlayerMotor>(), spawnYaw, controls.Player.Look, controls.Player.UsePrimary);
+            firstPersonCamera.Initialize(player.GetComponent<PlayerMotor>(), spawnYaw, controls.Player.Look, controls.Player.UsePrimary, controls);
         }
 
         private void BuildHudAndInventory()
@@ -968,7 +971,8 @@ namespace Fungiiiii.Demo
         private void ApplyScreens()
         {
             hotbar.SetVisible(!screens.IsOpen(inventoryView));
-            SetGameplayInput(!screens.IsAnyOpen);
+            // Every system that stops under a menu listens to the controls itself.
+            controls.SetMenuOpen(screens.IsAnyOpen);
             ShowHints();
         }
 
@@ -1009,16 +1013,6 @@ namespace Fungiiiii.Demo
             {
                 hintsPanel.ShowFrom();
             }
-        }
-
-        /// <summary>The view, the net, the quick bar and the interact control. Off, the pointer is free for a menu.</summary>
-        private void SetGameplayInput(bool enabled)
-        {
-            controls.SetMenuOpen(!enabled);
-            firstPersonCamera.enabled = enabled;
-            hands.InputEnabled = enabled;
-            hotbar.InputEnabled = enabled;
-            interactor.enabled = enabled;
         }
 
         private void OnResetPerformed(InputAction.CallbackContext _)

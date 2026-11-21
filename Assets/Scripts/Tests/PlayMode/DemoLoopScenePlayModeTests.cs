@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Linq;
 using Fungiiiii.Capture;
+using Fungiiiii.Controls;
 using Fungiiiii.Demo;
 using Fungiiiii.Inventory;
 using Fungiiiii.Runtime.Player;
@@ -190,17 +191,17 @@ namespace Fungiiiii.Tests.PlayMode
 
             demo.SetInventoryOpen(true);
             Assert.That(demo.Hotbar.IsVisible, Is.False, "The quick bar shows over the inventory.");
-            Assert.That(demo.Hotbar.InputEnabled, Is.False);
+            Assert.That(demo.Controls.IsMenuOpen, Is.True, "The inventory does not take the controls.");
 
             demo.SetInventoryOpen(false);
             Assert.That(demo.Hotbar.IsVisible, Is.True);
-            Assert.That(demo.Hotbar.InputEnabled, Is.True);
+            Assert.That(demo.Controls.IsMenuOpen, Is.False);
 
             demo.Screens.Open(demo.Pause);
-            Assert.That(demo.Hotbar.InputEnabled, Is.False, "The quick bar still responds in pause.");
+            Assert.That(demo.Controls.IsMenuOpen, Is.True, "The quick bar still responds in pause.");
 
             demo.Screens.Close(demo.Pause);
-            Assert.That(demo.Hotbar.InputEnabled, Is.True);
+            Assert.That(demo.Controls.IsMenuOpen, Is.False);
         }
 
         [UnityTest]
@@ -777,7 +778,7 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(demo.Pause.HomeButton.gameObject.activeInHierarchy, Is.True);
             Assert.That(demo.Pause.QuitButton.gameObject.activeInHierarchy, Is.True);
             Assert.That(view.enabled, Is.False, "The view still turns.");
-            Assert.That(demo.Hands.InputEnabled, Is.False, "The net can still be thrown.");
+            Assert.That(demo.Controls.IsMenuOpen, Is.True, "The net can still be thrown.");
             Assert.That(Cursor.lockState, Is.EqualTo(CursorLockMode.None), "The pointer is not free.");
 
             demo.Pause.ResumeButton.Button.onClick.Invoke();
@@ -787,7 +788,7 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(Time.timeScale, Is.EqualTo(1f));
             Assert.That(demo.Pause.ResumeButton.gameObject.activeInHierarchy, Is.False);
             Assert.That(view.enabled, Is.True);
-            Assert.That(demo.Hands.InputEnabled, Is.True);
+            Assert.That(demo.Controls.IsMenuOpen, Is.False);
 
             // A second pause shows the menu as the first did, Resume standing out.
             demo.Screens.Open(demo.Pause);
@@ -835,7 +836,7 @@ namespace Fungiiiii.Tests.PlayMode
             demo.Screens.Back();
             yield return null;
             Assert.That(demo.Pause.IsPaused, Is.False);
-            Assert.That(demo.Hands.InputEnabled, Is.True);
+            Assert.That(demo.Controls.IsMenuOpen, Is.False);
         }
 
         [UnityTest]

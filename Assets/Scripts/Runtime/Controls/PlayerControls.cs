@@ -13,12 +13,15 @@ namespace Fungiiiii.Controls
     /// responds there.
     /// </summary>
     [DisallowMultipleComponent]
-    public sealed class PlayerControls : MonoBehaviour
+    public sealed class PlayerControls : MonoBehaviour, IMenuState
     {
         private ControlMaps maps;
 
         /// <summary>Raised when the player switches between keyboard and mouse and a gamepad.</summary>
         public event Action SchemeChanged;
+
+        /// <summary>Raised when a menu takes the controls (true) or gives them back (false).</summary>
+        public event Action<bool> MenuOpenChanged;
 
         public GameControls.PlayerActions Player => Maps.Player;
 
@@ -42,6 +45,7 @@ namespace Fungiiiii.Controls
                 {
                     maps = new ControlMaps();
                     maps.SchemeChanged += OnSchemeChanged;
+                    maps.MenuOpenChanged += OnMenuOpenChanged;
                 }
 
                 return maps;
@@ -73,12 +77,18 @@ namespace Fungiiiii.Controls
 
             // Kept, disposed: whoever still unsubscribes while the scene unloads must not build new actions.
             maps.SchemeChanged -= OnSchemeChanged;
+            maps.MenuOpenChanged -= OnMenuOpenChanged;
             maps.Dispose();
         }
 
         private void OnSchemeChanged()
         {
             SchemeChanged?.Invoke();
+        }
+
+        private void OnMenuOpenChanged(bool open)
+        {
+            MenuOpenChanged?.Invoke(open);
         }
     }
 }

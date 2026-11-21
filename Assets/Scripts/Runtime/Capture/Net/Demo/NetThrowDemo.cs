@@ -202,7 +202,7 @@ namespace Fungiiiii.Capture
             }
 
             firstPersonCamera = viewCamera.gameObject.AddComponent<PrototypeFirstPersonCamera>();
-            firstPersonCamera.Initialize(player.GetComponent<PlayerMotor>(), SpawnYawDegrees, controls.Player.Look, controls.Player.UsePrimary);
+            firstPersonCamera.Initialize(player.GetComponent<PlayerMotor>(), SpawnYawDegrees, controls.Player.Look, controls.Player.UsePrimary, controls);
         }
 
         private void SpawnMushrooms()

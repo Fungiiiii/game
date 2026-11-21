@@ -51,6 +51,7 @@ namespace Fungiiiii.Demo
             PlayerControls playerControls)
         {
             controls = playerControls;
+            controls.MenuOpenChanged += OnMenuOpenChanged;
             view = viewCamera;
             inventory = playerInventory;
             interactables = usable;
@@ -65,8 +66,18 @@ namespace Fungiiiii.Demo
             SetTarget(null);
         }
 
+        private void OnMenuOpenChanged(bool open)
+        {
+            enabled = !open;
+        }
+
         private void OnDestroy()
         {
+            if (controls != null)
+            {
+                controls.MenuOpenChanged -= OnMenuOpenChanged;
+            }
+
             if (prompt != null)
             {
                 Destroy(prompt.gameObject);
