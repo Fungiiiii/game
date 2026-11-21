@@ -98,7 +98,7 @@
 | Scène | Rôle |
 |---|---|
 | `Assets/Scenes/Menu/MainMenu.unity` (nouvelle) | L'accueil. Terrain de 256 × 256 m (`MainMenuTerrainData.asset`, LFS), 7 calques `ForestScatter`, herbe, caméra, lumière, post-traitement, objet `Main Menu`. Écrite par l'API de l'Editor. |
-| `Assets/Scenes/Prototype/DemoLoopScene.unity` | La partie. Nouvelles références sur `DemoLoopBootstrap` : shader du contour, arbres à bâtons, police, scène d'accueil. |
+| `Assets/Scenes/Prototype/DemoLoopScene.unity` | La partie. Ses objets et leurs références sont réglés dans l'Inspector (voir [playtest-retours](./playtest-retours.md)). |
 | `Assets/Scenes/Biomes/MysticForest.unity` | Inchangée. |
 
 Les trois sont dans les Build Settings, dans cet ordre. `SampleScene` n'y est plus (le fichier reste).
@@ -107,7 +107,7 @@ Les trois sont dans les Build Settings, dans cet ordre. `SampleScene` n'y est pl
 
 | Fichier | Rôle |
 |---|---|
-| `PlaytestSetup.cs` | Câble `DemoLoopScene`, écrit les Build Settings, ajoute le shader des placeholders aux shaders toujours inclus, lance le build Windows. **Set Up Everything** rejoue tout sauf le build. |
+| `PlaytestSetup.cs` | Écrit les Build Settings, ajoute le shader des placeholders aux shaders toujours inclus, lance le build Windows. **Set Up Everything** rejoue tout sauf le build. |
 | `MainMenuSceneBuilder.cs` | Génère `MainMenu` : relief (pente + collines douces, `ValueNoise`), sol peint, calques d'arbres puis `TerrainForestGenerator`, caméra. Le ciel, le brouillard, la lumière, le post-traitement et les spores sont copiés depuis `MysticForest`. |
 | `PlaytestLocalization.cs` | Crée les réglages de localisation, les langues `fr` et `en`, la table `UI` et ses 6 entrées. N'écrase jamais un texte existant. |
 
@@ -117,7 +117,7 @@ Les trois sont dans les Build Settings, dans cet ordre. `SampleScene` n'y est pl
 |---|---|
 | `MainMenu.cs` | L'accueil : titre, Jouer, Quitter, fondu, chargement de la partie. |
 | `PauseMenu.cs` | La pause : Échap, voile, trois planches, retour à l'accueil. |
-| `WoodMenu.cs` | Construit canvas, titre, planches et voile. |
+| `Assets/Prefabs/UI/` | Les menus en prefabs : `MainMenu`, `PauseMenu`, `PlankButton` (voir [playtest-retours](./playtest-retours.md)). |
 | `PlankGraphic.cs` | Dessine une planche en facettes de couleur unie, sans texture (couleurs « Wood », « Bark pale », « Wood dark » de la palette). |
 | `PlankButton.cs` | Planche sélectionnée : éclaircie et glissement. |
 | `LocalizedLabel.cs`, `UiText.cs` | Affichent une entrée de la table `UI` ; clés des textes. |

@@ -91,8 +91,8 @@
 ## Implémentation
 
 - **Forêt** : `TerrainForestGenerator` (emprise des calques), `ForestScatter` (`fadeSouth`, `fadeNorth`), menu **Fungiiiii > Playtest > 6. Regenerate Mystic Forest** ; `MysticForest.unity` et `MysticForestTerrainData.asset` regénérés.
-- **Champignons** : `generate_forest_models.py`, `MushroomCluster_02` à `_04` (FBX, `.meta`, prefabs) ; `DemoLoopBootstrap.sporeMushroomPrefabs`, renseigné par **3. Wire Demo Loop Scene**.
-- **Ressources** : `ResourceSpawner` réécrit (bulles par joueur, `ResourceViewer`) ; `GatherableField` (liste de joueurs `FieldPlayer`, variantes avec leur réserve, disparition) ; `ForestResourceSpots` (`FindTreeFootMushroomSpots`, `ScatterMushroomSpots`, `RemoveOverlaps`, `MushroomPose`) ; réglages dans `DemoLoopBootstrap` et `DemoLoopScene.unity`.
+- **Champignons** : `generate_forest_models.py`, `MushroomCluster_02` à `_04` (FBX, `.meta`, prefabs) ; leurs quatre modèles dans la fiche `Assets/Data/Gathering/Spore Mushrooms.asset`.
+- **Ressources** : `ResourceSpawner` réécrit (bulles par joueur, `ResourceViewer`) ; `GatherableField` (liste de joueurs `FieldPlayer`, variantes avec leur réserve, disparition) ; `ForestResourceSpots` (`FindTreeFootMushroomSpots`, `ScatterMushroomSpots`, `RemoveOverlaps`, `MushroomPose`) ; réglages dans les fiches de `Assets/Data/Gathering/`.
 - **Touche E** : `IInteractable.PromptPoint`, `PlayerInteractor` (cible, libellé du binding), `KeyPrompt`, `KeyCapGraphic`, `TriangleGlyphGraphic`, `Polygon` (partagé avec `PlankGraphic`).
 - **Filet** : `NetThrower` (actions `NetPrimary` / `NetSecondary`, `HoldAim`, zoom, `PreviewTarget`, `PreviewChance`), `NetPreviewDots`, `PrototypeFirstPersonCamera.LookScale`, `NetTargetOutline`, `ItemOutlineFactory.CreateChanceOutline`, `ItemOutline.SetVisible` ; `Spongeus.fbx` et `Champoule.fbx` en Read/Write.
 - **Inventaire** : `InventoryHand` (logique des clics, C# pur), `InventoryScreen` (écran refait), `CutCornerGraphic` ; dix textes dans la table `UI` (`UiText`, `PlaytestLocalization`).
@@ -104,6 +104,12 @@
 - **Apparitions** : `ArrivalCurves`, `GrowIn`, `FallIn` ; `GatherableSpot.DropHeight`, `ResourceSpawner.Settings.AheadWeight`.
 - **Icône d'objet** : `ItemIcon`, seul endroit qui dessine un objet dans l'interface (barre rapide, cases, objet tenu) : l'icône de la fiche (`ItemDefinition.Icon`), sinon le carré de sa couleur.
 - **Aides de touches** : `InputGlyphs` (contrôle → dessin, C# pur), `ControlHint`, `HintInput`, `IHintSource`, `FixedHints`, `ControlHintsPanel`, `GlyphShapeGraphic` ; `IHeldItemHints` (le filet) ; sources : `PlayerInteractor`, `PlayerHands`, `InventoryScreen`, `IInteractable.HintKey` ; douze textes `hint.*` dans la table `UI`.
+- **Architecture de la scène** : `DemoLoopBootstrap` passe d'environ 1 100 à 490 lignes. Il charge la forêt, fait apparaître le joueur et le donne aux composants de la scène :
+  - monde : `ForestGathering` (bâtons et champignons à cueillir), `CreaturePopulation` (champignons à capturer), `FungalHoleSpawner` (trou du Champimaison, inactif) ;
+  - fiches : `GatherableDefinition`, `GatheringSettings`, `CreatureDefinition`, `NetSettings`, `StaminaSettings`, `OutlineSettings`, dans `Assets/Data/{Gathering,Creatures,Settings}` ;
+  - interface : `GameScreens` (pile d'écrans, Échap, Tab, aides) et les prefabs de `Assets/Prefabs/UI/` (`KeyPrompt`, `ControlHints` et ses lignes et touches dans `Hints/`, `Hotbar` et `HotbarSlot`, `Inventory` et ses deux cases, `PauseMenu`, `MainMenu`, `PlankButton`), avec `GlyphView`, `HintRow`, `HotbarSlot`, `InventorySlotView`, `StackLabel` ;
+  - joueur : le variant `PlaytestPlayer` du prefab Player porte `PlayerHands`, `PlayerInteractor`, `NetThrower`, `NetTargetOutline` et `StaminaDriver` ; Netcode l'a ajouté à `DefaultNetworkPrefabs`.
+  - Retirés : `WoodMenu`, `DemoItems`, le menu **3. Wire Demo Loop Scene**. `PrototypeFirstPersonCamera.Moved` place la touche E.
 
 ## Décisions
 
@@ -122,6 +128,9 @@
 - **Chaque source déclare ses aides** (`IHintSource`) ; le panneau ne change jamais pour une nouvelle aide. Les touches sont lues dans les actions (réassignation comprise) ; seuls les boutons que lit l'event system (clics, A) sont des chemins fixes. La touche au-dessus de la cible passe par le même `InputGlyphs`.
 - **Les icônes d'objets se posent dans les fiches** : un `Sprite` dans `ItemDefinition.Icon` s'affiche partout via `ItemIcon` ; sans icône, le carré de couleur reste.
 - **`PlaytestLocalization` retire les textes qu'il avait ajoutés et que le jeu n'utilise plus** (`RetiredKeys`), en plus d'ajouter les manquants.
+- **Ce qui se règle dans l'Editor se fait dans l'Editor** (Hugo, 21/11, « on respecte les règles de Unity ») : l'interface est en prefabs, le monde en objets de scène, les réglages et le contenu en fiches ; le point d'entrée reste petit. Une nouvelle espèce ou ressource est une fiche, pas du code. Les prefabs et les scènes font foi : les scripts qui les ont écrits ont été supprimés une fois lancés. La règle est dans `CLAUDE.md` (*Scenes, prefabs and data*).
+- **Les composants du joueur de la partie sont sur un variant** (`PlaytestPlayer`) : le prefab Player de base reste celui des autres scènes et du réseau.
+- **La touche E se place quand la caméra a suivi le joueur** (`PrototypeFirstPersonCamera.Moved`), pas dans son propre `LateUpdate` : Unity ne garantit pas l'ordre de deux `LateUpdate`, et la touche affichait la position de l'image précédente quand l'interaction passait avant la caméra.
 - **Pas de note validée dans ClickUp** : voir l'en-tête.
 
 ## Tests
@@ -159,6 +168,7 @@ Lancés en batch sur le PC de Hugo (Unity 6000.3.21f1) à chaque étape.
 | `InventoryScreenPlayModeTests` (navigation, focus, A, X, Y) | PlayMode | Inventaire à la manette | ✅ |
 | `InputGlyphsTests`, `ControlHintTests` | EditMode | Dessin des touches, schémas, réassignation | ✅ |
 | `DemoLoopScenePlayModeTests.InGame_TheHints_*`, `WhileAiming_*`, `WithATarget_*`, `TheInventory_ShowsItsOwnHints_*` | PlayMode | Aides de touches | ✅ |
+| `DemoLoopScenePlayModeTests`, `PlaytestLoopPlayModeTests`, `MainMenuPlayModeTests`, `KeyPromptPlayModeTests`, `InventoryScreenPlayModeTests` (prefabs et objets de scène) | PlayMode | Architecture : même comportement après le passage en prefabs, objets de scène et fiches | ✅ |
 
 ### Manuels (dans Unity)
 
@@ -197,5 +207,7 @@ Lancés en batch sur le PC de Hugo (Unity 6000.3.21f1) à chaque étape.
 
 - La police Fredoka Medium n'est pas dans le projet : « Barre rapide » et les aides sont en Fredoka SemiBold.
 - Rien n'a été testé dans un exécutable : les tests ont tourné dans l'Editor en batch.
+- `VitalsHud` (barres de vie et d'endurance) est encore construit par code : c'est un placeholder partagé avec les bancs de test, qui gardent leur code.
+- L'apparence des prefabs n'a été vérifiée que par les tests : à regarder dans l'Editor (touche E, aides, barre rapide, inventaire, pause, accueil).
 
 ## Modifié par
