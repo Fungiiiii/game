@@ -123,7 +123,7 @@ namespace Fungiiiii.Demo
         /// <summary>Puts one item in the inventory. Refused while gone, or if the inventory is full.</summary>
         public bool Interact(PlayerInventory inventory)
         {
-            if (!IsAvailable || inventory.Add(item, 1) == 0)
+            if (!IsAvailable || inventory.Collect(item, 1) == 0)
             {
                 return false;
             }

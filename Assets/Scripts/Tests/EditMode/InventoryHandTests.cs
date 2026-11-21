@@ -23,6 +23,29 @@ namespace Fungiiiii.Tests.EditMode
         private int QuantityIn(int slot) => inventory.GetSlot(slot).Quantity;
 
         [Test]
+        public void Drop_LetsGoOfTheWholeStack_OrOfOneItem()
+        {
+            inventory.AddToSlot(3, Wood, 9);
+            hand.PressLeft(3, 0f);
+
+            Assert.That(hand.Drop(false, out var one), Is.EqualTo(1));
+            Assert.That(one, Is.SameAs(Wood));
+            Assert.That(hand.Quantity, Is.EqualTo(8));
+
+            Assert.That(hand.Drop(true, out var rest), Is.EqualTo(8));
+            Assert.That(rest, Is.SameAs(Wood));
+            Assert.That(hand.IsHolding, Is.False);
+            Assert.That(inventory.GetSlot(3).IsEmpty, Is.True, "A dropped item went back to its slot.");
+        }
+
+        [Test]
+        public void Drop_WithNothingInHand_DropsNothing()
+        {
+            Assert.That(hand.Drop(true, out var item), Is.Zero);
+            Assert.That(item, Is.Null);
+        }
+
+        [Test]
         public void ALeftPress_TakesTheWholeStack_AtOnce()
         {
             inventory.AddToSlot(3, Wood, 9);

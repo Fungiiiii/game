@@ -328,9 +328,10 @@ namespace Fungiiiii.Capture
             IsAiming = false;
             PreviewTarget = null;
             PreviewChance = 0f;
+            // The view widens back as when the aim is released, not at once.
             if (zoom != null)
             {
-                zoom.Drop();
+                zoom.SetAiming(false, AimFieldOfView);
             }
 
             if (Cycle != null)
@@ -368,7 +369,7 @@ namespace Fungiiiii.Capture
             secondaryHeld = held;
         }
 
-        /// <summary>Drops the aim and widens the view at once. The net in flight carries on.</summary>
+        /// <summary>Drops the aim; the view widens back as when the aim is released. The net in flight carries on.</summary>
         public void Cancel()
         {
             // Until the hands give the controls back, not even HoldAim aims.

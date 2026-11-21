@@ -138,6 +138,25 @@ namespace Fungiiiii.UI
             AfterChange();
         }
 
+        /// <summary>
+        /// Lets go of what is held, out of the inventory: all of it, or one item. Returns how
+        /// many items left the hand, and which item, or 0 and null when nothing is held.
+        /// </summary>
+        public int Drop(bool all, out ItemDefinition item)
+        {
+            lastLeftSlot = NoSlot;
+            item = Item;
+            if (!IsHolding)
+            {
+                return 0;
+            }
+
+            var dropped = all ? Quantity : 1;
+            Quantity -= dropped;
+            AfterChange();
+            return dropped;
+        }
+
         /// <summary>Drops what is held without putting it anywhere, for a reset.</summary>
         public void Clear()
         {

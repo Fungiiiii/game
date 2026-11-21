@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Spongeus
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Inventory.ItemDefinition
   id: spongeus
-  nameKey: 
+  nameKey: item.spongeus
+  icon: {fileID: 0}
   color: {r: 0.6117647, g: 0.7647059, b: 0.854902, a: 1}
   maxStackSize: 4
   heldPrefab: {fileID: 0}

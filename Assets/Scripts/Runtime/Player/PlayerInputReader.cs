@@ -25,8 +25,8 @@ namespace Fungiiiii.Runtime.Player
         /// <summary>True while the crouch control is held down.</summary>
         public bool IsCrouchHeld => enabled && controls.Player.Crouch.IsPressed();
 
-        /// <summary>True only on the frame the dodge control was pressed.</summary>
-        public bool WasDodgePressedThisFrame => enabled && controls.Player.Dodge.WasPressedThisFrame();
+        /// <summary>True only on the frame the jump control was pressed.</summary>
+        public bool WasJumpPressedThisFrame => enabled && controls.Player.Jump.WasPressedThisFrame();
 
         private void Awake()
         {

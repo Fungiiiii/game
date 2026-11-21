@@ -34,14 +34,6 @@ namespace Fungiiiii.Items
             }
         }
 
-        /// <summary>Drops the aim and widens the view back at once, for a menu that takes the controls.</summary>
-        public void Drop()
-        {
-            isAiming = false;
-            blend = 0f;
-            Apply();
-        }
-
         private void Awake()
         {
             view = GetComponent<Camera>();
@@ -58,7 +50,8 @@ namespace Fungiiiii.Items
                 return;
             }
 
-            blend = Mathf.MoveTowards(blend, target, Time.deltaTime / TransitionSeconds);
+            // Real time: the view widens back under the pause too, which stops game time.
+            blend = Mathf.MoveTowards(blend, target, Time.unscaledDeltaTime / TransitionSeconds);
             Apply();
         }
 

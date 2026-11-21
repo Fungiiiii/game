@@ -210,6 +210,8 @@ MonoBehaviour:
   screens: {fileID: 1085797577}
   keyPrompt: {fileID: 1574012220}
   vitalGauges: {fileID: 1335842181}
+  pickupFeed: {fileID: 2107753912}
+  droppedItems: {fileID: 332564108}
   holeSpawner: {fileID: 123151326}
   randomSeed: 0
 --- !u!4 &167378463
@@ -339,6 +341,53 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77a58d1c6d9a43a2a29dd8d7600a8526, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.InventoryScreen
+--- !u!1 &332564107
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 332564109}
+  - component: {fileID: 332564108}
+  m_Layer: 0
+  m_Name: Dropped Items
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &332564108
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 332564107}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8805a5b8ba804b25ab2132ad2bcf249b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Demo.DroppedItems
+  distance: 1.5
+  reach: 2
+  boxSize: 0.25
+--- !u!4 &332564109
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 332564107}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &480836274
 GameObject:
   m_ObjectHideFlags: 0
@@ -1131,6 +1180,114 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e2a227dc499487c9aecf3884682bb25, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.ControlHintsPanel
+--- !u!1001 &2107753911
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 531297512071358595, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+      propertyPath: m_Name
+      value: PickupFeed
+      objectReference: {fileID: 0}
+    - target: {fileID: 8797860220636648256, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8797860220636648256, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8797860220636648256, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8797860220636648256, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8797860220636648256, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8797860220636648256, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8797860220636648256, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8797860220636648256, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8797860220636648256, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8797860220636648256, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8797860220636648256, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8797860220636648256, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8797860220636648256, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8797860220636648256, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8797860220636648256, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8797860220636648256, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8797860220636648256, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8797860220636648256, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8797860220636648256, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8797860220636648256, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+--- !u!114 &2107753912 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3818902381288188912, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+  m_PrefabInstance: {fileID: 2107753911}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6c093eca83743dc838ed11ae970a972, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.PickupFeed
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1147,3 +1304,5 @@ SceneRoots:
   - {fileID: 1085797578}
   - {fileID: 123151327}
   - {fileID: 1335842180}
+  - {fileID: 2107753911}
+  - {fileID: 332564109}

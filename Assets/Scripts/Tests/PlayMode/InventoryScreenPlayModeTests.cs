@@ -181,6 +181,31 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator APressOutOfThePanel_DropsWhatIsHeld_TheWholeStackOrOne()
+        {
+            ItemDefinition dropped = null;
+            var count = 0;
+            controller.Dropped += (item, quantity) =>
+            {
+                dropped = item;
+                count += quantity;
+            };
+            var outside = subject.transform.Find("Veil").gameObject;
+            Press(Spores, PointerEventData.InputButton.Left);
+
+            ExecuteEvents.Execute(outside, new PointerEventData(EventSystem.current) { button = PointerEventData.InputButton.Right }, ExecuteEvents.pointerDownHandler);
+            Assert.That(count, Is.EqualTo(1), "The right button did not drop one spore.");
+            Assert.That(controller.Hand.Quantity, Is.EqualTo(7));
+
+            ExecuteEvents.Execute(outside, new PointerEventData(EventSystem.current) { button = PointerEventData.InputButton.Left }, ExecuteEvents.pointerDownHandler);
+            Assert.That(count, Is.EqualTo(8), "The left button did not drop the rest.");
+            Assert.That(dropped.Id, Is.EqualTo("demo_spore"));
+            Assert.That(controller.Hand.IsHolding, Is.False);
+            Assert.That(subject.transform.Find("InventoryPanel").GetComponent<UnityEngine.UI.Graphic>().raycastTarget, Is.True, "A press on the panel would drop too.");
+            yield return null;
+        }
+
+        [UnityTest]
         public IEnumerator TheItemIsInHand_AsSoonAsTheSlotIsPressed()
         {
             Press(Spores, PointerEventData.InputButton.Left);

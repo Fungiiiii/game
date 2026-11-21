@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Champoule
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Inventory.ItemDefinition
   id: champoule
-  nameKey: 
+  nameKey: item.champoule
+  icon: {fileID: 0}
   color: {r: 1, g: 0.9137255, b: 0.6392157, a: 1}
   maxStackSize: 4
   heldPrefab: {fileID: 0}

@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Spore
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Inventory.ItemDefinition
   id: spore
-  nameKey: 
+  nameKey: item.spore
+  icon: {fileID: 0}
   color: {r: 0.5568627, g: 0.4235294, b: 0.7215686, a: 1}
   maxStackSize: 16
   heldPrefab: {fileID: 0}

@@ -95,6 +95,30 @@ MonoBehaviour:
     m_Key: hint.close
     m_Metadata:
       m_Items: []
+  - m_Id: 372971049836544
+    m_Key: hint.drop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971083390976
+    m_Key: item.wood
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971083390977
+    m_Key: item.spore
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971083390978
+    m_Key: item.net
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971087585280
+    m_Key: item.spongeus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971087585281
+    m_Key: item.champoule
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

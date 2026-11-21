@@ -12,7 +12,9 @@ namespace Fungiiiii.UI
     /// The inventory screen: a 3-column by 4-row item panel and a three-slot quick bar on a
     /// wooden panel, as on the Inventaire artboard (playtest of 20/11, feedback #2). Presses
     /// act at once through an <see cref="InventoryHand"/>; what is held follows the mouse,
-    /// and goes back to its slot when the screen closes. Items show as squares of their
+    /// and goes back to its slot when the screen closes. As in Minecraft, a click out of
+    /// the panel drops what is held, the whole stack or one item, and the drop control
+    /// drops one item of the slot under the pointer or the gamepad's focus. Items show as squares of their
     /// colour until their icons are drawn.
     /// </summary>
     public sealed class InventoryScreen : MonoBehaviour, IGameScreen, IHintSource
@@ -53,6 +55,7 @@ namespace Fungiiiii.UI
         private InputAction navigateAction;
         private InputAction takeHalfAction;
         private InputAction gatherAllAction;
+        private InputAction dropAction;
         private ControlHint[] hints = new ControlHint[0];
 
         public PlayerInventory Inventory => inventory;
@@ -97,6 +100,9 @@ namespace Fungiiiii.UI
             RefreshHeld();
         }
 
+        /// <summary>Raised when items leave the inventory for the world, with how many.</summary>
+        public event Action<ItemDefinition, int> Dropped;
+
         // It has no button of its own that asks to close: Tab and Escape close it.
         event Action IGameScreen.CloseRequested
         {
@@ -127,13 +133,15 @@ namespace Fungiiiii.UI
             navigateAction = controls.Navigate;
             takeHalfAction = controls.TakeHalf;
             gatherAllAction = controls.GatherAll;
+            dropAction = controls.Drop;
 
             // The mouse buttons and A are read by the event system, not by an action of the game.
             hints = new[]
             {
                 new ControlHint(UiText.HintTakeOrPlace, HintInput.At("<Mouse>/leftButton"), HintInput.At("<Gamepad>/buttonSouth")),
                 new ControlHint(UiText.HintHalfOrOne, HintInput.At("<Mouse>/rightButton"), HintInput.Of(controls.TakeHalf)),
-                new ControlHint(UiText.HintGatherAll, HintInput.At("<Mouse>/leftButton"), HintInput.Of(controls.GatherAll), twiceWithMouse: true),
+                new ControlHint(UiText.HintGatherAll, HintInput.At("<Mouse>/leftButton"), HintInput.Of(controls.GatherAll), twiceWithMouse: true, optional: true),
+                new ControlHint(UiText.HintDrop, HintInput.Of(controls.Drop)),
                 new ControlHint(UiText.HintClose, HintInput.Of(controls.Close), HintInput.Of(controls.Cancel)),
             };
         }
@@ -204,6 +212,35 @@ namespace Fungiiiii.UI
             if (gatherAllAction != null && gatherAllAction.WasPressedThisFrame())
             {
                 GatherAllOnFocusedSlot();
+            }
+
+            if (dropAction != null && dropAction.WasPressedThisFrame())
+            {
+                DropFromFocusedSlot();
+            }
+        }
+
+        /// <summary>Q or RB: one item of the slot under the pointer, or of the gamepad's focus, goes out.</summary>
+        internal void DropFromFocusedSlot()
+        {
+            if (focusedSlot != NoSlot && inventory.TakeFromSlot(focusedSlot, 1, out var item) > 0)
+            {
+                Dropped?.Invoke(item, 1);
+            }
+        }
+
+        /// <summary>A press out of the panel: the left button drops what is held, the right button one item of it.</summary>
+        internal void PressOutside(PointerEventData.InputButton button)
+        {
+            if (button != PointerEventData.InputButton.Left && button != PointerEventData.InputButton.Right)
+            {
+                return;
+            }
+
+            var dropped = hand.Drop(button == PointerEventData.InputButton.Left, out var item);
+            if (dropped > 0)
+            {
+                Dropped?.Invoke(item, dropped);
             }
         }
 
@@ -395,11 +432,12 @@ namespace Fungiiiii.UI
     /// <summary>The actions the inventory screen uses or shows.</summary>
     public readonly struct InventoryScreenControls
     {
-        public InventoryScreenControls(InputAction navigate, InputAction takeHalf, InputAction gatherAll, InputAction close, InputAction cancel)
+        public InventoryScreenControls(InputAction navigate, InputAction takeHalf, InputAction gatherAll, InputAction drop, InputAction close, InputAction cancel)
         {
             Navigate = navigate;
             TakeHalf = takeHalf;
             GatherAll = gatherAll;
+            Drop = drop;
             Close = close;
             Cancel = cancel;
         }
@@ -409,6 +447,9 @@ namespace Fungiiiii.UI
         public InputAction TakeHalf { get; }
 
         public InputAction GatherAll { get; }
+
+        /// <summary>Drops one item of the slot in focus: Q, RB.</summary>
+        public InputAction Drop { get; }
 
         /// <summary>Closes the screen with the keyboard: Tab.</summary>
         public InputAction Close { get; }

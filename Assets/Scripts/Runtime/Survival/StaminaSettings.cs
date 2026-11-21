@@ -10,9 +10,6 @@ namespace Fungiiiii.Survival
         private float sprintCostPerSecond = 15f;
 
         [SerializeField, Min(0f)]
-        private float dodgeCost = 20f;
-
-        [SerializeField, Min(0f)]
         private float regenerationPerSecond = 20f;
 
         [SerializeField, Min(0f)]
@@ -23,7 +20,7 @@ namespace Fungiiiii.Survival
 
         public StaminaRegulator.Settings ToRegulatorSettings()
         {
-            return new StaminaRegulator.Settings(sprintCostPerSecond, dodgeCost, regenerationPerSecond, regenerationDelaySeconds, recoveryThreshold);
+            return new StaminaRegulator.Settings(sprintCostPerSecond, regenerationPerSecond, regenerationDelaySeconds, recoveryThreshold);
         }
     }
 }

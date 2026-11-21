@@ -5,6 +5,7 @@ using Fungiiiii.Controls;
 using Fungiiiii.Demo;
 using Fungiiiii.Inventory;
 using Fungiiiii.Runtime.Player;
+using Fungiiiii.Runtime.World;
 using Fungiiiii.UI;
 using NUnit.Framework;
 using UnityEngine;
@@ -224,6 +225,98 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(demo.Inventory.Count(NetId), Is.EqualTo(1), "Reset made a second net.");
             Assert.That(demo.Hotbar.Selected, Is.EqualTo(0));
             Assert.That(demo.Thrower.IsEquipped, Is.True);
+        }
+
+        [UnityTest]
+        public IEnumerator Gathering_ShowsWhatWasCollected_OneLinePerItem()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+            var sticks = demo.Gatherables.Where(candidate => candidate.IsAvailable && candidate.Item.Id == WoodId).Take(2).ToArray();
+            Assert.That(sticks.Length, Is.EqualTo(2), "Fewer than two sticks to gather.");
+
+            Assert.That(demo.Pickups.Lines, Is.Empty);
+            sticks[0].Interact(demo.Inventory);
+            sticks[1].Interact(demo.Inventory);
+            yield return null;
+
+            Assert.That(demo.Pickups.Lines.Count, Is.EqualTo(1), "Two sticks made two lines.");
+            Assert.That(demo.Pickups.Lines[0].Item.Id, Is.EqualTo(WoodId));
+            Assert.That(demo.Pickups.Lines[0].Count, Is.EqualTo(2));
+            Assert.That(demo.Pickups.Lines[0].Text, Does.StartWith("+2"));
+
+            yield return Wait(3f);
+            Assert.That(demo.Pickups.Lines, Is.Empty, "The line did not fade out.");
+        }
+
+        [UnityTest]
+        public IEnumerator AnItemDroppedFromTheInventory_LiesInFront_ThenCanBePickedUpAgain()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+            var netSlot = InventoryLayout.Standard.QuickBarFirstSlot;
+            demo.SetInventoryOpen(true);
+            yield return null;
+
+            demo.InventoryView.Focus(netSlot, true);
+            demo.InventoryView.DropFromFocusedSlot();
+
+            Assert.That(demo.Inventory.GetSlot(netSlot).IsEmpty, Is.True, "The net is still in its slot.");
+            Assert.That(demo.Dropped.Items.Count, Is.EqualTo(1));
+            var dropped = demo.Dropped.Items[0];
+            Assert.That(dropped.Item.Id, Is.EqualTo(NetId));
+            var player = Object.FindFirstObjectByType<PlayerMotor>().transform.position;
+            Assert.That(Vector3.Distance(Flat(dropped.transform.position), Flat(player)), Is.LessThan(2.5f), "It is not in front of the player.");
+            var picture = dropped.GetComponentInChildren<FacesCamera>();
+            Assert.That(picture, Is.Not.Null, "It does not lie as its picture.");
+            Assert.That(picture.GetComponent<Renderer>().sharedMaterial.color, Is.EqualTo(dropped.Item.Color), "Without an icon, its picture is not its colour, as in the inventory.");
+
+            demo.SetInventoryOpen(false);
+            yield return Wait(1f);
+            Assert.That(dropped.Interact(demo.Inventory), Is.True);
+            yield return null;
+
+            Assert.That(demo.Inventory.Count(NetId), Is.EqualTo(1), "The net did not come back.");
+            Assert.That(demo.Dropped.Items, Is.Empty);
+            Assert.That(demo.Pickups.Lines.Count, Is.EqualTo(1), "Picking it up was not shown.");
+        }
+
+        private static Vector3 Flat(Vector3 point)
+        {
+            return new Vector3(point.x, 0f, point.z);
+        }
+
+        [UnityTest]
+        public IEnumerator SpaceAndA_Jump_ThePlayerOfTheGame()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+            var motor = Object.FindFirstObjectByType<PlayerMotor>();
+            var jump = demo.Controls.Player.Jump;
+            Assert.That(jump.bindings.Any(binding => binding.path == "<Keyboard>/space"), Is.True, "Space does not jump.");
+            Assert.That(jump.bindings.Any(binding => binding.path == "<Gamepad>/buttonSouth"), Is.True, "A does not jump.");
+
+            var elapsed = 0f;
+            while (!motor.IsGrounded && elapsed < 3f)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            // The height itself is tested on bare ground (PlayerJumpPlayModeTests); here, that
+            // the player of the game leaves the ground, whatever the frames after loading last.
+            var ground = motor.transform.position.y;
+            Assert.That(motor.TryJump(), Is.True);
+            var peak = ground;
+            elapsed = 0f;
+            while (elapsed < 1f)
+            {
+                peak = Mathf.Max(peak, motor.transform.position.y);
+                elapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            Assert.That(peak, Is.GreaterThan(ground + 0.5f), "The player of the game does not jump.");
         }
 
         [UnityTest]
@@ -447,8 +540,9 @@ namespace Fungiiiii.Tests.PlayMode
 
             demo.SetInventoryOpen(true);
             yield return null;
-            Assert.That(HintLabels(demo), Is.EqualTo(new[] { UiText.HintTakeOrPlace, UiText.HintHalfOrOne, UiText.HintGatherAll, UiText.HintClose }));
-            Assert.That(demo.Hints.ShownGlyphs[2].Kind, Is.EqualTo(GlyphKind.MouseLeft), "Gathering all is not a double click.");
+            // Gathering all is optional: with dropping, there are five, one too many.
+            Assert.That(HintLabels(demo), Is.EqualTo(new[] { UiText.HintTakeOrPlace, UiText.HintHalfOrOne, UiText.HintDrop, UiText.HintClose }));
+            Assert.That(demo.Hints.ShownGlyphs[2].Text, Is.EqualTo("Q"), "Dropping is not on Q.");
 
             demo.Screens.Back();
             demo.Screens.Back();
@@ -544,7 +638,7 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator ThePauseAndTheInventory_DropTheAim_AndWidenTheViewAtOnce()
+        public IEnumerator ThePauseAndTheInventory_DropTheAim_AndWidenTheViewAsWhenReleased()
         {
             yield return LoadDemo();
             var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
@@ -554,8 +648,11 @@ namespace Fungiiiii.Tests.PlayMode
 
             demo.Screens.Open(demo.Pause);
             Assert.That(demo.Thrower.IsAiming, Is.False, "The pause kept the aim.");
-            Assert.That(camera.fieldOfView, Is.EqualTo(60f).Within(0.01f));
             Assert.That(demo.Thrower.VisibleDotCount, Is.Zero);
+            yield return null;
+            Assert.That(camera.fieldOfView, Is.LessThan(60f), "The view widened at once.");
+            yield return Wait(0.3f);
+            Assert.That(camera.fieldOfView, Is.EqualTo(60f).Within(0.01f), "The view did not widen back under the pause.");
 
             demo.Screens.Close(demo.Pause);
             yield return Wait(0.3f);
@@ -563,6 +660,9 @@ namespace Fungiiiii.Tests.PlayMode
 
             demo.SetInventoryOpen(true);
             Assert.That(demo.Thrower.IsAiming, Is.False, "The inventory kept the aim.");
+            yield return null;
+            Assert.That(camera.fieldOfView, Is.LessThan(60f), "The view widened at once.");
+            yield return Wait(0.3f);
             Assert.That(camera.fieldOfView, Is.EqualTo(60f).Within(0.01f));
         }
 
@@ -795,14 +895,15 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(view.enabled, Is.True);
             Assert.That(demo.Controls.IsMenuOpen, Is.False);
 
-            // A second pause shows the menu as the first did, Resume standing out.
+            // A second pause shows the menu as the first did, no plank standing out.
             demo.Screens.Open(demo.Pause);
             yield return new WaitForSecondsRealtime(0.5f);
 
             Assert.That(
                 demo.Pause.ResumeButton.GetComponentInChildren<PlankGraphic>().Highlight,
-                Is.EqualTo(1f).Within(0.01f),
-                "Resume does not stand out on the second pause.");
+                Is.Zero,
+                "A plank stands out with the mouse away.");
+            Assert.That(demo.Pause.GetComponent<SelectFirstOnMove>(), Is.Not.Null, "The gamepad has no first plank to select.");
             demo.Screens.Close(demo.Pause);
         }
 

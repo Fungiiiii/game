@@ -1,6 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -50,7 +49,6 @@ namespace Fungiiiii.UI
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
 
-            EventSystem.current.SetSelectedGameObject(playButton.gameObject);
             StartCoroutine(FadeTo(0f));
         }
 
