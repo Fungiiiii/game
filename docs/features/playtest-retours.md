@@ -31,15 +31,17 @@
 **#5 Champignons et bâtons autour du joueur**
 
 - [ ] Au départ, et après R, il y a 5 champignons et 4 bâtons à moins de 50 m du joueur, aucun à moins de 8 m.
-- [ ] Toutes les 5 s, s'il en manque, 1 champignon et 1 bâton au plus apparaissent entre 20 et 50 m, **jamais dans le champ de vision** (avec 10° de marge) : on ne les voit pas surgir.
+- [ ] Toutes les 5 s, s'il en manque, 1 champignon et 1 bâton au plus apparaissent entre 20 et 50 m, **y compris dans le champ de vision**. Un emplacement droit devant le joueur est 4 fois plus probable qu'un emplacement derrière : en marchant tout droit, on en trouve devant soi.
+- [ ] Rien ne surgit : un champignon pousse du sol en 1 s ; un bâton tombe du feuillage de son arbre (60 % de sa hauteur) en tournoyant. Au départ et après R, l'écran est noir : tout est déjà en place.
 - [ ] Ce qui est à plus de 75 m du joueur disparaît. Au plus 40 champignons et 30 bâtons sur la carte.
 - [ ] Les champignons poussent aussi au pied des arbres (herbe permise) et un peu partout, hors des chemins. Aucun n'est sur un bâton, dans un tronc ou dans un rocher.
 
 **#1 Contour cyan et touche « E »**
 
 - [ ] L'objet visé à portée porte un contour cyan `#6FD6EA` épais ; les autres gardent leur contour crème fin.
+- [ ] Ce qui est sous le viseur est visé en premier, le plus proche d'abord : regarder un bâton le vise même avec un champignon aux pieds. Sinon, c'est l'objet le plus proche du centre de l'écran, dans un cône de 25°.
 - [ ] Au-dessus de l'objet visé, une touche carrée en bois au liseré cyan affiche la touche à presser : **E** au clavier, **Y** sur une manette Xbox, **△** sur une manette PlayStation, selon le dernier appareil utilisé.
-- [ ] La touche apparaît avec un petit rebond, suit la cible, et disparaît sans cible, en pause et inventaire ouvert.
+- [ ] La touche apparaît avec un petit rebond, rebondit à nouveau quand la cible change, suit la cible, et disparaît sans cible et quand un écran est ouvert. Bouger seulement un stick suffit à passer en **Y** / **△**.
 
 **#4 Filet : actions et visée**
 
@@ -60,11 +62,22 @@
 - [ ] Fermer l'inventaire avec un objet en main le remet dans sa case, ou ailleurs ; ce qui ne rentre nulle part reste en main.
 - [ ] Aucun nombre sur une case qui ne contient qu'un objet.
 - [ ] Le panneau en bois de l'artboard Inventaire : voile, titre « Inventaire », grille 3 × 4, séparateur pointillé, « Barre rapide », aides en bas de l'écran. Les textes suivent la langue.
+- [ ] À la manette : le premier mouvement du stick ou de la croix sélectionne la première case, puis on va de case en case (la grille, puis la barre rapide dessous). **A** = clic gauche, **X** = clic droit, **Y** = tout ramasser (le double clic), **B** ferme. L'objet tenu se pose sur la case sélectionnée.
+- [ ] La souris et la manette partagent une seule case en surbrillance ; aucune ne reste éclairée à la réouverture.
+
+**Composants réutilisables (21/11)**
+
+- [ ] **Échap ferme l'écran ouvert** (l'inventaire) et n'ouvre la pause que si aucun écran n'est ouvert, comme dans Minecraft. Échap ou **Reprendre** ferme la pause. **Tab** n'ouvre pas l'inventaire par-dessus la pause.
+- [ ] Tant qu'un écran est ouvert, le joueur ne marche plus, la vue ne tourne plus, ni le filet, ni la barre rapide, ni E ne répondent. **R** ne réinitialise pas.
+- [ ] La main tient l'objet de la case sélectionnée de la barre rapide : le filet en main seulement sur sa case ; changer de case le range, revenir le reprend.
+- [ ] `NetThrowScene` marche comme avant : le filet y est toujours en main.
 
 ## Hors périmètre
 
 - Les icônes des objets : chaque objet reste un carré de sa couleur (décision de Hugo, 21/11).
-- Les actions du filet ne sont pas encore dans `InputSystem_Actions`.
+- Les aides de touches en bas à droite (lot 4) : en attente de la maquette, sur l'artboard « Aides de touches » du canvas *Accueil Fungiiiii*.
+- Les scènes prototypes et bancs de test gardent leurs touches dans le code : `MushroomCaptureDemo`, F1/F2 de `PlayerMovementDemoBootstrap`, R de `NetThrowDemo`, le banc poison, le banc HUD, `FirstPersonTestPlayer`.
+- Les noms traduits des objets : les fiches ont la clé, vide tant qu'aucun écran n'affiche un nom.
 - `RespawningResource` n'est toujours pas utilisée.
 
 ## Implémentation
@@ -75,13 +88,26 @@
 - **Touche E** : `IInteractable.PromptPoint`, `PlayerInteractor` (cible, libellé du binding), `KeyPrompt`, `KeyCapGraphic`, `TriangleGlyphGraphic`, `Polygon` (partagé avec `PlankGraphic`).
 - **Filet** : `NetThrower` (actions `NetPrimary` / `NetSecondary`, `HoldAim`, zoom, `PreviewTarget`, `PreviewChance`), `NetPreviewDots`, `PrototypeFirstPersonCamera.LookScale`, `NetTargetOutline`, `ItemOutlineFactory.CreateChanceOutline`, `ItemOutline.SetVisible` ; `Spongeus.fbx` et `Champoule.fbx` en Read/Write.
 - **Inventaire** : `InventoryHand` (logique des clics, C# pur), `InventoryDemoController` (écran refait), `CutCornerGraphic` ; dix textes dans la table `UI` (`UiText`, `PlaytestLocalization`).
+- **Commandes** : toutes les actions du jeu dans `InputSystem_Actions` (cartes `Player`, `Screens`, `UI`), classe `GameControls` générée ; `ControlMaps` (cartes actives, schéma du dernier appareil, C# pur) et `PlayerControls` sur le prefab Player.
+- **Objets** : `ItemDefinition` (ScriptableObject) et `ItemCatalog`, dans `Assets/Data/` ; `PlayerInventory` stocke une fiche et une quantité ; `Backpack` sur le prefab Player porte l'inventaire, que l'écran reçoit par `Bind`.
+- **Main** : `IHeldItem`, `HeldItemSwitch` (C# pur), `PlayerHands`, `IItemSelection` (la barre rapide), `AimZoom` (zoom partagé de la caméra) ; `NetThrower` est le premier `IHeldItem`.
+- **Écrans** : `IGameScreen`, `ScreenStack` (C# pur) ; `PauseMenu` et `InventoryDemoController` sont des écrans.
+- **Interaction** : `InteractionTargeting` (boîte du modèle sous le viseur d'abord), `IInteractable` (ex-`IDemoInteractable`), `KeyPrompt.PopIn`.
+- **Apparitions** : `ArrivalCurves`, `GrowIn`, `FallIn` ; `GatherableSpot.DropHeight`, `ResourceSpawner.Settings.AheadWeight`.
 
 ## Décisions
 
-- **Jamais d'apparition dans le champ de vision, jusqu'à la fin du brouillard.** La passation autorisait l'apparition en vue au-delà de 35 m (« le brouillard le cache ») ; le brouillard linéaire va de 15 à 185 m et ne cache qu'environ 12 % à 35 m. Hugo a choisi : jamais dans le champ. La vue est bornée à la fin du brouillard (185 m), sinon un second joueur au loin bloquerait les apparitions devant lui.
+- **Apparitions permises dans le champ de vision, plus probables devant** (Hugo, 21/11, remplace « jamais dans le champ ») : en marchant tout droit, on ne trouvait rien devant soi. Un champignon pousse, un bâton tombe du feuillage, pour ne rien voir surgir. Poids 4 devant (`spawnAheadWeight`), tirage par échantillonnage pondéré.
 - **Les champignons de décor gardent la priorité** sur les nouveaux emplacements quand ils se chevauchent : ils sont listés en premier.
 - **La logique des clics de l'inventaire est en C# pur** (`InventoryHand`), testée en EditMode ; l'écran ne fait que l'afficher.
-- **Le zoom et la sensibilité sont dans `NetThrower`**, qui les applique à sa caméra : `DemoLoopScene` et `NetThrowScene` en profitent toutes les deux.
+- **Composants réutilisables dès maintenant** (Hugo, 21/11) : la priorité est donnée à la propreté pour les prochains objets, écrans et aides, plutôt qu'au code minimal du cas présent.
+- **Toutes les commandes dans l'asset `InputSystem_Actions`**, comme le demande l'ADR-0003, avec la classe générée. Une carte `Screens` reste active pour ouvrir et fermer les écrans ; un écran ouvert coupe `Player` et active `UI`. Le schéma suit le dernier appareil qui a déclenché une action (sticks compris) ; `FindControlSchemeForDevice` n'est pas utilisé, car il exige tous les appareils du schéma et ne rendait jamais la main au clavier seul.
+- **Les objets sont des fiches (ScriptableObject) trouvées par id dans un catalogue** : deux piles sont le même objet quand elles pointent vers la même fiche. L'id sert aux sauvegardes et au réseau. La démo refuse de démarrer si le catalogue n'est pas sain.
+- **L'inventaire appartient au joueur** (`Backpack`), pas à l'écran qui l'affiche.
+- **`PlayerHands` est le seul lecteur des actions d'usage** et les donne à l'objet en main (`IHeldItem`) : deux objets ne répondent jamais au même clic. Un objet agit en main par un comportement que sa scène enregistre (le filet, qui a besoin du monde) ou par le prefab de sa fiche. Le zoom est dans `AimZoom`, partagé par tout objet qui vise.
+- **Écrans en pile, règle de Minecraft** : Échap ferme l'écran du dessus et n'ouvre la pause que si rien n'est ouvert ; un écran ouvert depuis un autre (une confirmation) se ferme d'abord. Une table de craft n'aura qu'à être un `IGameScreen` ouvert depuis son interaction.
+- **Visée de l'interaction** : ce qui est sous le viseur gagne (boîte du modèle, sans physique : les objets à ramasser n'ont pas de collider) ; sinon le plus proche du centre dans le cône.
+- **La mention de l'exception à la Charte IA est retirée** de la branche, sur décision de Hugo.
 - **Pas de note validée dans ClickUp** : voir l'en-tête.
 
 ## Tests
@@ -106,6 +132,17 @@ Lancés en batch sur le PC de Hugo (Unity 6000.3.21f1) à chaque étape.
 | `DemoLoopScenePlayModeTests.OnlyTheMushroomAimedAt_IsOutlined_InTheColourOfItsChance` | PlayMode | #6 | ✅ |
 | `InventoryDemoControllerPlayModeTests` (appui, double appui, 300 ms, clic droit, fermeture, nombre, langue) | PlayMode | #2 | ✅ |
 | `PlaytestLoopPlayModeTests.FromTheHomeScreen_...` (9 objets au départ au lieu de plus de 50 : l'exigence a changé) | PlayMode | #5 | ✅ |
+| `ControlMapsTests` | EditMode | Cartes actives, schéma clavier ↔ manette, sticks | ✅ |
+| `ItemCatalogTests`, `PlayerInventoryTests` (fiches) | EditMode | Fiches, catalogue, piles | ✅ |
+| `HeldItemSwitchTests` | EditMode | Objet en main, prefab, commandes | ✅ |
+| `ScreenStackTests` | EditMode | Échap, Tab, pile, demande de fermeture | ✅ |
+| `GatheringTests.Targeting_*` | EditMode | Viseur d'abord, puis le cône | ✅ |
+| `ResourceSpawnerTests` (champ de vision remplacé par le poids devant) | EditMode | Apparitions devant | ✅ |
+| `ArrivalCurvesTests`, `ArrivalPlayModeTests` | EditMode, PlayMode | Pousse et chute | ✅ |
+| `InventoryHandTests.GatherAll_*` | EditMode | Y à la manette | ✅ |
+| `KeyPromptPlayModeTests` | PlayMode | Rebond de la touche | ✅ |
+| `DemoLoopScenePlayModeTests.TheInventory_IsTheOneThePlayerCarries_...`, `Escape_*` | PlayMode | Sac, écrans | ✅ |
+| `InventoryDemoControllerPlayModeTests` (navigation, focus, A, X, Y) | PlayMode | Inventaire à la manette | ✅ |
 
 ### Manuels (dans Unity)
 
@@ -114,10 +151,15 @@ Lancés en batch sur le PC de Hugo (Unity 6000.3.21f1) à chaque étape.
 | 1 | Accueil, Jouer. Longer le bord sud du spawn | Aucun pin dans un rocher | ⬜ |
 | 2 | Suivre le chemin ouest jusqu'à (−80, −95) | La forêt s'épaissit peu à peu, sans mur | ⬜ |
 | 3 | Au départ, tourner sur soi | Quelques champignons et bâtons à portée de vue, aucun collé au joueur | ⬜ |
-| 4 | Cueillir un champignon, regarder devant soi 10 s, puis se retourner | Rien n'est apparu devant ; un champignon a pu apparaître derrière | ⬜ |
-| 5 | Marcher 2 minutes en ligne droite | On trouve toujours des champignons et des bâtons autour de soi, de modèles différents | ⬜ |
+| 4 | Cueillir un champignon, regarder devant soi une dizaine de secondes | Un champignon peut apparaître devant, entre 20 et 50 m : il pousse du sol, il ne surgit pas | ⬜ |
+| 5 | Marcher 2 minutes en ligne droite | On trouve des champignons et des bâtons devant soi, de modèles différents ; les bâtons tombent des arbres | ⬜ |
 | 6 | Viser un objet à moins de 2 m | Contour cyan, touche **E** au-dessus avec un petit rebond. Toucher la manette : **Y** ou **△** | ⬜ |
 | 7 | Échap, puis Tab | La touche disparaît dans les deux cas | ⬜ |
+| 7b | Regarder un bâton avec un champignon aux pieds | Le bâton est visé ; passer à l'autre fait rebondir la touche | ⬜ |
+| 7c | Tab, puis Échap | L'inventaire se ferme, la pause ne s'ouvre pas ; Échap ensuite ouvre la pause | ⬜ |
+| 7d | Échap (pause), puis Tab | L'inventaire ne s'ouvre pas ; Reprendre ferme la pause | ⬜ |
+| 7e | Inventaire ouvert, appuyer sur ZQSD / WASD | Le joueur ne bouge pas | ⬜ |
+| 7f | Molette jusqu'à une case vide, puis revenir au filet | Le filet disparaît de la main, puis revient | ⬜ |
 | 8 | Clic gauche sans viser | Le filet part, sans arc avant | ⬜ |
 | 9 | Clic droit maintenu, regarder en bas puis en haut | Zoom ; l'arc a peu de points vers le bas, beaucoup vers le haut | ⬜ |
 | 10 | En visant, placer le cercle sur un Spongeus | Le Spongeus a un contour de la couleur du cercle ; les autres non | ⬜ |
@@ -125,11 +167,15 @@ Lancés en batch sur le PC de Hugo (Unity 6000.3.21f1) à chaque étape.
 | 12 | Double clic sur une pile de spores | Toutes les spores viennent sur la souris, jusqu'à 16 | ⬜ |
 | 13 | Prendre une pile, Tab | Elle revient dans sa case | ⬜ |
 | 14 | Changer la langue en anglais | « Inventory », « Quick bar », aides en anglais | ⬜ |
+| 15 | À la manette : Select, stick, A sur une pile, déplacer, A | La pile se prend, suit la case sélectionnée, se pose | ⬜ |
+| 16 | À la manette : X sur une pile, Y sur une autre, B | Moitié prise ; tout ramassé ; l'inventaire se ferme | ⬜ |
+| 17 | À la manette, en jeu : bouger seulement le stick droit, viser un objet | La touche affiche **Y** / **△** | ⬜ |
+| 18 | Ouvrir `NetThrowScene` | Le filet est en main, se lance et vise comme avant | ⬜ |
+| 19 | Deux instances (hôte et client) dans `MouvementJoueurScene` | Chaque joueur ne bouge qu'avec sa propre instance | ⬜ |
 
 ## Limitations connues
 
 - La police Fredoka Medium n'est pas dans le projet : « Barre rapide » et les aides sont en Fredoka SemiBold.
-- L'appareil courant est celui du dernier bouton pressé : bouger seulement un stick de manette ne fait pas passer la touche en **Y**.
 - Rien n'a été testé dans un exécutable : les tests ont tourné dans l'Editor en batch.
 
 ## Modifié par
