@@ -66,7 +66,7 @@ namespace Fungiiiii.Editor.Playtest
             (new Vector2(3f, -52f), 7f),
         };
 
-        private const float AmbienceVolume = 0.6f;
+        private const float AmbienceVolume = 0.24f;
         private const float FogEndDistance = 150f;
 
         [MenuItem("Fungiiiii/Playtest/2. Build Main Menu Scene")]

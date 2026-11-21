@@ -9576,7 +9576,7 @@ MonoBehaviour:
   southFadeEnd: -70
   northFadeStart: 130
   northFadeEnd: 170
-  southVolume: 0.15
+  southVolume: 0.12
   middleVolume: 0.3
   northVolume: 0.3
 --- !u!1 &1529394623

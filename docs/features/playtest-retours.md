@@ -9,6 +9,7 @@
 
 ## Docs précédents
 
+- [12487v2byt9-mystic-forest-audio](./12487v2byt9-mystic-forest-audio.md) — le fond de lisière, celui du spawn, joue 20 % moins fort (0,12 au lieu de 0,15).
 - [playtest-base](./playtest-base.md) — les bâtons et les champignons ne sont plus répartis sur toute la carte : ils sont gardés autour du joueur. Le contour visé devient cyan, avec la touche au-dessus. L'inventaire est refait. Le filet ne montre son arc qu'en visant.
 - [12487v2byt9-mystic-forest](./12487v2byt9-mystic-forest.md) — le générateur écarte les arbres des rochers selon leur emprise, et les calques se fondent en bord de zone (`fadeSouth`, `fadeNorth`). `Border_Rocks` passe avant `Border_TreePine`. Le Terrain est regénéré. `MushroomCluster` est régénéré (même GUID) et trois variantes s'ajoutent.
 - [12487v29zj5-poison-test-bench](./12487v29zj5-poison-test-bench.md) — les jauges du joueur (`VitalsHud`) deviennent `VitalGauges`, un prefab placé dans `PoisonScene`, `HUDScene` et `DemoLoopScene`. Le banc poison les reçoit dans l'Inspector.
@@ -97,6 +98,7 @@
 - [ ] **Le nom de l'objet en main s'affiche au-dessus de la barre rapide** (Hugo, 21/11 ; artboard « HUD · noms et ramassage » du canevas de maquettes), comme dans Minecraft : quand un autre objet arrive en main (molette, touches 1 à 3, ramassage dans la case sélectionnée), son nom s'affiche 2 s puis s'efface en 0,4 s. Mains vides : rien. Il se cache avec la barre quand l'inventaire est ouvert. `HeldItemName`, enfant de la barre (`Hotbar`).
 - [ ] **Dans l'inventaire, une plaquette en bois donne le nom de l'objet de la case visée** (souris ou manette), juste en bas à droite de la case. Rien sur une case vide, ni quand un objet est en main (il cache la case). `ItemNamePlate`, dans le prefab `Inventory`.
 - [ ] **Le fil des objets ramassés passe en bas à gauche** (36 px des bords), lignes alignées à gauche : au-dessus de la barre rapide, c'est la place du nom de l'objet en main, et le bas droit est aux aides de touches. C'est le placement le plus courant dans les jeux.
+- [ ] **Le vent est moins fort** (Hugo, 21/11) : à l'accueil, la boucle de la lisière passe de 0,6 à 0,24 (−60 %) ; au spawn, le fond de lisière (`southVolume` de `Audio/Beds`, scène `MysticForest`) passe de 0,15 à 0,12 (−20 %). Les rafales ne changent pas.
 
 **Nettoyage du 21/11 (refactor, aucun comportement ne change)**
 

@@ -121,3 +121,4 @@ Au casque, bouton de son de la fenêtre Game activé.
 
 ## Modifié par
 - [12487v2byt9-mystic-forest-tree-wind](./12487v2byt9-mystic-forest-tree-wind.md) — les rafales entendues se voient dans le feuillage et l'herbe : `RandomOneShotEmitter` signale chaque rafale, `WindGustDriver` s'ajoute sur `Audio/Gusts`.
+- [playtest-retours](./playtest-retours.md) — le fond de lisière (`southVolume`) passe de 0,15 à 0,12.
