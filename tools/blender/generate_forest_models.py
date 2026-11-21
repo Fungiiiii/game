@@ -13,6 +13,9 @@
 #   GrassTuft.fbx    a tuft of blades, ~0.5 m, drawn as Terrain detail
 #   Bush.fbx         low bush, ~1.3 m
 #   Fern.fbx         arching fern, ~0.5 m
+#   WaterFern.fbx    the water fern of the mist: six wide open fronds, lighter
+#                    than the decor fern, ~0.4 m high and ~1.2 m across. Full of
+#                    water, the game darkens it and makes drops fall from it.
 #   MushroomCluster.fbx  four mushrooms, red and violet caps, ~0.6 m
 #   MushroomCluster_02.fbx  three red caps, one tall and two small, ~0.7 m
 #   MushroomCluster_03.fbx  five low violet caps spread wide, ~0.35 m
@@ -392,6 +395,50 @@ def fern():
     return m.build("Fern")
 
 
+def water_fronds():
+    """The water fern's six fronds, as (direction, side, reach, rise, width)."""
+    rng = random.Random(6311)
+    fronds = []
+    for k in range(6):
+        a = 2 * math.pi * k / 6 + rng.uniform(-0.15, 0.15)
+        direction = Vector((math.cos(a), math.sin(a), 0.0))
+        side = Vector((-direction.y, direction.x, 0.0))
+        fronds.append((direction, side, rng.uniform(1.0, 1.2), rng.uniform(0.3, 0.36), 0.24))
+    return fronds
+
+
+def frond_corners(frond):
+    """The five corners of a water frond: foot, left and right edges at its middle,
+    raised rib over its middle, and tip. The rib makes the upper face a shallow
+    ridge, like the decor fern's."""
+    direction, side, reach, rise, width = frond
+    mid = direction * (reach * 0.5) + Vector((0.0, 0.0, 0.05 + rise))
+    return {
+        "base": Vector((0.0, 0.0, 0.05)),
+        "left": mid + side * width,
+        "right": mid - side * width,
+        "mid": mid,
+        "rib": mid + Vector((0.0, 0.0, 0.04)),
+        # The tip droops back to a little over half the height of the middle.
+        "tip": direction * reach + Vector((0.0, 0.0, 0.05 + rise * 0.55)),
+    }
+
+
+def water_fern():
+    """Six wide fronds opened flat like a cup, in light green with a dark
+    underside: it reads apart from the decor fern, closed and dark."""
+    m = MeshBuilder()
+    for frond in water_fronds():
+        c = frond_corners(frond)
+        base, left, right, tip = (m.vert(c[k]) for k in ("base", "left", "right", "tip"))
+        rib = m.vert(c["rib"])
+        keel = m.vert(c["mid"] - Vector((0.0, 0.0, 0.035)))
+        for a_, b_ in ((base, left), (left, tip), (tip, right), (right, base)):
+            m.outward_face([a_, b_, rib], GREEN, c["mid"])
+            m.outward_face([a_, b_, keel], GREEN_DARK, c["mid"])
+    return m.build("WaterFern")
+
+
 def mushroom(m, rng, x, y, height, cap_radius, cap_cell):
     stem = m.ring((x, y, 0.0), cap_radius * 0.28, 6)
     top = m.ring((x, y, height), cap_radius * 0.22, 6)
@@ -506,6 +553,7 @@ BUILDS = {
     "GrassTuft": grass_tuft,
     "Bush": bush,
     "Fern": fern,
+    "WaterFern": water_fern,
     "MushroomCluster": mushroom_cluster,
     "MushroomCluster_02": mushroom_cluster_02,
     "MushroomCluster_03": mushroom_cluster_03,
