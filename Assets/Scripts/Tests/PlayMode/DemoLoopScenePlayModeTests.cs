@@ -8,6 +8,7 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
+using UnityEngine.TestTools.Utils;
 #if UNITY_EDITOR
 using UnityEditor.SceneManagement;
 #endif
@@ -302,6 +303,106 @@ namespace Fungiiiii.Tests.PlayMode
                     Is.True,
                     $"{mushroom.GetComponentInChildren<LODGroup>(true).name} has no outline.");
             }
+        }
+
+        private static readonly Color Cyan = new Color32(0x6F, 0xD6, 0xEA, 0xFF);
+        private static readonly Color Cream = new Color32(0xF2, 0xE6, 0xCC, 0xFF);
+
+        /// <summary>
+        /// Moves a gatherable in front of the camera, turned by <paramref name="angleDegrees"/>
+        /// around the vertical, so that the point the player aims at is on that line.
+        /// </summary>
+        private static void PlaceInView(DemoLoopBootstrap demo, Gatherable gatherable, float angleDegrees, float distance)
+        {
+            var view = demo.ViewCamera.transform;
+            var direction = Quaternion.Euler(0f, angleDegrees, 0f) * view.forward;
+            gatherable.transform.position = view.position + direction * distance - Vector3.up * 0.3f;
+        }
+
+        private static Color OutlineColor(Gatherable gatherable)
+        {
+            return gatherable.GetComponentsInChildren<MeshRenderer>(true)
+                .First(renderer => renderer.name == "Outline")
+                .sharedMaterial.GetColor("_Color");
+        }
+
+        private static Gatherable[] TwoAvailable(DemoLoopBootstrap demo)
+        {
+            return demo.Gatherables.Where(gatherable => gatherable.IsAvailable).Take(2).ToArray();
+        }
+
+        [UnityTest]
+        public IEnumerator TheTarget_IsOutlinedInCyan_AndWhatIsNotAimedAt_StaysCream()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+            var pair = TwoAvailable(demo);
+
+            PlaceInView(demo, pair[0], 0f, 1.5f);
+            PlaceInView(demo, pair[1], 40f, 1.5f);
+            yield return null;
+            yield return null;
+
+            Assert.That(demo.Interactor.Targeted, Is.SameAs(pair[0]));
+            Assert.That(OutlineColor(pair[0]), Is.EqualTo(Cyan).Using(ColorEqualityComparer.Instance));
+            Assert.That(OutlineColor(pair[1]), Is.EqualTo(Cream).Using(ColorEqualityComparer.Instance), "An item not aimed at is outlined as a target.");
+        }
+
+        [UnityTest]
+        public IEnumerator TheKey_ShowsEAboveTheTarget_AndFollowsIt()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+            var prompt = demo.Interactor.Prompt;
+            var camera = demo.ViewCamera;
+            var pair = TwoAvailable(demo);
+
+            PlaceInView(demo, pair[0], 0f, 1.5f);
+            PlaceInView(demo, pair[1], 40f, 1.5f);
+            yield return null;
+            yield return null;
+
+            Assert.That(prompt.IsVisible, Is.True, "No key over the target.");
+            Assert.That(prompt.Label, Is.EqualTo("E"));
+            Assert.That(Vector2.Distance(prompt.ScreenPoint, camera.WorldToScreenPoint(pair[0].PromptPoint)), Is.LessThan(2f));
+            Assert.That(pair[0].PromptPoint.y, Is.GreaterThan(pair[0].transform.position.y + 0.25f), "The key is not above the item.");
+
+            PlaceInView(demo, pair[0], 60f, 1.5f);
+            PlaceInView(demo, pair[1], 0f, 1.5f);
+            yield return null;
+            yield return null;
+
+            Assert.That(demo.Interactor.Targeted, Is.SameAs(pair[1]));
+            Assert.That(Vector2.Distance(prompt.ScreenPoint, camera.WorldToScreenPoint(pair[1].PromptPoint)), Is.LessThan(2f), "The key did not follow the new target.");
+        }
+
+        [UnityTest]
+        public IEnumerator TheKey_IsHidden_WithoutTarget_InPause_AndWithTheInventoryOpen()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+            var prompt = demo.Interactor.Prompt;
+
+            yield return null;
+            Assert.That(prompt.IsVisible, Is.False, "A key shows without a target.");
+
+            PlaceInView(demo, TwoAvailable(demo)[0], 0f, 1.5f);
+            yield return null;
+            yield return null;
+            Assert.That(prompt.IsVisible, Is.True);
+
+            demo.Pause.SetPaused(true);
+            yield return null;
+            Assert.That(prompt.IsVisible, Is.False, "The key shows in pause.");
+
+            demo.Pause.SetPaused(false);
+            yield return null;
+            yield return null;
+            Assert.That(prompt.IsVisible, Is.True);
+
+            demo.SetInventoryOpen(true);
+            yield return null;
+            Assert.That(prompt.IsVisible, Is.False, "The key shows over the inventory.");
         }
 
         private static float GroundDistance(Vector3 a, Vector3 b)

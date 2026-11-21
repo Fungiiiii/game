@@ -14,9 +14,13 @@ namespace Fungiiiii.Demo
     {
         private const float AimHeight = 0.3f;
 
+        /// <summary>The key to press floats this far above the top of the model.</summary>
+        private const float PromptAboveTop = 0.25f;
+
         private InventoryItemDefinition item;
         private ItemOutline outline;
         private float reach;
+        private Renderer[] renderers;
 
         /// <summary>Raised when the player has taken it, after it disappeared.</summary>
         public event Action<Gatherable> Gathered;
@@ -31,11 +35,28 @@ namespace Fungiiiii.Demo
         public InteractionCandidate Candidate =>
             new InteractionCandidate(transform.position + Vector3.up * AimHeight, reach, IsAvailable);
 
+        public Vector3 PromptPoint
+        {
+            get
+            {
+                var top = transform.position.y;
+                foreach (var modelRenderer in renderers)
+                {
+                    top = Mathf.Max(top, modelRenderer.bounds.max.y);
+                }
+
+                var point = transform.position;
+                point.y = top + PromptAboveTop;
+                return point;
+            }
+        }
+
         public void Initialize(InventoryItemDefinition gatheredItem, ItemOutline itemOutline, float interactionReach)
         {
             item = gatheredItem;
             outline = itemOutline;
             reach = interactionReach;
+            renderers = GetComponentsInChildren<Renderer>(true);
             Disappear();
         }
 

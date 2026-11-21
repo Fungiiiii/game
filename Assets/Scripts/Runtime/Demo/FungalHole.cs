@@ -40,6 +40,9 @@ namespace Fungiiiii.Demo
 
         public FungalNetwork Network => network;
 
+        /// <summary>The key to press floats a metre above the centre of the hole.</summary>
+        public Vector3 PromptPoint => transform.position + Vector3.up;
+
         public InteractionCandidate Candidate =>
             new InteractionCandidate(transform.position, reach, !network.IsComplete);
 

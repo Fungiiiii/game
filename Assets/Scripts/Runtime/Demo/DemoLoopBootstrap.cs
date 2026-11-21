@@ -202,8 +202,9 @@ namespace Fungiiiii.Demo
         [SerializeField, Range(0f, 8f)]
         private float outlineWidth = 2.5f;
 
+        [Tooltip("Cyan of what is aimed at, as on the Ramassage artboard.")]
         [SerializeField]
-        private Color targetedOutlineColor = new Color32(0xFF, 0xF8, 0xE8, 0xFF);
+        private Color targetedOutlineColor = new Color32(0x6F, 0xD6, 0xEA, 0xFF);
 
         [SerializeField, Range(0f, 8f)]
         private float targetedOutlineWidth = 4f;
@@ -334,6 +335,12 @@ namespace Fungiiiii.Demo
         /// <summary>The pause menu, opened with Escape.</summary>
         public PauseMenu Pause => pauseMenu;
 
+        /// <summary>The interact control, and the key it shows above its target.</summary>
+        public PlayerInteractor Interactor => interactor;
+
+        /// <summary>The player's first-person camera.</summary>
+        public Camera ViewCamera => firstPersonCamera != null ? firstPersonCamera.Camera : null;
+
         /// <summary>The quick bar: the item of its selected slot is the one in hand.</summary>
         public Hotbar Hotbar => hotbar;
 
@@ -459,7 +466,7 @@ namespace Fungiiiii.Demo
             BuildHotbar();
 
             interactor = player.AddComponent<PlayerInteractor>();
-            interactor.Initialize(firstPersonCamera.Camera, Inventory, interactables, AimConeDegrees);
+            interactor.Initialize(firstPersonCamera.Camera, Inventory, interactables, AimConeDegrees, menuFont);
 
             pauseMenu = new GameObject("Pause Menu").AddComponent<PauseMenu>();
             pauseMenu.Initialize(menuFont, mainMenuScenePath);
