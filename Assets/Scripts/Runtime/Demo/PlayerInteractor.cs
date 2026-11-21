@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Fungiiiii.Capture;
 using Fungiiiii.Controls;
 using Fungiiiii.Gathering;
 using Fungiiiii.Inventory;
@@ -19,10 +20,14 @@ namespace Fungiiiii.Demo
         private readonly List<InteractionCandidate> candidates = new List<InteractionCandidate>();
         private readonly List<ControlHint> hints = new List<ControlHint>();
 
+        [Tooltip("How far from the centre of the view a target can be aimed at, in degrees.")]
+        [SerializeField, Range(1f, 90f)]
+        private float maxAimAngleDegrees = 25f;
+
+        private PrototypeFirstPersonCamera viewCamera;
         private Camera view;
         private PlayerInventory inventory;
         private IReadOnlyList<IInteractable> interactables;
-        private float maxAimAngleDegrees;
         private PlayerControls controls;
         private IInteractable targeted;
         private KeyPrompt prompt;
@@ -43,19 +48,20 @@ namespace Fungiiiii.Demo
         public IReadOnlyList<ControlHint> Hints => hints;
 
         public void Initialize(
-            Camera viewCamera,
+            PrototypeFirstPersonCamera firstPersonCamera,
             PlayerInventory playerInventory,
             IReadOnlyList<IInteractable> usable,
-            float aimConeDegrees,
             KeyPrompt keyPrompt,
             PlayerControls playerControls)
         {
             controls = playerControls;
             controls.MenuOpenChanged += OnMenuOpenChanged;
-            view = viewCamera;
+            viewCamera = firstPersonCamera;
+            view = firstPersonCamera.Camera;
+            // The key goes over the target once the view has moved for the frame.
+            viewCamera.Moved += ShowPrompt;
             inventory = playerInventory;
             interactables = usable;
-            maxAimAngleDegrees = aimConeDegrees;
             prompt = keyPrompt;
         }
 
@@ -74,6 +80,11 @@ namespace Fungiiiii.Demo
             if (controls != null)
             {
                 controls.MenuOpenChanged -= OnMenuOpenChanged;
+            }
+
+            if (viewCamera != null)
+            {
+                viewCamera.Moved -= ShowPrompt;
             }
         }
 
@@ -103,11 +114,6 @@ namespace Fungiiiii.Demo
             {
                 targeted.Interact(inventory);
             }
-        }
-
-        private void LateUpdate()
-        {
-            ShowPrompt();
         }
 
         private void SetTarget(IInteractable next)

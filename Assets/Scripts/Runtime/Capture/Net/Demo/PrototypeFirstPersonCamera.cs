@@ -36,6 +36,13 @@ namespace Fungiiiii.Capture
 
         public Camera Camera { get; private set; }
 
+        /// <summary>
+        /// Raised once the view has followed the player this frame. What is drawn over the
+        /// world at a point of the screen is placed then, not on its own LateUpdate, whose
+        /// order with this one Unity does not guarantee.
+        /// </summary>
+        public event System.Action Moved;
+
         /// <summary>Multiplies how fast the view turns: the net's aim slows it as it narrows the view.</summary>
         public float LookScale { get; set; } = 1f;
 
@@ -145,6 +152,7 @@ namespace Fungiiiii.Capture
             transform.SetPositionAndRotation(
                 playerTransform.position + Vector3.up * eyeHeight,
                 Quaternion.Euler(pitch, yaw, 0f));
+            Moved?.Invoke();
         }
     }
 }
