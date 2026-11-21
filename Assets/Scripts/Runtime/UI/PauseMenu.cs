@@ -1,16 +1,16 @@
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 namespace Fungiiiii.UI
 {
     /// <summary>
-    /// The pause menu of the game: Escape freezes the game under a dark veil and shows
-    /// three wooden planks, Resume, Home and Quit. Escape again resumes.
+    /// The pause menu of the game: it freezes the game under a dark veil and shows three
+    /// wooden planks, Resume, Home and Quit. It is the screen Escape opens when no other
+    /// screen is open (<see cref="ScreenStack"/>); Escape again, or Resume, closes it.
     /// </summary>
-    internal sealed class PauseMenu : MonoBehaviour
+    internal sealed class PauseMenu : MonoBehaviour, IGameScreen
     {
         /// <summary>Above the HUD and the inventory.</summary>
         private const int CanvasSortingOrder = 200;
@@ -20,13 +20,12 @@ namespace Fungiiiii.UI
 
         private static readonly Vector2 ButtonSlide = new Vector2(0f, 6f);
 
-        private InputAction pauseAction;
         private GameObject canvasObject;
         private string homeScenePath;
         private float timeScaleBeforePause = 1f;
 
-        /// <summary>Raised when the game is paused (true) or resumed (false).</summary>
-        public event Action<bool> PausedChanged;
+        /// <summary>Raised by Resume: the screen stack closes the menu.</summary>
+        public event Action CloseRequested;
 
         public bool IsPaused { get; private set; }
 
@@ -37,12 +36,9 @@ namespace Fungiiiii.UI
         public PlankButton QuitButton { get; private set; }
 
         /// <param name="homeScene">Path of the scene Home loads. It has to be in the build settings.</param>
-        /// <param name="toggle">Pauses and resumes: Escape, or Start on a gamepad.</param>
-        public void Initialize(Font font, string homeScene, InputAction toggle)
+        public void Initialize(Font font, string homeScene)
         {
             homeScenePath = homeScene;
-            pauseAction = toggle;
-            pauseAction.performed += OnPausePerformed;
 
             var canvas = WoodMenu.CreateCanvas("Pause Menu Canvas", CanvasSortingOrder);
             canvasObject = canvas.gameObject;
@@ -62,7 +58,19 @@ namespace Fungiiiii.UI
             canvasObject.SetActive(false);
         }
 
-        public void SetPaused(bool paused)
+        /// <summary>Freezes the game and shows the menu.</summary>
+        public void Open()
+        {
+            SetPaused(true);
+        }
+
+        /// <summary>Hides the menu and lets time run again.</summary>
+        public void Close()
+        {
+            SetPaused(false);
+        }
+
+        private void SetPaused(bool paused)
         {
             if (paused == IsPaused || canvasObject == null)
             {
@@ -81,8 +89,6 @@ namespace Fungiiiii.UI
                 Time.timeScale = timeScaleBeforePause;
             }
 
-            // Listeners run before the menu shows: the game lets go of the pointer first.
-            PausedChanged?.Invoke(paused);
             canvasObject.SetActive(paused);
 
             if (paused)
@@ -101,11 +107,6 @@ namespace Fungiiiii.UI
 
         private void OnDestroy()
         {
-            if (pauseAction != null)
-            {
-                pauseAction.performed -= OnPausePerformed;
-            }
-
             // Leaving the scene while paused must not leave time stopped for the next one.
             if (IsPaused)
             {
@@ -113,14 +114,9 @@ namespace Fungiiiii.UI
             }
         }
 
-        private void OnPausePerformed(InputAction.CallbackContext _)
-        {
-            SetPaused(!IsPaused);
-        }
-
         private void Resume()
         {
-            SetPaused(false);
+            CloseRequested?.Invoke();
         }
 
         private void GoHome()

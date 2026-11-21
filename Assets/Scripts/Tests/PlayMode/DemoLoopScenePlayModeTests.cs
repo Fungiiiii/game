@@ -195,10 +195,10 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(demo.Hotbar.IsVisible, Is.True);
             Assert.That(demo.Hotbar.InputEnabled, Is.True);
 
-            demo.Pause.SetPaused(true);
+            demo.Screens.Open(demo.Pause);
             Assert.That(demo.Hotbar.InputEnabled, Is.False, "The quick bar still responds in pause.");
 
-            demo.Pause.SetPaused(false);
+            demo.Screens.Close(demo.Pause);
             Assert.That(demo.Hotbar.InputEnabled, Is.True);
         }
 
@@ -403,11 +403,11 @@ namespace Fungiiiii.Tests.PlayMode
             yield return null;
             Assert.That(prompt.IsVisible, Is.True);
 
-            demo.Pause.SetPaused(true);
+            demo.Screens.Open(demo.Pause);
             yield return null;
             Assert.That(prompt.IsVisible, Is.False, "The key shows in pause.");
 
-            demo.Pause.SetPaused(false);
+            demo.Screens.Close(demo.Pause);
             yield return null;
             yield return null;
             Assert.That(prompt.IsVisible, Is.True);
@@ -479,12 +479,12 @@ namespace Fungiiiii.Tests.PlayMode
             demo.Thrower.HoldAim = true;
             yield return Wait(0.3f);
 
-            demo.Pause.SetPaused(true);
+            demo.Screens.Open(demo.Pause);
             Assert.That(demo.Thrower.IsAiming, Is.False, "The pause kept the aim.");
             Assert.That(camera.fieldOfView, Is.EqualTo(60f).Within(0.01f));
             Assert.That(demo.Thrower.VisibleDotCount, Is.Zero);
 
-            demo.Pause.SetPaused(false);
+            demo.Screens.Close(demo.Pause);
             yield return Wait(0.3f);
             Assert.That(demo.Thrower.IsAiming, Is.True);
 
@@ -702,7 +702,7 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(demo.Pause.IsPaused, Is.False);
             Assert.That(demo.Pause.ResumeButton.gameObject.activeInHierarchy, Is.False, "The pause menu shows before any pause.");
 
-            demo.Pause.SetPaused(true);
+            demo.Screens.Open(demo.Pause);
             yield return null;
 
             Assert.That(Time.timeScale, Is.Zero, "Time still runs.");
@@ -723,31 +723,52 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(demo.Hands.InputEnabled, Is.True);
 
             // A second pause shows the menu as the first did, Resume standing out.
-            demo.Pause.SetPaused(true);
+            demo.Screens.Open(demo.Pause);
             yield return new WaitForSecondsRealtime(0.5f);
 
             Assert.That(
                 demo.Pause.ResumeButton.GetComponentInChildren<PlankGraphic>().Highlight,
                 Is.EqualTo(1f).Within(0.01f),
                 "Resume does not stand out on the second pause.");
-            demo.Pause.SetPaused(false);
+            demo.Screens.Close(demo.Pause);
         }
 
         [UnityTest]
-        public IEnumerator ResumingWithTheInventoryOpen_LeavesTheInventoryInCharge()
+        public IEnumerator Escape_WithTheInventoryOpen_ClosesIt_WithoutPausing()
         {
             yield return LoadDemo();
             var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
             var view = Object.FindFirstObjectByType<PrototypeFirstPersonCamera>();
-
             demo.SetInventoryOpen(true);
-            demo.Pause.SetPaused(true);
-            yield return null;
-            demo.Pause.SetPaused(false);
             yield return null;
 
-            Assert.That(demo.IsInventoryOpen, Is.True);
-            Assert.That(view.enabled, Is.False, "The view turns while the inventory is open.");
+            demo.Screens.Back();
+            yield return null;
+
+            Assert.That(demo.IsInventoryOpen, Is.False);
+            Assert.That(demo.Pause.IsPaused, Is.False, "Escape paused over the inventory.");
+            Assert.That(view.enabled, Is.True, "The view does not turn again.");
+            Assert.That(demo.Hotbar.IsVisible, Is.True);
+        }
+
+        [UnityTest]
+        public IEnumerator Escape_WithNothingOpen_Pauses_AndTab_DoesNotOpenTheInventoryOverThePause()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+
+            demo.Screens.Back();
+            yield return null;
+            Assert.That(demo.Pause.IsPaused, Is.True);
+
+            demo.Screens.Toggle(demo.InventoryView);
+            yield return null;
+            Assert.That(demo.IsInventoryOpen, Is.False, "The inventory opened over the pause.");
+
+            demo.Screens.Back();
+            yield return null;
+            Assert.That(demo.Pause.IsPaused, Is.False);
+            Assert.That(demo.Hands.InputEnabled, Is.True);
         }
 
         [UnityTest]
@@ -756,7 +777,7 @@ namespace Fungiiiii.Tests.PlayMode
             yield return LoadDemo();
             var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
 
-            demo.Pause.SetPaused(true);
+            demo.Screens.Open(demo.Pause);
             yield return null;
             demo.Pause.HomeButton.Button.onClick.Invoke();
 

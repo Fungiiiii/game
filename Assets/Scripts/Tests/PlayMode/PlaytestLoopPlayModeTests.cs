@@ -57,7 +57,7 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(outline, Is.Not.Null, "What can be gathered has no outline.");
             Assert.That(outline.sharedMaterial.shader.isSupported, Is.True, "The outline shader does not run here.");
 
-            demo.Pause.SetPaused(true);
+            demo.Screens.Open(demo.Pause);
             yield return null;
             Assert.That(Time.timeScale, Is.Zero);
             demo.Pause.HomeButton.Button.onClick.Invoke();
