@@ -25,7 +25,6 @@ namespace Fungiiiii.Items
         private IItemSelection selection;
         private PlayerControls controls;
         private Transform handAnchor;
-        private bool inputEnabled = true;
 
         /// <summary>The item in hand, null with empty hands.</summary>
         public ItemDefinition ItemInHand => Held.CurrentItem;
@@ -39,20 +38,6 @@ namespace Fungiiiii.Items
         /// <summary>What the use controls do with the item in hand, when it says so (<see cref="IHeldItemHints"/>).</summary>
         public IReadOnlyList<ControlHint> Hints => hints;
 
-        /// <summary>False, the item in hand gets no control and stops what it was doing, for a menu.</summary>
-        public bool InputEnabled
-        {
-            get => inputEnabled;
-            set
-            {
-                inputEnabled = value;
-                if (!value)
-                {
-                    Held.Cancel();
-                }
-            }
-        }
-
         private HeldItemSwitch Held => held ??= new HeldItemSwitch(MakeFromPrefab);
 
         /// <param name="itemSelection">Tells which slot's item is in hand.</param>
@@ -62,6 +47,7 @@ namespace Fungiiiii.Items
         {
             selection = itemSelection;
             controls = playerControls;
+            controls.MenuOpenChanged += OnMenuOpenChanged;
             handAnchor = anchor;
             selection.SelectedSlotChanged += TakeSelectedItem;
             TakeSelectedItem();
@@ -75,7 +61,8 @@ namespace Fungiiiii.Items
 
         private void Update()
         {
-            if (!inputEnabled || controls == null)
+            // Under a menu the item gets no control: it was cancelled when the menu opened.
+            if (controls == null || controls.IsMenuOpen)
             {
                 return;
             }
@@ -96,9 +83,22 @@ namespace Fungiiiii.Items
                 selection.SelectedSlotChanged -= TakeSelectedItem;
             }
 
+            if (controls != null)
+            {
+                controls.MenuOpenChanged -= OnMenuOpenChanged;
+            }
+
             if (watched != null)
             {
                 watched.HintsChanged -= RefreshHints;
+            }
+        }
+
+        private void OnMenuOpenChanged(bool open)
+        {
+            if (open)
+            {
+                Held.Cancel();
             }
         }
 

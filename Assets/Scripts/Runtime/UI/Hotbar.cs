@@ -62,9 +62,6 @@ namespace Fungiiiii.UI
         /// <summary>The inventory slot that is selected.</summary>
         public InventorySlot SelectedSlot => inventory.GetSlot(firstSlot + Selected);
 
-        /// <summary>False ignores the controls, for instance while a menu uses the mouse.</summary>
-        public bool InputEnabled { get; set; } = true;
-
         public bool IsVisible => canvasObject != null && canvasObject.activeSelf;
 
         /// <param name="slots">The inventory whose slots the bar shows.</param>
@@ -145,10 +142,8 @@ namespace Fungiiiii.UI
                 return;
             }
 
-            if (InputEnabled)
-            {
-                ReadInput();
-            }
+            // Its actions are in the Player map, off while a menu is open.
+            ReadInput();
 
             foreach (var view in views)
             {

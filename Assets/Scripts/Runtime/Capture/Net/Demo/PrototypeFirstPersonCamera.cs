@@ -1,3 +1,4 @@
+using Fungiiiii.Controls;
 using Fungiiiii.Runtime.Player;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -27,6 +28,7 @@ namespace Fungiiiii.Capture
 
         private InputAction lookAction;
         private InputAction cursorCaptureAction;
+        private IMenuState menu;
         private PlayerMotor motor;
         private CharacterController characterController;
         private float yaw;
@@ -39,8 +41,11 @@ namespace Fungiiiii.Capture
 
         /// <param name="look">Turns the view.</param>
         /// <param name="cursorCapture">Takes the cursor back after Escape released it in the Editor.</param>
-        public void Initialize(PlayerMotor playerMotor, float initialYawDegrees, InputAction look, InputAction cursorCapture)
+        /// <param name="menuState">Under a menu the view stops turning and the pointer is freed.</param>
+        public void Initialize(PlayerMotor playerMotor, float initialYawDegrees, InputAction look, InputAction cursorCapture, IMenuState menuState)
         {
+            menu = menuState;
+            menu.MenuOpenChanged += OnMenuOpenChanged;
             lookAction = look;
             cursorCaptureAction = cursorCapture;
             motor = playerMotor;
@@ -74,6 +79,19 @@ namespace Fungiiiii.Capture
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+        }
+
+        private void OnDestroy()
+        {
+            if (menu != null)
+            {
+                menu.MenuOpenChanged -= OnMenuOpenChanged;
+            }
+        }
+
+        private void OnMenuOpenChanged(bool open)
+        {
+            enabled = !open;
         }
 
         private void Update()
