@@ -2,6 +2,7 @@ using System;
 using Fungiiiii.Gathering;
 using Fungiiiii.Inventory;
 using Fungiiiii.Runtime.World;
+using Fungiiiii.UI;
 using UnityEngine;
 
 namespace Fungiiiii.Demo
@@ -40,6 +41,8 @@ namespace Fungiiiii.Demo
 
         public InteractionCandidate Candidate =>
             new InteractionCandidate(transform.position + Vector3.up * AimHeight, reach, IsAvailable, ModelBounds());
+
+        public string HintKey => UiText.HintGather;
 
         public Vector3 PromptPoint
         {

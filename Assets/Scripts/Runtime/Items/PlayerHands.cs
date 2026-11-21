@@ -1,5 +1,8 @@
+using System;
+using System.Collections.Generic;
 using Fungiiiii.Controls;
 using Fungiiiii.Inventory;
+using Fungiiiii.UI;
 using UnityEngine;
 
 namespace Fungiiiii.Items
@@ -14,9 +17,11 @@ namespace Fungiiiii.Items
     /// hand anchor the first time it is held.
     /// </summary>
     [DisallowMultipleComponent]
-    public sealed class PlayerHands : MonoBehaviour
+    public sealed class PlayerHands : MonoBehaviour, IHintSource
     {
+        private readonly List<ControlHint> hints = new List<ControlHint>();
         private HeldItemSwitch held;
+        private IHeldItemHints watched;
         private IItemSelection selection;
         private PlayerControls controls;
         private Transform handAnchor;
@@ -27,6 +32,12 @@ namespace Fungiiiii.Items
 
         /// <summary>What the item in hand does, null when it does nothing.</summary>
         public IHeldItem Behaviour => Held.Current;
+
+        /// <summary>Raised when what the use controls do changes.</summary>
+        public event Action HintsChanged;
+
+        /// <summary>What the use controls do with the item in hand, when it says so (<see cref="IHeldItemHints"/>).</summary>
+        public IReadOnlyList<ControlHint> Hints => hints;
 
         /// <summary>False, the item in hand gets no control and stops what it was doing, for a menu.</summary>
         public bool InputEnabled
@@ -84,12 +95,57 @@ namespace Fungiiiii.Items
             {
                 selection.SelectedSlotChanged -= TakeSelectedItem;
             }
+
+            if (watched != null)
+            {
+                watched.HintsChanged -= RefreshHints;
+            }
         }
 
         private void TakeSelectedItem()
         {
             var slot = selection.SelectedSlot;
             Held.Hold(slot.IsEmpty ? null : slot.Item);
+            Watch(Held.Current as IHeldItemHints);
+        }
+
+        private void Watch(IHeldItemHints next)
+        {
+            if (next != watched)
+            {
+                if (watched != null)
+                {
+                    watched.HintsChanged -= RefreshHints;
+                }
+
+                watched = next;
+                if (watched != null)
+                {
+                    watched.HintsChanged += RefreshHints;
+                }
+            }
+
+            RefreshHints();
+        }
+
+        private void RefreshHints()
+        {
+            hints.Clear();
+            if (watched != null && controls != null)
+            {
+                AddHint(watched.PrimaryHintKey, controls.Player.UsePrimary);
+                AddHint(watched.SecondaryHintKey, controls.Player.UseSecondary);
+            }
+
+            HintsChanged?.Invoke();
+        }
+
+        private void AddHint(string labelKey, UnityEngine.InputSystem.InputAction control)
+        {
+            if (labelKey != null)
+            {
+                hints.Add(new ControlHint(labelKey, HintInput.Of(control)));
+            }
         }
 
         private IHeldItem MakeFromPrefab(ItemDefinition item)

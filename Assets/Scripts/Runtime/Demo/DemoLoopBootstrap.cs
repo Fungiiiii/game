@@ -307,6 +307,8 @@ namespace Fungiiiii.Demo
         private ItemDefinition champouleItem;
         private ItemDefinition netItem;
         private ScreenStack screens;
+        private ControlHintsPanel hintsPanel;
+        private FixedHints gameHints;
         private InputAction menuAction;
         private InputAction cancelAction;
         private InputAction inventoryAction;
@@ -356,6 +358,9 @@ namespace Fungiiiii.Demo
         public FungalHole Hole => hole;
 
         public bool IsInventoryOpen => inventoryView != null && inventoryView.gameObject.activeSelf;
+
+        /// <summary>The key hints, bottom right of the screen.</summary>
+        public ControlHintsPanel Hints => hintsPanel;
 
         /// <summary>The screens open over the game: Escape closes the top one, or pauses.</summary>
         public ScreenStack Screens => screens;
@@ -484,6 +489,8 @@ namespace Fungiiiii.Demo
 
             screens = new ScreenStack(pauseMenu);
             screens.Changed += ApplyScreens;
+
+            BuildHints();
             menuAction = controls.Screens.Menu;
             menuAction.performed += OnMenuPerformed;
             // B on a gamepad goes back too; it only acts in a screen, where the UI map is on.
@@ -603,7 +610,12 @@ namespace Fungiiiii.Demo
             inventoryObject.SetActive(false);
             inventoryView = inventoryObject.AddComponent<InventoryDemoController>();
             inventoryView.Bind(backpack.Inventory);
-            inventoryView.SetGamepadControls(controls.UI.Navigate, controls.UI.TakeHalf, controls.UI.GatherAll);
+            inventoryView.SetControls(new InventoryScreenControls(
+                controls.UI.Navigate,
+                controls.UI.TakeHalf,
+                controls.UI.GatherAll,
+                controls.Screens.Inventory,
+                controls.UI.Cancel));
             inventoryView.Font = menuFont;
             inventoryObject.SetActive(true);
             inventoryObject.SetActive(false);
@@ -957,6 +969,46 @@ namespace Fungiiiii.Demo
         {
             hotbar.SetVisible(!screens.IsOpen(inventoryView));
             SetGameplayInput(!screens.IsAnyOpen);
+            ShowHints();
+        }
+
+        /// <summary>
+        /// The key hints, bottom right. In game: what E does with the target, what the item
+        /// in hand does, then switching items and the inventory; switching is left out first
+        /// when there are too many.
+        /// </summary>
+        private void BuildHints()
+        {
+            var actions = controls.Player;
+            gameHints = new FixedHints(
+                new ControlHint(UiText.HintSwitchItem, HintInput.Of(actions.HotbarNext, actions.HotbarPrevious), optional: true),
+                new ControlHint(UiText.HintInventory, HintInput.Of(controls.Screens.Inventory)));
+
+            hintsPanel = new GameObject("Key Hints").AddComponent<ControlHintsPanel>();
+            hintsPanel.Initialize(menuFont, controls);
+            ShowHints();
+        }
+
+        /// <summary>The hints of the screen on top, or of the game when none is open; the pause shows none.</summary>
+        private void ShowHints()
+        {
+            if (hintsPanel == null)
+            {
+                return;
+            }
+
+            if (!screens.IsAnyOpen)
+            {
+                hintsPanel.ShowFrom(interactor, hands, gameHints);
+            }
+            else if (screens.Top is IHintSource screenHints)
+            {
+                hintsPanel.ShowFrom(screenHints);
+            }
+            else
+            {
+                hintsPanel.ShowFrom();
+            }
         }
 
         /// <summary>The view, the net, the quick bar and the interact control. Off, the pointer is free for a menu.</summary>

@@ -388,6 +388,72 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(Vector2.Distance(prompt.ScreenPoint, camera.WorldToScreenPoint(pair[1].PromptPoint)), Is.LessThan(2f), "The key did not follow the new target.");
         }
 
+        private static string[] HintLabels(DemoLoopBootstrap demo)
+        {
+            return demo.Hints.Shown.Select(hint => hint.LabelKey).ToArray();
+        }
+
+        [UnityTest]
+        public IEnumerator InGame_TheHints_TellWhatTheNetDoes_ThenSwitchingAndTheInventory()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+            yield return null;
+
+            Assert.That(HintLabels(demo), Is.EqualTo(new[] { UiText.HintThrowNet, UiText.HintAim, UiText.HintSwitchItem, UiText.HintInventory }));
+            Assert.That(demo.Hints.ShownGlyphs[0].Kind, Is.EqualTo(GlyphKind.MouseLeft), "The net is not thrown with the left click.");
+            Assert.That(demo.Hints.ShownGlyphs[2].Kind, Is.EqualTo(GlyphKind.MouseWheel));
+            Assert.That(demo.Hints.ShownGlyphs[3], Is.EqualTo(new Glyph(GlyphKind.Key, "Tab")));
+        }
+
+        [UnityTest]
+        public IEnumerator WhileAiming_TheHints_SayThrow_AndReleaseToStop()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+            demo.Thrower.HoldAim = true;
+            yield return null;
+            yield return null;
+
+            Assert.That(HintLabels(demo).Take(2), Is.EqualTo(new[] { UiText.HintThrow, UiText.HintStopAiming }));
+        }
+
+        [UnityTest]
+        public IEnumerator WithATarget_GatherComesFirst_AndSwitchingIsLeftOut()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+
+            PlaceInView(demo, TwoAvailable(demo)[0], 0f, 1.5f);
+            yield return null;
+            yield return null;
+
+            Assert.That(HintLabels(demo), Is.EqualTo(new[] { UiText.HintGather, UiText.HintThrowNet, UiText.HintAim, UiText.HintInventory }));
+            Assert.That(demo.Hints.ShownGlyphs[0], Is.EqualTo(new Glyph(GlyphKind.Key, "E")));
+        }
+
+        [UnityTest]
+        public IEnumerator TheInventory_ShowsItsOwnHints_AndThePause_None()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+
+            demo.SetInventoryOpen(true);
+            yield return null;
+            Assert.That(HintLabels(demo), Is.EqualTo(new[] { UiText.HintTakeOrPlace, UiText.HintHalfOrOne, UiText.HintGatherAll, UiText.HintClose }));
+            Assert.That(demo.Hints.ShownGlyphs[2].Kind, Is.EqualTo(GlyphKind.MouseLeft), "Gathering all is not a double click.");
+
+            demo.Screens.Back();
+            demo.Screens.Back();
+            yield return null;
+            Assert.That(demo.Pause.IsPaused, Is.True);
+            Assert.That(demo.Hints.Shown, Is.Empty, "Hints show over the pause.");
+
+            demo.Screens.Back();
+            yield return null;
+            Assert.That(HintLabels(demo), Has.Member(UiText.HintThrowNet));
+        }
+
         [UnityTest]
         public IEnumerator TheKey_IsHidden_WithoutTarget_InPause_AndWithTheInventoryOpen()
         {
