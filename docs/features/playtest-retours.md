@@ -102,6 +102,7 @@
 - **Écrans** : `IGameScreen`, `ScreenStack` (C# pur) ; `PauseMenu` et `InventoryDemoController` sont des écrans.
 - **Interaction** : `InteractionTargeting` (boîte du modèle sous le viseur d'abord), `IInteractable` (ex-`IDemoInteractable`), `KeyPrompt.PopIn`.
 - **Apparitions** : `ArrivalCurves`, `GrowIn`, `FallIn` ; `GatherableSpot.DropHeight`, `ResourceSpawner.Settings.AheadWeight`.
+- **Icône d'objet** : `ItemIcon`, seul endroit qui dessine un objet dans l'interface (barre rapide, cases, objet tenu) : l'icône de la fiche (`ItemDefinition.Icon`), sinon le carré de sa couleur.
 - **Aides de touches** : `InputGlyphs` (contrôle → dessin, C# pur), `ControlHint`, `HintInput`, `IHintSource`, `FixedHints`, `ControlHintsPanel`, `GlyphShapeGraphic` ; `IHeldItemHints` (le filet) ; sources : `PlayerInteractor`, `PlayerHands`, `InventoryDemoController`, `IInteractable.HintKey` ; douze textes `hint.*` dans la table `UI`.
 
 ## Décisions
@@ -118,7 +119,9 @@
 - **Visée de l'interaction** : ce qui est sous le viseur gagne (boîte du modèle, sans physique : les objets à ramasser n'ont pas de collider) ; sinon le plus proche du centre dans le cône.
 - **La mention de l'exception à la Charte IA est retirée** de la branche, sur décision de Hugo.
 - **Aides de touches en bas à droite, sans fond, textes collés à leur touche** (Hugo, 21/11, sur cinq essais du canvas) : la proximité dit à quelle touche va un texte ; aligner les textes sur la touche la plus large les éloignait des touches courtes. Comme le guide des commandes de Monster Hunter : icône puis texte court, contextuel, sans plaque. Texte crème avec contour sombre pour se lire sur la forêt.
-- **Chaque source déclare ses aides** (`IHintSource`) ; le panneau ne change jamais pour une nouvelle aide. Les touches sont lues dans les actions (réassignation comprise) ; seuls les boutons que lit l'event system (clics, A) sont des chemins fixes.
+- **Chaque source déclare ses aides** (`IHintSource`) ; le panneau ne change jamais pour une nouvelle aide. Les touches sont lues dans les actions (réassignation comprise) ; seuls les boutons que lit l'event system (clics, A) sont des chemins fixes. La touche au-dessus de la cible passe par le même `InputGlyphs`.
+- **Les icônes d'objets se posent dans les fiches** : un `Sprite` dans `ItemDefinition.Icon` s'affiche partout via `ItemIcon` ; sans icône, le carré de couleur reste.
+- **`PlaytestLocalization` retire les textes qu'il avait ajoutés et que le jeu n'utilise plus** (`RetiredKeys`), en plus d'ajouter les manquants.
 - **Pas de note validée dans ClickUp** : voir l'en-tête.
 
 ## Tests
@@ -194,6 +197,5 @@ Lancés en batch sur le PC de Hugo (Unity 6000.3.21f1) à chaque étape.
 
 - La police Fredoka Medium n'est pas dans le projet : « Barre rapide » et les aides sont en Fredoka SemiBold.
 - Rien n'a été testé dans un exécutable : les tests ont tourné dans l'Editor en batch.
-- Les anciennes clés `inventory.hint.*` restent dans les tables de la langue : `PlaytestLocalization` ajoute sans jamais retirer. À supprimer dans Window > Asset Management > Localization Tables.
 
 ## Modifié par
