@@ -47,6 +47,10 @@ namespace Fungiiiii.UI
         [SerializeField]
         private Text title;
 
+        [Tooltip("The name of the item in the slot in focus, by the slot.")]
+        [SerializeField]
+        private ItemNamePlate namePlate;
+
         private PlayerInventory inventory;
         private InventoryLayout layout = InventoryLayout.Standard;
         private InventoryHand hand;
@@ -158,6 +162,9 @@ namespace Fungiiiii.UI
 
         /// <summary>The slot the mouse is over or the gamepad has selected, -1 for none.</summary>
         internal int FocusedSlot => focusedSlot;
+
+        /// <summary>The name of the item in the slot in focus.</summary>
+        internal ItemNamePlate NamePlate => namePlate;
 
         /// <summary>What the mouse holds.</summary>
         internal InventoryHand Hand => hand;
@@ -274,6 +281,30 @@ namespace Fungiiiii.UI
             {
                 focusedSlot = NoSlot;
             }
+
+            ShowFocusedName();
+        }
+
+        /// <summary>
+        /// The name of what the slot in focus holds, by the slot, as on the mockup; hidden
+        /// with nothing in focus, an empty slot, or an item in hand, which covers the slot.
+        /// </summary>
+        private void ShowFocusedName()
+        {
+            // Closing, the screen puts back what the mouse held: nothing may move in it then.
+            if (namePlate == null || inventory == null || !isActiveAndEnabled)
+            {
+                return;
+            }
+
+            var slot = focusedSlot == NoSlot ? default : inventory.GetSlot(focusedSlot);
+            if (focusedSlot == NoSlot || slot.IsEmpty || hand.IsHolding)
+            {
+                namePlate.Hide();
+                return;
+            }
+
+            namePlate.Show(slot.Item, ScreenPointOf(focusedSlot));
         }
 
         /// <summary>Where a slot stands on the screen, in pixels.</summary>
@@ -303,6 +334,10 @@ namespace Fungiiiii.UI
             }
 
             focusedSlot = NoSlot;
+            if (namePlate != null)
+            {
+                namePlate.Hide();
+            }
         }
 
         private void OnDestroy()
@@ -414,6 +449,8 @@ namespace Fungiiiii.UI
             {
                 slotViews[index].Show(inventory.GetSlot(index));
             }
+
+            ShowFocusedName();
         }
 
         private void RefreshHeld()
@@ -425,6 +462,8 @@ namespace Fungiiiii.UI
                 heldCount.text = StackLabel.For(hand.Quantity);
                 held.SetAsLastSibling();
             }
+
+            ShowFocusedName();
         }
 
     }

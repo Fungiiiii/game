@@ -11,7 +11,8 @@ namespace Fungiiiii.UI
     /// The quick bar of the game, bottom centre: three wooden planks showing three slots
     /// of the inventory. One is selected: the mouse wheel, the keys 1 to 3 and the
     /// gamepad shoulders change it, and the selected plank gets lighter and rises.
-    /// What the selected slot holds is what the player has in hand.
+    /// What the selected slot holds is what the player has in hand; its name shows above
+    /// the planks for a moment when it changes (<see cref="HeldItemName"/>).
     ///
     /// The controls are given by the owner, from the player's controls.
     /// </summary>
@@ -25,6 +26,10 @@ namespace Fungiiiii.UI
 
         [SerializeField]
         private HotbarSlot slotPrefab;
+
+        [Tooltip("The name of the item in hand, above the planks.")]
+        [SerializeField]
+        private HeldItemName heldItemName;
 
         [Tooltip("Where each plank's end facet starts, in turn, so that the planks do not look stamped.")]
         [SerializeField]
@@ -49,6 +54,9 @@ namespace Fungiiiii.UI
         public InventorySlot SelectedSlot => inventory.GetSlot(firstSlot + Selected);
 
         public bool IsVisible => slots.gameObject.activeSelf;
+
+        /// <summary>The name of the item in hand, above the planks.</summary>
+        public HeldItemName HeldItemName => heldItemName;
 
         /// <param name="playerInventory">The inventory whose slots the bar shows.</param>
         /// <param name="first">Index of the bar's first slot in the inventory.</param>
@@ -80,6 +88,10 @@ namespace Fungiiiii.UI
             inventory.Changed += HandleInventoryChanged;
             Refresh();
             views[Selected].Target = 1f;
+            if (heldItemName != null)
+            {
+                heldItemName.Bind(this);
+            }
         }
 
         /// <summary>Selects the slot at <paramref name="position"/> in the bar, from 0.</summary>

@@ -94,6 +94,9 @@
 
 - [ ] **Les objets ramassés vont d'abord dans la barre rapide** (Hugo, 21/11), comme dans Minecraft : d'abord compléter une pile du même objet où qu'elle soit, puis les cases libres de la barre rapide, puis le sac. `InventoryLayout.FillOrder`, que `Backpack` donne à `PlayerInventory`.
 - [ ] **Le cercle de l'appui long n'apparaît qu'après le temps d'un appui court** (0,3 s), puis se remplit : voir [spongeus-fougere](./spongeus-fougere.md).
+- [ ] **Le nom de l'objet en main s'affiche au-dessus de la barre rapide** (Hugo, 21/11 ; artboard « HUD · noms et ramassage » du canevas de maquettes), comme dans Minecraft : quand un autre objet arrive en main (molette, touches 1 à 3, ramassage dans la case sélectionnée), son nom s'affiche 2 s puis s'efface en 0,4 s. Mains vides : rien. Il se cache avec la barre quand l'inventaire est ouvert. `HeldItemName`, enfant de la barre (`Hotbar`).
+- [ ] **Dans l'inventaire, une plaquette en bois donne le nom de l'objet de la case visée** (souris ou manette), juste en bas à droite de la case. Rien sur une case vide, ni quand un objet est en main (il cache la case). `ItemNamePlate`, dans le prefab `Inventory`.
+- [ ] **Le fil des objets ramassés passe en bas à gauche** (36 px des bords), lignes alignées à gauche : au-dessus de la barre rapide, c'est la place du nom de l'objet en main, et le bas droit est aux aides de touches. C'est le placement le plus courant dans les jeux.
 
 **Nettoyage du 21/11 (refactor, aucun comportement ne change)**
 
@@ -183,6 +186,7 @@ Hugo : « tout ce qui est dans le playtest devrait être quelque chose de non ex
 - **Un objet jeté est son image d'inventaire au sol** (Hugo, 21/11, comme Minecraft et Terraria) : un bâton jeté qui ressemblerait à un bâton de la forêt se confondrait avec une ressource ; l'image se lit tout de suite comme un objet à reprendre, et vaut pour tout objet, filet compris. Tant que les icônes ne sont pas dessinées, c'est le carré de couleur de l'inventaire. Une icône avec de la transparence demandera un matériau découpé.
 - **« Ramasser » se distingue d'« ajouter »** : `PlayerInventory.Collect` prévient l'interface, `Add` non, car remettre en place ce que tient la souris passe aussi par `Add` et ne doit rien afficher.
 - **Fil des objets ramassés léger** (Hugo, 21/11, « sans être trop lourd ») : pas de fond, une ligne par objet qui se cumule, 2 s, trois lignes au plus, juste au-dessus de la barre rapide, texte crème à contour sombre comme les aides.
+- **Le fil des objets ramassés quitte le dessus de la barre rapide pour le bas gauche** (Hugo, 21/11 : « peut-être un anti-pattern ») : au-dessus de la barre, la plupart des jeux mettent le nom de l'objet en main ; les ramassages vont sur le côté. Les noms restent dans les tables (clés `item.*` des fiches), aucun texte dans le code.
 - **Les menus s'ouvrent sans planche allumée** (Hugo, 21/11) : la sélection suit la souris ; la manette prend la première planche à son premier mouvement, comme la première case de l'inventaire. Même règle pour la pause, par cohérence.
 - **Quitter la visée pour un menu élargit la vue en douceur** (Hugo, 21/11), en temps réel pour que la transition joue aussi sous la pause.
 - **Pas de note validée dans ClickUp** : voir l'en-tête.
