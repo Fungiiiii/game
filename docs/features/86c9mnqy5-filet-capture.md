@@ -185,3 +185,4 @@ Scène : `Assets/Scenes/Prototype/NetThrowScene.unity`, puis **Play** et un clic
 ## Modifié par
 
 - [12487v2nnw4-demo-boucle](./12487v2nnw4-demo-boucle.md) — `NetDemoMushroom` peut porter un modèle, se promener et suivre le relief ; `NetThrower` signale la prise ramenée (`CatchReturned`) et son entrée de lancer peut être coupée (`ThrowInputEnabled`). Sans effet sur `NetThrowScene`.
+- [playtest-retours](./playtest-retours.md) — `NetThrower` : clic gauche lance, clic droit maintenu vise (arc, cercle, zoom de 60 à 45°, vue ralentie) ; points de l'arc tous les 75 cm (`NetPreviewDots`) ; `PreviewTarget` et `PreviewChance` pour le contour de chance. Vaut aussi pour `NetThrowScene`.

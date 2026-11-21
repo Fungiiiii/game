@@ -1,16 +1,18 @@
-using System.Collections;
 using Fungiiiii.Inventory;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
+using UnityEngine.UI;
 
 namespace Fungiiiii.UI
 {
     /// <summary>
-    /// Builds a Minecraft-inspired inventory: a 3-column by 4-row item panel and a
-    /// three-slot quick bar. Slots support cursor pickup, stack splitting, drag
-    /// distribution, stack merges and swaps.
+    /// The inventory screen: a 3-column by 4-row item panel and a three-slot quick bar on a
+    /// wooden panel, as on the Inventaire artboard (playtest of 20/11, feedback #2). Presses
+    /// act at once through an <see cref="InventoryHand"/>; what is held follows the mouse,
+    /// and goes back to its slot when the screen closes. Items show as squares of their
+    /// colour until their icons are drawn.
     /// </summary>
     public sealed class InventoryDemoController : MonoBehaviour
     {
@@ -30,26 +32,54 @@ namespace Fungiiiii.UI
         private const string DemoSporeId = "demo_spore";
         private const string DemoCrystalId = "demo_crystal";
 
-        private static readonly Color PanelColor = new Color(0.035f, 0.045f, 0.055f, 0.98f);
-        private static readonly Color PanelBorderColor = new Color(0.24f, 0.27f, 0.3f, 1f);
-        private static readonly Color SlotColor = new Color(0.12f, 0.14f, 0.16f, 1f);
-        private static readonly Color HotbarSlotColor = new Color(0.16f, 0.18f, 0.2f, 1f);
-        private static readonly Color TitleColor = new Color(0.93f, 0.89f, 0.74f, 1f);
-        private const float DoubleClickWindowSeconds = 0.22f;
+        // Sizes of the Inventaire artboard, drawn on a 1280 x 720 canvas.
+        private static readonly Vector2 ReferenceResolution = new Vector2(1280f, 720f);
+        private static readonly Vector2 PanelSize = new Vector2(340f, 612f);
+        private const float PanelTop = 36f;
+        private const float PanelCorner = 20f;
+        private const float GridWidth = 260f;
+        private const float SlotSize = 80f;
+        private const float SlotSpacing = 10f;
+        private const float SlotCorner = 10f;
+        private const float ItemSize = 52f;
+        private const float HeldSize = 64f;
+        private const float HeldTiltDegrees = -6f;
+        private const float HoverBrightness = 1.45f;
+        private const float HintsTop = 668f;
+
+        // Palette: "Body light", "Wood dark", "Bark pale", the shadow brown and the night blue.
+        private static readonly Color Cream = new Color32(0xF2, 0xE6, 0xCC, 0xFF);
+        private static readonly Color WoodDark = new Color32(0x4F, 0x34, 0x24, 0xFF);
+        private static readonly Color BarkPale = new Color32(0xA8, 0x90, 0x78, 0xFF);
+        private static readonly Color Shadow = new Color32(0x2B, 0x27, 0x23, 0xFF);
+        private static readonly Color Night = new Color32(0x1E, 0x26, 0x30, 0xFF);
+        private static readonly Color Sand = new Color32(0xE0, 0xCB, 0xA4, 0xFF);
+        private static readonly Color Veil = new Color(30f / 255f, 38f / 255f, 48f / 255f, 0.66f);
+        private static readonly Color PanelFacet = new Color(43f / 255f, 39f / 255f, 35f / 255f, 0.28f);
+        private static readonly Color SlotInnerShadow = new Color(0f, 0f, 0f, 0.4f);
+        private static readonly Color Dashes = new Color(168f / 255f, 144f / 255f, 120f / 255f, 0.45f);
+        private static readonly Color HeldShadow = new Color(30f / 255f, 38f / 255f, 48f / 255f, 0.55f);
+        private static readonly Color HintText = new Color(Cream.r, Cream.g, Cream.b, 0.82f);
+
+        private static readonly (string Key, string Action)[] Hints =
+        {
+            (UiText.InventoryHintLeftKey, UiText.InventoryHintLeft),
+            (UiText.InventoryHintRightKey, UiText.InventoryHintRight),
+            (UiText.InventoryHintDoubleKey, UiText.InventoryHintDouble),
+            (UiText.InventoryHintCloseKey, UiText.InventoryHintClose),
+        };
 
         private static Sprite uiSprite;
 
         private PlayerInventory inventory;
+        private InventoryHand hand;
         private SlotView[] slotViews;
-        private RectTransform dragLayer;
-        private GameObject dragGhost;
-        private UnityEngine.UI.Text dragGhostCount;
-        private InventoryItemDefinition carriedItem;
-        private int carriedQuantity;
-        private Coroutine pendingLeftClick;
-        private int pendingLeftClickIndex = -1;
-        private Vector2 pendingLeftClickPosition;
-        private Camera pendingLeftClickCamera;
+        private RectTransform canvasRect;
+        private RectTransform held;
+        private Image heldItem;
+        private Text heldCount;
+        private Text title;
+        private Font font;
 
         public PlayerInventory Inventory => inventory;
 
@@ -63,15 +93,35 @@ namespace Fungiiiii.UI
             set => seedDemoItems = value;
         }
 
-        private bool IsCarrying => carriedQuantity > 0;
+        /// <summary>
+        /// The font of the screen. Set it before Awake runs, like <see cref="SeedsDemoItems"/>;
+        /// without one, Unity's built-in font is used.
+        /// </summary>
+        public Font Font
+        {
+            get => font;
+            set => font = value;
+        }
+
+        /// <summary>What the mouse holds.</summary>
+        internal InventoryHand Hand => hand;
+
+        /// <summary>The screen's title, for tests.</summary>
+        internal Text Title => title;
 
         private void Awake()
         {
             inventory = new PlayerInventory(TotalSlotCount);
+            hand = new InventoryHand(inventory);
+            if (font == null)
+            {
+                font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            }
 
             CreateEventSystemIfNeeded();
             BuildUi();
-            inventory.Changed += RefreshUi;
+            inventory.Changed += RefreshSlots;
+            hand.Changed += RefreshHeld;
 
             if (seedDemoItems)
             {
@@ -79,44 +129,62 @@ namespace Fungiiiii.UI
             }
         }
 
+        private void OnDisable()
+        {
+            // Closing the screen puts back what the mouse held.
+            hand?.PutBack();
+        }
+
         private void Update()
         {
-            if (IsCarrying && Mouse.current != null)
+            if (hand.IsHolding && Mouse.current != null)
             {
-                UpdateDragGhost(Mouse.current.position.ReadValue(), null);
+                FollowPointer(Mouse.current.position.ReadValue());
             }
         }
 
         private void OnDestroy()
         {
-            CancelPendingLeftClick();
-
             if (inventory != null)
             {
-                inventory.Changed -= RefreshUi;
+                inventory.Changed -= RefreshSlots;
             }
 
-            DestroyDragGhost();
+            if (hand != null)
+            {
+                hand.Changed -= RefreshHeld;
+            }
+        }
+
+        /// <summary>A press on a slot, from its pointer handler or from a test.</summary>
+        internal void PressSlot(int index, PointerEventData.InputButton button, Vector2 screenPosition)
+        {
+            if (button == PointerEventData.InputButton.Left)
+            {
+                hand.PressLeft(index, Time.unscaledTime);
+            }
+            else if (button == PointerEventData.InputButton.Right)
+            {
+                hand.PressRight(index);
+            }
+
+            FollowPointer(screenPosition);
+        }
+
+        /// <summary>The number shown on a slot, empty when there is none.</summary>
+        internal string QuantityTextOf(int index) => slotViews[index].QuantityText;
+
+        internal void SetHovered(int index, bool hovered)
+        {
+            slotViews[index].SetHovered(hovered);
         }
 
         private void SeedDemoItems()
         {
-            InventoryItemDefinition mushroom = new InventoryItemDefinition(
-                DemoMushroomId,
-                new Color(0.95f, 0.52f, 0.18f, 1f),
-                demoMaxStackSize);
-            InventoryItemDefinition herb = new InventoryItemDefinition(
-                DemoHerbId,
-                new Color(0.25f, 0.78f, 0.35f, 1f),
-                10);
-            InventoryItemDefinition spore = new InventoryItemDefinition(
-                DemoSporeId,
-                new Color(0.55f, 0.35f, 0.92f, 1f),
-                16);
-            InventoryItemDefinition crystal = new InventoryItemDefinition(
-                DemoCrystalId,
-                new Color(0.25f, 0.75f, 0.95f, 1f),
-                4);
+            var mushroom = new InventoryItemDefinition(DemoMushroomId, new Color(0.95f, 0.52f, 0.18f, 1f), demoMaxStackSize);
+            var herb = new InventoryItemDefinition(DemoHerbId, new Color(0.25f, 0.78f, 0.35f, 1f), 10);
+            var spore = new InventoryItemDefinition(DemoSporeId, new Color(0.55f, 0.35f, 0.92f, 1f), 16);
+            var crystal = new InventoryItemDefinition(DemoCrystalId, new Color(0.25f, 0.75f, 0.95f, 1f), 4);
 
             inventory.Add(mushroom, 6);
             inventory.Add(herb, 3);
@@ -131,381 +199,276 @@ namespace Fungiiiii.UI
 
         private void BuildUi()
         {
-            GameObject canvasObject = CreateUiObject("InventoryCanvas", transform);
-            Canvas canvas = canvasObject.AddComponent<Canvas>();
+            var canvasObject = CreateUiObject("InventoryCanvas", transform);
+            var canvas = canvasObject.AddComponent<Canvas>();
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.sortingOrder = 100;
 
-            UnityEngine.UI.CanvasScaler scaler = canvasObject.AddComponent<UnityEngine.UI.CanvasScaler>();
-            scaler.uiScaleMode = UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1280f, 720f);
-            scaler.screenMatchMode = UnityEngine.UI.CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            var scaler = canvasObject.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = ReferenceResolution;
+            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
             scaler.matchWidthOrHeight = 0.5f;
-            canvasObject.AddComponent<UnityEngine.UI.GraphicRaycaster>();
+            canvasObject.AddComponent<GraphicRaycaster>();
+            canvasRect = (RectTransform)canvasObject.transform;
 
-            dragLayer = canvasObject.GetComponent<RectTransform>();
+            var veil = CreateUiObject("Veil", canvasRect).AddComponent<Image>();
+            veil.sprite = GetUiSprite();
+            veil.color = Veil;
+            veil.raycastTarget = false;
+            Stretch(veil.rectTransform);
 
-            GameObject panel = CreateUiObject("InventoryPanel", canvasObject.transform);
-            UnityEngine.UI.Image panelImage = panel.AddComponent<UnityEngine.UI.Image>();
-            panelImage.sprite = GetUiSprite();
-            panelImage.color = PanelColor;
-            panelImage.raycastTarget = false;
-            RectTransform panelRect = panel.GetComponent<RectTransform>();
-            SetRect(panelRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(560f, 640f), Vector2.zero);
+            var panelObject = CreateUiObject("InventoryPanel", canvasRect);
+            var panel = (RectTransform)panelObject.transform;
+            SetRect(panel, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), PanelSize, new Vector2(0f, -PanelTop));
+            var panelGraphic = panelObject.AddComponent<CutCornerGraphic>();
+            panelGraphic.raycastTarget = false;
+            panelGraphic.SetShape(PanelCorner, WoodDark);
+            panelGraphic.SetBands(BarkPale, 8f, Shadow, 12f);
+            // The artboard's gradient at 100 degrees, from 68 % of its length.
+            panelGraphic.SetFacet(PanelFacet, 0.9f, 0.58f);
 
-            GameObject border = CreateUiObject("InventoryPanelBorder", panel.transform);
-            UnityEngine.UI.Image borderImage = border.AddComponent<UnityEngine.UI.Image>();
-            borderImage.sprite = GetUiSprite();
-            borderImage.color = PanelBorderColor;
-            borderImage.raycastTarget = false;
-            RectTransform borderRect = border.GetComponent<RectTransform>();
-            SetRect(borderRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(536f, 616f), Vector2.zero);
-            border.transform.SetAsFirstSibling();
+            title = CreateLabel("InventoryTitle", panel, UiText.InventoryTitle, 40, Cream, new Vector2(0f, -26f), new Vector2(GridWidth, 46f));
+            AddShadow(title, Shadow, 3f);
 
-            CreateLabel("InventoryTitle", panel.transform, "INVENTORY", 30, TitleColor, TextAnchor.MiddleCenter, new Vector2(0f, 276f), new Vector2(500f, 48f));
-            CreateLabel("InventorySubtitle", panel.transform, "LEFT CLICK PICK UP  /  RIGHT CLICK SPLIT  /  DOUBLE CLICK STACK", 13, new Color(0.7f, 0.73f, 0.76f, 1f), TextAnchor.MiddleCenter, new Vector2(0f, 242f), new Vector2(520f, 28f));
-
-            GameObject gridObject = CreateUiObject("InventoryGrid_3x4", panel.transform);
-            RectTransform gridRect = gridObject.GetComponent<RectTransform>();
-            SetRect(gridRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(390f, 350f), new Vector2(0f, 55f));
-            UnityEngine.UI.GridLayoutGroup grid = gridObject.AddComponent<UnityEngine.UI.GridLayoutGroup>();
-            grid.cellSize = new Vector2(116f, 76f);
-            grid.spacing = new Vector2(10f, 10f);
-            grid.constraint = UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount;
-            grid.constraintCount = MainColumnCount;
-            grid.childAlignment = TextAnchor.MiddleCenter;
-
+            var grid = CreateGrid("InventoryGrid_3x4", panel, MainColumnCount, MainRowCount, -84f);
             slotViews = new SlotView[TotalSlotCount];
-            for (int i = 0; i < MainSlotCount; i++)
+            for (var index = 0; index < MainSlotCount; index++)
             {
-                slotViews[i] = CreateSlotView(gridObject.transform, i, false);
+                slotViews[index] = CreateSlot(grid, index, 0.22f);
             }
 
-            CreateLabel("HotbarTitle", panel.transform, "QUICK BAR", 18, TitleColor, TextAnchor.MiddleCenter, new Vector2(0f, -142f), new Vector2(500f, 34f));
+            CreateDashes(panel, -452f);
+            CreateLabel("HotbarTitle", panel, UiText.InventoryHotbar, 20, Sand, new Vector2(0f, -464f), new Vector2(GridWidth, 26f));
 
-            GameObject hotbarObject = CreateUiObject("Hotbar_3Slots", panel.transform);
-            RectTransform hotbarRect = hotbarObject.GetComponent<RectTransform>();
-            SetRect(hotbarRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(390f, 92f), new Vector2(0f, -214f));
-            UnityEngine.UI.GridLayoutGroup hotbarGrid = hotbarObject.AddComponent<UnityEngine.UI.GridLayoutGroup>();
-            hotbarGrid.cellSize = new Vector2(116f, 76f);
-            hotbarGrid.spacing = new Vector2(10f, 10f);
-            hotbarGrid.constraint = UnityEngine.UI.GridLayoutGroup.Constraint.FixedColumnCount;
-            hotbarGrid.constraintCount = HotbarSlotCount;
-            hotbarGrid.childAlignment = TextAnchor.MiddleCenter;
-
-            for (int i = 0; i < HotbarSlotCount; i++)
+            var hotbar = CreateGrid("Hotbar_3Slots", panel, HotbarSlotCount, 1, -500f);
+            for (var index = 0; index < HotbarSlotCount; index++)
             {
-                int slotIndex = MainSlotCount + i;
-                slotViews[slotIndex] = CreateSlotView(hotbarObject.transform, slotIndex, true);
+                slotViews[MainSlotCount + index] = CreateSlot(hotbar, MainSlotCount + index, 0.5f);
             }
 
-            RefreshUi();
+            CreateHints();
+            CreateHeld();
+            RefreshSlots();
+            RefreshHeld();
         }
 
-        private SlotView CreateSlotView(Transform parent, int index, bool hotbar)
+        private RectTransform CreateGrid(string gridName, RectTransform panel, int columns, int rows, float top)
         {
-            GameObject slot = CreateUiObject($"InventorySlot_{index}", parent);
-            UnityEngine.UI.Image background = slot.AddComponent<UnityEngine.UI.Image>();
-            background.sprite = GetUiSprite();
-            background.color = hotbar ? HotbarSlotColor : SlotColor;
+            var gridObject = CreateUiObject(gridName, panel);
+            var rect = (RectTransform)gridObject.transform;
+            var size = new Vector2(GridWidth, rows * SlotSize + (rows - 1) * SlotSpacing);
+            SetRect(rect, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), size, new Vector2(0f, top));
+
+            var grid = gridObject.AddComponent<GridLayoutGroup>();
+            grid.cellSize = new Vector2(SlotSize, SlotSize);
+            grid.spacing = new Vector2(SlotSpacing, SlotSpacing);
+            grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            grid.constraintCount = columns;
+            grid.childAlignment = TextAnchor.UpperCenter;
+            return rect;
+        }
+
+        private SlotView CreateSlot(RectTransform parent, int index, float rimAlpha)
+        {
+            var slotObject = CreateUiObject($"InventorySlot_{index}", parent);
+            var background = slotObject.AddComponent<CutCornerGraphic>();
+            background.SetShape(SlotCorner, Shadow);
+            background.SetBands(SlotInnerShadow, 5f, new Color(BarkPale.r, BarkPale.g, BarkPale.b, rimAlpha), 3f);
             background.raycastTarget = true;
+            slotObject.AddComponent<InventorySlotPointer>().Initialize(this, index);
 
-            InventorySlotDragHandler dragHandler = slot.AddComponent<InventorySlotDragHandler>();
-            dragHandler.Initialize(this, index);
+            var item = CreateUiObject("ItemColor", slotObject.transform).AddComponent<Image>();
+            item.sprite = GetUiSprite();
+            item.raycastTarget = false;
+            SetRect(item.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(ItemSize, ItemSize), Vector2.zero);
 
-            GameObject item = CreateUiObject("ItemColor", slot.transform);
-            UnityEngine.UI.Image itemImage = item.AddComponent<UnityEngine.UI.Image>();
-            itemImage.sprite = GetUiSprite();
-            itemImage.raycastTarget = false;
-            RectTransform itemRect = item.GetComponent<RectTransform>();
-            SetRect(itemRect, new Vector2(0.5f, 0.52f), new Vector2(0.5f, 0.52f), new Vector2(0.5f, 0.5f), new Vector2(52f, 52f), Vector2.zero);
-
-            GameObject count = CreateUiObject("Quantity", slot.transform);
-            UnityEngine.UI.Text countText = count.AddComponent<UnityEngine.UI.Text>();
-            countText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            countText.fontSize = 22;
-            countText.fontStyle = FontStyle.Bold;
-            countText.alignment = TextAnchor.LowerRight;
-            countText.color = Color.white;
-            countText.raycastTarget = false;
-            RectTransform countRect = count.GetComponent<RectTransform>();
-            SetRect(countRect, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(-14f, -10f), new Vector2(-6f, -6f));
-
-            return new SlotView(itemImage, countText);
+            var count = CreateQuantity(slotObject.transform, new Vector2(-8f, 3f));
+            return new SlotView(background, item, count);
         }
 
-        internal void ClickSlot(int index, PointerEventData eventData)
+        private Text CreateQuantity(Transform parent, Vector2 bottomRightOffset)
         {
-            if (eventData.button == PointerEventData.InputButton.Right)
-            {
-                CancelPendingLeftClick();
-                HandleRightClick(index, eventData.position, eventData.pressEventCamera);
-                return;
-            }
-
-            if (eventData.button == PointerEventData.InputButton.Left)
-            {
-                if (eventData.clickCount >= 2)
-                {
-                    CancelPendingLeftClick();
-                    HandleDoubleClick(index, eventData);
-                    return;
-                }
-
-                ScheduleSingleLeftClick(index, eventData);
-            }
+            var count = CreateUiObject("Quantity", parent).AddComponent<Text>();
+            count.font = font;
+            count.fontSize = 22;
+            count.alignment = TextAnchor.LowerRight;
+            count.color = Cream;
+            count.raycastTarget = false;
+            count.horizontalOverflow = HorizontalWrapMode.Overflow;
+            count.verticalOverflow = VerticalWrapMode.Overflow;
+            var rect = count.rectTransform;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = new Vector2(0f, bottomRightOffset.y);
+            rect.offsetMax = new Vector2(bottomRightOffset.x, 0f);
+            AddShadow(count, Night, 2f);
+            return count;
         }
 
-        private void ScheduleSingleLeftClick(int index, PointerEventData eventData)
+        /// <summary>The dashed line between the items and the quick bar.</summary>
+        private static void CreateDashes(RectTransform panel, float top)
         {
-            CancelPendingLeftClick();
-            pendingLeftClickIndex = index;
-            pendingLeftClickPosition = eventData.position;
-            pendingLeftClickCamera = eventData.pressEventCamera;
-            pendingLeftClick = StartCoroutine(ExecuteSingleLeftClick());
-        }
+            const float dash = 6f;
+            const float gap = 4f;
+            var line = CreateUiObject("Separator", panel);
+            var rect = (RectTransform)line.transform;
+            SetRect(rect, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(GridWidth, 2f), new Vector2(0f, top));
 
-        private IEnumerator ExecuteSingleLeftClick()
-        {
-            yield return new WaitForSeconds(DoubleClickWindowSeconds);
-
-            if (pendingLeftClickIndex >= 0)
+            for (var x = 0f; x < GridWidth; x += dash + gap)
             {
-                HandleLeftClick(pendingLeftClickIndex, pendingLeftClickPosition, pendingLeftClickCamera);
-            }
-
-            pendingLeftClick = null;
-            pendingLeftClickIndex = -1;
-        }
-
-        private void CancelPendingLeftClick()
-        {
-            if (pendingLeftClick != null)
-            {
-                StopCoroutine(pendingLeftClick);
-                pendingLeftClick = null;
-            }
-
-            pendingLeftClickIndex = -1;
-        }
-
-        private void HandleDoubleClick(int index, PointerEventData eventData)
-        {
-            if (IsCarrying)
-            {
-                HandleLeftClick(index, eventData.position, eventData.pressEventCamera);
-                return;
-            }
-
-            InventorySlot slot = inventory.GetSlot(index);
-            if (!slot.IsEmpty)
-            {
-                inventory.StackAll(slot.ItemId, index);
+                var piece = CreateUiObject("Dash", rect).AddComponent<Image>();
+                piece.sprite = GetUiSprite();
+                piece.color = Dashes;
+                piece.raycastTarget = false;
+                var pieceRect = piece.rectTransform;
+                pieceRect.anchorMin = pieceRect.anchorMax = new Vector2(0f, 0.5f);
+                pieceRect.pivot = new Vector2(0f, 0.5f);
+                pieceRect.sizeDelta = new Vector2(Mathf.Min(dash, GridWidth - x), 2f);
+                pieceRect.anchoredPosition = new Vector2(x, 0f);
             }
         }
 
-        private void HandleLeftClick(int index, Vector2 screenPosition, Camera eventCamera)
+        /// <summary>The controls, at the bottom of the screen: each key in a wooden pill, then what it does.</summary>
+        private void CreateHints()
         {
-            if (!IsCarrying)
-            {
-                PickUpAll(index, screenPosition, eventCamera);
-                return;
-            }
+            var rowObject = CreateUiObject("Hints", canvasRect);
+            var row = (RectTransform)rowObject.transform;
+            SetRect(row, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(ReferenceResolution.x, 28f), new Vector2(0f, -HintsTop));
+            var layout = rowObject.AddComponent<HorizontalLayoutGroup>();
+            layout.spacing = 28f;
+            layout.childAlignment = TextAnchor.MiddleCenter;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = false;
+            layout.childForceExpandHeight = false;
 
-            DropCarried(index, false, screenPosition, eventCamera);
+            foreach (var (key, action) in Hints)
+            {
+                var hintObject = CreateUiObject("Hint", row);
+                var hint = hintObject.AddComponent<HorizontalLayoutGroup>();
+                hint.spacing = 8f;
+                hint.childAlignment = TextAnchor.MiddleCenter;
+                hint.childControlWidth = true;
+                hint.childControlHeight = true;
+                hint.childForceExpandWidth = false;
+                hint.childForceExpandHeight = false;
+
+                var pillObject = CreateUiObject("Key", hintObject.transform);
+                var pill = pillObject.AddComponent<CutCornerGraphic>();
+                pill.SetShape(5f, WoodDark);
+                pill.raycastTarget = false;
+                var pillLayout = pillObject.AddComponent<HorizontalLayoutGroup>();
+                pillLayout.padding = new RectOffset(10, 10, 2, 4);
+                pillLayout.childControlWidth = true;
+                pillLayout.childControlHeight = true;
+                CreateHintText(pillObject.transform, key, Cream);
+
+                CreateHintText(hintObject.transform, action, HintText);
+            }
         }
 
-        private void HandleRightClick(int index, Vector2 screenPosition, Camera eventCamera)
+        private void CreateHintText(Transform parent, string entryKey, Color textColor)
         {
-            if (!IsCarrying)
-            {
-                PickUpHalf(index, screenPosition, eventCamera);
-                return;
-            }
-
-            DropCarried(index, true, screenPosition, eventCamera);
+            var text = CreateUiObject("Text", parent).AddComponent<Text>();
+            text.font = font;
+            text.fontSize = 17;
+            text.color = textColor;
+            text.alignment = TextAnchor.MiddleCenter;
+            text.raycastTarget = false;
+            text.gameObject.AddComponent<LocalizedLabel>().Initialize(entryKey);
         }
 
-        private void PickUpAll(int index, Vector2 screenPosition, Camera eventCamera)
+        /// <summary>What the mouse holds: its square, tilted, with a shadow under it and the number.</summary>
+        private void CreateHeld()
         {
-            InventorySlot slot = inventory.GetSlot(index);
-            if (slot.IsEmpty)
-            {
-                return;
-            }
+            var heldObject = CreateUiObject("HeldItem", canvasRect);
+            held = (RectTransform)heldObject.transform;
+            SetRect(held, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(HeldSize, HeldSize), Vector2.zero);
+            held.localRotation = Quaternion.Euler(0f, 0f, HeldTiltDegrees);
 
-            carriedQuantity = inventory.TakeFromSlot(index, slot.Quantity, out carriedItem);
-            CreateDragGhost(screenPosition, eventCamera);
+            heldItem = heldObject.AddComponent<Image>();
+            heldItem.sprite = GetUiSprite();
+            heldItem.raycastTarget = false;
+            var shadow = heldObject.AddComponent<UnityEngine.UI.Shadow>();
+            shadow.effectColor = HeldShadow;
+            shadow.effectDistance = new Vector2(0f, -6f);
+
+            heldCount = CreateQuantity(held, new Vector2(2f, -6f));
         }
 
-        private void PickUpHalf(int index, Vector2 screenPosition, Camera eventCamera)
+        private void FollowPointer(Vector2 screenPosition)
         {
-            InventorySlot slot = inventory.GetSlot(index);
-            if (slot.IsEmpty)
+            if (held == null)
             {
                 return;
             }
 
-            int halfQuantity = Mathf.CeilToInt(slot.Quantity / 2f);
-            carriedQuantity = inventory.TakeFromSlot(index, halfQuantity, out carriedItem);
-            CreateDragGhost(screenPosition, eventCamera);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPosition, null, out var local);
+            held.anchoredPosition = local;
         }
 
-        private void DropCarried(int index, bool oneOnly, Vector2 screenPosition, Camera eventCamera)
-        {
-            if (!IsCarrying)
-            {
-                return;
-            }
-
-            InventorySlot target = inventory.GetSlot(index);
-            if (target.IsEmpty || IsCompatible(target, carriedItem))
-            {
-                int requestedQuantity = oneOnly ? 1 : carriedQuantity;
-                int added = inventory.AddToSlot(index, carriedItem, requestedQuantity);
-                carriedQuantity -= added;
-                UpdateDragGhost(screenPosition, eventCamera);
-                RefreshDragGhost();
-                return;
-            }
-
-            // A left click on a different item swaps the carried stack and the target stack.
-            if (oneOnly)
-            {
-                return;
-            }
-
-            InventoryItemDefinition targetItem;
-            int targetQuantity = inventory.TakeFromSlot(index, target.Quantity, out targetItem);
-            int addedToTarget = inventory.AddToSlot(index, carriedItem, carriedQuantity);
-            if (addedToTarget != carriedQuantity)
-            {
-                inventory.AddToSlot(index, targetItem, targetQuantity);
-                return;
-            }
-
-            carriedItem = targetItem;
-            carriedQuantity = targetQuantity;
-            UpdateDragGhost(screenPosition, eventCamera);
-            RefreshDragGhost();
-        }
-
-        private void CreateDragGhost(Vector2 screenPosition, Camera eventCamera)
-        {
-            DestroyDragGhost();
-            dragGhost = CreateUiObject("DraggedItem", dragLayer);
-
-            UnityEngine.UI.Image ghostImage = dragGhost.AddComponent<UnityEngine.UI.Image>();
-            ghostImage.sprite = GetUiSprite();
-            ghostImage.color = new Color(carriedItem.Color.r, carriedItem.Color.g, carriedItem.Color.b, 0.78f);
-            ghostImage.raycastTarget = false;
-
-            GameObject quantityObject = CreateUiObject("Quantity", dragGhost.transform);
-            dragGhostCount = quantityObject.AddComponent<UnityEngine.UI.Text>();
-            dragGhostCount.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            dragGhostCount.fontSize = 20;
-            dragGhostCount.fontStyle = FontStyle.Bold;
-            dragGhostCount.alignment = TextAnchor.LowerRight;
-            dragGhostCount.color = Color.white;
-            dragGhostCount.raycastTarget = false;
-            SetRect(quantityObject.GetComponent<RectTransform>(), Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), new Vector2(-12f, -8f), new Vector2(-5f, -5f));
-
-            RectTransform ghostRect = dragGhost.GetComponent<RectTransform>();
-            SetRect(ghostRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(58f, 58f), Vector2.zero);
-            dragGhost.transform.SetAsLastSibling();
-            UpdateDragGhost(screenPosition, eventCamera);
-            RefreshDragGhost();
-        }
-
-        private void UpdateDragGhost(Vector2 screenPosition, Camera eventCamera)
-        {
-            if (dragGhost == null || dragLayer == null)
-            {
-                return;
-            }
-
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                dragLayer,
-                screenPosition,
-                eventCamera,
-                out Vector2 localPosition);
-            dragGhost.GetComponent<RectTransform>().anchoredPosition = localPosition;
-        }
-
-        private void RefreshDragGhost()
-        {
-            if (!IsCarrying)
-            {
-                carriedItem = default;
-                DestroyDragGhost();
-                return;
-            }
-
-            if (dragGhostCount != null)
-            {
-                dragGhostCount.text = carriedQuantity.ToString();
-            }
-        }
-
-        private void DestroyDragGhost()
-        {
-            if (dragGhost != null)
-            {
-                Destroy(dragGhost);
-                dragGhost = null;
-            }
-
-            dragGhostCount = null;
-        }
-
-        private void RefreshUi()
+        private void RefreshSlots()
         {
             if (slotViews == null)
             {
                 return;
             }
 
-            for (int i = 0; i < slotViews.Length; i++)
+            for (var index = 0; index < slotViews.Length; index++)
             {
-                slotViews[i].Set(inventory.GetSlot(i));
+                slotViews[index].Show(inventory.GetSlot(index));
             }
         }
 
-        private static bool IsCompatible(InventorySlot slot, InventoryItemDefinition item)
+        private void RefreshHeld()
         {
-            return slot.ItemId == item.Id &&
-                   slot.MaxStackSize == item.MaxStackSize &&
-                   slot.Color == item.Color;
+            if (held == null)
+            {
+                return;
+            }
+
+            held.gameObject.SetActive(hand.IsHolding);
+            if (hand.IsHolding)
+            {
+                heldItem.color = hand.Item.Color;
+                heldCount.text = QuantityLabel(hand.Quantity);
+                held.SetAsLastSibling();
+            }
         }
 
-        private static GameObject CreateUiObject(string name, Transform parent)
+        /// <summary>A single item shows no number.</summary>
+        private static string QuantityLabel(int quantity)
         {
-            GameObject created = new GameObject(name, typeof(RectTransform));
+            return quantity > 1 ? quantity.ToString() : string.Empty;
+        }
+
+        private Text CreateLabel(string labelName, RectTransform parent, string entryKey, int fontSize, Color textColor, Vector2 top, Vector2 size)
+        {
+            var label = CreateUiObject(labelName, parent).AddComponent<Text>();
+            label.font = font;
+            label.fontSize = fontSize;
+            label.alignment = TextAnchor.MiddleCenter;
+            label.color = textColor;
+            label.raycastTarget = false;
+            label.horizontalOverflow = HorizontalWrapMode.Overflow;
+            SetRect(label.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), size, top);
+            label.gameObject.AddComponent<LocalizedLabel>().Initialize(entryKey);
+            return label;
+        }
+
+        private static void AddShadow(Text text, Color shadowColor, float depth)
+        {
+            var shadow = text.gameObject.AddComponent<UnityEngine.UI.Shadow>();
+            shadow.effectColor = shadowColor;
+            shadow.effectDistance = new Vector2(0f, -depth);
+        }
+
+        private static GameObject CreateUiObject(string objectName, Transform parent)
+        {
+            var created = new GameObject(objectName, typeof(RectTransform));
             created.transform.SetParent(parent, false);
             return created;
-        }
-
-        private static UnityEngine.UI.Text CreateLabel(
-            string name,
-            Transform parent,
-            string value,
-            int fontSize,
-            Color color,
-            TextAnchor alignment,
-            Vector2 position,
-            Vector2 size)
-        {
-            GameObject labelObject = CreateUiObject(name, parent);
-            UnityEngine.UI.Text label = labelObject.AddComponent<UnityEngine.UI.Text>();
-            label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            label.fontSize = fontSize;
-            label.fontStyle = FontStyle.Bold;
-            label.alignment = alignment;
-            label.color = color;
-            label.text = value;
-            label.raycastTarget = false;
-            SetRect(label.GetComponent<RectTransform>(), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), size, position);
-            return label;
         }
 
         private static Sprite GetUiSprite()
@@ -515,10 +478,10 @@ namespace Fungiiiii.UI
                 return uiSprite;
             }
 
-            Texture2D texture = new Texture2D(1, 1, TextureFormat.RGBA32, false)
+            var texture = new Texture2D(1, 1, TextureFormat.RGBA32, false)
             {
                 name = "InventoryUiPixel",
-                hideFlags = HideFlags.HideAndDontSave
+                hideFlags = HideFlags.HideAndDontSave,
             };
             texture.SetPixel(0, 0, Color.white);
             texture.Apply();
@@ -529,22 +492,30 @@ namespace Fungiiiii.UI
             return uiSprite;
         }
 
-        private static void SetRect(RectTransform rect, Vector2 anchorMin, Vector2 anchorMax, Vector2 pivot, Vector2 size, Vector2 position)
+        /// <summary>Anchored on a point of its parent, its pivot on the same point, offset by <paramref name="position"/>.</summary>
+        private static void SetRect(RectTransform rect, Vector2 anchor, Vector2 pivot, Vector2 size, Vector2 position)
         {
-            rect.anchorMin = anchorMin;
-            rect.anchorMax = anchorMax;
+            rect.anchorMin = anchor;
+            rect.anchorMax = anchor;
             rect.pivot = pivot;
             rect.sizeDelta = size;
             rect.anchoredPosition = position;
         }
 
+        private static void Stretch(RectTransform rect)
+        {
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+        }
+
         private static void CreateEventSystemIfNeeded()
         {
-            EventSystem eventSystem = FindFirstObjectByType<EventSystem>();
+            var eventSystem = FindFirstObjectByType<EventSystem>();
             if (eventSystem == null)
             {
-                GameObject eventSystemObject = new GameObject("EventSystem");
-                eventSystem = eventSystemObject.AddComponent<EventSystem>();
+                eventSystem = new GameObject("EventSystem").AddComponent<EventSystem>();
             }
 
             if (eventSystem.GetComponent<InputSystemUIInputModule>() == null)
@@ -555,25 +526,35 @@ namespace Fungiiiii.UI
 
         private sealed class SlotView
         {
-            private readonly UnityEngine.UI.Image itemImage;
-            private readonly UnityEngine.UI.Text countText;
+            private readonly CutCornerGraphic background;
+            private readonly Image item;
+            private readonly Text count;
 
-            public SlotView(UnityEngine.UI.Image itemImage, UnityEngine.UI.Text countText)
+            public SlotView(CutCornerGraphic background, Image item, Text count)
             {
-                this.itemImage = itemImage;
-                this.countText = countText;
+                this.background = background;
+                this.item = item;
+                this.count = count;
             }
 
-            public void Set(InventorySlot slot)
+            public string QuantityText => count.text;
+
+            public void Show(InventorySlot slot)
             {
-                itemImage.enabled = !slot.IsEmpty;
-                itemImage.color = slot.Color;
-                countText.text = slot.IsEmpty ? string.Empty : slot.Quantity.ToString();
+                item.enabled = !slot.IsEmpty;
+                item.color = slot.Color;
+                count.text = slot.IsEmpty ? string.Empty : QuantityLabel(slot.Quantity);
+            }
+
+            public void SetHovered(bool hovered)
+            {
+                background.Brightness = hovered ? HoverBrightness : 1f;
             }
         }
     }
 
-    internal sealed class InventorySlotDragHandler : MonoBehaviour, IPointerClickHandler
+    /// <summary>Hands the presses and the hovering of one slot to the inventory screen.</summary>
+    internal sealed class InventorySlotPointer : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerExitHandler
     {
         private InventoryDemoController owner;
         private int index;
@@ -584,12 +565,28 @@ namespace Fungiiiii.UI
             index = slotIndex;
         }
 
-        public void OnPointerClick(PointerEventData eventData)
+        public void OnPointerDown(PointerEventData eventData)
         {
             // Null propagation bypasses Unity's overloaded == (UNT0008).
             if (owner != null)
             {
-                owner.ClickSlot(index, eventData);
+                owner.PressSlot(index, eventData.button, eventData.position);
+            }
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            if (owner != null)
+            {
+                owner.SetHovered(index, true);
+            }
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            if (owner != null)
+            {
+                owner.SetHovered(index, false);
             }
         }
     }
