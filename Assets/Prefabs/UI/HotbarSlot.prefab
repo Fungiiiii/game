@@ -225,6 +225,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8345504186813797380}
   - component: {fileID: 3827668851714507341}
+  - component: {fileID: 7044296087326598015}
   m_Layer: 0
   m_Name: Plank
   m_TagString: Untagged
@@ -275,6 +276,14 @@ MonoBehaviour:
   litEdge: 10
   underside: 15
   endFacetStart: 0.74
+--- !u!222 &7044296087326598015
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6071383150212138546}
+  m_CullTransparentMesh: 1
 --- !u!1 &7674307518398903550
 GameObject:
   m_ObjectHideFlags: 0

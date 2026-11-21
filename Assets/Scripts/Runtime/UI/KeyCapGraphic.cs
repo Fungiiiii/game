@@ -8,6 +8,7 @@ namespace Fungiiiii.UI
     /// with its four corners cut, a cyan rim all around it, corners included, and a darker
     /// base inside the rim, as on the Ramassage artboard.
     /// </summary>
+    [RequireComponent(typeof(CanvasRenderer))]
     internal sealed class KeyCapGraphic : MaskableGraphic
     {
         /// <summary>Palette "Wood dark", the shadow brown and the cyan of what is aimed at.</summary>

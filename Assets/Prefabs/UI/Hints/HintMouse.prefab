@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4116488600681772755}
   - component: {fileID: 1538626228033391887}
   - component: {fileID: 4089036713308415635}
+  - component: {fileID: 7037606985113176227}
   m_Layer: 0
   m_Name: HintMouse
   m_TagString: Untagged
@@ -94,3 +95,11 @@ MonoBehaviour:
   text: {fileID: 0}
   shape: {fileID: 4116488600681772755}
   triangle: {fileID: 0}
+--- !u!222 &7037606985113176227
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8041765299124319696}
+  m_CullTransparentMesh: 1

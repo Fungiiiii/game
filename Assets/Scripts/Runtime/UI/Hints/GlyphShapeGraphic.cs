@@ -8,6 +8,7 @@ namespace Fungiiiii.UI
     /// with one part lit, the PlayStation cross, circle and square, the Xbox View icon.
     /// No texture: the shapes are built here, as for the planks and the key cap.
     /// </summary>
+    [RequireComponent(typeof(CanvasRenderer))]
     internal sealed class GlyphShapeGraphic : MaskableGraphic
     {
         public enum Shape

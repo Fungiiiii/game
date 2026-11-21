@@ -8,6 +8,7 @@ namespace Fungiiiii.UI
     /// with cut corners, a lit top edge, a dark underside and one darker facet at its
     /// end. Colours are those of the tree trunks in the project palette.
     /// </summary>
+    [RequireComponent(typeof(CanvasRenderer))]
     internal sealed class PlankGraphic : MaskableGraphic
     {
         /// <summary>Palette "Wood", "Bark pale" and "Wood dark".</summary>

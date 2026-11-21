@@ -7,6 +7,7 @@ namespace Fungiiiii.UI
     /// The triangle of a PlayStation pad, drawn as a hollow triangle: the menu font has no
     /// such glyph.
     /// </summary>
+    [RequireComponent(typeof(CanvasRenderer))]
     internal sealed class TriangleGlyphGraphic : MaskableGraphic
     {
         [SerializeField, Range(0.02f, 0.5f), Tooltip("Thickness of the stroke, as a share of the height.")]
