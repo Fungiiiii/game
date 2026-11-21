@@ -45,8 +45,14 @@ namespace Fungiiiii.Controls
 
         public bool IsPressed { get; private set; }
 
-        /// <summary>How far the press is towards a hold, from 0 to 1; 0 when not pressed or once decided.</summary>
-        public float HoldProgress => IsPressed && !decided ? Math.Min(1f, held / holdSeconds) : 0f;
+        /// <summary>
+        /// How far the press is towards a hold, from 0 to 1, counted only once it can no
+        /// longer be a short press, as in other games: a quick press never shows a ring.
+        /// 0 when not pressed, within the short press, or once decided.
+        /// </summary>
+        public float HoldProgress => IsPressed && !decided && held > tapMaxSeconds
+            ? Math.Min(1f, (held - tapMaxSeconds) / (holdSeconds - tapMaxSeconds))
+            : 0f;
 
         public void Press()
         {

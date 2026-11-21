@@ -10,11 +10,19 @@ namespace Fungiiiii.Tests.EditMode
     {
         private const float Frame = 1f / 60f;
         private const float FollowDistance = 2.5f;
-        private const float Speed = 7f;
+        private const float StartDistance = 5f;
+        private const float SideOffset = 1f;
+        private const float WalkSpeed = 3.5f;
+        private const float RunSpeed = 8f;
+        private const float CatchUpGain = 1f;
+        private const float Acceleration = 12f;
         private const float CatchUp = 25f;
         private const float SeekRadius = 10f;
         private const float SoakSeconds = 1f;
         private const float Arrival = 0.6f;
+
+        /// <summary>Its place with the player at the origin looking along +Z: behind, on their right.</summary>
+        private static readonly Vector3 PlaceAtOrigin = new Vector3(SideOffset, 0f, -FollowDistance);
 
         private ItemDefinition water;
         private ItemDefinition wood;
@@ -65,7 +73,9 @@ namespace Fungiiiii.Tests.EditMode
 
         private CompanionBrain NewBrain()
         {
-            return new CompanionBrain(new CompanionTuning(FollowDistance, Speed, CatchUp, SeekRadius, SoakSeconds, Arrival), water);
+            return new CompanionBrain(
+                new CompanionTuning(FollowDistance, StartDistance, SideOffset, WalkSpeed, RunSpeed, CatchUpGain, Acceleration, CatchUp, SeekRadius, SoakSeconds, Arrival),
+                water);
         }
 
         /// <summary>Runs the brain for a while and returns where the companion ends up.</summary>
@@ -84,65 +94,108 @@ namespace Fungiiiii.Tests.EditMode
             return new Vector2(a.x - b.x, a.z - b.z).magnitude;
         }
 
+        private static readonly IAbsorbable[] None = new IAbsorbable[0];
+
         [Test]
-        public void ItWalksToThePlayer_AndStopsAtItsFollowDistance()
+        public void Far_ItGoesToItsPlaceBehindAndBesideThePlayer_AndRestsThere()
         {
             var brain = NewBrain();
-            var end = Run(brain, new Vector3(12f, 0f, 0f), Vector3.zero, new IAbsorbable[0], 3f);
+            var end = Run(brain, new Vector3(-12f, 0f, 6f), Vector3.zero, None, 5f);
 
-            Assert.That(Flat(end, Vector3.zero), Is.EqualTo(FollowDistance).Within(0.01f));
-            Assert.That(brain.Activity, Is.EqualTo(CompanionActivity.Following));
+            Assert.That(Flat(end, PlaceAtOrigin), Is.LessThan(0.35f), "It did not reach its place behind and beside the player.");
+            Assert.That(brain.IsResting, Is.True);
+            Assert.That(brain.Velocity.magnitude, Is.LessThan(0.01f), "It did not stop.");
         }
 
         [Test]
-        public void CloseToThePlayer_ItStaysPut()
+        public void Resting_ASmallStepOrATurnOfThePlayer_DoesNotMoveIt()
         {
             var brain = NewBrain();
-            var start = new Vector3(1f, 0f, 1f);
-            var step = brain.Step(start, Vector3.zero, Vector3.forward, new IAbsorbable[0], Frame);
+            var start = new Vector3(3f, 0f, 1f);
+            var end = Run(brain, start, Vector3.zero, None, 1f);
+            Assert.That(end, Is.EqualTo(start), "Resting close to the player, it moved.");
 
-            Assert.That(step.Position, Is.EqualTo(start));
-            Assert.That(step.Moved, Is.False);
+            // The player steps 1.5 m away: still within its start distance.
+            end = Run(brain, end, new Vector3(-1.5f, 0f, 0f), None, 1f);
+            Assert.That(end, Is.EqualTo(start), "It set off for a small step.");
         }
 
         [Test]
-        public void EachStep_MovesAtMostItsSpeed_AndKeepsItsHeight()
+        public void OnceThePlayerHasGone_ItSetsOff_SpeedingUpWithoutJumping()
         {
             var brain = NewBrain();
-            var position = new Vector3(20f, 3f, 0f);
-            var step = brain.Step(position, Vector3.zero, Vector3.forward, new IAbsorbable[0], Frame);
+            var position = new Vector3(0f, 0f, -StartDistance - 0.5f);
+            var step = brain.Step(position, Vector3.zero, Vector3.forward, None, Frame);
 
-            Assert.That(Flat(step.Position, position), Is.LessThanOrEqualTo(Speed * Frame + 0.0001f));
-            Assert.That(step.Position.y, Is.EqualTo(3f));
+            Assert.That(step.Moved, Is.True, "It did not set off with the player beyond its start distance.");
+            Assert.That(step.Velocity.magnitude, Is.LessThanOrEqualTo(Acceleration * Frame + 0.0001f), "It reached its speed at once.");
         }
 
         [Test]
-        public void TooFarFromThePlayer_ItComesBackBehindThem_AtOnce()
+        public void ItNeverGoesFasterThanItsRun_AndKeepsItsHeight()
         {
             var brain = NewBrain();
-            var step = brain.Step(new Vector3(40f, 1f, 0f), Vector3.zero, Vector3.forward, new IAbsorbable[0], Frame);
+            var position = new Vector3(0f, 2f, -24f);
+            for (var frame = 0; frame < 120; frame++)
+            {
+                var step = brain.Step(position, Vector3.zero, Vector3.forward, None, Frame);
+                Assert.That(step.Velocity.magnitude, Is.LessThanOrEqualTo(RunSpeed + 0.0001f));
+                Assert.That(step.Position.y, Is.EqualTo(2f));
+                position = step.Position;
+            }
+        }
+
+        [Test]
+        public void BehindAWalkingPlayer_ItWalks_BehindASprintingPlayer_ItRuns_LaggingButKeepingUp()
+        {
+            foreach (var (playerSpeed, maxLag) in new[] { (4f, 7f), (7f, 10f) })
+            {
+                var brain = NewBrain();
+                var position = PlaceAtOrigin;
+                var player = Vector3.zero;
+                var lags = new List<float>();
+                for (var elapsed = 0f; elapsed < 10f; elapsed += Frame)
+                {
+                    player += Vector3.forward * playerSpeed * Frame;
+                    position = brain.Step(position, player, Vector3.forward, None, Frame).Position;
+                    lags.Add(Flat(position, player));
+                }
+
+                var lag = lags[lags.Count - 1];
+                Assert.That(lag, Is.GreaterThan(StartDistance), $"At {playerSpeed} m/s it sticks to the player.");
+                Assert.That(lag, Is.LessThan(maxLag), $"At {playerSpeed} m/s it falls behind for good.");
+                Assert.That(brain.Velocity.magnitude, Is.EqualTo(playerSpeed).Within(0.2f), $"At {playerSpeed} m/s it does not match the player's pace.");
+            }
+        }
+
+        [Test]
+        public void TooFarFromThePlayer_ItComesBackToItsPlace_AtOnce()
+        {
+            var brain = NewBrain();
+            var step = brain.Step(new Vector3(40f, 1f, 0f), Vector3.zero, Vector3.forward, None, Frame);
 
             Assert.That(step.CaughtUp, Is.True);
-            Assert.That(step.Position.x, Is.EqualTo(0f).Within(0.001f));
-            Assert.That(step.Position.z, Is.EqualTo(-FollowDistance).Within(0.001f), "It does not come back behind the player.");
+            Assert.That(step.Position.x, Is.EqualTo(PlaceAtOrigin.x).Within(0.001f));
+            Assert.That(step.Position.z, Is.EqualTo(PlaceAtOrigin.z).Within(0.001f), "It does not come back behind the player.");
+            Assert.That(step.Velocity, Is.EqualTo(Vector3.zero));
         }
 
         [Test]
-        public void Empty_ItGoesToTheNearestFullSourceCloseToThePlayer_SoaksIt_AndFollowsAgainFull()
+        public void Empty_ItGoesToTheNearestFullSourceCloseToThePlayer_SoaksIt_AndComesBackFull()
         {
             var brain = NewBrain();
             var near = new Source(new Vector3(5f, 0f, 0f), water);
             var further = new Source(new Vector3(-8f, 0f, 0f), water);
             var sources = new IAbsorbable[] { further, near };
 
-            var end = Run(brain, new Vector3(2f, 0f, 0f), Vector3.zero, sources, 3f);
+            var end = Run(brain, new Vector3(2f, 0f, 0f), Vector3.zero, sources, 5f);
 
             Assert.That(near.Absorbed, Is.EqualTo(1), "It did not soak up the nearest source.");
             Assert.That(further.Absorbed, Is.Zero, "Full, it went for another source.");
             Assert.That(brain.IsFull, Is.True);
             Assert.That(brain.Fullness, Is.EqualTo(1f));
             Assert.That(brain.Activity, Is.EqualTo(CompanionActivity.Following));
-            Assert.That(Flat(end, Vector3.zero), Is.LessThanOrEqualTo(FollowDistance + 0.01f), "Full, it did not come back to the player.");
+            Assert.That(Flat(end, PlaceAtOrigin), Is.LessThan(0.35f), "Full, it did not come back to its place.");
         }
 
         [Test]
@@ -172,7 +225,7 @@ namespace Fungiiiii.Tests.EditMode
             var far = new Source(new Vector3(SeekRadius + 2f, 0f, 0f), water);
             var other = new Source(new Vector3(-3f, 0f, 0f), wood);
 
-            Run(brain, Vector3.zero, Vector3.zero, new IAbsorbable[] { empty, far, other }, 3f);
+            Run(brain, PlaceAtOrigin, Vector3.zero, new IAbsorbable[] { empty, far, other }, 3f);
 
             Assert.That(brain.Activity, Is.EqualTo(CompanionActivity.Following));
             Assert.That(empty.Absorbed + far.Absorbed + other.Absorbed, Is.Zero);

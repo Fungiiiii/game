@@ -18,13 +18,33 @@ namespace Fungiiiii.Companions
         private CreatureDefinition creature;
 
         [Header("Following")]
-        [Tooltip("It stops this far from the player, in metres.")]
+        [Tooltip("Its place is this far behind the player, in metres.")]
         [SerializeField, Min(0f)]
         private float followDistance = 2.5f;
 
-        [Tooltip("Walking speed, in metres per second: the player sprints at 7.")]
+        [Tooltip("Its place is this far to the player's right (negative: left), in metres: it walks beside them.")]
+        [SerializeField]
+        private float sideOffset = 1f;
+
+        [Tooltip("Resting, it sets off only once the player is further than this, in metres: a step or a turn does not move it.")]
+        [SerializeField, Min(0f)]
+        private float startDistance = 5f;
+
+        [Tooltip("Its speed close to the player, in metres per second: the player walks at 4.")]
         [SerializeField, Min(0.1f)]
-        private float speed = 7f;
+        private float walkSpeed = 3.5f;
+
+        [Tooltip("Its top speed to catch up, in metres per second: the player sprints at 7.")]
+        [SerializeField, Min(0.1f)]
+        private float runSpeed = 8f;
+
+        [Tooltip("How much faster it goes per metre it lags beyond the start distance.")]
+        [SerializeField, Min(0f)]
+        private float catchUpGain = 1f;
+
+        [Tooltip("How quickly it speeds up and brakes, in metres per second squared.")]
+        [SerializeField, Min(0.1f)]
+        private float acceleration = 12f;
 
         [Tooltip("Further than this from the player, it comes back behind them, out of sight.")]
         [SerializeField, Min(1f)]
@@ -55,6 +75,19 @@ namespace Fungiiiii.Companions
         [SerializeField, Min(0.05f)]
         private float arrivalDistance = 0.6f;
 
+        [Header("Looking alive")]
+        [Tooltip("How fast it turns towards where it goes, in degrees per second.")]
+        [SerializeField, Min(1f)]
+        private float turnSpeed = 540f;
+
+        [Tooltip("Height of its little hops while it walks, in metres.")]
+        [SerializeField, Min(0f)]
+        private float hopHeight = 0.07f;
+
+        [Tooltip("How many hops it makes per metre walked.")]
+        [SerializeField, Min(0f)]
+        private float hopsPerMetre = 1.5f;
+
         [Header("Looking full")]
         [Tooltip("The material of the model's part that darkens once full: the Spongeus's cap.")]
         [SerializeField]
@@ -79,6 +112,12 @@ namespace Fungiiiii.Companions
 
         public float Reach => reach;
 
+        public float TurnSpeed => turnSpeed;
+
+        public float HopHeight => hopHeight;
+
+        public float HopsPerMetre => hopsPerMetre;
+
         public ItemDefinition CarriedItem => carriedItem;
 
         public int CarriedQuantity => carriedQuantity;
@@ -93,7 +132,18 @@ namespace Fungiiiii.Companions
 
         public CompanionTuning ToTuning()
         {
-            return new CompanionTuning(followDistance, speed, catchUpDistance, seekRadius, soakSeconds, arrivalDistance);
+            return new CompanionTuning(
+                followDistance,
+                startDistance,
+                sideOffset,
+                walkSpeed,
+                runSpeed,
+                catchUpGain,
+                acceleration,
+                catchUpDistance,
+                seekRadius,
+                soakSeconds,
+                arrivalDistance);
         }
 
         /// <summary>What is missing for it to be used, or null when it is sound.</summary>
@@ -119,9 +169,12 @@ namespace Fungiiiii.Companions
                 return $"'{name}' has no material for the part that darkens once full.";
             }
 
-            return catchUpDistance <= followDistance
-                ? $"'{name}' catches up closer than it follows."
-                : null;
+            if (startDistance <= followDistance || catchUpDistance <= startDistance)
+            {
+                return $"'{name}' must follow closer than it sets off, and set off closer than it catches up.";
+            }
+
+            return runSpeed < walkSpeed ? $"'{name}' runs slower than it walks." : null;
         }
     }
 }

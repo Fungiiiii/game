@@ -14,7 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Companions.CompanionDefinition
   creature: {fileID: 11400000, guid: bf402ca1399e42a197ecead4d6f4bd22, type: 2}
   followDistance: 2.5
-  speed: 7
+  sideOffset: 1
+  startDistance: 5
+  walkSpeed: 3.5
+  runSpeed: 8
+  catchUpGain: 1
+  acceleration: 12
   catchUpDistance: 25
   reach: 2.5
   carriedItem: {fileID: 11400000, guid: ea8aab103615bc74d905d1dd1190e5eb, type: 2}
@@ -22,6 +27,9 @@ MonoBehaviour:
   seekRadius: 10
   soakSeconds: 1
   arrivalDistance: 0.6
+  turnSpeed: 540
+  hopHeight: 0.07
+  hopsPerMetre: 1.5
   fullPartMaterial: {fileID: 2100000, guid: 5a832d89a2094b06ac6dd3781fcf6d21, type: 2}
   fullTint: {r: 0.65, g: 0.65, b: 0.7, a: 1}
   fullSmoothness: 0.4

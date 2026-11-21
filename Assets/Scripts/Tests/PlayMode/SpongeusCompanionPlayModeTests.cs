@@ -248,7 +248,7 @@ namespace Fungiiiii.Tests.PlayMode
 
             companion.transform.position = Player.position + new Vector3(10f, 0f, 0f);
             yield return Wait(2.5f);
-            Assert.That(Flat(companion.transform.position, Player.position), Is.LessThan(3f), "It did not walk back to the player.");
+            Assert.That(Flat(companion.transform.position, Player.position), Is.LessThan(3.2f), "It did not walk back to its place by the player.");
 
             companion.transform.position = Player.position + new Vector3(60f, 0f, 0f);
             yield return null;
@@ -286,7 +286,7 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator Aimed_TheSpongeus_ShowsTheKeyWithItsRing_AndTheHoldHint()
+        public IEnumerator Aimed_TheSpongeus_ShowsTheKey_WithoutRingUntilHeld_AndTheHoldHint()
         {
             yield return LoadGame();
             yield return TakeOut();
@@ -302,7 +302,7 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(game.Interactor.Targeted, Is.SameAs(companion));
             var prompt = game.Interactor.Prompt;
             Assert.That(prompt.IsKeyVisible, Is.True);
-            Assert.That(prompt.IsHoldRingVisible, Is.True, "No ring around the key of a Spongeus.");
+            Assert.That(prompt.IsHoldRingVisible, Is.False, "The ring shows before E is held.");
             Assert.That(game.Interactor.Hints.Select(hint => hint.LabelKey), Is.EqualTo(new[] { UiText.HintTakeBack }));
         }
 

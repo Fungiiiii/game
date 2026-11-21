@@ -67,16 +67,20 @@ namespace Fungiiiii.Tests.EditMode
         }
 
         [Test]
-        public void TheProgress_FillsTowardsTheHold_AndEmptiesOnceDecidedOrReleased()
+        public void TheProgress_StartsOnlyPastAShortPress_FillsTowardsTheHold_AndEmptiesOnceDecidedOrReleased()
         {
             var press = new TapOrHold(TapMax, Hold);
             Assert.That(press.HoldProgress, Is.Zero);
 
             press.Press();
-            press.Tick(0.4f);
+            press.Tick(0.2f);
+            Assert.That(press.HoldProgress, Is.Zero, "The ring fills during what may still be a short press.");
+
+            // 0.55 s held: 0.25 s past the short press, half of the 0.5 s left to the hold.
+            press.Tick(0.35f);
             Assert.That(press.HoldProgress, Is.EqualTo(0.5f).Within(0.001f));
 
-            press.Tick(0.4f);
+            press.Tick(0.3f);
             Assert.That(press.HoldProgress, Is.Zero, "The ring stays full once the hold is done.");
 
             press.Press();

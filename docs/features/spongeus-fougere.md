@@ -22,14 +22,19 @@ Un Spongeus capturé finissait dans l'inventaire et ne servait à rien. La brume
 
 - [ ] Avec un Spongeus sur la case sélectionnée de la barre rapide, **clic gauche** (gâchette droite) le pose au sol à 1,5 m devant le joueur, tourné vers lui. Il quitte l'inventaire. L'aide « Sortir » s'affiche tant qu'aucun Spongeus n'est dehors.
 - [ ] Un seul Spongeus peut être sorti à la fois. Quand un Spongeus est déjà dehors, le clic gauche ne fait rien et l'aide « Sortir » disparaît.
-- [ ] **Maintenir E** 0,8 s sur le Spongeus sorti le remet dans l'inventaire (« +1 Spongeus » dans le fil des objets ramassés). Pendant l'appui, un cercle cyan se remplit autour de la touche. Si on relâche avant la fin, rien ne se passe. Quand l'inventaire est plein, le Spongeus reste dehors.
+- [ ] **Maintenir E** 0,8 s sur le Spongeus sorti le remet dans l'inventaire (« +1 Spongeus » dans le fil des objets ramassés). Le cercle cyan n'apparaît autour de la touche qu'une fois passé le temps d'un appui court (0,3 s), puis se remplit jusqu'à 0,8 s, comme dans les autres jeux : un appui rapide ne montre jamais de cercle (Hugo, 21/11). Si on relâche avant la fin, rien ne se passe. Quand l'inventaire est plein, le Spongeus reste dehors.
 - [ ] Reprendre un Spongeus mouillé le presse d'abord : l'eau arrive dans l'inventaire, puis le Spongeus. Si l'eau ne rentre pas, il reste dehors, mouillé : l'eau n'est jamais perdue.
 - [ ] Jeter un Spongeus depuis l'inventaire (Q, clic hors du panneau) fonctionne comme pour tout autre objet : son image tombe au sol. Il ne devient pas un compagnon.
 
 **Le Spongeus suit le joueur**
 
-- [ ] Une fois sorti, il suit le joueur à 2,5 m et s'arrête là. Il marche sur le relief et regarde dans la direction où il avance.
-- [ ] Il va aussi vite que le joueur qui sprinte (7 m/s). S'il se retrouve à plus de 25 m (coincé contre un tronc, distancé), il réapparaît aussitôt derrière le joueur, hors de sa vue.
+- [ ] Une fois sorti, il suit le joueur comme un animal de compagnie (Hugo, 21/11 : « dynamique, sympa à suivre, pas collé au corps ») :
+  - **Il ne gigote pas** : au repos près du joueur, il ne repart que quand le joueur est à plus de 5 m. Un pas ou un demi-tour ne le fait pas bouger.
+  - **Il a sa place** : 2,5 m derrière le joueur et 1 m sur sa droite, pas dans son dos.
+  - **Il marche, puis court** : 3,5 m/s près du joueur, 1 m/s de plus par mètre de retard au-delà de 5 m, jusqu'à 8 m/s (le joueur sprinte à 7). Derrière un joueur qui marche, il traîne à environ 5,5 m ; qui sprinte, à environ 8,5 m.
+  - **Il accélère et freine en douceur** (12 m/s²) et s'arrête net à sa place, sans osciller.
+  - **Il a l'air vivant** : il tourne progressivement (540°/s) vers où il va, regarde le joueur quand il est au repos, et fait de petits sauts en marchant (7 cm, 1,5 par mètre), qu'il termine quand il s'arrête.
+- [ ] S'il se retrouve à plus de 25 m (coincé contre un tronc, distancé), il réapparaît aussitôt à sa place, derrière le joueur, hors de sa vue.
 - [ ] Il ne fuit pas, n'a pas de disque d'alerte, et le filet ne le vise pas.
 - [ ] Les Spongeus sauvages ne changent pas : ils se promènent et fuient toujours dans la clairière du spawn.
 
@@ -78,7 +83,7 @@ Trois couches, comme le reste du projet : la logique en C# pur, testée en EditM
 |---|---|
 | `Runtime/Gathering/ChanceRefill.cs` | Se remplit par tirage : toutes les N s, une chance de se remplir ; vidé, recommence. Graine injectée. |
 | `Runtime/Controls/TapOrHold.cs` | Distingue l'appui court (au relâchement, sous 0,3 s) de l'appui long (au seuil de 0,8 s) ; donne la progression du cercle. |
-| `Runtime/Companions/CompanionBrain.cs` | Ce que fait un compagnon : suivre, aller vers une source, s'imbiber, revenir ; plein ou vide ; réapparition derrière le joueur au-delà de 25 m. Avec `CompanionTuning` et `CompanionStep`. |
+| `Runtime/Companions/CompanionBrain.cs` | Ce que fait un compagnon : suivre (repos et départ à deux distances, place derrière et à côté du joueur, vitesse selon le retard, accélération et freinage *arrive*), aller vers une source, s'imbiber, revenir ; plein ou vide ; réapparition à sa place au-delà de 25 m. Avec `CompanionTuning` et `CompanionStep` (position et vitesse). |
 | `Runtime/Companions/IAbsorbable.cs` | Ce qu'un compagnon peut absorber : position, objet donné, plein ou non. Un compagnon ne va que vers ce qui donne l'objet qu'il porte. |
 
 **Données (fiches)**
@@ -137,6 +142,7 @@ Trois couches, comme le reste du projet : la logique en C# pur, testée en EditM
 - **Une goutte qui tombe de temps en temps** (Hugo, 21/11 : « si c'est vraiment simple ») : le mouvement se voit de loin et se lit tout de suite comme de l'eau, sans lueur. Un seul `ParticleSystem` par fougère, à l'arrêt quand elle est sèche ; pas d'éclaboussure au sol.
 - **Les capacités optionnelles d'une cible sont des interfaces à part** (`IHoldInteractable`, `ILabelledInteractable`) plutôt que de nouveaux membres de `IInteractable` : les cibles existantes ne changent pas, et une future cible prend seulement ce dont elle a besoin.
 - **Le Spongeus marche en ligne droite**, sans collider ni NavMesh : il traverse le joueur sans le bousculer ; coincé, la réapparition à 25 m le débloque.
+- **Il suit comme les compagnons des autres jeux** (Hugo, 21/11) : deux distances pour ne pas gigoter (s'arrêter près, ne repartir que loin), une place décalée derrière et à côté du joueur, une vitesse qui grandit avec le retard, une accélération et un freinage doux (comportement *arrive* de Reynolds). Les sauts et les virages progressifs sont dans le composant, pas dans la logique : ils n'en changent pas les déplacements.
 - **Les fougères du décor sont retirées à l'exécution, pas du Terrain de la forêt** (Hugo, 21/11 : les enlever) : comme les champignons de décor, elles sont ôtées d'une copie du Terrain faite pour la partie. Regénérer la forêt sans elles aurait changé `MysticForest` et pu déplacer d'autres calques (les rochers passent après les fougères). La plante dit elle-même ce qui lui ressemble (`lookAlikes`) : une autre plante n'aura qu'à nommer son sosie.
 - **Une seule copie du Terrain par partie** (`SessionTerrain`), partagée par tout ce qui en retire quelque chose, plutôt qu'une copie par composant.
 - **Pas de note validée dans ClickUp** : voir l'en-tête.

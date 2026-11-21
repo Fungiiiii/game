@@ -17,7 +17,7 @@ namespace Fungiiiii.Interaction
     /// action on the device the player used last.
     ///
     /// A target that can also be held (<see cref="IHoldInteractable"/>) gets a ring around
-    /// the key that fills while it is held; on it, a short press is decided on the release
+    /// the key that fills while it is held, once the press is past a short one; on it, a short press is decided on the release
     /// (<see cref="TapOrHold"/>). A target that shows a text (<see cref="ILabelledInteractable"/>)
     /// gets the text instead of the key.
     /// </summary>
@@ -258,7 +258,9 @@ namespace Fungiiiii.Interaction
             }
 
             prompt.Show(screenPoint, KeyGlyph());
-            prompt.SetHold(targeted is IHoldInteractable, press.HoldProgress);
+            // The ring shows only once the key is clearly held, past a short press.
+            var progress = press.HoldProgress;
+            prompt.SetHold(targeted is IHoldInteractable && progress > 0f, progress);
         }
 
         /// <summary>The interact control as the key hints draw it, on the device used last; worked out again only when that device changes.</summary>

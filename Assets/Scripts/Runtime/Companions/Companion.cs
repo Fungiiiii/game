@@ -39,6 +39,8 @@ namespace Fungiiiii.Companions
         private MaterialPropertyBlock tintBlock;
         private float shownFullness = -1f;
         private float drySmoothness;
+        private Transform model;
+        private float hopPhase;
 
         /// <summary>Raised once it went back into the inventory.</summary>
         public event Action<Companion> TakenBack;
@@ -73,15 +75,18 @@ namespace Fungiiiii.Companions
         /// <param name="viewPoint">The player's view: catching up puts it behind it, out of sight.</param>
         /// <param name="ground">Height of the ground under a point.</param>
         /// <param name="absorbable">What it could soak up.</param>
+        /// <param name="body">Its model, a child: it hops while walking.</param>
         public void Initialize(
             CompanionDefinition companion,
             Transform followed,
             Transform viewPoint,
             Func<Vector3, float> ground,
             IReadOnlyList<IAbsorbable> absorbable,
-            ItemOutline itemOutline)
+            ItemOutline itemOutline,
+            Transform body)
         {
             definition = companion;
+            model = body;
             brain = new CompanionBrain(companion.ToTuning(), companion.CarriedItem);
             player = followed;
             view = viewPoint;
@@ -96,22 +101,50 @@ namespace Fungiiiii.Companions
 
         private void Update()
         {
+            var deltaTime = Time.deltaTime;
             var position = transform.position;
-            var step = brain.Step(position, player.position, view.forward, sources, Time.deltaTime);
+            var step = brain.Step(position, player.position, view.forward, sources, deltaTime);
             var next = step.Position;
             next.y = groundHeight(next);
+            transform.position = next;
 
-            if (step.Moved)
+            Turn(step, deltaTime);
+            Hop(step.Velocity.magnitude, deltaTime);
+            UpdateFullness();
+        }
+
+        /// <summary>Turns, never at once: towards where it goes, or, resting, towards the player.</summary>
+        private void Turn(CompanionStep step, float deltaTime)
+        {
+            var facing = step.Moved ? step.Velocity : player.position - transform.position;
+            facing.y = 0f;
+            if (facing.sqrMagnitude < 0.0001f)
             {
-                var direction = new Vector3(next.x - position.x, 0f, next.z - position.z);
-                if (direction.sqrMagnitude > 0.000001f)
-                {
-                    transform.rotation = Quaternion.LookRotation(direction);
-                }
+                return;
             }
 
-            transform.position = next;
-            UpdateFullness();
+            transform.rotation = Quaternion.RotateTowards(
+                transform.rotation,
+                Quaternion.LookRotation(facing),
+                definition.TurnSpeed * deltaTime);
+        }
+
+        /// <summary>Little hops while it walks, as many per metre whatever its speed; it lands when it stops.</summary>
+        private void Hop(float speed, float deltaTime)
+        {
+            if (speed > 0.05f)
+            {
+                hopPhase += speed * deltaTime * definition.HopsPerMetre * Mathf.PI;
+            }
+            else
+            {
+                // Finish the hop under way, then stay on the ground.
+                var landed = Mathf.Ceil(hopPhase / Mathf.PI) * Mathf.PI;
+                hopPhase = Mathf.MoveTowards(hopPhase, landed, Mathf.PI * 3f * deltaTime);
+            }
+
+            hopPhase %= Mathf.PI * 2f;
+            model.localPosition = Vector3.up * (Mathf.Abs(Mathf.Sin(hopPhase)) * definition.HopHeight);
         }
 
         public void SetTargeted(bool targeted)

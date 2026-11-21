@@ -138,7 +138,7 @@ namespace Fungiiiii.Companions
             model.name = companion.Creature.Model.name;
 
             var spawned = root.AddComponent<Companion>();
-            spawned.Initialize(companion, player, view, groundHeight, sources, outlines.Create(model));
+            spawned.Initialize(companion, player, view, groundHeight, sources, outlines.Create(model), model.transform);
             spawned.TakenBack += Remove;
             interactables.Add(spawned);
             return spawned;
