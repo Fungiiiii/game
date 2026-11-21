@@ -85,6 +85,10 @@ namespace Fungiiiii.Demo
         [SerializeField]
         private KeyPrompt keyPrompt;
 
+        [Tooltip("Health and stamina, top left.")]
+        [SerializeField]
+        private VitalGauges vitalGauges;
+
         [Tooltip("Builds the Champimaison hole while active; inactive for the playtest.")]
         [SerializeField]
         private FungalHoleSpawner holeSpawner;
@@ -267,9 +271,9 @@ namespace Fungiiiii.Demo
                 return "the player prefab lacks its hands, interact control, net, net target outline or stamina.";
             }
 
-            if (screens == null || hotbar == null || keyPrompt == null)
+            if (screens == null || hotbar == null || keyPrompt == null || vitalGauges == null)
             {
-                return "the screens, the quick bar or the key prompt are missing.";
+                return "the screens, the quick bar, the key prompt or the vital gauges are missing.";
             }
 
             if (startingQuickBar.Length == 0 || System.Array.IndexOf(startingQuickBar, null) >= 0)
@@ -356,8 +360,7 @@ namespace Fungiiiii.Demo
         {
             vitals = new PlayerVitals(100f, 100f);
             stamina = new StaminaRegulator(vitals, staminaSettings.ToRegulatorSettings());
-            var hud = new GameObject("Vitals HUD").AddComponent<VitalsHud>();
-            hud.Initialize(vitals);
+            vitalGauges.Initialize(vitals);
             player.GetComponent<StaminaDriver>().Initialize(player.GetComponent<PlayerMotor>(), stamina);
         }
 
