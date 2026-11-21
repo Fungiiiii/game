@@ -24,7 +24,7 @@ namespace Fungiiiii.UI
 
         [SerializeField] private int demoMaxStackSize = 5;
 
-        [Tooltip("Fills the inventory with sample items on Awake. Off for a game loop that starts empty.")]
+        [Tooltip("Fills the screen's own inventory with sample items on Awake, when no inventory is bound (InventaireScene).")]
         [SerializeField] private bool seedDemoItems = true;
 
         private const string DemoMushroomId = "demo_mushroom";
@@ -84,17 +84,29 @@ namespace Fungiiiii.UI
         public PlayerInventory Inventory => inventory;
 
         /// <summary>
-        /// Whether Awake fills the inventory with sample items. Set it before Awake runs,
-        /// that is on an inactive GameObject, to start empty.
+        /// Shows the inventory a player carries. Call it before Awake runs, that is on an
+        /// inactive GameObject. Without it, the screen makes its own inventory, for the
+        /// standalone prototype scene.
         /// </summary>
-        public bool SeedsDemoItems
+        public void Bind(PlayerInventory playerInventory)
         {
-            get => seedDemoItems;
-            set => seedDemoItems = value;
+            if (playerInventory == null)
+            {
+                throw new System.ArgumentNullException(nameof(playerInventory));
+            }
+
+            if (playerInventory.SlotCount < TotalSlotCount)
+            {
+                throw new System.ArgumentException(
+                    $"The screen shows {TotalSlotCount} slots; this inventory has {playerInventory.SlotCount}.",
+                    nameof(playerInventory));
+            }
+
+            inventory = playerInventory;
         }
 
         /// <summary>
-        /// The font of the screen. Set it before Awake runs, like <see cref="SeedsDemoItems"/>;
+        /// The font of the screen. Set it before Awake runs, like <see cref="Bind"/>;
         /// without one, Unity's built-in font is used.
         /// </summary>
         public Font Font
@@ -111,7 +123,12 @@ namespace Fungiiiii.UI
 
         private void Awake()
         {
-            inventory = new PlayerInventory(TotalSlotCount);
+            var standalone = inventory == null;
+            if (standalone)
+            {
+                inventory = new PlayerInventory(TotalSlotCount);
+            }
+
             hand = new InventoryHand(inventory);
             if (font == null)
             {
@@ -123,9 +140,14 @@ namespace Fungiiiii.UI
             inventory.Changed += RefreshSlots;
             hand.Changed += RefreshHeld;
 
-            if (seedDemoItems)
+            // A player's inventory is theirs: only the screen's own one gets sample items.
+            if (standalone && seedDemoItems)
             {
                 SeedDemoItems();
+            }
+            else
+            {
+                RefreshSlots();
             }
         }
 
