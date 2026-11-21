@@ -5,7 +5,7 @@ using Fungiiiii.Inventory;
 using Fungiiiii.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Utilities;
+using UnityEngine.InputSystem.DualShock;
 
 namespace Fungiiiii.Demo
 {
@@ -16,9 +16,6 @@ namespace Fungiiiii.Demo
     /// </summary>
     internal sealed class PlayerInteractor : MonoBehaviour, IHintSource
     {
-        private const InputControlPath.HumanReadableStringOptions KeyNameOptions =
-            InputControlPath.HumanReadableStringOptions.OmitDevice | InputControlPath.HumanReadableStringOptions.UseShortNames;
-
         private readonly List<InteractionCandidate> candidates = new List<InteractionCandidate>();
         private readonly List<ControlHint> hints = new List<ControlHint>();
 
@@ -29,8 +26,9 @@ namespace Fungiiiii.Demo
         private PlayerControls controls;
         private IInteractable targeted;
         private KeyPrompt prompt;
-        private InputDevice labelDevice;
-        private string keyLabel;
+        private readonly List<string> keyPaths = new List<string>();
+        private InputDevice glyphDevice;
+        private Glyph? keyGlyph;
 
         /// <summary>The key shown above the target.</summary>
         public KeyPrompt Prompt => prompt;
@@ -158,33 +156,23 @@ namespace Fungiiiii.Demo
                 return;
             }
 
-            prompt.Show(screenPoint, KeyLabel());
+            prompt.Show(screenPoint, KeyGlyph());
         }
 
-        /// <summary>The name of the interact key on the device used last, worked out again only when that device changes.</summary>
-        private string KeyLabel()
+        /// <summary>The interact control as the key hints draw it, on the device used last; worked out again only when that device changes.</summary>
+        private Glyph KeyGlyph()
         {
             var device = controls.CurrentDevice;
-            if (keyLabel != null && labelDevice == device)
+            if (keyGlyph.HasValue && glyphDevice == device)
             {
-                return keyLabel;
+                return keyGlyph.Value;
             }
 
-            labelDevice = device;
-            var interact = controls.Player.Interact;
-            var scheme = controls.CurrentScheme;
-            var index = interact.GetBindingIndex(InputBinding.MaskByGroup(scheme.bindingGroup));
-            var onGamepad = device is Gamepad;
-            keyLabel = index < 0
-                ? string.Empty
-                : ShortKeyName(InputControlPath.ToHumanReadableString(interact.bindings[index].effectivePath, KeyNameOptions, onGamepad ? device : null));
-            return keyLabel;
-        }
-
-        /// <summary>A key name short enough for the key cap: PlayStation's Triangle becomes its symbol.</summary>
-        internal static string ShortKeyName(string humanReadable)
-        {
-            return humanReadable == "Triangle" ? KeyPrompt.TriangleLabel : humanReadable;
+            glyphDevice = device;
+            keyPaths.Clear();
+            HintInput.Of(controls.Player.Interact).CollectPaths(controls.CurrentScheme.bindingGroup, keyPaths);
+            keyGlyph = InputGlyphs.Describe(keyPaths, device is DualShockGamepad);
+            return keyGlyph.Value;
         }
     }
 }
