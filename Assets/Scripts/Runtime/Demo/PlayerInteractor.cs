@@ -14,6 +14,11 @@ namespace Fungiiiii.Demo
     /// The interact control of the demo: shows what the player aims at close by, with the
     /// key to press above it, and uses it on a press. The key is that of the Interact
     /// action on the device the player used last.
+    ///
+    /// A target that can also be held (<see cref="IHoldInteractable"/>) gets a ring around
+    /// the key that fills while it is held; on it, a short press is decided on the release
+    /// (<see cref="TapOrHold"/>). A target that shows a text (<see cref="ILabelledInteractable"/>)
+    /// gets the text instead of the key.
     /// </summary>
     internal sealed class PlayerInteractor : MonoBehaviour, IHintSource
     {
@@ -24,6 +29,14 @@ namespace Fungiiiii.Demo
         [SerializeField, Range(1f, 90f)]
         private float maxAimAngleDegrees = 25f;
 
+        [Tooltip("On a target that can be held, a press released within this time is a short press, in seconds.")]
+        [SerializeField, Min(0.05f)]
+        private float tapMaxSeconds = 0.3f;
+
+        [Tooltip("How long the control is held to do what holding does, in seconds.")]
+        [SerializeField, Min(0.1f)]
+        private float holdSeconds = 0.8f;
+
         private PrototypeFirstPersonCamera viewCamera;
         private Camera view;
         private PlayerInventory inventory;
@@ -31,6 +44,9 @@ namespace Fungiiiii.Demo
         private PlayerControls controls;
         private IInteractable targeted;
         private KeyPrompt prompt;
+        private TapOrHold press;
+        private string shownHintKey;
+        private string shownHoldHintKey;
         private readonly List<string> keyPaths = new List<string>();
         private InputDevice glyphDevice;
         private Glyph? keyGlyph;
@@ -63,10 +79,12 @@ namespace Fungiiiii.Demo
             inventory = playerInventory;
             interactables = usable;
             prompt = keyPrompt;
+            press = new TapOrHold(tapMaxSeconds, holdSeconds);
         }
 
         private void OnDisable()
         {
+            press?.Cancel();
             SetTarget(null);
         }
 
@@ -109,10 +127,50 @@ namespace Fungiiiii.Demo
                 maxAimAngleDegrees);
 
             SetTarget(index == InteractionTargeting.None ? null : interactables[index]);
+            if (targeted == null)
+            {
+                return;
+            }
 
-            if (targeted != null && controls.Player.Interact.WasPressedThisFrame())
+            // What the target does may change while it is aimed at: a Spongeus soaks up water.
+            RefreshHints();
+
+            var interact = controls.Player.Interact;
+            if (targeted is IHoldInteractable holdable)
+            {
+                UseHoldable(holdable, interact);
+            }
+            else if (interact.WasPressedThisFrame() && targeted.HintKey != null)
             {
                 targeted.Interact(inventory);
+            }
+        }
+
+        /// <summary>A short press does what a press does, on the release; holding does what holding does.</summary>
+        private void UseHoldable(IHoldInteractable holdable, InputAction interact)
+        {
+            if (interact.WasPressedThisFrame())
+            {
+                press.Press();
+            }
+
+            var outcome = press.Tick(Time.deltaTime);
+            if (interact.WasReleasedThisFrame())
+            {
+                var release = press.Release();
+                if (outcome == PressOutcome.None)
+                {
+                    outcome = release;
+                }
+            }
+
+            if (outcome == PressOutcome.Tap && targeted.HintKey != null)
+            {
+                targeted.Interact(inventory);
+            }
+            else if (outcome == PressOutcome.Hold)
+            {
+                holdable.InteractHold(inventory);
             }
         }
 
@@ -128,13 +186,9 @@ namespace Fungiiiii.Demo
             targeted = next;
             targeted?.SetTargeted(true);
 
-            hints.Clear();
-            if (targeted != null && controls != null)
-            {
-                hints.Add(new ControlHint(targeted.HintKey, HintInput.Of(controls.Player.Interact)));
-            }
-
-            HintsChanged?.Invoke();
+            // A press started on another target does nothing on this one.
+            press?.Cancel();
+            RefreshHints(force: true);
 
             // From one target straight to another, the key pops in again over the new one.
             if (previous != null && next != null && prompt != null)
@@ -143,6 +197,35 @@ namespace Fungiiiii.Demo
             }
 
             ShowPrompt();
+        }
+
+        private void RefreshHints(bool force = false)
+        {
+            var hintKey = targeted?.HintKey;
+            var holdHintKey = (targeted as IHoldInteractable)?.HoldHintKey;
+            if (!force && hintKey == shownHintKey && holdHintKey == shownHoldHintKey)
+            {
+                return;
+            }
+
+            shownHintKey = hintKey;
+            shownHoldHintKey = holdHintKey;
+            hints.Clear();
+            if (controls != null)
+            {
+                AddHint(hintKey);
+                AddHint(holdHintKey);
+            }
+
+            HintsChanged?.Invoke();
+        }
+
+        private void AddHint(string labelKey)
+        {
+            if (labelKey != null)
+            {
+                hints.Add(new ControlHint(labelKey, HintInput.Of(controls.Player.Interact)));
+            }
         }
 
         private void ShowPrompt()
@@ -166,7 +249,15 @@ namespace Fungiiiii.Demo
                 return;
             }
 
+            var labelKey = (targeted as ILabelledInteractable)?.LabelKey;
+            if (labelKey != null)
+            {
+                prompt.ShowText(screenPoint, labelKey);
+                return;
+            }
+
             prompt.Show(screenPoint, KeyGlyph());
+            prompt.SetHold(targeted is IHoldInteractable, press.HoldProgress);
         }
 
         /// <summary>The interact control as the key hints draw it, on the device used last; worked out again only when that device changes.</summary>
