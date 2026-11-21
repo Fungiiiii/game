@@ -70,19 +70,26 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator PlayIsSelectedFirst_AndTheSelectedPlankStandsOut()
+        public IEnumerator NoPlankStandsOutFirst_ThenTheSelectedOne_UntilThePointerLeavesIt()
         {
             yield return new WaitForSecondsRealtime(0.5f);
 
-            Assert.That(EventSystem.current.currentSelectedGameObject, Is.SameAs(menu.PlayButton.gameObject));
-            Assert.That(menu.PlayButton.GetComponentInChildren<PlankGraphic>().Highlight, Is.EqualTo(1f).Within(0.01f));
+            Assert.That(EventSystem.current.currentSelectedGameObject, Is.Null, "A plank is lit with the mouse away.");
+            Assert.That(menu.PlayButton.GetComponentInChildren<PlankGraphic>().Highlight, Is.Zero);
             Assert.That(menu.QuitButton.GetComponentInChildren<PlankGraphic>().Highlight, Is.Zero);
+            Assert.That(menu.GetComponent<SelectFirstOnMove>(), Is.Not.Null, "The gamepad has no first plank to select.");
 
             EventSystem.current.SetSelectedGameObject(menu.QuitButton.gameObject);
             yield return new WaitForSecondsRealtime(0.5f);
 
             Assert.That(menu.PlayButton.GetComponentInChildren<PlankGraphic>().Highlight, Is.Zero);
             Assert.That(menu.QuitButton.GetComponentInChildren<PlankGraphic>().Highlight, Is.EqualTo(1f).Within(0.01f));
+
+            ExecuteEvents.Execute(menu.QuitButton.gameObject, new PointerEventData(EventSystem.current), ExecuteEvents.pointerExitHandler);
+            yield return new WaitForSecondsRealtime(0.5f);
+
+            Assert.That(EventSystem.current.currentSelectedGameObject, Is.Null, "The plank stays lit once the pointer has left.");
+            Assert.That(menu.QuitButton.GetComponentInChildren<PlankGraphic>().Highlight, Is.Zero);
         }
 
         [UnityTest]

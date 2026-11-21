@@ -135,7 +135,7 @@ namespace Fungiiiii.Controls
                     ""priority"": 0
                 },
                 {
-                    ""name"": ""Dodge"",
+                    ""name"": ""Jump"",
                     ""type"": ""Button"",
                     ""id"": ""72b6c44e-527a-442f-a743-7c73b22f23fe"",
                     ""expectedControlType"": ""Button"",
@@ -430,18 +430,18 @@ namespace Fungiiiii.Controls
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Keyboard&Mouse"",
-                    ""action"": ""Dodge"",
+                    ""action"": ""Jump"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
                 {
                     ""name"": """",
                     ""id"": ""b677d6fc-f316-4b37-8585-09c7abab70ca"",
-                    ""path"": ""<Gamepad>/buttonWest"",
+                    ""path"": ""<Gamepad>/buttonSouth"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Gamepad"",
-                    ""action"": ""Dodge"",
+                    ""action"": ""Jump"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -791,6 +791,16 @@ namespace Fungiiiii.Controls
                     ""name"": ""GatherAll"",
                     ""type"": ""Button"",
                     ""id"": ""716f1296-1f7a-4768-83be-7819e9e3c17f"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""Drop"",
+                    ""type"": ""Button"",
+                    ""id"": ""bc30b164-a911-4c3e-ba95-1cdd3ce26622"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -1238,6 +1248,28 @@ namespace Fungiiiii.Controls
                     ""action"": ""GatherAll"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""04cba86d-9cd7-420a-95d0-43c4aad22405"",
+                    ""path"": ""<Keyboard>/q"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""Drop"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""da87097e-bf19-485f-b4eb-5206053a51eb"",
+                    ""path"": ""<Gamepad>/rightShoulder"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Gamepad"",
+                    ""action"": ""Drop"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -1311,7 +1343,7 @@ namespace Fungiiiii.Controls
             m_Player_Look = m_Player.FindAction("Look", throwIfNotFound: true);
             m_Player_Sprint = m_Player.FindAction("Sprint", throwIfNotFound: true);
             m_Player_Crouch = m_Player.FindAction("Crouch", throwIfNotFound: true);
-            m_Player_Dodge = m_Player.FindAction("Dodge", throwIfNotFound: true);
+            m_Player_Jump = m_Player.FindAction("Jump", throwIfNotFound: true);
             m_Player_Interact = m_Player.FindAction("Interact", throwIfNotFound: true);
             m_Player_UsePrimary = m_Player.FindAction("UsePrimary", throwIfNotFound: true);
             m_Player_UseSecondary = m_Player.FindAction("UseSecondary", throwIfNotFound: true);
@@ -1339,6 +1371,7 @@ namespace Fungiiiii.Controls
             m_UI_TrackedDeviceOrientation = m_UI.FindAction("TrackedDeviceOrientation", throwIfNotFound: true);
             m_UI_TakeHalf = m_UI.FindAction("TakeHalf", throwIfNotFound: true);
             m_UI_GatherAll = m_UI.FindAction("GatherAll", throwIfNotFound: true);
+            m_UI_Drop = m_UI.FindAction("Drop", throwIfNotFound: true);
         }
 
         ~@GameControls()
@@ -1425,7 +1458,7 @@ namespace Fungiiiii.Controls
         private readonly InputAction m_Player_Look;
         private readonly InputAction m_Player_Sprint;
         private readonly InputAction m_Player_Crouch;
-        private readonly InputAction m_Player_Dodge;
+        private readonly InputAction m_Player_Jump;
         private readonly InputAction m_Player_Interact;
         private readonly InputAction m_Player_UsePrimary;
         private readonly InputAction m_Player_UseSecondary;
@@ -1463,9 +1496,9 @@ namespace Fungiiiii.Controls
             /// </summary>
             public InputAction @Crouch => m_Wrapper.m_Player_Crouch;
             /// <summary>
-            /// Provides access to the underlying input action "Player/Dodge".
+            /// Provides access to the underlying input action "Player/Jump".
             /// </summary>
-            public InputAction @Dodge => m_Wrapper.m_Player_Dodge;
+            public InputAction @Jump => m_Wrapper.m_Player_Jump;
             /// <summary>
             /// Provides access to the underlying input action "Player/Interact".
             /// </summary>
@@ -1540,9 +1573,9 @@ namespace Fungiiiii.Controls
                 @Crouch.started += instance.OnCrouch;
                 @Crouch.performed += instance.OnCrouch;
                 @Crouch.canceled += instance.OnCrouch;
-                @Dodge.started += instance.OnDodge;
-                @Dodge.performed += instance.OnDodge;
-                @Dodge.canceled += instance.OnDodge;
+                @Jump.started += instance.OnJump;
+                @Jump.performed += instance.OnJump;
+                @Jump.canceled += instance.OnJump;
                 @Interact.started += instance.OnInteract;
                 @Interact.performed += instance.OnInteract;
                 @Interact.canceled += instance.OnInteract;
@@ -1593,9 +1626,9 @@ namespace Fungiiiii.Controls
                 @Crouch.started -= instance.OnCrouch;
                 @Crouch.performed -= instance.OnCrouch;
                 @Crouch.canceled -= instance.OnCrouch;
-                @Dodge.started -= instance.OnDodge;
-                @Dodge.performed -= instance.OnDodge;
-                @Dodge.canceled -= instance.OnDodge;
+                @Jump.started -= instance.OnJump;
+                @Jump.performed -= instance.OnJump;
+                @Jump.canceled -= instance.OnJump;
                 @Interact.started -= instance.OnInteract;
                 @Interact.performed -= instance.OnInteract;
                 @Interact.canceled -= instance.OnInteract;
@@ -1779,6 +1812,7 @@ namespace Fungiiiii.Controls
         private readonly InputAction m_UI_TrackedDeviceOrientation;
         private readonly InputAction m_UI_TakeHalf;
         private readonly InputAction m_UI_GatherAll;
+        private readonly InputAction m_UI_Drop;
         /// <summary>
         /// Provides access to input actions defined in input action map "UI".
         /// </summary>
@@ -1838,6 +1872,10 @@ namespace Fungiiiii.Controls
             /// Provides access to the underlying input action "UI/GatherAll".
             /// </summary>
             public InputAction @GatherAll => m_Wrapper.m_UI_GatherAll;
+            /// <summary>
+            /// Provides access to the underlying input action "UI/Drop".
+            /// </summary>
+            public InputAction @Drop => m_Wrapper.m_UI_Drop;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -1900,6 +1938,9 @@ namespace Fungiiiii.Controls
                 @GatherAll.started += instance.OnGatherAll;
                 @GatherAll.performed += instance.OnGatherAll;
                 @GatherAll.canceled += instance.OnGatherAll;
+                @Drop.started += instance.OnDrop;
+                @Drop.performed += instance.OnDrop;
+                @Drop.canceled += instance.OnDrop;
             }
 
             /// <summary>
@@ -1947,6 +1988,9 @@ namespace Fungiiiii.Controls
                 @GatherAll.started -= instance.OnGatherAll;
                 @GatherAll.performed -= instance.OnGatherAll;
                 @GatherAll.canceled -= instance.OnGatherAll;
+                @Drop.started -= instance.OnDrop;
+                @Drop.performed -= instance.OnDrop;
+                @Drop.canceled -= instance.OnDrop;
             }
 
             /// <summary>
@@ -2081,12 +2125,12 @@ namespace Fungiiiii.Controls
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnCrouch(InputAction.CallbackContext context);
             /// <summary>
-            /// Method invoked when associated input action "Dodge" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// Method invoked when associated input action "Jump" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
             /// </summary>
             /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-            void OnDodge(InputAction.CallbackContext context);
+            void OnJump(InputAction.CallbackContext context);
             /// <summary>
             /// Method invoked when associated input action "Interact" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
             /// </summary>
@@ -2264,6 +2308,13 @@ namespace Fungiiiii.Controls
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnGatherAll(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "Drop" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnDrop(InputAction.CallbackContext context);
         }
     }
 }

@@ -63,6 +63,7 @@ namespace Fungiiiii.UI
                 controls.UI.Navigate,
                 controls.UI.TakeHalf,
                 controls.UI.GatherAll,
+                controls.UI.Drop,
                 controls.Screens.Inventory,
                 controls.UI.Cancel));
 

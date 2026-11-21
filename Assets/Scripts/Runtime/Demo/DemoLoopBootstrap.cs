@@ -89,6 +89,14 @@ namespace Fungiiiii.Demo
         [SerializeField]
         private VitalGauges vitalGauges;
 
+        [Tooltip("What the player just collected, above the quick bar.")]
+        [SerializeField]
+        private PickupFeed pickupFeed;
+
+        [Tooltip("What the player drops from the inventory, until picked up again.")]
+        [SerializeField]
+        private DroppedItems droppedItems;
+
         [Tooltip("Builds the Champimaison hole while active; inactive for the playtest.")]
         [SerializeField]
         private FungalHoleSpawner holeSpawner;
@@ -170,6 +178,12 @@ namespace Fungiiiii.Demo
         /// <summary>The quick bar: the item of its selected slot is the one in hand.</summary>
         public Hotbar Hotbar => hotbar;
 
+        /// <summary>What the player just collected, above the quick bar.</summary>
+        public PickupFeed Pickups => pickupFeed;
+
+        /// <summary>What the player dropped from the inventory and has not picked up again.</summary>
+        public DroppedItems Dropped => droppedItems;
+
         /// <summary>The inventory item a mushroom becomes once caught.</summary>
         public ItemDefinition ItemFor(NetDemoMushroom mushroom) => creatures.ItemFor(mushroom);
 
@@ -239,6 +253,14 @@ namespace Fungiiiii.Demo
             }
 
             BuildGatherables(forest);
+            pickupFeed.Bind(Inventory);
+            droppedItems.Bind(
+                screens.Inventory,
+                firstPersonCamera.transform,
+                GroundHeight,
+                outlines,
+                interactables,
+                new System.Random(random.Next()));
             SpawnMushrooms();
             SetUpThrower();
             SetUpHands();
@@ -271,9 +293,9 @@ namespace Fungiiiii.Demo
                 return "the player prefab lacks its hands, interact control, net, net target outline or stamina.";
             }
 
-            if (screens == null || hotbar == null || keyPrompt == null || vitalGauges == null)
+            if (screens == null || hotbar == null || keyPrompt == null || vitalGauges == null || pickupFeed == null || droppedItems == null)
             {
-                return "the screens, the quick bar, the key prompt or the vital gauges are missing.";
+                return "the screens, the quick bar, the key prompt, the vital gauges, the pickup feed or the dropped items are missing.";
             }
 
             if (startingQuickBar.Length == 0 || System.Array.IndexOf(startingQuickBar, null) >= 0)
@@ -422,7 +444,7 @@ namespace Fungiiiii.Demo
         private void HandleCatchReturned(NetDemoMushroom caught)
         {
             // RG_CA_03: the caught mushroom goes into the inventory as it is.
-            if (Inventory.Add(creatures.ItemFor(caught), 1) == 0)
+            if (Inventory.Collect(creatures.ItemFor(caught), 1) == 0)
             {
                 Debug.LogWarning($"The inventory is full: {caught.name} is lost.", this);
             }
@@ -459,6 +481,8 @@ namespace Fungiiiii.Demo
             firstPersonCamera.SetView(spawnYaw, 0f);
 
             gathering.ResetFields();
+            droppedItems.Clear();
+            pickupFeed.Clear();
 
             if (hole != null)
             {

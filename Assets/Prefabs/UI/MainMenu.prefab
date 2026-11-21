@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 1190761797955558092}
   - component: {fileID: 3521059542979613723}
   - component: {fileID: 2275811149341511274}
+  - component: {fileID: 7042925388525995409}
   m_Layer: 0
   m_Name: MainMenu
   m_TagString: Untagged
@@ -34,7 +35,7 @@ RectTransform:
   m_Children:
   - {fileID: 809041511161588068}
   - {fileID: 784030252282740387}
-  - {fileID: 5995736770621181619}
+  - {fileID: 5507210528969623905}
   - {fileID: 6601926633007630512}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -119,10 +120,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.MainMenu
   playButton: {fileID: 4146637865866385842}
-  quitButton: {fileID: 5995736770621181620}
+  quitButton: {fileID: 9153342746320711280}
   fade: {fileID: 9016591527044661476}
   gameScenePath: Assets/Scenes/Prototype/DemoLoopScene.unity
   fadeSeconds: 0.6
+--- !u!114 &7042925388525995409
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6951790589739323043}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7dfa04ce6e254454b797ba236929a01e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.SelectFirstOnMove
+  first: {fileID: 8162110876634757360}
 --- !u!1 &7366075790656815091
 GameObject:
   m_ObjectHideFlags: 0
@@ -432,6 +446,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afe1e81883c36bc4a8d2e3f2a2af1d0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.PlankButton
+--- !u!114 &8162110876634757360 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7276800894372102528, guid: 6217e7e134e9f9d47b6add1890750d9a, type: 3}
+  m_PrefabInstance: {fileID: 1565501436087892336}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!1001 &5995736770621181618
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -545,12 +570,12 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6217e7e134e9f9d47b6add1890750d9a, type: 3}
---- !u!224 &5995736770621181619 stripped
+--- !u!224 &5507210528969623905 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 2258740065450133459, guid: 6217e7e134e9f9d47b6add1890750d9a, type: 3}
   m_PrefabInstance: {fileID: 5995736770621181618}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &5995736770621181620 stripped
+--- !u!114 &9153342746320711280 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3184632523750088898, guid: 6217e7e134e9f9d47b6add1890750d9a, type: 3}
   m_PrefabInstance: {fileID: 5995736770621181618}

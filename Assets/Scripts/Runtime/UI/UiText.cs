@@ -31,5 +31,6 @@ namespace Fungiiiii.UI
         public const string HintHalfOrOne = "hint.half_or_one";
         public const string HintGatherAll = "hint.gather_all";
         public const string HintClose = "hint.close";
+        public const string HintDrop = "hint.drop";
     }
 }

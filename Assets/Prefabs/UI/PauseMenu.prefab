@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 87129970907617601}
   - component: {fileID: 4472424577320479125}
   - component: {fileID: 3067172502556518945}
+  - component: {fileID: 5315609224183518002}
   m_Layer: 0
   m_Name: PauseMenu
   m_TagString: Untagged
@@ -117,9 +118,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.PauseMenu
   content: {fileID: 4679029134373072124}
   resumeButton: {fileID: 3120959039373917542}
-  homeButton: {fileID: 3618327744505572986}
+  homeButton: {fileID: 2163125858669579962}
   quitButton: {fileID: 7879211410874698671}
   homeScenePath: Assets/Scenes/Menu/MainMenu.unity
+--- !u!114 &5315609224183518002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3186007784677920105}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7dfa04ce6e254454b797ba236929a01e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.SelectFirstOnMove
+  first: {fileID: 7170199025577221156}
 --- !u!1 &4066308501265600692
 GameObject:
   m_ObjectHideFlags: 0
@@ -225,7 +239,7 @@ RectTransform:
   m_Children:
   - {fileID: 4346201024260720548}
   - {fileID: 1739904320980359799}
-  - {fileID: 3618327744505572985}
+  - {fileID: 3273635304303028651}
   - {fileID: 6787535413939186878}
   m_Father: {fileID: 837383614939738465}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -351,6 +365,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afe1e81883c36bc4a8d2e3f2a2af1d0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.PlankButton
+--- !u!114 &7170199025577221156 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7276800894372102528, guid: 6217e7e134e9f9d47b6add1890750d9a, type: 3}
+  m_PrefabInstance: {fileID: 539809484502637988}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!1001 &3618327744505572984
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -456,12 +481,7 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6217e7e134e9f9d47b6add1890750d9a, type: 3}
---- !u!224 &3618327744505572985 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 2258740065450133459, guid: 6217e7e134e9f9d47b6add1890750d9a, type: 3}
-  m_PrefabInstance: {fileID: 3618327744505572984}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &3618327744505572986 stripped
+--- !u!114 &2163125858669579962 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3184632523750088898, guid: 6217e7e134e9f9d47b6add1890750d9a, type: 3}
   m_PrefabInstance: {fileID: 3618327744505572984}
@@ -472,6 +492,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afe1e81883c36bc4a8d2e3f2a2af1d0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.PlankButton
+--- !u!224 &3273635304303028651 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 2258740065450133459, guid: 6217e7e134e9f9d47b6add1890750d9a, type: 3}
+  m_PrefabInstance: {fileID: 3618327744505572984}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &4713724408490077037
 PrefabInstance:
   m_ObjectHideFlags: 0

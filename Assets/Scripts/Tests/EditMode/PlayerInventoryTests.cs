@@ -13,6 +13,30 @@ namespace Fungiiiii.Tests.EditMode
         }
 
         [Test]
+        public void Collect_AddsAndTellsWhatWasCollected_WhereAddTellsNothing()
+        {
+            var inventory = new PlayerInventory(1);
+            ItemDefinition item = CreateItem(maxStackSize: 5);
+            ItemDefinition collected = null;
+            var count = 0;
+            inventory.Collected += (what, quantity) =>
+            {
+                collected = what;
+                count += quantity;
+            };
+
+            inventory.Add(item, 2);
+            Assert.That(count, Is.Zero, "Moving items is not collecting them.");
+
+            Assert.That(inventory.Collect(item, 6), Is.EqualTo(3));
+            Assert.That(collected, Is.SameAs(item));
+            Assert.That(count, Is.EqualTo(3), "Only what fitted was collected.");
+
+            Assert.That(inventory.Collect(item, 1), Is.Zero);
+            Assert.That(count, Is.EqualTo(3), "Nothing was collected into a full inventory.");
+        }
+
+        [Test]
         public void Add_FillsExistingStackBeforeOpeningAnotherSlot()
         {
             var inventory = new PlayerInventory(3);

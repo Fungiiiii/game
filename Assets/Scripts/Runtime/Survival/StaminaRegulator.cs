@@ -4,10 +4,10 @@ namespace Fungiiiii.Survival
 {
     /// <summary>
     /// Stamina rules of RG_SU_03 and RG_SU_04, applied to the stamina of a
-    /// <see cref="PlayerVitals"/>: sprinting drains it over time, a dodge costs a fixed
-    /// share, and it regenerates once nothing has been spent for a short delay, walking
-    /// included. At zero the player is exhausted: no sprint and no dodge until stamina
-    /// is back to a recovery threshold.
+    /// <see cref="PlayerVitals"/>: sprinting drains it over time, and it regenerates once
+    /// nothing has been spent for a short delay, walking included. At zero the player is
+    /// exhausted: no sprint until stamina is back to a recovery threshold. The dodge, and
+    /// its cost, were taken out of the game (playtest of 21/11).
     ///
     /// All amounts are percentages of the maximum stamina.
     /// </summary>
@@ -17,26 +17,22 @@ namespace Fungiiiii.Survival
         {
             public Settings(
                 float sprintCostPerSecond,
-                float dodgeCost,
                 float regenerationPerSecond,
                 float regenerationDelaySeconds,
                 float recoveryThreshold)
             {
                 ValidateNonNegative(sprintCostPerSecond, nameof(sprintCostPerSecond));
-                ValidateNonNegative(dodgeCost, nameof(dodgeCost));
                 ValidateNonNegative(regenerationPerSecond, nameof(regenerationPerSecond));
                 ValidateNonNegative(regenerationDelaySeconds, nameof(regenerationDelaySeconds));
                 ValidateNonNegative(recoveryThreshold, nameof(recoveryThreshold));
 
                 SprintCostPerSecond = sprintCostPerSecond;
-                DodgeCost = dodgeCost;
                 RegenerationPerSecond = regenerationPerSecond;
                 RegenerationDelaySeconds = regenerationDelaySeconds;
                 RecoveryThreshold = recoveryThreshold;
             }
 
             public float SprintCostPerSecond { get; }
-            public float DodgeCost { get; }
             public float RegenerationPerSecond { get; }
             public float RegenerationDelaySeconds { get; }
             public float RecoveryThreshold { get; }
@@ -44,7 +40,6 @@ namespace Fungiiiii.Survival
             /// <summary>Starting values of RG_SU_03 and RG_SU_04, to balance in playtest.</summary>
             public static Settings Default => new Settings(
                 sprintCostPerSecond: 15f,
-                dodgeCost: 20f,
                 regenerationPerSecond: 20f,
                 regenerationDelaySeconds: 1f,
                 recoveryThreshold: 20f);
@@ -73,20 +68,6 @@ namespace Fungiiiii.Survival
         public bool IsExhausted { get; private set; }
 
         public bool CanSprint => !IsExhausted && vitals.Current.Stamina > 0f;
-
-        public bool CanDodge => !IsExhausted && vitals.Current.Stamina > 0f;
-
-        /// <summary>Pays for a dodge. Refused, spending nothing, while the player cannot dodge.</summary>
-        public bool TryDodge()
-        {
-            if (!CanDodge)
-            {
-                return false;
-            }
-
-            Spend(Percent(settings.DodgeCost));
-            return true;
-        }
 
         /// <summary>
         /// Advances stamina by <paramref name="deltaTime"/> seconds.

@@ -51,6 +51,14 @@ namespace Fungiiiii.Editor.Playtest
             (UiText.HintHalfOrOne, "La moitié, ou un seul", "Half, or just one"),
             (UiText.HintGatherAll, "Tout ramasser", "Gather all"),
             (UiText.HintClose, "Fermer", "Close"),
+            (UiText.HintDrop, "Jeter", "Drop"),
+
+            // Item names, keys of the items' definitions (nameKey).
+            ("item.wood", "Bâton", "Stick"),
+            ("item.spore", "Champignon", "Mushroom"),
+            ("item.net", "Filet", "Net"),
+            ("item.spongeus", "Spongeus", "Spongeus"),
+            ("item.champoule", "Champoule", "Champoule"),
         };
 
         /// <summary>

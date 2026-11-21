@@ -42,7 +42,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Dodge",
+                    "name": "Jump",
                     "type": "Button",
                     "id": "72b6c44e-527a-442f-a743-7c73b22f23fe",
                     "expectedControlType": "Button",
@@ -327,18 +327,18 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Dodge",
+                    "action": "Jump",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
                     "id": "b677d6fc-f316-4b37-8585-09c7abab70ca",
-                    "path": "<Gamepad>/buttonWest",
+                    "path": "<Gamepad>/buttonSouth",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "Dodge",
+                    "action": "Jump",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -675,6 +675,15 @@
                     "name": "GatherAll",
                     "type": "Button",
                     "id": "716f1296-1f7a-4768-83be-7819e9e3c17f",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Drop",
+                    "type": "Button",
+                    "id": "bc30b164-a911-4c3e-ba95-1cdd3ce26622",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -1119,6 +1128,28 @@
                     "processors": "",
                     "groups": "Gamepad",
                     "action": "GatherAll",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "04cba86d-9cd7-420a-95d0-43c4aad22405",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Drop",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "da87097e-bf19-485f-b4eb-5206053a51eb",
+                    "path": "<Gamepad>/rightShoulder",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "Drop",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

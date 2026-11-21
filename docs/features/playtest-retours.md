@@ -12,6 +12,7 @@
 - [playtest-base](./playtest-base.md) — les bâtons et les champignons ne sont plus répartis sur toute la carte : ils sont gardés autour du joueur. Le contour visé devient cyan, avec la touche au-dessus. L'inventaire est refait. Le filet ne montre son arc qu'en visant.
 - [12487v2byt9-mystic-forest](./12487v2byt9-mystic-forest.md) — le générateur écarte les arbres des rochers selon leur emprise, et les calques se fondent en bord de zone (`fadeSouth`, `fadeNorth`). `Border_Rocks` passe avant `Border_TreePine`. Le Terrain est regénéré. `MushroomCluster` est régénéré (même GUID) et trois variantes s'ajoutent.
 - [12487v29zj5-poison-test-bench](./12487v29zj5-poison-test-bench.md) — les jauges du joueur (`VitalsHud`) deviennent `VitalGauges`, un prefab placé dans `PoisonScene`, `HUDScene` et `DemoLoopScene`. Le banc poison les reçoit dans l'Inspector.
+- [12487v2nnw4-demo-boucle](./12487v2nnw4-demo-boucle.md) — le dodge et son coût d'endurance sont retirés ; Espace saute.
 - [86c9mnqy5-filet-capture](./86c9mnqy5-filet-capture.md) — action principale et secondaire, visée avec zoom, points de l'arc espacés, contour de chance sur le champignon visé. `NetThrowScene` est concernée : c'est le même `NetThrower`.
 
 ## Ce que fait la feature
@@ -78,8 +79,16 @@
 - [ ] En bas à droite, sans fond : une ligne par aide, la touche dessinée pour l'appareil en main (touche, souris, bouton Xbox ou forme PlayStation), puis le texte collé à 8 px.
 - [ ] En jeu, avec le filet : « Lancer le filet », « Viser », « Changer d'objet », « Inventaire ». En visant : « Lancer », « Relâcher : ne plus viser ». Pendant que le filet est parti, ses aides disparaissent.
 - [ ] Un objet visé ajoute « Ramasser » en tête ; au-delà de 4 lignes, « Changer d'objet » laisse sa place.
-- [ ] Inventaire ouvert : « Prendre ou poser », « La moitié, ou un seul », « Tout ramasser » (souris ×2 ou Y), « Fermer ». Les aides centrées en bas de l'inventaire sont retirées. En pause, aucune aide.
+- [ ] Inventaire ouvert : « Prendre ou poser », « La moitié, ou un seul », « Jeter » (Q ou RB), « Fermer » ; « Tout ramasser » (souris ×2 ou Y) laisse sa place à « Jeter ». Les aides centrées en bas de l'inventaire sont retirées. En pause, aucune aide.
 - [ ] Les touches viennent des actions : une touche réassignée s'affiche réassignée. Les textes suivent la langue.
+
+**Retours du 21/11, deuxième vague**
+
+- [ ] **Menus** : à l'accueil comme en pause, aucune planche n'est allumée tant que la souris n'en survole pas une ; la souris qui quitte une planche l'éteint. À la manette ou aux flèches, le premier mouvement allume la première planche.
+- [ ] **Jeter** (comme Minecraft) : dans l'inventaire, un clic hors du panneau jette ce que la souris tient, toute la pile au clic gauche, un seul objet au clic droit ; Q ou RB jette un objet de la case sous la souris ou sélectionnée à la manette. Comme dans Minecraft ou Terraria, l'image de l'objet dans l'inventaire tombe de la main devant le joueur et flotte au-dessus du sol, tournée vers la caméra, entourée comme ce qui se ramasse ; E la reprend.
+- [ ] **Objets ramassés** : au-dessus de la barre rapide, une ligne courte par objet, « +1 Bâton », « +2 Champignon », sans fond. Ramasser le même objet ajoute à sa ligne ; une ligne s'efface après 2 s, et trois au plus restent à l'écran. Cueillir, capturer et reprendre un objet jeté s'affichent ; ranger l'inventaire non.
+- [ ] **Saut** : Espace, ou A / ✕ à la manette, saute d'environ 1,2 m, au sol seulement et pas accroupi. Le dodge n'existe plus.
+- [ ] **Zoom** : ouvrir l'inventaire ou la pause en visant élargit la vue comme le relâchement du clic droit, sur 0,15 s, au lieu d'un coup.
 
 ## Hors périmètre
 
@@ -112,6 +121,7 @@
   - joueur : le variant `PlaytestPlayer` du prefab Player porte `PlayerHands`, `PlayerInteractor`, `NetThrower`, `NetTargetOutline` et `StaminaDriver` ; Netcode l'a ajouté à `DefaultNetworkPrefabs`.
   - jauges : `VitalsHud` devient `VitalGauges` (prefab `VitalGauges`, trois instances du prefab `Gauge`), dans `DemoLoopScene`, `HUDScene` (`VitalGaugesPrototypeBootstrap`, `VitalGaugesPrototypeControls`) et `PoisonScene` ;
   - Retirés : `WoodMenu`, `DemoItems`, le menu **3. Wire Demo Loop Scene**, `VitalsHudPrototypeInstaller` (doublon du bootstrap de `HUDScene`). `PrototypeFirstPersonCamera.Moved` place la touche E.
+- **Deuxième vague du 21/11** : `SelectFirstOnMove` (première planche au premier mouvement), `PlankButton.OnPointerExit` ; `PlayerInventory.Collect` et son événement `Collected`, `PickupFeed` et `PickupLine` (prefabs `PickupFeed`, `PickupLine`) ; `InventoryHand.Drop`, `InventoryScreen.Dropped`, `InventoryDropZone` sur le voile, action `UI/Drop` (Q, RB), `DroppedItems` (objet de scène), `DroppedItem` et `FacesCamera` (l'image au sol) ; action `Player/Jump` à la place de `Dodge`, `PlayerMotor.TryJump`, `PlayerMovementCalculator.JumpSpeed`, pas vertical intégré à la vitesse moyenne (hauteur indépendante de la cadence), `PlayerDodge` supprimé ; `AimZoom` sans `Drop`, en temps réel. Les objets ont leur nom (`item.*` dans la table `UI`).
 
 ## Décisions
 
@@ -136,6 +146,14 @@
 - **`VitalsHud` devient `VitalGauges`** (proposé le 21/11, Hugo ayant demandé de critiquer le nom ; à confirmer) : « Vitals » reste, c'est le nom du modèle (`PlayerVitals`) et le terme usuel pour la vie et l'endurance ; « valeurs de personnage » désignerait plutôt des caractéristiques permanentes (force, vitesse). « Hud » était trop large : la barre rapide, les aides et la touche E font aussi partie du HUD. Ce composant n'en montre que les jauges, le mot des docs.
 - **Les composants du joueur de la partie sont sur un variant** (`PlaytestPlayer`) : le prefab Player de base reste celui des autres scènes et du réseau.
 - **La touche E se place quand la caméra a suivi le joueur** (`PrototypeFirstPersonCamera.Moved`), pas dans son propre `LateUpdate` : Unity ne garantit pas l'ordre de deux `LateUpdate`, et la touche affichait la position de l'image précédente quand l'interaction passait avant la caméra.
+- **Le dodge est retiré, le saut le remplace** (Hugo, 21/11) : à la première personne, le dodge ne convient pas ; il reviendra si le besoin se montre. Saut de 1,2 m, sans coût d'endurance, refusé en l'air et accroupi. Espace et A, libres une fois le dodge parti.
+- **La hauteur du saut ne dépend pas de la cadence** : `PlayerMotor` déplace le joueur à la moyenne des vitesses verticales avant et après chaque pas, exacte sous une gravité constante ; avec la seule vitesse d'après, un saut perdait environ v₀·dt/2, 6 cm à 60 images/s, plus de 30 cm à 10.
+- **Jeter comme dans Minecraft** (Hugo, 21/11) : clic hors du panneau, gauche pour la pile, droit pour un objet ; Q (et RB à la manette) pour un objet de la case visée. Le panneau arrête les clics, pour qu'un clic entre deux cases ne jette rien. Un objet jeté est une pile au sol qu'E reprend, autant qu'il en tient.
+- **Un objet jeté est son image d'inventaire au sol** (Hugo, 21/11, comme Minecraft et Terraria) : un bâton jeté qui ressemblerait à un bâton de la forêt se confondrait avec une ressource ; l'image se lit tout de suite comme un objet à reprendre, et vaut pour tout objet, filet compris. Tant que les icônes ne sont pas dessinées, c'est le carré de couleur de l'inventaire. Une icône avec de la transparence demandera un matériau découpé.
+- **« Ramasser » se distingue d'« ajouter »** : `PlayerInventory.Collect` prévient l'interface, `Add` non, car remettre en place ce que tient la souris passe aussi par `Add` et ne doit rien afficher.
+- **Fil des objets ramassés léger** (Hugo, 21/11, « sans être trop lourd ») : pas de fond, une ligne par objet qui se cumule, 2 s, trois lignes au plus, juste au-dessus de la barre rapide, texte crème à contour sombre comme les aides.
+- **Les menus s'ouvrent sans planche allumée** (Hugo, 21/11) : la sélection suit la souris ; la manette prend la première planche à son premier mouvement, comme la première case de l'inventaire. Même règle pour la pause, par cohérence.
+- **Quitter la visée pour un menu élargit la vue en douceur** (Hugo, 21/11), en temps réel pour que la transition joue aussi sous la pause.
 - **Pas de note validée dans ClickUp** : voir l'en-tête.
 
 ## Tests
@@ -173,6 +191,8 @@ Lancés en batch sur le PC de Hugo (Unity 6000.3.21f1) à chaque étape.
 | `InventoryScreenPlayModeTests` (navigation, focus, A, X, Y) | PlayMode | Inventaire à la manette | ✅ |
 | `InputGlyphsTests`, `ControlHintTests` | EditMode | Dessin des touches, schémas, réassignation | ✅ |
 | `DemoLoopScenePlayModeTests.InGame_TheHints_*`, `WhileAiming_*`, `WithATarget_*`, `TheInventory_ShowsItsOwnHints_*` | PlayMode | Aides de touches | ✅ |
+| `PlayerInventoryTests.Collect_*`, `InventoryHandTests.Drop_*`, `PlayerMovementCalculatorTests.JumpSpeed_*`, `PlayerJumpPlayModeTests` (sol nu, 60 et 10 images/s), `StaminaRegulatorTests` (sans dodge) | EditMode | Ramasser, jeter, sauter, endurance | ✅ |
+| `DemoLoopScenePlayModeTests.Gathering_ShowsWhatWasCollected_*`, `AnItemDroppedFromTheInventory_*`, `Space_Jumps_*`, `ThePauseAndTheInventory_DropTheAim_AndWidenTheViewAsWhenReleased` ; `InventoryScreenPlayModeTests.APressOutOfThePanel_*` ; `MainMenuPlayModeTests.NoPlankStandsOutFirst_*` | PlayMode | Deuxième vague du 21/11 | ✅ |
 | `UiPrefabTests.EveryGraphicOfTheInterface_IsSavedWithTheCanvasRendererThatDrawsIt` (lit les fichiers : en mémoire, Unity ajoute le composant exigé et masque l'oubli) | EditMode | Chaque graphisme des prefabs d'interface est dessiné | ✅ |
 | `DemoLoopScenePlayModeTests`, `PlaytestLoopPlayModeTests`, `MainMenuPlayModeTests`, `KeyPromptPlayModeTests`, `InventoryScreenPlayModeTests`, `VitalGaugesPlayModeTests`, `PoisonTestBenchTests` (prefabs et objets de scène) | PlayMode | Architecture : même comportement après le passage en prefabs, objets de scène et fiches | ✅ |
 
@@ -208,6 +228,12 @@ Lancés en batch sur le PC de Hugo (Unity 6000.3.21f1) à chaque étape.
 | 21 | Viser un bâton | « Ramasser » en tête avec **E** ; « Changer d'objet » disparaît | ⬜ |
 | 22 | Tab ; puis manette Xbox ; puis manette PlayStation | Aides de l'inventaire ; souris et Tab, puis A X Y B, puis ✕ □ △ ○ | ⬜ |
 | 23 | Le filet en main | Le filet en bas à droite de l'écran ne passe pas sous les aides | ⬜ |
+| 24 | Accueil, souris hors des planches ; puis manette, stick vers le bas | Aucune planche allumée ; puis « Jouer » s'allume | ⬜ |
+| 25 | Inventaire : prendre une pile, clic droit hors du panneau, puis clic gauche | L'image de l'objet tombe devant et flotte, tournée vers soi, puis le reste ; E les reprend | ⬜ |
+| 26 | Inventaire : souris sur une case, Q ; à la manette, RB | Un objet de la case tombe devant | ⬜ |
+| 27 | Ramasser deux bâtons, puis un champignon | « +2 Bâton » puis « +1 Champignon » au-dessus de la barre rapide, qui s'effacent | ⬜ |
+| 28 | Espace, puis A à la manette ; accroupi, Espace | Saut ; pas de saut accroupi | ⬜ |
+| 29 | Clic droit maintenu, Tab | La vue s'élargit en douceur, comme au relâchement | ⬜ |
 
 ## Limitations connues
 

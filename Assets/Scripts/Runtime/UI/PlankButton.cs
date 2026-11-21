@@ -8,9 +8,10 @@ namespace Fungiiiii.UI
     /// A menu button drawn as a wooden plank. The plank under the pointer becomes the
     /// selected one, and the selected plank gets lighter and slides forward: mouse,
     /// keyboard and gamepad show the same thing, and only one plank stands out at a time.
+    /// The pointer leaving it leaves no plank selected.
     /// </summary>
     [RequireComponent(typeof(Button))]
-    internal sealed class PlankButton : MonoBehaviour, IPointerEnterHandler, ISelectHandler, IDeselectHandler
+    internal sealed class PlankButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, ISelectHandler, IDeselectHandler
     {
         /// <summary>Seconds to go from rest to fully highlighted. Runs on real time: menus work while the game is paused.</summary>
         private const float TransitionSeconds = 0.14f;
@@ -41,6 +42,14 @@ namespace Fungiiiii.UI
             if (EventSystem.current != null && Button.IsInteractable())
             {
                 EventSystem.current.SetSelectedGameObject(gameObject);
+            }
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject == gameObject)
+            {
+                EventSystem.current.SetSelectedGameObject(null);
             }
         }
 

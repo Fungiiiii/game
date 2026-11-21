@@ -98,6 +98,30 @@ MonoBehaviour:
     m_Localized: Close
     m_Metadata:
       m_Items: []
+  - m_Id: 372971049836544
+    m_Localized: Drop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971083390976
+    m_Localized: Stick
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971083390977
+    m_Localized: Mushroom
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971083390978
+    m_Localized: Net
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971087585280
+    m_Localized: Spongeus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971087585281
+    m_Localized: Champoule
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

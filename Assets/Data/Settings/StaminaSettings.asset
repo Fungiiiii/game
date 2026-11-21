@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: StaminaSettings
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Survival.StaminaSettings
   sprintCostPerSecond: 15
-  dodgeCost: 20
   regenerationPerSecond: 20
   regenerationDelaySeconds: 1
   recoveryThreshold: 20

@@ -49,6 +49,9 @@ namespace Fungiiiii.Inventory
 
         public event Action Changed;
 
+        /// <summary>Raised when items taken from the world are added, with how many were.</summary>
+        public event Action<ItemDefinition, int> Collected;
+
         public int SlotCount => slots.Length;
 
         public InventorySlot GetSlot(int index)
@@ -110,6 +113,22 @@ namespace Fungiiiii.Inventory
             }
 
             return addedTotal;
+        }
+
+        /// <summary>
+        /// Adds items taken from the world — gathered, caught, picked up — as <see cref="Add"/>
+        /// does, and tells whoever shows the player what they collect. Moving items inside
+        /// the inventory goes through <see cref="Add"/>, which tells nothing.
+        /// </summary>
+        public int Collect(ItemDefinition item, int quantity)
+        {
+            var added = Add(item, quantity);
+            if (added > 0)
+            {
+                Collected?.Invoke(item, added);
+            }
+
+            return added;
         }
 
         /// <summary>

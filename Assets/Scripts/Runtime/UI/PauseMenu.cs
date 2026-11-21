@@ -87,12 +87,10 @@ namespace Fungiiiii.UI
             {
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
-                EventSystem.current.SetSelectedGameObject(resumeButton.gameObject);
             }
             else
             {
-                // Otherwise the hidden plank stays selected, and selecting it again on the
-                // next pause would change nothing: it would not stand out.
+                // A plank selected from the gamepad would still stand out on the next pause.
                 EventSystem.current.SetSelectedGameObject(null);
             }
         }
