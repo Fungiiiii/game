@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Fungiiiii.Editor.World;
 using Fungiiiii.Runtime.World;
 using NUnit.Framework;
@@ -78,6 +79,40 @@ namespace Fungiiiii.Tests.EditMode
                 {
                     Assert.That(even.Exists(p => p.Position == placement.Position && p.Yaw == placement.Yaw), Is.True);
                 }
+            }
+            finally
+            {
+                Object.DestroyImmediate(gameObject);
+            }
+        }
+
+        [Test]
+        public void FadeThinsTheLayerTowardsItsEdgeWithoutMovingTheOthers()
+        {
+            var gameObject = new GameObject("FadeTest");
+            try
+            {
+                // An area from z = -100 to z = 100, fading over its northern 80 m.
+                var scatter = gameObject.AddComponent<ForestScatter>();
+                scatter.Configure(new Vector2(200f, 200f), 5f, 1f, 1f, rotate: true, newSeed: 12);
+                List<ForestScatter.Placement> hard = scatter.ComputePlacements(null);
+
+                scatter.ConfigureFade(south: 0f, north: 80f);
+                List<ForestScatter.Placement> faded = scatter.ComputePlacements(null);
+
+                foreach (ForestScatter.Placement placement in faded)
+                {
+                    Assert.That(hard.Exists(p => p.Position == placement.Position && p.Yaw == placement.Yaw && p.Scale == placement.Scale), Is.True,
+                        "a faded layer moved or rescaled an instance");
+                }
+
+                int Count(List<ForestScatter.Placement> list, float fromZ, float toZ) =>
+                    list.Count(p => p.Position.z >= fromZ && p.Position.z < toZ);
+
+                Assert.That(Count(faded, -100f, 20f), Is.EqualTo(Count(hard, -100f, 20f)), "the layer thinned out before its band");
+                Assert.That(Count(faded, 20f, 60f), Is.InRange(Count(hard, 20f, 60f) * 0.5f, Count(hard, 20f, 60f) * 0.9f));
+                Assert.That(Count(faded, 60f, 100f), Is.LessThan(Count(hard, 60f, 100f) * 0.4f));
+                Assert.That(Count(faded, 95f, 100f), Is.LessThanOrEqualTo(Count(hard, 95f, 100f) / 4 + 1));
             }
             finally
             {

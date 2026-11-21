@@ -1,5 +1,6 @@
 using System.Linq;
 using Fungiiiii.Demo;
+using Fungiiiii.Editor.World;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEditor.SceneManagement;
@@ -112,6 +113,29 @@ namespace Fungiiiii.Editor.Playtest
             included.GetArrayElementAtIndex(included.arraySize - 1).objectReferenceValue = shader;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             AssetDatabase.SaveAssets();
+        }
+
+        /// <summary>
+        /// Rewrites the Mystic Forest's trees, rocks and grass from its scatter layers, as
+        /// the "Generate forest" button of a layer does, and saves the scene and its
+        /// Terrain data. Run it after changing a layer or the generator. Not part of Set
+        /// Up Everything: it changes Hugo's forest.
+        /// </summary>
+        [MenuItem("Fungiiiii/Playtest/6. Regenerate Mystic Forest")]
+        internal static void RegenerateMysticForest()
+        {
+            var scene = EditorSceneManager.OpenScene(ForestScenePath, OpenSceneMode.Single);
+            var terrain = Object.FindFirstObjectByType<Terrain>();
+            if (terrain == null)
+            {
+                throw new System.InvalidOperationException($"{ForestScenePath} has no Terrain.");
+            }
+
+            var written = TerrainForestGenerator.Generate(terrain);
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"Mystic Forest regenerated: {written} trees, rocks and plants.");
         }
 
         [MenuItem("Fungiiiii/Playtest/Set Up Everything")]
