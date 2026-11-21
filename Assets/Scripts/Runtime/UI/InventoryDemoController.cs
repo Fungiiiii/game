@@ -1,3 +1,4 @@
+using System;
 using Fungiiiii.Inventory;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -14,7 +15,7 @@ namespace Fungiiiii.UI
     /// and goes back to its slot when the screen closes. Items show as squares of their
     /// colour until their icons are drawn.
     /// </summary>
-    public sealed class InventoryDemoController : MonoBehaviour
+    public sealed class InventoryDemoController : MonoBehaviour, IGameScreen
     {
         public const int MainColumnCount = 3;
         public const int MainRowCount = 4;
@@ -109,6 +110,25 @@ namespace Fungiiiii.UI
         /// The font of the screen. Set it before Awake runs, like <see cref="Bind"/>;
         /// without one, Unity's built-in font is used.
         /// </summary>
+        // It has no button of its own that asks to close: Tab and Escape close it.
+        event Action IGameScreen.CloseRequested
+        {
+            add { }
+            remove { }
+        }
+
+        /// <summary>Shows the screen; the screen stack calls it.</summary>
+        public void Open()
+        {
+            gameObject.SetActive(true);
+        }
+
+        /// <summary>Hides the screen, putting back what the mouse held.</summary>
+        public void Close()
+        {
+            gameObject.SetActive(false);
+        }
+
         public Font Font
         {
             get => font;

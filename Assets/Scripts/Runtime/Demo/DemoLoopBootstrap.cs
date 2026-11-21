@@ -302,6 +302,8 @@ namespace Fungiiiii.Demo
         private ItemDefinition spongeusItem;
         private ItemDefinition champouleItem;
         private ItemDefinition netItem;
+        private ScreenStack screens;
+        private InputAction menuAction;
         private InputAction inventoryAction;
         private InputAction resetAction;
         private System.Random random;
@@ -350,6 +352,9 @@ namespace Fungiiiii.Demo
 
         public bool IsInventoryOpen => inventoryView != null && inventoryView.gameObject.activeSelf;
 
+        /// <summary>The screens open over the game: Escape closes the top one, or pauses.</summary>
+        public ScreenStack Screens => screens;
+
         /// <summary>The pause menu, opened with Escape.</summary>
         public PauseMenu Pause => pauseMenu;
 
@@ -384,9 +389,14 @@ namespace Fungiiiii.Demo
                 Thrower.CatchReturned -= HandleCatchReturned;
             }
 
-            if (pauseMenu != null)
+            if (screens != null)
             {
-                pauseMenu.PausedChanged -= HandlePausedChanged;
+                screens.Changed -= ApplyScreens;
+            }
+
+            if (menuAction != null)
+            {
+                menuAction.performed -= OnMenuPerformed;
             }
 
             foreach (var material in materials)
@@ -464,9 +474,12 @@ namespace Fungiiiii.Demo
             interactor.Initialize(firstPersonCamera.Camera, Inventory, interactables, AimConeDegrees, menuFont, controls);
 
             pauseMenu = new GameObject("Pause Menu").AddComponent<PauseMenu>();
-            pauseMenu.Initialize(menuFont, mainMenuScenePath, controls.Screens.Menu);
-            pauseMenu.PausedChanged += HandlePausedChanged;
+            pauseMenu.Initialize(menuFont, mainMenuScenePath);
 
+            screens = new ScreenStack(pauseMenu);
+            screens.Changed += ApplyScreens;
+            menuAction = controls.Screens.Menu;
+            menuAction.performed += OnMenuPerformed;
             inventoryAction = controls.Screens.Inventory;
             inventoryAction.performed += OnInventoryPerformed;
             // Development shortcut, not a player-facing control.
@@ -902,30 +915,46 @@ namespace Fungiiiii.Demo
             }
         }
 
+        /// <summary>Escape: closes the screen on top, or pauses when none is open.</summary>
+        private void OnMenuPerformed(InputAction.CallbackContext _)
+        {
+            if (IsReady)
+            {
+                screens.Back();
+            }
+        }
+
+        /// <summary>Tab: opens the inventory when no screen is open, closes it when it is on top.</summary>
         private void OnInventoryPerformed(InputAction.CallbackContext _)
         {
-            if (IsReady && !pauseMenu.IsPaused)
+            if (IsReady)
             {
-                SetInventoryOpen(!IsInventoryOpen);
+                screens.Toggle(inventoryView);
+            }
+        }
+
+        /// <summary>Opens or closes the inventory, as Tab does.</summary>
+        public void SetInventoryOpen(bool open)
+        {
+            if (open)
+            {
+                screens.Open(inventoryView);
+            }
+            else
+            {
+                screens.Close(inventoryView);
             }
         }
 
         /// <summary>
-        /// Opens or closes the inventory. While it is open the mouse is free for it: the
-        /// view does not turn, and neither the net nor the interact control respond.
+        /// While a screen is open the mouse is free for it: the view does not turn, and
+        /// neither the hands, the quick bar nor the interact control respond. The inventory
+        /// shows its own quick bar, so the game's one hides under it.
         /// </summary>
-        public void SetInventoryOpen(bool open)
+        private void ApplyScreens()
         {
-            inventoryView.gameObject.SetActive(open);
-            // The inventory shows its own quick bar.
-            hotbar.SetVisible(!open);
-            SetGameplayInput(!open);
-        }
-
-        /// <summary>Paused, nothing of the game responds; resumed, it is as it was, inventory included.</summary>
-        private void HandlePausedChanged(bool paused)
-        {
-            SetGameplayInput(!paused && !IsInventoryOpen);
+            hotbar.SetVisible(!screens.IsOpen(inventoryView));
+            SetGameplayInput(!screens.IsAnyOpen);
         }
 
         /// <summary>The view, the net, the quick bar and the interact control. Off, the pointer is free for a menu.</summary>
@@ -940,7 +969,7 @@ namespace Fungiiiii.Demo
 
         private void OnResetPerformed(InputAction.CallbackContext _)
         {
-            if (IsReady && !pauseMenu.IsPaused)
+            if (IsReady && !screens.IsAnyOpen)
             {
                 ResetDemo();
             }
@@ -949,8 +978,7 @@ namespace Fungiiiii.Demo
         /// <summary>Everything back to the start: player, gauges, inventory with only the net, resources, mushrooms.</summary>
         public void ResetDemo()
         {
-            pauseMenu.SetPaused(false);
-            SetInventoryOpen(false);
+            screens.CloseAll();
             Thrower.ResetNet();
 
             foreach (var mushroom in mushrooms)
