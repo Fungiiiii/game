@@ -196,7 +196,7 @@ namespace Fungiiiii.UI
             private readonly RectTransform face;
             private readonly CanvasGroup faceGroup;
             private readonly PlankGraphic plank;
-            private readonly Image item;
+            private readonly ItemIcon item;
             private readonly Text quantity;
             private float current;
 
@@ -228,7 +228,7 @@ namespace Fungiiiii.UI
 
                 // A dark hollow under the item, so that wood shows on a wooden plank.
                 CreateSquare("Hollow", face, HollowSize).color = WoodDark;
-                item = CreateSquare("Item", face, ItemSize);
+                item = CreateSquare("Item", face, ItemSize).gameObject.AddComponent<ItemIcon>();
 
                 var quantityObject = new GameObject("Quantity", typeof(RectTransform), typeof(Text));
                 var quantityRect = (RectTransform)quantityObject.transform;
@@ -254,11 +254,7 @@ namespace Fungiiiii.UI
 
             public void Show(InventorySlot slot)
             {
-                item.enabled = !slot.IsEmpty;
-                if (!slot.IsEmpty)
-                {
-                    item.color = slot.Item.Color;
-                }
+                item.Show(slot.Item);
                 // A single item shows no number, as in most quick bars.
                 quantity.text = slot.Quantity > 1 ? slot.Quantity.ToString() : string.Empty;
             }
