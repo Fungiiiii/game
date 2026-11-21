@@ -42,6 +42,19 @@ No abstraction, generic system or extension point for a hypothetical future need
 
 ---
 
+## Scenes, prefabs and data
+
+What can be authored in the Editor is authored there, not built by code at runtime.
+
+- **The interface is prefabs** (`Assets/Prefabs/UI/`): canvases, panels, buttons, labels, their fonts, colours and layout. A component holds serialized references to its parts; what repeats per slot or per line is a prefab it instantiates.
+- **The world is scene objects and prefabs**, their references set in the Inspector. The player's components live on its prefab — a prefab variant when only one scene needs them.
+- **Tuning and content are ScriptableObjects** (`Assets/Data/`): item, creature and resource definitions, settings. A new creature or resource is an asset, not code.
+- **A scene's entry point stays small**: it loads what must be loaded, spawns the player and hands it to the scene's components, which do their own work. It holds neither their settings nor their objects.
+- **Prefabs and scenes are the source of truth.** A script that writes prefabs or scene wiring is a one-off: run it, review its output, delete it. Editor tools that generate content procedurally — terrain, scatter — stay.
+- Code creates at runtime only what exists at runtime: prefab instances, objects whose number depends on game state, meshes and materials made from data.
+
+---
+
 ## Root cause before fix
 
 A quick fix is a signal, not a solution. If the patch is a null check that silences a crash, a frame delay that makes a race go away, a magic offset that makes a collision look right, a `try/catch` around a symptom, or a `[DefaultExecutionOrder]` that reorders the problem away — **the real defect is almost certainly somewhere else**. A workaround that works is evidence the cause has not been found yet, not evidence the task is done.
