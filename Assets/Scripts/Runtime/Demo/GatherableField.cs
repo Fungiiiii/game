@@ -24,22 +24,50 @@ namespace Fungiiiii.Demo
     }
 
     /// <summary>
-    /// One kind of resource over the whole map: it runs the <see cref="ResourceSpawner"/>
-    /// of the kind and shows a <see cref="Gatherable"/> on every spot the spawner fills.
-    /// Gathered objects are kept and shown again on the next spot, instead of being
-    /// destroyed and rebuilt.
+    /// A player as the fields see them: the body gives the position, because the camera is
+    /// only moved to it in LateUpdate; the camera gives where they look and how wide.
+    /// </summary>
+    internal readonly struct FieldPlayer
+    {
+        public FieldPlayer(Transform body, Camera view)
+        {
+            Body = body;
+            View = view;
+        }
+
+        public Transform Body { get; }
+
+        public Camera View { get; }
+
+        public ResourceViewer ToViewer()
+        {
+            var halfView = Camera.VerticalToHorizontalFieldOfView(View.fieldOfView, View.aspect) * 0.5f;
+            return new ResourceViewer(Body.position, View.transform.forward, halfView);
+        }
+    }
+
+    /// <summary>
+    /// One kind of resource around the players: it runs the <see cref="ResourceSpawner"/>
+    /// of the kind and shows a <see cref="Gatherable"/> on every spot the spawner fills,
+    /// in one of its model variants drawn at random. Gathered or forgotten objects are kept
+    /// and shown again later, instead of being destroyed and rebuilt.
     /// </summary>
     internal sealed class GatherableField : MonoBehaviour
     {
         private readonly List<Gatherable> gatherables = new List<Gatherable>();
-        private readonly Stack<Gatherable> hidden = new Stack<Gatherable>();
+        private readonly Dictionary<Gatherable, int> variantOf = new Dictionary<Gatherable, int>();
+        private readonly Dictionary<int, Gatherable> shown = new Dictionary<int, Gatherable>();
         private readonly List<int> spawned = new List<int>();
+        private readonly List<int> despawned = new List<int>();
+        private readonly List<ResourceViewer> viewers = new List<ResourceViewer>();
 
         private InventoryItemDefinition item;
-        private GameObject prefab;
+        private IReadOnlyList<GameObject> variants;
+        private Stack<Gatherable>[] hidden;
         private IReadOnlyList<GatherableSpot> spots;
         private ResourceSpawner spawner;
-        private Transform player;
+        private System.Random variantRandom;
+        private IReadOnlyList<FieldPlayer> players;
         private float reach;
         private ItemOutlineFactory outlines;
         private Action<Gatherable> created;
@@ -47,25 +75,37 @@ namespace Fungiiiii.Demo
         /// <summary>Every gatherable built so far, on the map or waiting for a spot.</summary>
         public IReadOnlyList<Gatherable> Gatherables => gatherables;
 
+        /// <param name="gatherablePrefabs">Model variants: each appearance draws one.</param>
         /// <param name="onCreated">Called once for each gatherable the field builds.</param>
         public void Initialize(
             InventoryItemDefinition gatheredItem,
-            GameObject gatherablePrefab,
+            IReadOnlyList<GameObject> gatherablePrefabs,
             IReadOnlyList<GatherableSpot> fieldSpots,
             ResourceSpawner.Settings settings,
             System.Random random,
-            Transform playerTransform,
+            IReadOnlyList<FieldPlayer> fieldPlayers,
             float interactionReach,
             ItemOutlineFactory outlineFactory,
             Action<Gatherable> onCreated)
         {
+            if (gatherablePrefabs == null || gatherablePrefabs.Count == 0)
+            {
+                throw new ArgumentException("A field needs at least one model.", nameof(gatherablePrefabs));
+            }
+
             item = gatheredItem;
-            prefab = gatherablePrefab;
+            variants = gatherablePrefabs;
             spots = fieldSpots;
-            player = playerTransform;
+            players = fieldPlayers;
             reach = interactionReach;
             outlines = outlineFactory;
             created = onCreated;
+
+            hidden = new Stack<Gatherable>[variants.Count];
+            for (var variant = 0; variant < hidden.Length; variant++)
+            {
+                hidden[variant] = new Stack<Gatherable>();
+            }
 
             var positions = new Vector3[fieldSpots.Count];
             for (var index = 0; index < positions.Length; index++)
@@ -73,20 +113,21 @@ namespace Fungiiiii.Demo
                 positions[index] = fieldSpots[index].Position;
             }
 
-            spawner = new ResourceSpawner(positions, settings, random);
+            // The variant draw has its own stream: adding a variant does not move any spot.
+            spawner = new ResourceSpawner(positions, settings, new System.Random(random.Next()));
+            variantRandom = new System.Random(random.Next());
             Fill();
         }
 
-        /// <summary>Everything gone, then the map filled again, for a demo reset.</summary>
+        /// <summary>
+        /// Everything gone, then the bubbles filled again around the players, for a demo
+        /// reset: the players must already stand where they start.
+        /// </summary>
         public void ResetField()
         {
-            foreach (var gatherable in gatherables)
+            foreach (var spot in new List<int>(shown.Keys))
             {
-                if (gatherable.IsAvailable)
-                {
-                    gatherable.Disappear();
-                    hidden.Push(gatherable);
-                }
+                Hide(spot);
             }
 
             spawner.Clear();
@@ -95,21 +136,42 @@ namespace Fungiiiii.Demo
 
         private void Update()
         {
-            if (spawner == null || player == null)
+            if (spawner == null)
             {
                 return;
             }
 
             spawned.Clear();
-            spawner.Tick(Time.deltaTime, player.position, spawned);
+            despawned.Clear();
+            spawner.Tick(Time.deltaTime, Viewers(), spawned, despawned);
+
+            foreach (var spot in despawned)
+            {
+                Hide(spot);
+            }
+
             ShowSpawned();
         }
 
         private void Fill()
         {
             spawned.Clear();
-            spawner.Fill(spawned);
+            spawner.Fill(Viewers(), spawned);
             ShowSpawned();
+        }
+
+        private List<ResourceViewer> Viewers()
+        {
+            viewers.Clear();
+            foreach (var player in players)
+            {
+                if (player.Body != null && player.View != null)
+                {
+                    viewers.Add(player.ToViewer());
+                }
+            }
+
+            return viewers;
         }
 
         private void ShowSpawned()
@@ -117,13 +179,29 @@ namespace Fungiiiii.Demo
             foreach (var spot in spawned)
             {
                 var pose = spots[spot];
-                var gatherable = hidden.Count > 0 ? hidden.Pop() : Create();
+                var variant = variantRandom.Next(variants.Count);
+                var gatherable = hidden[variant].Count > 0 ? hidden[variant].Pop() : Create(variant);
                 gatherable.Appear(spot, pose.Position, pose.Rotation, pose.Scale);
+                shown[spot] = gatherable;
             }
         }
 
-        private Gatherable Create()
+        /// <summary>Hides what stands on a spot without giving anything.</summary>
+        private void Hide(int spot)
         {
+            if (!shown.TryGetValue(spot, out var gatherable))
+            {
+                return;
+            }
+
+            shown.Remove(spot);
+            gatherable.Disappear();
+            hidden[variantOf[gatherable]].Push(gatherable);
+        }
+
+        private Gatherable Create(int variant)
+        {
+            var prefab = variants[variant];
             var gatherableObject = new GameObject($"Gatherable ({item.Id})");
             gatherableObject.transform.SetParent(transform, false);
 
@@ -135,6 +213,7 @@ namespace Fungiiiii.Demo
             gatherable.Initialize(item, outlines.Create(visual), reach);
             gatherable.Gathered += HandleGathered;
             gatherables.Add(gatherable);
+            variantOf.Add(gatherable, variant);
             created?.Invoke(gatherable);
             return gatherable;
         }
@@ -142,7 +221,8 @@ namespace Fungiiiii.Demo
         private void HandleGathered(Gatherable gatherable)
         {
             spawner.Release(gatherable.Spot);
-            hidden.Push(gatherable);
+            shown.Remove(gatherable.Spot);
+            hidden[variantOf[gatherable]].Push(gatherable);
         }
     }
 }

@@ -152,6 +152,11 @@ MonoBehaviour:
   spongeusModel: {fileID: 919132149155446097, guid: 7a0f4631898ffc54a8dcfe6f8d8470df, type: 3}
   champouleModel: {fileID: 919132149155446097, guid: b5bd4e6adcded1242827b1a80de60a44, type: 3}
   decorMushroomPrefab: {fileID: 8709750313228204993, guid: e27606cd8d7d8d0459eaae41bc1ef239, type: 3}
+  sporeMushroomPrefabs:
+  - {fileID: 8709750313228204993, guid: e27606cd8d7d8d0459eaae41bc1ef239, type: 3}
+  - {fileID: 8709750313228204993, guid: 0fca42dec6744ea89a6e0f70084bca41, type: 3}
+  - {fileID: 8709750313228204993, guid: f635731d222b4d67927789ab5a8184a0, type: 3}
+  - {fileID: 8709750313228204993, guid: ef073991fc1c4e5d99febbbb665630ab, type: 3}
   stickPrefab: {fileID: 1302624085802783701, guid: 26dded4661f59f24eb889a78d80cc478, type: 3}
   stickTreePrefabs:
   - {fileID: 3639511678845886649, guid: 65e03e28a12b3e248ae0862b5a2258aa, type: 3}
@@ -166,12 +171,23 @@ MonoBehaviour:
   regenerationDelaySeconds: 1
   recoveryThreshold: 20
   gatherReach: 2
-  spawnTickSeconds: 10
+  spawnTickSeconds: 5
+  bubbleRadius: 50
   spawnMinPlayerDistance: 20
-  maxSticks: 80
+  startMinPlayerDistance: 8
+  despawnDistance: 75
+  sticksNearPlayer: 4
+  maxSticks: 30
   sticksPerTick: 1
-  maxSporeMushrooms: 120
-  sporeMushroomsPerTick: 2
+  sporeMushroomsNearPlayer: 5
+  maxSporeMushrooms: 40
+  sporeMushroomsPerTick: 1
+  mushroomTrunkDistance: {x: 1, y: 2.2}
+  mushroomScatterSpacing: 15
+  mushroomMaxSlope: 30
+  mushroomScale: {x: 0.8, y: 1.7}
+  mushroomStickClearance: 1.5
+  mushroomClearance: 1.2
   stickTrunkDistance: {x: 1, y: 2.5}
   stickMaxSlope: 30
   playableArea:

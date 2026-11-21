@@ -37,6 +37,14 @@ namespace Fungiiiii.Editor.Playtest
             "Assets/Prefabs/Environment/PF_TreePine.prefab",
         };
 
+        private static readonly string[] SporeMushroomPrefabPaths =
+        {
+            "Assets/Prefabs/Environment/PF_MushroomCluster.prefab",
+            "Assets/Prefabs/Environment/PF_MushroomCluster_02.prefab",
+            "Assets/Prefabs/Environment/PF_MushroomCluster_03.prefab",
+            "Assets/Prefabs/Environment/PF_MushroomCluster_04.prefab",
+        };
+
         /// <summary>The home screen comes first: it is the scene a build starts on.</summary>
         private static readonly string[] BuildScenePaths =
         {
@@ -61,16 +69,21 @@ namespace Fungiiiii.Editor.Playtest
             serialized.FindProperty("menuFont").objectReferenceValue = Load<Font>(FontPath);
             serialized.FindProperty("mainMenuScenePath").stringValue = MainMenuSceneBuilder.ScenePath;
 
-            var trees = serialized.FindProperty("stickTreePrefabs");
-            trees.arraySize = StickTreePrefabPaths.Length;
-            for (var index = 0; index < StickTreePrefabPaths.Length; index++)
-            {
-                trees.GetArrayElementAtIndex(index).objectReferenceValue = Load<GameObject>(StickTreePrefabPaths[index]);
-            }
+            SetPrefabs(serialized.FindProperty("stickTreePrefabs"), StickTreePrefabPaths);
+            SetPrefabs(serialized.FindProperty("sporeMushroomPrefabs"), SporeMushroomPrefabPaths);
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
+        }
+
+        private static void SetPrefabs(SerializedProperty array, string[] paths)
+        {
+            array.arraySize = paths.Length;
+            for (var index = 0; index < paths.Length; index++)
+            {
+                array.GetArrayElementAtIndex(index).objectReferenceValue = Load<GameObject>(paths[index]);
+            }
         }
 
         /// <summary>The scenes of the build, in order. Menus load one another by path: all three must be listed.</summary>
