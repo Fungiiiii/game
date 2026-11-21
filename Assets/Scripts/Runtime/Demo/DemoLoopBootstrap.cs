@@ -25,9 +25,10 @@ namespace Fungiiiii.Demo
     /// zone audio, the spores and the ground mist, becomes the first-person view of the
     /// real Player prefab, used offline as in NetThrowScene.
     ///
-    /// Everything else is built at runtime: HUD, empty inventory, wandering Spongeus and
-    /// Champoule, the capture net, and the sticks and mushrooms to gather, which appear
-    /// over the whole map on a tick. The Champimaison hole is left out of the playtest.
+    /// Everything else is built at runtime: HUD, inventory holding only the capture net,
+    /// the quick bar, wandering Spongeus and Champoule, and the sticks and mushrooms to
+    /// gather, which appear over the whole map on a tick. The Champimaison hole is left
+    /// out of the playtest.
     /// </summary>
     internal sealed class DemoLoopBootstrap : MonoBehaviour
     {
@@ -242,6 +243,7 @@ namespace Fungiiiii.Demo
         private FungalHole hole;
         private ItemOutlineFactory outlines;
         private PauseMenu pauseMenu;
+        private Hotbar hotbar;
         private TerrainData sessionTerrainData;
 
         /// <summary>True once the forest is loaded and the loop is built.</summary>
@@ -263,6 +265,9 @@ namespace Fungiiiii.Demo
 
         /// <summary>The pause menu, opened with Escape.</summary>
         public PauseMenu Pause => pauseMenu;
+
+        /// <summary>The quick bar: the item of its selected slot is the one in hand.</summary>
+        public Hotbar Hotbar => hotbar;
 
         /// <summary>The inventory item a mushroom becomes once caught.</summary>
         public InventoryItemDefinition ItemFor(NetDemoMushroom mushroom) => mushroomItems[mushroom];
@@ -308,6 +313,16 @@ namespace Fungiiiii.Demo
             if (pauseMenu != null)
             {
                 pauseMenu.PausedChanged -= HandlePausedChanged;
+            }
+
+            if (hotbar != null)
+            {
+                hotbar.SelectionChanged -= UpdateItemInHand;
+            }
+
+            if (inventoryView != null)
+            {
+                inventoryView.Inventory.Changed -= UpdateItemInHand;
             }
 
             foreach (var material in materials)
@@ -372,6 +387,7 @@ namespace Fungiiiii.Demo
             BuildGatherables(forest);
             SpawnMushrooms();
             SetUpThrower();
+            BuildHotbar();
 
             interactor = player.AddComponent<PlayerInteractor>();
             interactor.Initialize(firstPersonCamera.Camera, Inventory, interactables, AimConeDegrees);
@@ -465,6 +481,30 @@ namespace Fungiiiii.Demo
             inventoryView.SeedsDemoItems = false;
             inventoryObject.SetActive(true);
             inventoryObject.SetActive(false);
+            PutNetInHotbar();
+        }
+
+        /// <summary>The net starts in the quick bar's first slot.</summary>
+        private void PutNetInHotbar()
+        {
+            Inventory.AddToSlot(InventoryDemoController.MainSlotCount, DemoItems.Net, 1);
+        }
+
+        /// <summary>The quick bar shows the inventory's own quick bar slots.</summary>
+        private void BuildHotbar()
+        {
+            hotbar = new GameObject("Hotbar").AddComponent<Hotbar>();
+            hotbar.Initialize(Inventory, InventoryDemoController.MainSlotCount, InventoryDemoController.HotbarSlotCount, menuFont);
+            hotbar.SelectionChanged += UpdateItemInHand;
+            Inventory.Changed += UpdateItemInHand;
+            UpdateItemInHand();
+        }
+
+        /// <summary>The net is in hand only while its slot is the selected one.</summary>
+        private void UpdateItemInHand()
+        {
+            var selected = hotbar.SelectedSlot;
+            Thrower.IsEquipped = !selected.IsEmpty && selected.ItemId == DemoItems.NetId;
         }
 
         private void BuildHole(Material refused)
@@ -688,6 +728,8 @@ namespace Fungiiiii.Demo
         public void SetInventoryOpen(bool open)
         {
             inventoryView.gameObject.SetActive(open);
+            // The inventory shows its own quick bar.
+            hotbar.SetVisible(!open);
             SetGameplayInput(!open);
         }
 
@@ -697,11 +739,12 @@ namespace Fungiiiii.Demo
             SetGameplayInput(!paused && !IsInventoryOpen);
         }
 
-        /// <summary>The view, the net and the interact control. Off, the pointer is free for a menu.</summary>
+        /// <summary>The view, the net, the quick bar and the interact control. Off, the pointer is free for a menu.</summary>
         private void SetGameplayInput(bool enabled)
         {
             firstPersonCamera.enabled = enabled;
             Thrower.ThrowInputEnabled = enabled;
+            hotbar.InputEnabled = enabled;
             interactor.enabled = enabled;
         }
 
@@ -713,7 +756,7 @@ namespace Fungiiiii.Demo
             }
         }
 
-        /// <summary>Everything back to the start: player, gauges, empty inventory, resources, mushrooms.</summary>
+        /// <summary>Everything back to the start: player, gauges, inventory with only the net, resources, mushrooms.</summary>
         public void ResetDemo()
         {
             pauseMenu.SetPaused(false);
@@ -735,6 +778,8 @@ namespace Fungiiiii.Demo
                 hole.ResetNetwork();
             }
             EmptyInventory();
+            PutNetInHotbar();
+            hotbar.Select(0);
             vitals.Reset();
             stamina.Reset();
 

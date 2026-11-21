@@ -87,8 +87,123 @@ namespace Fungiiiii.Tests.PlayMode
 
             for (var index = 0; index < demo.Inventory.SlotCount; index++)
             {
-                Assert.That(demo.Inventory.GetSlot(index).IsEmpty, Is.True, "The inventory must start empty.");
+                if (index != InventoryDemoController.MainSlotCount)
+                {
+                    Assert.That(demo.Inventory.GetSlot(index).IsEmpty, Is.True, "The inventory must start with the net only.");
+                }
             }
+        }
+
+        [UnityTest]
+        public IEnumerator TheNet_StartsInTheFirstSlotOfTheQuickBar_InHand()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+
+            var first = demo.Inventory.GetSlot(InventoryDemoController.MainSlotCount);
+            Assert.That(first.ItemId, Is.EqualTo(DemoItems.NetId));
+            Assert.That(first.Quantity, Is.EqualTo(1));
+            Assert.That(demo.Inventory.Count(DemoItems.NetId), Is.EqualTo(1), "There must be one net.");
+
+            Assert.That(demo.Hotbar.IsVisible, Is.True, "The quick bar is not on screen.");
+            Assert.That(demo.Hotbar.SlotCount, Is.EqualTo(3));
+            Assert.That(demo.Hotbar.Selected, Is.EqualTo(0));
+            Assert.That(demo.Thrower.IsEquipped, Is.True);
+            Assert.That(demo.Thrower.IsNetInHandShown, Is.True, "The net is not in hand.");
+        }
+
+        [UnityTest]
+        public IEnumerator SelectingAnotherSlot_PutsTheNetAway_AndSelectingItAgainGivesItBack()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+            var origin = demo.Mushrooms[0].transform.position + Vector3.up * 3f;
+
+            demo.Hotbar.Select(1);
+            yield return null;
+
+            Assert.That(demo.Thrower.IsEquipped, Is.False);
+            Assert.That(demo.Thrower.IsNetInHandShown, Is.False, "The net is still in hand.");
+            Assert.That(demo.Thrower.TryThrow(origin, Vector3.down), Is.False, "A net put away was thrown.");
+
+            demo.Hotbar.Select(0);
+            yield return null;
+
+            Assert.That(demo.Thrower.IsEquipped, Is.True);
+            Assert.That(demo.Thrower.IsNetInHandShown, Is.True, "The net is not back in hand.");
+            Assert.That(demo.Thrower.TryThrow(origin, Vector3.down), Is.True);
+        }
+
+        [UnityTest]
+        public IEnumerator ANetThrown_ComesBack_EvenWhenAnotherSlotIsSelected()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+            var origin = Object.FindFirstObjectByType<PlayerMotor>().transform.position + Vector3.forward * 2f;
+
+            Assert.That(demo.Thrower.TryThrow(origin, Vector3.down), Is.True);
+            demo.Hotbar.Select(2);
+
+            var elapsed = 0f;
+            while (elapsed < ThrowTimeoutSeconds && demo.Thrower.Cycle.Phase != NetPhase.Ready)
+            {
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            Assert.That(demo.Thrower.Cycle.Phase, Is.EqualTo(NetPhase.Ready), "The net never came back.");
+            Assert.That(demo.Thrower.IsNetInHandShown, Is.False, "The net came back in hand while put away.");
+        }
+
+        [UnityTest]
+        public IEnumerator MovingTheNetOutOfTheSelectedSlot_PutsItAway()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+
+            Assert.That(demo.Inventory.MoveOrSwap(InventoryDemoController.MainSlotCount, InventoryDemoController.MainSlotCount + 1), Is.True);
+            Assert.That(demo.Thrower.IsEquipped, Is.False, "The net is in hand from an unselected slot.");
+
+            demo.Hotbar.Select(1);
+            Assert.That(demo.Thrower.IsEquipped, Is.True, "The net is not in hand from its new slot.");
+        }
+
+        [UnityTest]
+        public IEnumerator TheInventory_HidesTheQuickBar_AndThePause_FreezesIt()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+
+            demo.SetInventoryOpen(true);
+            Assert.That(demo.Hotbar.IsVisible, Is.False, "The quick bar shows over the inventory.");
+            Assert.That(demo.Hotbar.InputEnabled, Is.False);
+
+            demo.SetInventoryOpen(false);
+            Assert.That(demo.Hotbar.IsVisible, Is.True);
+            Assert.That(demo.Hotbar.InputEnabled, Is.True);
+
+            demo.Pause.SetPaused(true);
+            Assert.That(demo.Hotbar.InputEnabled, Is.False, "The quick bar still responds in pause.");
+
+            demo.Pause.SetPaused(false);
+            Assert.That(demo.Hotbar.InputEnabled, Is.True);
+        }
+
+        [UnityTest]
+        public IEnumerator Reset_PutsTheNetBackInTheFirstSlot_InHand()
+        {
+            yield return LoadDemo();
+            var demo = Object.FindFirstObjectByType<DemoLoopBootstrap>();
+
+            demo.Inventory.MoveOrSwap(InventoryDemoController.MainSlotCount, 0);
+            demo.Hotbar.Select(2);
+            demo.ResetDemo();
+            yield return null;
+
+            Assert.That(demo.Inventory.GetSlot(InventoryDemoController.MainSlotCount).ItemId, Is.EqualTo(DemoItems.NetId));
+            Assert.That(demo.Inventory.Count(DemoItems.NetId), Is.EqualTo(1), "Reset made a second net.");
+            Assert.That(demo.Hotbar.Selected, Is.EqualTo(0));
+            Assert.That(demo.Thrower.IsEquipped, Is.True);
         }
 
         [UnityTest]

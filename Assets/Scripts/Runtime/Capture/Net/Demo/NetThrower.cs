@@ -81,7 +81,8 @@ namespace Fungiiiii.Capture
         private static readonly Vector3 ThrowOriginOffset = new Vector3(0.15f, -0.15f, 0.5f);
         private static readonly Vector3 HandNetLocalPosition = new Vector3(0.3f, -0.28f, 0.6f);
 
-        private static readonly Color NetColor = new Color(0.82f, 0.74f, 0.52f);
+        /// <summary>Colour of the placeholder net, also its colour as an inventory item.</summary>
+        internal static readonly Color NetColor = new Color(0.82f, 0.74f, 0.52f);
         private static readonly Color PreviewDotColor = new Color(1f, 1f, 1f);
         private static readonly Color NoTargetColor = new Color(0.85f, 0.85f, 0.85f);
         private static readonly Color RopeColor = new Color(0.55f, 0.45f, 0.3f);
@@ -124,6 +125,7 @@ namespace Fungiiiii.Capture
         private Material circleMaterial;
         private Material ropeMaterial;
         private LineRenderer rope;
+        private bool isEquipped = true;
 
         public NetCycle Cycle { get; private set; }
 
@@ -135,6 +137,26 @@ namespace Fungiiiii.Capture
         /// The net in flight carries on. <see cref="TryThrow"/> is not affected.
         /// </summary>
         public bool ThrowInputEnabled { get; set; } = true;
+
+        /// <summary>
+        /// Whether the net is the item in hand. Put away, the net in hand and the aim are
+        /// hidden and the net cannot be thrown; a net already out still comes back.
+        /// </summary>
+        public bool IsEquipped
+        {
+            get => isEquipped;
+            set
+            {
+                isEquipped = value;
+                if (Cycle != null)
+                {
+                    ShowPhase();
+                }
+            }
+        }
+
+        /// <summary>True while the net in hand is drawn.</summary>
+        public bool IsNetInHandShown => handNet != null && handNet.gameObject.activeSelf;
 
         /// <summary>Where the net is now: in flight, on the ground or on its way back.</summary>
         public Vector3 NetPosition => netVisual != null ? netVisual.position : transform.position;
@@ -167,10 +189,10 @@ namespace Fungiiiii.Capture
         /// Throws the net from <paramref name="origin"/> along <paramref name="direction"/>.
         /// Called by the ThrowNet input, and by tests to throw without a device.
         /// </summary>
-        /// <returns>False while the net is not back in hand.</returns>
+        /// <returns>False while the net is not back in hand, or not equipped.</returns>
         public bool TryThrow(Vector3 origin, Vector3 direction)
         {
-            if (Cycle == null || !Cycle.TryThrow())
+            if (Cycle == null || !isEquipped || !Cycle.TryThrow())
             {
                 return false;
             }
@@ -245,7 +267,11 @@ namespace Fungiiiii.Capture
             switch (Cycle.Phase)
             {
                 case NetPhase.Ready:
-                    UpdatePreview();
+                    if (isEquipped)
+                    {
+                        UpdatePreview();
+                    }
+
                     break;
                 case NetPhase.Flying:
                     AdvanceFlight(Time.deltaTime);
@@ -465,16 +491,17 @@ namespace Fungiiiii.Capture
         private void ShowPhase()
         {
             var ready = Cycle.Phase == NetPhase.Ready;
+            var aiming = ready && isEquipped;
 
-            handNet.gameObject.SetActive(ready);
+            handNet.gameObject.SetActive(aiming);
             netRim.gameObject.SetActive(!ready);
 
             foreach (var dot in previewDots)
             {
-                dot.gameObject.SetActive(ready);
+                dot.gameObject.SetActive(aiming);
             }
 
-            if (!ready)
+            if (!aiming)
             {
                 impactRim.gameObject.SetActive(false);
             }
