@@ -1,6 +1,7 @@
 using System;
 using Fungiiiii.Gathering;
 using Fungiiiii.Inventory;
+using Fungiiiii.Runtime.World;
 using UnityEngine;
 
 namespace Fungiiiii.Demo
@@ -14,6 +15,9 @@ namespace Fungiiiii.Demo
     {
         private const float AimHeight = 0.3f;
 
+        /// <summary>How long a mushroom takes to grow out of the ground.</summary>
+        private const float GrowSeconds = 1f;
+
         /// <summary>The key to press floats this far above the top of the model.</summary>
         private const float PromptAboveTop = 0.25f;
 
@@ -21,6 +25,8 @@ namespace Fungiiiii.Demo
         private ItemOutline outline;
         private float reach;
         private Renderer[] renderers;
+        private GrowIn growIn;
+        private FallIn fallIn;
 
         /// <summary>Raised when the player has taken it, after it disappeared.</summary>
         public event Action<Gatherable> Gathered;
@@ -63,18 +69,40 @@ namespace Fungiiiii.Demo
             outline = itemOutline;
             reach = interactionReach;
             renderers = GetComponentsInChildren<Renderer>(true);
+            growIn = gameObject.AddComponent<GrowIn>();
+            fallIn = gameObject.AddComponent<FallIn>();
             Disappear();
         }
 
         /// <summary>Shows it on a spot.</summary>
-        public void Appear(int spot, Vector3 position, Quaternion rotation, Vector3 scale)
+        /// <summary>Puts it on a spot, posed as the spot says, at once.</summary>
+        public void Appear(int spot, GatherableSpot pose)
         {
+            // Taken back from a reset mid-arrival, it must not carry on from its last spot.
+            growIn.enabled = false;
+            fallIn.enabled = false;
             Spot = spot;
-            transform.SetPositionAndRotation(position, rotation);
-            transform.localScale = scale;
+            transform.SetPositionAndRotation(pose.Position, pose.Rotation);
+            transform.localScale = pose.Scale;
             outline.SetTargeted(false);
             IsAvailable = true;
             gameObject.SetActive(true);
+        }
+
+        /// <summary>
+        /// Once it has appeared, makes it fall from <paramref name="dropHeight"/> metres, or
+        /// grow out of the ground when there is no height: it may appear in the player's view.
+        /// </summary>
+        public void Arrive(float dropHeight, float tumbleSeed)
+        {
+            if (dropHeight > 0f)
+            {
+                fallIn.Play(dropHeight, tumbleSeed);
+            }
+            else
+            {
+                growIn.Play(GrowSeconds);
+            }
         }
 
         /// <summary>Hides it without giving anything, for a reset.</summary>

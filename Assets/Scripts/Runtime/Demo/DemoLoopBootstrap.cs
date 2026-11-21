@@ -141,6 +141,10 @@ namespace Fungiiiii.Demo
         [SerializeField, Min(1f)]
         private float despawnDistance = 75f;
 
+        [Tooltip("How many times as likely a spot straight ahead of the player is used as one behind: walking on, one keeps finding some.")]
+        [SerializeField, Min(1f)]
+        private float spawnAheadWeight = 4f;
+
         [SerializeField, Min(0)]
         private int sticksNearPlayer = 4;
 
@@ -790,14 +794,6 @@ namespace Fungiiiii.Demo
             }
         }
 
-        /// <summary>Where the forest's linear fog ends: nothing further can be seen popping in.</summary>
-        private static float SightDistance()
-        {
-            return RenderSettings.fog && RenderSettings.fogMode == FogMode.Linear
-                ? RenderSettings.fogEndDistance
-                : float.PositiveInfinity;
-        }
-
         private void AddField(
             string fieldName,
             ItemDefinition item,
@@ -822,7 +818,7 @@ namespace Fungiiiii.Demo
                 Mathf.Min(spawnMinPlayerDistance, radius),
                 Mathf.Min(startMinPlayerDistance, radius),
                 Mathf.Max(despawnDistance, radius),
-                SightDistance(),
+                spawnAheadWeight,
                 maxAlive);
 
             var field = new GameObject(fieldName).AddComponent<GatherableField>();

@@ -9,11 +9,13 @@ namespace Fungiiiii.Demo
     /// <summary>Where one gatherable can stand, and how it is posed there.</summary>
     internal readonly struct GatherableSpot
     {
-        public GatherableSpot(Vector3 position, Quaternion rotation, Vector3 scale)
+        /// <param name="dropHeight">From how high it falls when it appears, under a tree; 0 to grow out of the ground.</param>
+        public GatherableSpot(Vector3 position, Quaternion rotation, Vector3 scale, float dropHeight = 0f)
         {
             Position = position;
             Rotation = rotation;
             Scale = scale;
+            DropHeight = dropHeight;
         }
 
         public Vector3 Position { get; }
@@ -21,11 +23,14 @@ namespace Fungiiiii.Demo
         public Quaternion Rotation { get; }
 
         public Vector3 Scale { get; }
+
+        /// <summary>From how high, in metres, it falls when it appears; 0 when it grows out of the ground.</summary>
+        public float DropHeight { get; }
     }
 
     /// <summary>
     /// A player as the fields see them: the body gives the position, because the camera is
-    /// only moved to it in LateUpdate; the camera gives where they look and how wide.
+    /// only moved to it in LateUpdate; the camera gives where they look.
     /// </summary>
     internal readonly struct FieldPlayer
     {
@@ -41,8 +46,7 @@ namespace Fungiiiii.Demo
 
         public ResourceViewer ToViewer()
         {
-            var halfView = Camera.VerticalToHorizontalFieldOfView(View.fieldOfView, View.aspect) * 0.5f;
-            return new ResourceViewer(Body.position, View.transform.forward, halfView);
+            return new ResourceViewer(Body.position, View.transform.forward);
         }
     }
 
@@ -150,14 +154,15 @@ namespace Fungiiiii.Demo
                 Hide(spot);
             }
 
-            ShowSpawned();
+            ShowSpawned(animate: true);
         }
 
         private void Fill()
         {
             spawned.Clear();
             spawner.Fill(Viewers(), spawned);
-            ShowSpawned();
+            // The screen is black: everything is simply there when it lights up.
+            ShowSpawned(animate: false);
         }
 
         private List<ResourceViewer> Viewers()
@@ -174,14 +179,21 @@ namespace Fungiiiii.Demo
             return viewers;
         }
 
-        private void ShowSpawned()
+        /// <param name="animate">Whether what appears grows or falls in, rather than being there at once.</param>
+        private void ShowSpawned(bool animate)
         {
             foreach (var spot in spawned)
             {
                 var pose = spots[spot];
                 var variant = variantRandom.Next(variants.Count);
                 var gatherable = hidden[variant].Count > 0 ? hidden[variant].Pop() : Create(variant);
-                gatherable.Appear(spot, pose.Position, pose.Rotation, pose.Scale);
+                gatherable.Appear(spot, pose);
+                if (animate)
+                {
+                    // The golden ratio spreads the tumble axes of neighbouring spots apart.
+                    gatherable.Arrive(pose.DropHeight, Mathf.Repeat(spot * 0.618034f, 1f));
+                }
+
                 shown[spot] = gatherable;
             }
         }

@@ -20,8 +20,7 @@ namespace Fungiiiii.Tests.EditMode
         private const float MinDistance = 20f;
         private const float StartMinDistance = 8f;
         private const float DespawnDistance = 75f;
-        private const float SightDistance = 185f;
-        private const float HalfView = 45f;
+        private const float AheadWeight = 4f;
 
         /// <summary>A square of spots 2 m apart, centred on the origin, 200 m wide.</summary>
         private static readonly Vector3[] Field = Square(new Vector3(0f, 0f, 0f), 100f, 2f);
@@ -38,7 +37,7 @@ namespace Fungiiiii.Tests.EditMode
             return spots;
         }
 
-        private static ResourceSpawner Spawner(IReadOnlyList<Vector3> spots, int maxAlive = 40, int perTick = 1, int seed = 1)
+        private static ResourceSpawner Spawner(IReadOnlyList<Vector3> spots, int maxAlive = 40, int perTick = 1, int seed = 1, float aheadWeight = AheadWeight)
         {
             return new ResourceSpawner(
                 spots,
@@ -50,14 +49,14 @@ namespace Fungiiiii.Tests.EditMode
                     MinDistance,
                     StartMinDistance,
                     DespawnDistance,
-                    SightDistance,
+                    aheadWeight,
                     maxAlive),
                 new Random(seed));
         }
 
         private static ResourceViewer Viewer(Vector3 position, Vector3 forward)
         {
-            return new ResourceViewer(position, forward, HalfView);
+            return new ResourceViewer(position, forward);
         }
 
         private static ResourceViewer[] One(Vector3 position) => new[] { Viewer(position, Vector3.forward) };
@@ -134,48 +133,58 @@ namespace Fungiiiii.Tests.EditMode
         }
 
         [Test]
-        public void OnATick_NothingAppearsInTheFieldOfView_NorInItsMargin()
+        public void OnATick_ASpotInView_MayBeUsed()
         {
-            var spawner = Spawner(Field);
-            var spawned = new List<int>();
-
-            RunTicks(spawner, One(Vector3.zero), 10, spawned);
-
-            foreach (var spot in spawned)
-            {
-                var angle = Vector3.Angle(Vector3.forward, Field[spot]);
-                Assert.That(angle, Is.GreaterThan(HalfView + ResourceSpawner.SightMarginDegrees));
-            }
-        }
-
-        [Test]
-        public void TheFieldOfView_HidesSpotsEvenFarAway()
-        {
-            // Every spot is straight ahead of the player, near the edge of the bubble:
-            // the fog of the forest does not hide that far, so none may pop in.
+            // Every spot is straight ahead of the player: resources grow there in view.
             var ahead = new[] { new Vector3(0f, 0f, 45f), new Vector3(3f, 0f, 48f) };
             var spawner = Spawner(ahead);
             var spawned = new List<int>();
 
-            RunTicks(spawner, One(Vector3.zero), 5, spawned);
+            RunTicks(spawner, One(Vector3.zero), 2, spawned);
 
-            Assert.That(spawned, Is.Empty);
+            Assert.That(spawned, Has.Count.EqualTo(2));
         }
 
         [Test]
-        public void BeyondTheSightDistance_ASpotInViewMayBeUsed()
+        public void SpotsAhead_AreDrawnMoreOftenThanSpotsBehind()
         {
-            // The second player looks straight at the first one's bubble, but from past the fog.
-            var spawner = Spawner(Field);
-            var viewers = new[]
+            var (ahead, behind) = CountAheadAndBehind(AheadWeight);
+
+            Assert.That(ahead, Is.GreaterThan(behind * 2), $"{ahead} ahead for {behind} behind.");
+        }
+
+        [Test]
+        public void WithAnAheadWeightOfOne_SpotsAreDrawnEvenly()
+        {
+            var (ahead, behind) = CountAheadAndBehind(1f);
+
+            Assert.That(ahead, Is.InRange(behind * 0.75f, behind * 1.33f), $"{ahead} ahead for {behind} behind.");
+        }
+
+        /// <summary>Spawns of many seeds around a player looking north: how many land ahead, and how many behind.</summary>
+        private static (int Ahead, int Behind) CountAheadAndBehind(float aheadWeight)
+        {
+            var ahead = 0;
+            var behind = 0;
+            for (var seed = 1; seed <= 200; seed++)
             {
-                Viewer(Vector3.zero, Vector3.forward),
-                Viewer(new Vector3(0f, 0f, -300f), Vector3.forward),
-            };
+                var spawner = Spawner(Field, seed: seed, aheadWeight: aheadWeight);
+                var spawned = new List<int>();
+                RunTicks(spawner, One(Vector3.zero), Target, spawned);
+                foreach (var spot in spawned)
+                {
+                    if (Field[spot].z > 0f)
+                    {
+                        ahead++;
+                    }
+                    else if (Field[spot].z < 0f)
+                    {
+                        behind++;
+                    }
+                }
+            }
 
-            RunTicks(spawner, viewers, 10, new List<int>());
-
-            Assert.That(CountWithin(spawner, Field, Vector3.zero, Radius), Is.EqualTo(Target));
+            return (ahead, behind);
         }
 
         [Test]
@@ -252,24 +261,7 @@ namespace Fungiiiii.Tests.EditMode
         }
 
         [Test]
-        public void ASpotSeenByAnotherPlayer_IsNotUsed()
-        {
-            // The only spots behind the first player are right in front of the second.
-            var spots = new[] { new Vector3(0f, 0f, -30f), new Vector3(2f, 0f, -32f) };
-            var spawner = Spawner(spots);
-            var viewers = new[]
-            {
-                Viewer(Vector3.zero, Vector3.forward),
-                Viewer(new Vector3(0f, 0f, -70f), Vector3.forward),
-            };
-
-            RunTicks(spawner, viewers, 5, new List<int>());
-
-            Assert.That(spawner.AliveCount, Is.Zero);
-        }
-
-        [Test]
-        public void Fill_FillsTheBubbleAtOnce_FromTheStartDistance_EvenInView()
+        public void Fill_FillsTheBubbleAtOnce_FromTheStartDistance()
         {
             var spawner = Spawner(Field);
             var spawned = new List<int>();
@@ -364,14 +356,17 @@ namespace Fungiiiii.Tests.EditMode
         public void SettingsThatContradictEachOther_AreRejected()
         {
             Assert.Throws<ArgumentOutOfRangeException>(
-                () => new ResourceSpawner.Settings(0f, 1, Target, Radius, MinDistance, StartMinDistance, DespawnDistance, SightDistance, 40),
+                () => new ResourceSpawner.Settings(0f, 1, Target, Radius, MinDistance, StartMinDistance, DespawnDistance, AheadWeight, 40),
                 "A tick that is not positive.");
             Assert.Throws<ArgumentOutOfRangeException>(
-                () => new ResourceSpawner.Settings(TickSeconds, 1, Target, Radius, 60f, StartMinDistance, DespawnDistance, SightDistance, 40),
+                () => new ResourceSpawner.Settings(TickSeconds, 1, Target, Radius, 60f, StartMinDistance, DespawnDistance, AheadWeight, 40),
                 "A minimum distance past the bubble.");
             Assert.Throws<ArgumentOutOfRangeException>(
-                () => new ResourceSpawner.Settings(TickSeconds, 1, Target, Radius, MinDistance, StartMinDistance, 40f, SightDistance, 40),
+                () => new ResourceSpawner.Settings(TickSeconds, 1, Target, Radius, MinDistance, StartMinDistance, 40f, AheadWeight, 40),
                 "Despawning inside the bubble.");
+            Assert.Throws<ArgumentOutOfRangeException>(
+                () => new ResourceSpawner.Settings(TickSeconds, 1, Target, Radius, MinDistance, StartMinDistance, DespawnDistance, 0.5f, 40),
+                "Spots ahead drawn less often than the others.");
         }
     }
 }

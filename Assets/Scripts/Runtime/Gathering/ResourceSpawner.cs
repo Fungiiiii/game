@@ -7,28 +7,24 @@ namespace Fungiiiii.Gathering
     /// <summary>A player as the spawner sees it: where they stand and where they look.</summary>
     public readonly struct ResourceViewer
     {
-        public ResourceViewer(Vector3 position, Vector3 forward, float halfViewAngleDegrees)
+        public ResourceViewer(Vector3 position, Vector3 forward)
         {
             Position = position;
             Forward = forward;
-            HalfViewAngleDegrees = halfViewAngleDegrees;
         }
 
         public Vector3 Position { get; }
 
-        /// <summary>Direction of the view. Only its part along the ground counts.</summary>
+        /// <summary>Direction of the view: spots that way are drawn more often. Only its part along the ground counts.</summary>
         public Vector3 Forward { get; }
-
-        /// <summary>Half the width of what the player sees, around <see cref="Forward"/>, on the ground.</summary>
-        public float HalfViewAngleDegrees { get; }
     }
 
     /// <summary>
     /// Keeps a few resources of one kind around each player, never on the whole map.
     /// Every tick it fills free spots near a player who has fewer than the target number
-    /// within the bubble radius: never close to a player, and never in any player's field
-    /// of view up to the sight distance, where the forest's fog ends: it does not hide a
-    /// resource that pops in closer.
+    /// within the bubble radius, never close to any player. Spots ahead of the player are
+    /// drawn more often than the others, so that walking on, one keeps finding some; they
+    /// may be in view: the resource grows or falls in, it does not pop.
     /// Resources far from every player go away and free their spot, so the map does not
     /// fill up behind them.
     ///
@@ -36,9 +32,6 @@ namespace Fungiiiii.Gathering
     /// </summary>
     public sealed class ResourceSpawner
     {
-        /// <summary>Added to a player's half field of view, so nothing pops in at its edge while they turn.</summary>
-        public const float SightMarginDegrees = 10f;
-
         private readonly IReadOnlyList<Vector3> spots;
         private readonly Settings settings;
         private readonly System.Random random;
@@ -70,7 +63,7 @@ namespace Fungiiiii.Gathering
             {
                 while (CountNear(viewer) < settings.TargetNearPlayer && alive.Count < settings.MaxAlive)
                 {
-                    var spot = DrawSpot(viewer, viewers, settings.StartMinPlayerDistance, ignoreSight: true);
+                    var spot = DrawSpot(viewer, viewers, settings.StartMinPlayerDistance);
                     if (spot < 0)
                     {
                         break;
@@ -128,25 +121,6 @@ namespace Fungiiiii.Gathering
             sinceTick = 0f;
         }
 
-        /// <summary>Whether a point is in a player's field of view, margin included, and within sight, on the ground.</summary>
-        public static bool CanSee(ResourceViewer viewer, Vector3 point, float sightDistance)
-        {
-            var flat = Flat(point - viewer.Position);
-            if (flat.sqrMagnitude > sightDistance * sightDistance)
-            {
-                return false;
-            }
-
-            var forward = Flat(viewer.Forward);
-            if (forward.sqrMagnitude <= 0f || flat.sqrMagnitude <= 0f)
-            {
-                // Looking straight down or up, or standing on it: assume it is seen.
-                return true;
-            }
-
-            return Vector3.Angle(forward, flat) <= viewer.HalfViewAngleDegrees + SightMarginDegrees;
-        }
-
         private void DespawnForgotten(IReadOnlyList<ResourceViewer> viewers, List<int> despawned)
         {
             var despawnSquared = settings.DespawnDistance * settings.DespawnDistance;
@@ -184,7 +158,7 @@ namespace Fungiiiii.Gathering
                         break;
                     }
 
-                    var spot = DrawSpot(viewer, viewers, settings.MinPlayerDistance, ignoreSight: false);
+                    var spot = DrawSpot(viewer, viewers, settings.MinPlayerDistance);
                     if (spot < 0)
                     {
                         break;
@@ -212,16 +186,18 @@ namespace Fungiiiii.Gathering
         }
 
         /// <summary>
-        /// A free spot drawn at random among those in the bubble of <paramref name="owner"/>,
-        /// no closer than <paramref name="minDistance"/> to any player and, unless
-        /// <paramref name="ignoreSight"/>, out of every player's view. -1 when there is none.
+        /// A free spot drawn at random among those in the bubble of <paramref name="owner"/>
+        /// and no closer than <paramref name="minDistance"/> to any player; one straight
+        /// ahead of the owner is <see cref="Settings.AheadWeight"/> times as likely as one
+        /// behind or aside. -1 when there is none.
         /// </summary>
-        private int DrawSpot(ResourceViewer owner, IReadOnlyList<ResourceViewer> viewers, float minDistance, bool ignoreSight)
+        private int DrawSpot(ResourceViewer owner, IReadOnlyList<ResourceViewer> viewers, float minDistance)
         {
             var radiusSquared = settings.Radius * settings.Radius;
             var minSquared = minDistance * minDistance;
+            var forward = Flat(owner.Forward).normalized;
             var chosen = -1;
-            var candidates = 0;
+            var bestKey = double.NegativeInfinity;
 
             for (var spot = 0; spot < spots.Count; spot++)
             {
@@ -230,16 +206,20 @@ namespace Fungiiiii.Gathering
                     continue;
                 }
 
-                var point = spots[spot];
-                if (Flat(point - owner.Position).sqrMagnitude > radiusSquared || !IsAllowed(point, viewers, minSquared, ignoreSight))
+                var offset = Flat(spots[spot] - owner.Position);
+                if (offset.sqrMagnitude > radiusSquared || IsTooClose(spots[spot], viewers, minSquared))
                 {
                     continue;
                 }
 
-                // Reservoir sampling: every candidate has the same chance, without a list.
-                candidates++;
-                if (random.Next(candidates) == 0)
+                // Weighted reservoir sampling (Efraimidis and Spirakis): the largest u^(1/w)
+                // wins, so each spot is drawn in proportion to its weight, without a list.
+                var ahead = offset.sqrMagnitude > 0f ? Mathf.Max(0f, Vector3.Dot(forward, offset.normalized)) : 0f;
+                var weight = 1f + (settings.AheadWeight - 1f) * ahead;
+                var key = Math.Pow(random.NextDouble(), 1.0 / weight);
+                if (key > bestKey)
                 {
+                    bestKey = key;
                     chosen = spot;
                 }
             }
@@ -247,23 +227,17 @@ namespace Fungiiiii.Gathering
             return chosen;
         }
 
-        private bool IsAllowed(Vector3 point, IReadOnlyList<ResourceViewer> viewers, float minSquared, bool ignoreSight)
+        private static bool IsTooClose(Vector3 point, IReadOnlyList<ResourceViewer> viewers, float minSquared)
         {
-            var sightDistance = settings.SightDistance;
             foreach (var viewer in viewers)
             {
                 if (Flat(point - viewer.Position).sqrMagnitude < minSquared)
                 {
-                    return false;
-                }
-
-                if (!ignoreSight && CanSee(viewer, point, sightDistance))
-                {
-                    return false;
+                    return true;
                 }
             }
 
-            return true;
+            return false;
         }
 
         private void Occupy(int spot)
@@ -289,7 +263,7 @@ namespace Fungiiiii.Gathering
                 float minPlayerDistance,
                 float startMinPlayerDistance,
                 float despawnDistance,
-                float sightDistance,
+                float aheadWeight,
                 int maxAlive)
             {
                 if (float.IsNaN(tickSeconds) || tickSeconds <= 0f)
@@ -328,9 +302,10 @@ namespace Fungiiiii.Gathering
                     throw new ArgumentOutOfRangeException(nameof(despawnDistance));
                 }
 
-                if (float.IsNaN(sightDistance) || sightDistance < 0f)
+                // Below 1, spots ahead would be drawn less often than the others.
+                if (float.IsNaN(aheadWeight) || aheadWeight < 1f)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(sightDistance));
+                    throw new ArgumentOutOfRangeException(nameof(aheadWeight));
                 }
 
                 if (maxAlive < 0)
@@ -345,7 +320,7 @@ namespace Fungiiiii.Gathering
                 MinPlayerDistance = minPlayerDistance;
                 StartMinPlayerDistance = startMinPlayerDistance;
                 DespawnDistance = despawnDistance;
-                SightDistance = sightDistance;
+                AheadWeight = aheadWeight;
                 MaxAlive = maxAlive;
             }
 
@@ -370,8 +345,8 @@ namespace Fungiiiii.Gathering
             /// <summary>A resource further than this from every player goes away. At least the bubble radius.</summary>
             public float DespawnDistance { get; }
 
-            /// <summary>Beyond this a player sees nothing, in metres on the ground: where the fog ends.</summary>
-            public float SightDistance { get; }
+            /// <summary>How many times as likely a spot straight ahead of the player is drawn as one behind or aside. At least 1.</summary>
+            public float AheadWeight { get; }
 
             /// <summary>Most resources of the kind on the map at once, all players together.</summary>
             public int MaxAlive { get; }

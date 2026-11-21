@@ -17,6 +17,9 @@ namespace Fungiiiii.Demo
         /// <summary>Directions tried around a trunk before the tree is given up.</summary>
         private const int DrawsPerTree = 6;
 
+        /// <summary>A stick falls from this share of its tree's height: from within the leaves.</summary>
+        private const float StickDropShareOfCrown = 0.6f;
+
         /// <summary>
         /// The pose of every decor mushroom the Terrain draws, and a copy of the Terrain's
         /// data without them. The copy is for this play session only: the asset of the
@@ -82,11 +85,11 @@ namespace Fungiiiii.Demo
                 true,
                 random,
                 spots,
-                (point, normal, yaw) =>
+                (point, normal, yaw, crownHeight) =>
                 {
-                    // Lying on the slope, turned at random around it.
+                    // Lying on the slope, turned at random around it; it falls from the leaves.
                     var rotation = Quaternion.FromToRotation(Vector3.up, normal) * Quaternion.Euler(0f, yaw, 0f);
-                    return new GatherableSpot(point, rotation, Vector3.one);
+                    return new GatherableSpot(point, rotation, Vector3.one, crownHeight * StickDropShareOfCrown);
                 });
         }
 
@@ -115,7 +118,7 @@ namespace Fungiiiii.Demo
                 false,
                 random,
                 spots,
-                (point, _, yaw) => pose.At(point, yaw, random));
+                (point, _, yaw, _) => pose.At(point, yaw, random));
         }
 
         /// <summary>
@@ -149,6 +152,34 @@ namespace Fungiiiii.Demo
                 point.y = terrain.SampleHeight(point) + origin.y;
                 spots.Add(pose.At(point, (float)random.NextDouble() * 360f, random));
             }
+        }
+
+        /// <summary>Height of the top of a model above its pivot, in metres, from its meshes.</summary>
+        private static float TopOf(GameObject prefab)
+        {
+            var top = 0f;
+            foreach (var meshFilter in prefab.GetComponentsInChildren<MeshFilter>(true))
+            {
+                var mesh = meshFilter.sharedMesh;
+                if (mesh == null)
+                {
+                    continue;
+                }
+
+                // A prefab asset sits at the origin: its transforms give heights above the pivot.
+                var bounds = mesh.bounds;
+                var toPrefab = meshFilter.transform.localToWorldMatrix;
+                for (var corner = 0; corner < 8; corner++)
+                {
+                    var local = new Vector3(
+                        (corner & 1) == 0 ? bounds.min.x : bounds.max.x,
+                        (corner & 2) == 0 ? bounds.min.y : bounds.max.y,
+                        (corner & 4) == 0 ? bounds.min.z : bounds.max.z);
+                    top = Mathf.Max(top, toPrefab.MultiplyPoint3x4(local).y);
+                }
+            }
+
+            return top;
         }
 
         /// <summary>
@@ -198,18 +229,20 @@ namespace Fungiiiii.Demo
             bool bareGroundOnly,
             System.Random random,
             List<GatherableSpot> spots,
-            Func<Vector3, Vector3, float, GatherableSpot> poseAt)
+            Func<Vector3, Vector3, float, float, GatherableSpot> poseAt)
         {
             var data = terrain.terrainData;
             var origin = terrain.GetPosition();
             var size = data.size;
             var isTree = new bool[data.treePrototypes.Length];
+            var crownHeights = new float[data.treePrototypes.Length];
             foreach (var prefab in treePrefabs)
             {
                 var prototype = PrototypeIndexOf(data, prefab);
                 if (prototype >= 0)
                 {
                     isTree[prototype] = true;
+                    crownHeights[prototype] = TopOf(prefab);
                 }
             }
 
@@ -245,7 +278,8 @@ namespace Fungiiiii.Demo
                     }
 
                     point.y = terrain.SampleHeight(point) + origin.y;
-                    spots.Add(poseAt(point, data.GetInterpolatedNormal(normalizedX, normalizedZ), yaw));
+                    var crownHeight = crownHeights[tree.prototypeIndex] * tree.heightScale;
+                    spots.Add(poseAt(point, data.GetInterpolatedNormal(normalizedX, normalizedZ), yaw, crownHeight));
                     break;
                 }
             }
