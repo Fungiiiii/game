@@ -91,6 +91,25 @@ namespace Fungiiiii.UI
         }
 
         /// <summary>
+        /// Gathers every stack of an item onto the mouse, up to a full stack, in one press:
+        /// the gamepad's answer to the double click. With empty hands, the stack of
+        /// <paramref name="slot"/> is taken first and gives the item.
+        /// </summary>
+        public void GatherAll(int slot)
+        {
+            lastLeftSlot = NoSlot;
+            if (!IsHolding)
+            {
+                Take(slot, inventory.GetSlot(slot).Quantity);
+            }
+
+            if (IsHolding)
+            {
+                GatherAll();
+            }
+        }
+
+        /// <summary>
         /// Puts what is held back where it came from, or anywhere it fits. What fits nowhere
         /// stays in hand.
         /// </summary>

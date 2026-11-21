@@ -136,6 +136,46 @@ namespace Fungiiiii.Tests.EditMode
         }
 
         [Test]
+        public void GatherAll_WithEmptyHands_TakesTheSlot_ThenEveryOtherStackOfIt()
+        {
+            inventory.AddToSlot(0, Wood, 3);
+            inventory.AddToSlot(4, Wood, 5);
+            inventory.AddToSlot(6, Spore, 2);
+
+            hand.GatherAll(4);
+
+            Assert.That(hand.Item, Is.EqualTo(Wood));
+            Assert.That(hand.Quantity, Is.EqualTo(8));
+            Assert.That(inventory.GetSlot(0).IsEmpty, Is.True);
+            Assert.That(inventory.GetSlot(4).IsEmpty, Is.True);
+            Assert.That(QuantityIn(6), Is.EqualTo(2), "Another item was gathered.");
+        }
+
+        [Test]
+        public void GatherAll_WithSomethingInHand_GathersMoreOfIt_UpToAFullStack()
+        {
+            inventory.AddToSlot(0, Wood, 10);
+            inventory.AddToSlot(1, Wood, 10);
+            hand.PressLeft(0, 0f);
+
+            hand.GatherAll(5);
+
+            Assert.That(hand.Quantity, Is.EqualTo(16));
+            Assert.That(QuantityIn(1), Is.EqualTo(4));
+        }
+
+        [Test]
+        public void GatherAll_OnAnEmptySlot_WithEmptyHands_DoesNothing()
+        {
+            inventory.AddToSlot(0, Wood, 3);
+
+            hand.GatherAll(5);
+
+            Assert.That(hand.IsHolding, Is.False);
+            Assert.That(QuantityIn(0), Is.EqualTo(3));
+        }
+
+        [Test]
         public void ARightPress_TakesHalf_RoundedUp_ThenPutsDownOne()
         {
             inventory.AddToSlot(0, Wood, 7);

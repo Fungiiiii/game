@@ -308,6 +308,7 @@ namespace Fungiiiii.Demo
         private ItemDefinition netItem;
         private ScreenStack screens;
         private InputAction menuAction;
+        private InputAction cancelAction;
         private InputAction inventoryAction;
         private InputAction resetAction;
         private System.Random random;
@@ -401,6 +402,7 @@ namespace Fungiiiii.Demo
             if (menuAction != null)
             {
                 menuAction.performed -= OnMenuPerformed;
+                cancelAction.performed -= OnMenuPerformed;
             }
 
             foreach (var material in materials)
@@ -484,6 +486,9 @@ namespace Fungiiiii.Demo
             screens.Changed += ApplyScreens;
             menuAction = controls.Screens.Menu;
             menuAction.performed += OnMenuPerformed;
+            // B on a gamepad goes back too; it only acts in a screen, where the UI map is on.
+            cancelAction = controls.UI.Cancel;
+            cancelAction.performed += OnMenuPerformed;
             inventoryAction = controls.Screens.Inventory;
             inventoryAction.performed += OnInventoryPerformed;
             // Development shortcut, not a player-facing control.
@@ -598,6 +603,7 @@ namespace Fungiiiii.Demo
             inventoryObject.SetActive(false);
             inventoryView = inventoryObject.AddComponent<InventoryDemoController>();
             inventoryView.Bind(backpack.Inventory);
+            inventoryView.SetGamepadControls(controls.UI.Navigate, controls.UI.TakeHalf, controls.UI.GatherAll);
             inventoryView.Font = menuFont;
             inventoryObject.SetActive(true);
             inventoryObject.SetActive(false);
@@ -911,7 +917,7 @@ namespace Fungiiiii.Demo
             }
         }
 
-        /// <summary>Escape: closes the screen on top, or pauses when none is open.</summary>
+        /// <summary>Escape or B: closes the screen on top; Escape pauses when none is open.</summary>
         private void OnMenuPerformed(InputAction.CallbackContext _)
         {
             if (IsReady)

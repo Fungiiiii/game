@@ -28,6 +28,8 @@ namespace Fungiiiii.UI
         [Tooltip("Fills the screen's own inventory with sample items on Awake, when no inventory is bound (InventaireScene).")]
         [SerializeField] private bool seedDemoItems = true;
 
+        private const int NoSlot = -1;
+
         private const string DemoMushroomId = "demo_mushroom";
         private const string DemoHerbId = "demo_herb";
         private const string DemoSporeId = "demo_spore";
@@ -75,6 +77,11 @@ namespace Fungiiiii.UI
         private PlayerInventory inventory;
         private InventoryHand hand;
         private SlotView[] slotViews;
+        private Selectable[] slotSelectables;
+        private int focusedSlot = NoSlot;
+        private InputAction navigateAction;
+        private InputAction takeHalfAction;
+        private InputAction gatherAllAction;
         private RectTransform canvasRect;
         private RectTransform held;
         private Image heldItem;
@@ -129,6 +136,21 @@ namespace Fungiiiii.UI
             gameObject.SetActive(false);
         }
 
+        /// <summary>
+        /// The gamepad's controls on the screen: the first move selects a slot, X takes half
+        /// or puts down one, Y gathers every stack of the item. A and the stick are the
+        /// Submit and Navigate of the event system.
+        /// </summary>
+        public void SetGamepadControls(InputAction navigate, InputAction takeHalf, InputAction gatherAll)
+        {
+            navigateAction = navigate;
+            takeHalfAction = takeHalf;
+            gatherAllAction = gatherAll;
+        }
+
+        /// <summary>The slot the mouse is over or the gamepad has selected, -1 for none.</summary>
+        internal int FocusedSlot => focusedSlot;
+
         public Font Font
         {
             get => font;
@@ -175,14 +197,103 @@ namespace Fungiiiii.UI
         {
             // Closing the screen puts back what the mouse held.
             hand?.PutBack();
+            Unfocus();
         }
 
         private void Update()
         {
-            if (hand.IsHolding && Mouse.current != null)
+            var mouse = Mouse.current;
+            if (hand.IsHolding && mouse != null && mouse.delta.ReadValue() != Vector2.zero)
             {
-                FollowPointer(Mouse.current.position.ReadValue());
+                FollowPointer(mouse.position.ReadValue());
             }
+
+            ReadGamepad();
+        }
+
+        private void ReadGamepad()
+        {
+            if (focusedSlot == NoSlot)
+            {
+                // Nothing to move from yet: the first push selects the first slot.
+                if (navigateAction != null && navigateAction.WasPerformedThisFrame() && navigateAction.ReadValue<Vector2>() != Vector2.zero)
+                {
+                    EventSystem.current.SetSelectedGameObject(slotSelectables[0].gameObject);
+                }
+
+                return;
+            }
+
+            if (takeHalfAction != null && takeHalfAction.WasPressedThisFrame())
+            {
+                TakeHalfOnFocusedSlot();
+            }
+
+            if (gatherAllAction != null && gatherAllAction.WasPressedThisFrame())
+            {
+                GatherAllOnFocusedSlot();
+            }
+        }
+
+        /// <summary>X on a gamepad, the right click of the mouse.</summary>
+        internal void TakeHalfOnFocusedSlot()
+        {
+            PressSlot(focusedSlot, PointerEventData.InputButton.Right, ScreenPointOf(focusedSlot));
+        }
+
+        /// <summary>Y on a gamepad, the double click of the mouse.</summary>
+        internal void GatherAllOnFocusedSlot()
+        {
+            hand.GatherAll(focusedSlot);
+            FollowPointer(ScreenPointOf(focusedSlot));
+        }
+
+        /// <summary>A slot gets the focus, from the mouse over it or the gamepad selecting it; the held item follows a gamepad.</summary>
+        internal void Focus(int index, bool focused)
+        {
+            slotViews[index].SetHovered(focused);
+            if (focused)
+            {
+                focusedSlot = index;
+                var mouse = Mouse.current;
+                if (hand.IsHolding && (mouse == null || mouse.delta.ReadValue() == Vector2.zero))
+                {
+                    FollowPointer(ScreenPointOf(index));
+                }
+            }
+            else if (focusedSlot == index)
+            {
+                focusedSlot = NoSlot;
+            }
+        }
+
+        /// <summary>Where a slot stands on the screen, in pixels.</summary>
+        internal Vector2 ScreenPointOf(int index)
+        {
+            return slotSelectables[index].transform.position;
+        }
+
+        /// <summary>
+        /// No slot keeps the focus once the screen is closed: the event system cannot tell a
+        /// hidden slot it lost it, so the highlight would still show on the next opening.
+        /// </summary>
+        private void Unfocus()
+        {
+            var eventSystem = EventSystem.current;
+            if (eventSystem != null && focusedSlot != NoSlot && eventSystem.currentSelectedGameObject == slotSelectables[focusedSlot].gameObject)
+            {
+                eventSystem.SetSelectedGameObject(null);
+            }
+
+            if (slotViews != null)
+            {
+                foreach (var view in slotViews)
+                {
+                    view.SetHovered(false);
+                }
+            }
+
+            focusedSlot = NoSlot;
         }
 
         private void OnDestroy()
@@ -215,11 +326,6 @@ namespace Fungiiiii.UI
 
         /// <summary>The number shown on a slot, empty when there is none.</summary>
         internal string QuantityTextOf(int index) => slotViews[index].QuantityText;
-
-        internal void SetHovered(int index, bool hovered)
-        {
-            slotViews[index].SetHovered(hovered);
-        }
 
         private void SeedDemoItems()
         {
@@ -275,6 +381,7 @@ namespace Fungiiiii.UI
 
             var grid = CreateGrid("InventoryGrid_3x4", panel, MainColumnCount, MainRowCount, -84f);
             slotViews = new SlotView[TotalSlotCount];
+            slotSelectables = new Selectable[TotalSlotCount];
             for (var index = 0; index < MainSlotCount; index++)
             {
                 slotViews[index] = CreateSlot(grid, index, 0.22f);
@@ -289,6 +396,7 @@ namespace Fungiiiii.UI
                 slotViews[MainSlotCount + index] = CreateSlot(hotbar, MainSlotCount + index, 0.5f);
             }
 
+            LinkSlotNavigation();
             CreateHints();
             CreateHeld();
             RefreshSlots();
@@ -320,6 +428,11 @@ namespace Fungiiiii.UI
             background.raycastTarget = true;
             slotObject.AddComponent<InventorySlotPointer>().Initialize(this, index);
 
+            // Selectable for the gamepad; the slot draws its own highlight, so no transition.
+            var selectable = slotObject.AddComponent<Selectable>();
+            selectable.transition = Selectable.Transition.None;
+            slotSelectables[index] = selectable;
+
             var item = CreateUiObject("ItemColor", slotObject.transform).AddComponent<Image>();
             item.sprite = GetUiSprite();
             item.raycastTarget = false;
@@ -327,6 +440,36 @@ namespace Fungiiiii.UI
 
             var count = CreateQuantity(slotObject.transform, new Vector2(-8f, 3f));
             return new SlotView(background, item, count);
+        }
+
+        /// <summary>
+        /// The stick and the D-pad move from slot to slot as they are laid out: the 3 x 4
+        /// grid, then the quick bar under it.
+        /// </summary>
+        private void LinkSlotNavigation()
+        {
+            for (var index = 0; index < TotalSlotCount; index++)
+            {
+                var isMain = index < MainSlotCount;
+                var column = isMain ? index % MainColumnCount : index - MainSlotCount;
+                var row = isMain ? index / MainColumnCount : MainRowCount;
+                var lastColumn = isMain ? MainColumnCount - 1 : HotbarSlotCount - 1;
+
+                var navigation = new Navigation { mode = Navigation.Mode.Explicit };
+                navigation.selectOnLeft = column > 0 ? slotSelectables[index - 1] : null;
+                navigation.selectOnRight = column < lastColumn ? slotSelectables[index + 1] : null;
+                navigation.selectOnUp = row > 0 ? slotSelectables[(row - 1) * MainColumnCount + Mathf.Min(column, MainColumnCount - 1)] : null;
+                if (row < MainRowCount - 1)
+                {
+                    navigation.selectOnDown = slotSelectables[index + MainColumnCount];
+                }
+                else if (row == MainRowCount - 1)
+                {
+                    navigation.selectOnDown = slotSelectables[MainSlotCount + Mathf.Min(column, HotbarSlotCount - 1)];
+                }
+
+                slotSelectables[index].navigation = navigation;
+            }
         }
 
         private Text CreateQuantity(Transform parent, Vector2 bottomRightOffset)
@@ -604,7 +747,7 @@ namespace Fungiiiii.UI
     }
 
     /// <summary>Hands the presses and the hovering of one slot to the inventory screen.</summary>
-    internal sealed class InventorySlotPointer : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerExitHandler
+    internal sealed class InventorySlotPointer : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerExitHandler, ISelectHandler, IDeselectHandler, ISubmitHandler
     {
         private InventoryDemoController owner;
         private int index;
@@ -624,19 +767,42 @@ namespace Fungiiiii.UI
             }
         }
 
+        // The mouse over a slot selects it, so that the mouse and the gamepad share one focus.
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (owner != null)
-            {
-                owner.SetHovered(index, true);
-            }
+            EventSystem.current.SetSelectedGameObject(gameObject);
         }
 
         public void OnPointerExit(PointerEventData eventData)
         {
+            if (EventSystem.current.currentSelectedGameObject == gameObject)
+            {
+                EventSystem.current.SetSelectedGameObject(null);
+            }
+        }
+
+        public void OnSelect(BaseEventData eventData)
+        {
             if (owner != null)
             {
-                owner.SetHovered(index, false);
+                owner.Focus(index, true);
+            }
+        }
+
+        public void OnDeselect(BaseEventData eventData)
+        {
+            if (owner != null)
+            {
+                owner.Focus(index, false);
+            }
+        }
+
+        /// <summary>A on a gamepad: the left click.</summary>
+        public void OnSubmit(BaseEventData eventData)
+        {
+            if (owner != null)
+            {
+                owner.PressSlot(index, PointerEventData.InputButton.Left, owner.ScreenPointOf(index));
             }
         }
     }
