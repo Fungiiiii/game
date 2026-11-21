@@ -7,8 +7,8 @@ namespace Fungiiiii.Tests.EditMode
 {
     public sealed class InventoryHandTests
     {
-        private static readonly InventoryItemDefinition Wood = new InventoryItemDefinition("wood", Color.red, 16);
-        private static readonly InventoryItemDefinition Spore = new InventoryItemDefinition("spore", Color.blue, 16);
+        private static readonly ItemDefinition Wood = ItemDefinition.Create("wood", Color.red, 16);
+        private static readonly ItemDefinition Spore = ItemDefinition.Create("spore", Color.blue, 16);
 
         private PlayerInventory inventory;
         private InventoryHand hand;

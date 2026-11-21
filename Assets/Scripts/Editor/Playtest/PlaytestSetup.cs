@@ -1,6 +1,7 @@
 using System.Linq;
 using Fungiiiii.Demo;
 using Fungiiiii.Editor.World;
+using Fungiiiii.Inventory;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEditor.SceneManagement;
@@ -20,6 +21,7 @@ namespace Fungiiiii.Editor.Playtest
         private const string ForestScenePath = "Assets/Scenes/Biomes/MysticForest.unity";
         private const string OutlineShaderPath = "Assets/Art/Shaders/ItemOutline.shader";
         private const string FontPath = "Assets/Art/Fonts/Fredoka_SemiBold.ttf";
+        private const string ItemCatalogPath = "Assets/Data/ItemCatalog.asset";
         private const string PlayerPath = "Builds/Playtest/Fungiiiii.exe";
         private const string GraphicsSettingsPath = "ProjectSettings/GraphicsSettings.asset";
 
@@ -67,6 +69,7 @@ namespace Fungiiiii.Editor.Playtest
             var serialized = new SerializedObject(bootstrap);
             serialized.FindProperty("outlineShader").objectReferenceValue = Load<Shader>(OutlineShaderPath);
             serialized.FindProperty("menuFont").objectReferenceValue = Load<Font>(FontPath);
+            serialized.FindProperty("itemCatalog").objectReferenceValue = Load<ItemCatalog>(ItemCatalogPath);
             serialized.FindProperty("mainMenuScenePath").stringValue = MainMenuSceneBuilder.ScenePath;
 
             SetPrefabs(serialized.FindProperty("stickTreePrefabs"), StickTreePrefabPaths);

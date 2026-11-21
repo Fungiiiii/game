@@ -10,8 +10,8 @@ namespace Fungiiiii.Tests.EditMode
         private const string WoodId = "wood";
         private const string SporeId = "spore";
 
-        private static readonly InventoryItemDefinition Wood = new InventoryItemDefinition(WoodId, Color.yellow, 20);
-        private static readonly InventoryItemDefinition Spore = new InventoryItemDefinition(SporeId, Color.cyan, 20);
+        private static readonly ItemDefinition Wood = ItemDefinition.Create(WoodId, Color.yellow, 20);
+        private static readonly ItemDefinition Spore = ItemDefinition.Create(SporeId, Color.cyan, 20);
 
         private static FungalNetwork NewNetwork()
         {

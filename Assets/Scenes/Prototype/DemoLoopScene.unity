@@ -164,6 +164,7 @@ MonoBehaviour:
   - {fileID: 243188325543710390, guid: 2e83ba6cb7ff23e45a54e73ba4117da2, type: 3}
   outlineShader: {fileID: 4800000, guid: 683c7ba2d1058354c81938342679e1d5, type: 3}
   menuFont: {fileID: 12800000, guid: d246a6494a6478c4e8b2eb1b70f14d8e, type: 3}
+  itemCatalog: {fileID: 11400000, guid: 2b48650fa62f4d269e9c3b2e65368251, type: 2}
   mainMenuScenePath: Assets/Scenes/Menu/MainMenu.unity
   sprintCostPerSecond: 15
   dodgeCost: 20

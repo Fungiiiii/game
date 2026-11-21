@@ -17,7 +17,7 @@ namespace Fungiiiii.Demo
         /// <summary>The key to press floats this far above the top of the model.</summary>
         private const float PromptAboveTop = 0.25f;
 
-        private InventoryItemDefinition item;
+        private ItemDefinition item;
         private ItemOutline outline;
         private float reach;
         private Renderer[] renderers;
@@ -25,7 +25,7 @@ namespace Fungiiiii.Demo
         /// <summary>Raised when the player has taken it, after it disappeared.</summary>
         public event Action<Gatherable> Gathered;
 
-        public InventoryItemDefinition Item => item;
+        public ItemDefinition Item => item;
 
         public bool IsAvailable { get; private set; }
 
@@ -51,7 +51,7 @@ namespace Fungiiiii.Demo
             }
         }
 
-        public void Initialize(InventoryItemDefinition gatheredItem, ItemOutline itemOutline, float interactionReach)
+        public void Initialize(ItemDefinition gatheredItem, ItemOutline itemOutline, float interactionReach)
         {
             item = gatheredItem;
             outline = itemOutline;
