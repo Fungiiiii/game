@@ -5,8 +5,8 @@ namespace Fungiiiii.UI
 {
     /// <summary>
     /// A low poly key cap drawn as flat facets, without any texture: a dark wooden square
-    /// with cut corners, a darker base and a cyan rim on its top and sides, as on the
-    /// Ramassage artboard.
+    /// with its four corners cut, a cyan rim all around it, corners included, and a darker
+    /// base inside the rim, as on the Ramassage artboard.
     /// </summary>
     internal sealed class KeyCapGraphic : MaskableGraphic
     {
@@ -21,51 +21,71 @@ namespace Fungiiiii.UI
         private const float DesignBase = 4f;
         private const float DesignRim = 2f;
 
+        /// <summary>
+        /// Moving a 45 degree cut inwards by the rim's width shortens it by this share of
+        /// the width, so that the rim keeps the same thickness along the cut.
+        /// </summary>
+        private const float CutInset = 0.41421356f;
+
         protected override void OnPopulateMesh(VertexHelper vertexHelper)
         {
             vertexHelper.Clear();
 
-            var rect = GetPixelAdjustedRect();
-            var unit = Mathf.Min(rect.width, rect.height) / DesignSize;
-            var cut = DesignCorner * unit;
-            var baseHeight = DesignBase * unit;
+            var outer = GetPixelAdjustedRect();
+            var unit = Mathf.Min(outer.width, outer.height) / DesignSize;
             var rim = DesignRim * unit;
+            var cut = Mathf.Min(DesignCorner * unit, outer.width * 0.5f, outer.height * 0.5f);
 
-            var left = rect.xMin;
-            var right = rect.xMax;
-            var bottom = rect.yMin;
-            var top = rect.yMax;
+            var inner = new Rect(outer.xMin + rim, outer.yMin + rim, outer.width - 2f * rim, outer.height - 2f * rim);
+            var innerCut = Mathf.Max(0f, cut - rim * CutInset);
 
-            // The rim is the outer octagon down to the base; the face is drawn inside it.
-            Polygon.Add(
-                vertexHelper,
-                Tint(Rim),
-                new Vector2(left + cut, top),
-                new Vector2(right - cut, top),
-                new Vector2(right, top - cut),
-                new Vector2(right, bottom + baseHeight),
-                new Vector2(left, bottom + baseHeight),
-                new Vector2(left, top - cut));
+            Polygon.Add(vertexHelper, Tint(Rim), Octagon(outer, cut));
+            Polygon.Add(vertexHelper, Tint(Face), Octagon(inner, innerCut));
+            Polygon.Add(vertexHelper, Tint(Base), LowerBand(inner, innerCut, DesignBase * unit));
+        }
 
-            Polygon.Add(
-                vertexHelper,
-                Tint(Face),
-                new Vector2(left + cut, top - rim),
-                new Vector2(right - cut, top - rim),
-                new Vector2(right - rim, top - cut),
-                new Vector2(right - rim, bottom + baseHeight),
-                new Vector2(left + rim, bottom + baseHeight),
-                new Vector2(left + rim, top - cut));
+        /// <summary>A rectangle with its four corners cut at 45 degrees, clockwise from the top left.</summary>
+        private static Vector2[] Octagon(Rect rect, float cut)
+        {
+            return new[]
+            {
+                new Vector2(rect.xMin + cut, rect.yMax),
+                new Vector2(rect.xMax - cut, rect.yMax),
+                new Vector2(rect.xMax, rect.yMax - cut),
+                new Vector2(rect.xMax, rect.yMin + cut),
+                new Vector2(rect.xMax - cut, rect.yMin),
+                new Vector2(rect.xMin + cut, rect.yMin),
+                new Vector2(rect.xMin, rect.yMin + cut),
+                new Vector2(rect.xMin, rect.yMax - cut),
+            };
+        }
 
-            Polygon.Add(
-                vertexHelper,
-                Tint(Base),
-                new Vector2(left, bottom + baseHeight),
-                new Vector2(right, bottom + baseHeight),
-                new Vector2(right, bottom + cut * 0.5f),
-                new Vector2(right - cut * 0.5f, bottom),
-                new Vector2(left + cut * 0.5f, bottom),
-                new Vector2(left, bottom + cut * 0.5f));
+        /// <summary>The bottom <paramref name="height"/> of an octagon, following its lower cut corners.</summary>
+        private static Vector2[] LowerBand(Rect rect, float cut, float height)
+        {
+            var top = rect.yMin + height;
+            if (height < cut)
+            {
+                // The band ends within the cut corners: its top edge is narrower than the octagon.
+                var narrowing = cut - height;
+                return new[]
+                {
+                    new Vector2(rect.xMin + narrowing, top),
+                    new Vector2(rect.xMax - narrowing, top),
+                    new Vector2(rect.xMax - cut, rect.yMin),
+                    new Vector2(rect.xMin + cut, rect.yMin),
+                };
+            }
+
+            return new[]
+            {
+                new Vector2(rect.xMin, top),
+                new Vector2(rect.xMax, top),
+                new Vector2(rect.xMax, rect.yMin + cut),
+                new Vector2(rect.xMax - cut, rect.yMin),
+                new Vector2(rect.xMin + cut, rect.yMin),
+                new Vector2(rect.xMin, rect.yMin + cut),
+            };
         }
 
         private Color32 Tint(Color32 flat)
