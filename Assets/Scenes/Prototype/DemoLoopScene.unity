@@ -149,75 +149,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Demo.DemoLoopBootstrap
   playerPrefab: {fileID: 3378215888684738756, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
-  spongeusModel: {fileID: 919132149155446097, guid: 7a0f4631898ffc54a8dcfe6f8d8470df, type: 3}
-  champouleModel: {fileID: 919132149155446097, guid: b5bd4e6adcded1242827b1a80de60a44, type: 3}
-  decorMushroomPrefab: {fileID: 8709750313228204993, guid: e27606cd8d7d8d0459eaae41bc1ef239, type: 3}
-  sporeMushroomPrefabs:
-  - {fileID: 8709750313228204993, guid: e27606cd8d7d8d0459eaae41bc1ef239, type: 3}
-  - {fileID: 8709750313228204993, guid: 0fca42dec6744ea89a6e0f70084bca41, type: 3}
-  - {fileID: 8709750313228204993, guid: f635731d222b4d67927789ab5a8184a0, type: 3}
-  - {fileID: 8709750313228204993, guid: ef073991fc1c4e5d99febbbb665630ab, type: 3}
-  stickPrefab: {fileID: 1302624085802783701, guid: 26dded4661f59f24eb889a78d80cc478, type: 3}
-  stickTreePrefabs:
-  - {fileID: 3639511678845886649, guid: 65e03e28a12b3e248ae0862b5a2258aa, type: 3}
-  - {fileID: 3369927429339302039, guid: af0bac7eda3371b4f924a7249776f913, type: 3}
-  - {fileID: 243188325543710390, guid: 2e83ba6cb7ff23e45a54e73ba4117da2, type: 3}
-  outlineShader: {fileID: 4800000, guid: 683c7ba2d1058354c81938342679e1d5, type: 3}
+  netItem: {fileID: 11400000, guid: 755566013f3545c1b999a2b65804c6c1, type: 2}
+  startingQuickBar:
+  - {fileID: 11400000, guid: 755566013f3545c1b999a2b65804c6c1, type: 2}
+  staminaSettings: {fileID: 11400000, guid: 71580e11f52d48e18011c50192776d35, type: 2}
+  netSettings: {fileID: 11400000, guid: 443ee77a94514bd58562ff2e0ed70920, type: 2}
+  gathering: {fileID: 1100000003}
+  creatures: {fileID: 1100000013}
+  outlineSettings: {fileID: 11400000, guid: 99094421f9004a50a90f07cf3160e63b, type: 2}
   menuFont: {fileID: 12800000, guid: d246a6494a6478c4e8b2eb1b70f14d8e, type: 3}
-  itemCatalog: {fileID: 11400000, guid: 2b48650fa62f4d269e9c3b2e65368251, type: 2}
   mainMenuScenePath: Assets/Scenes/Menu/MainMenu.unity
-  sprintCostPerSecond: 15
-  dodgeCost: 20
-  regenerationPerSecond: 20
-  regenerationDelaySeconds: 1
-  recoveryThreshold: 20
-  gatherReach: 2
-  spawnTickSeconds: 5
-  bubbleRadius: 50
-  spawnMinPlayerDistance: 20
-  startMinPlayerDistance: 8
-  despawnDistance: 75
-  sticksNearPlayer: 4
-  maxSticks: 30
-  sticksPerTick: 1
-  sporeMushroomsNearPlayer: 5
-  maxSporeMushrooms: 40
-  sporeMushroomsPerTick: 1
-  mushroomTrunkDistance: {x: 1, y: 2.2}
-  mushroomScatterSpacing: 15
-  mushroomMaxSlope: 30
-  mushroomScale: {x: 0.8, y: 1.7}
-  mushroomStickClearance: 1.5
-  mushroomClearance: 1.2
-  stickTrunkDistance: {x: 1, y: 2.5}
-  stickMaxSlope: 30
-  playableArea:
-    serializedVersion: 2
-    x: -290
-    y: -290
-    width: 580
-    height: 580
-  outlineColor: {r: 0.9490196, g: 0.9019608, b: 0.8, a: 1}
-  outlineWidth: 2.5
-  targetedOutlineColor: {r: 0.43529412, g: 0.8392157, b: 0.91764706, a: 1}
-  targetedOutlineWidth: 4
-  outlineFade: {x: 16, y: 30}
   buildHole: 0
   networkColor: {r: 0.9490196, g: 0.9019608, b: 0.8, a: 1}
   stageOneWood: 2
   stageOneSpores: 2
   stageTwoWood: 4
   stageTwoSpores: 4
-  wanderRadius: 4
-  wanderSpeed: 0.8
-  wanderPauseSeconds: 1.5
-  fleeSpeed: 4
-  launchSpeed: 11
-  netGravity: 9.81
-  impactRadius: 1.5
-  scareRadius: 3
-  holdSeconds: 0.5
-  returnSeconds: 1
   randomSeed: 0
 --- !u!4 &167378463
 Transform:
@@ -234,8 +181,135 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1100000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1100000002}
+  - component: {fileID: 1100000003}
+  m_Layer: 0
+  m_Name: Forest Gathering
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1100000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1100000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1100000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1100000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4dd07b20c723463cb44852f3e25be60f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Demo.ForestGathering
+  settings: {fileID: 11400000, guid: de0456ff4ea042fd8eb0d08894845bdf, type: 2}
+  sticks: {fileID: 11400000, guid: d628afe4252742f48468197ecf43906f, type: 2}
+  sporeMushrooms: {fileID: 11400000, guid: ef5edbe654ec438ab545a8e52432abce, type: 2}
+  decorMushroomPrefab: {fileID: 8709750313228204993, guid: e27606cd8d7d8d0459eaae41bc1ef239, type: 3}
+  treePrefabs:
+  - {fileID: 3639511678845886649, guid: 65e03e28a12b3e248ae0862b5a2258aa, type: 3}
+  - {fileID: 3369927429339302039, guid: af0bac7eda3371b4f924a7249776f913, type: 3}
+  - {fileID: 243188325543710390, guid: 2e83ba6cb7ff23e45a54e73ba4117da2, type: 3}
+  playableArea:
+    serializedVersion: 2
+    x: -290
+    y: -290
+    width: 580
+    height: 580
+  stickTrunkDistance: {x: 1, y: 2.5}
+  stickMaxSlope: 30
+  mushroomTrunkDistance: {x: 1, y: 2.2}
+  mushroomScatterSpacing: 15
+  mushroomMaxSlope: 30
+  mushroomScale: {x: 0.8, y: 1.7}
+  mushroomStickClearance: 1.5
+  mushroomClearance: 1.2
+--- !u!1 &1100000011
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1100000012}
+  - component: {fileID: 1100000013}
+  m_Layer: 0
+  m_Name: Creatures
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1100000012
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1100000011}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1100000013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1100000011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1bee42abcfe64863b42ddc91d4c19556, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Capture.CreaturePopulation
+  spawns:
+  - creature: {fileID: 11400000, guid: bf402ca1399e42a197ecead4d6f4bd22, type: 2}
+    homes:
+    - {x: 4, y: -228}
+    - {x: -7, y: -224}
+  - creature: {fileID: 11400000, guid: ffbd14d7effb49ee93fc18baf335a6bc, type: 2}
+    homes:
+    - {x: 10, y: -236}
+    - {x: -3, y: -217}
+  area:
+    serializedVersion: 2
+    x: -30
+    y: -260
+    width: 80
+    height: 65
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 167378463}
+  - {fileID: 1100000002}
+  - {fileID: 1100000012}

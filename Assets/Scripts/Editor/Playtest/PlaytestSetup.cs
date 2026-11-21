@@ -1,7 +1,5 @@
 using System.Linq;
-using Fungiiiii.Demo;
 using Fungiiiii.Editor.World;
-using Fungiiiii.Inventory;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEditor.SceneManagement;
@@ -19,9 +17,6 @@ namespace Fungiiiii.Editor.Playtest
         internal const string DemoLoopScenePath = "Assets/Scenes/Prototype/DemoLoopScene.unity";
 
         private const string ForestScenePath = "Assets/Scenes/Biomes/MysticForest.unity";
-        private const string OutlineShaderPath = "Assets/Art/Shaders/ItemOutline.shader";
-        private const string FontPath = "Assets/Art/Fonts/Fredoka_SemiBold.ttf";
-        private const string ItemCatalogPath = "Assets/Data/ItemCatalog.asset";
         private const string PlayerPath = "Builds/Playtest/Fungiiiii.exe";
         private const string GraphicsSettingsPath = "ProjectSettings/GraphicsSettings.asset";
 
@@ -32,21 +27,6 @@ namespace Fungiiiii.Editor.Playtest
         /// </summary>
         private const string PlaceholderShaderName = "Universal Render Pipeline/Unlit";
 
-        private static readonly string[] StickTreePrefabPaths =
-        {
-            "Assets/Prefabs/Environment/PF_Tree.prefab",
-            "Assets/Prefabs/Environment/PF_TreeBroad.prefab",
-            "Assets/Prefabs/Environment/PF_TreePine.prefab",
-        };
-
-        private static readonly string[] SporeMushroomPrefabPaths =
-        {
-            "Assets/Prefabs/Environment/PF_MushroomCluster.prefab",
-            "Assets/Prefabs/Environment/PF_MushroomCluster_02.prefab",
-            "Assets/Prefabs/Environment/PF_MushroomCluster_03.prefab",
-            "Assets/Prefabs/Environment/PF_MushroomCluster_04.prefab",
-        };
-
         /// <summary>The home screen comes first: it is the scene a build starts on.</summary>
         private static readonly string[] BuildScenePaths =
         {
@@ -54,40 +34,6 @@ namespace Fungiiiii.Editor.Playtest
             DemoLoopScenePath,
             ForestScenePath,
         };
-
-        /// <summary>Gives the demo loop the assets its gathering and its pause menu need.</summary>
-        [MenuItem("Fungiiiii/Playtest/3. Wire Demo Loop Scene")]
-        internal static void WireDemoLoopScene()
-        {
-            var scene = EditorSceneManager.OpenScene(DemoLoopScenePath, OpenSceneMode.Single);
-            var bootstrap = Object.FindFirstObjectByType<DemoLoopBootstrap>();
-            if (bootstrap == null)
-            {
-                throw new System.InvalidOperationException($"{DemoLoopScenePath} has no DemoLoopBootstrap.");
-            }
-
-            var serialized = new SerializedObject(bootstrap);
-            serialized.FindProperty("outlineShader").objectReferenceValue = Load<Shader>(OutlineShaderPath);
-            serialized.FindProperty("menuFont").objectReferenceValue = Load<Font>(FontPath);
-            serialized.FindProperty("itemCatalog").objectReferenceValue = Load<ItemCatalog>(ItemCatalogPath);
-            serialized.FindProperty("mainMenuScenePath").stringValue = MainMenuSceneBuilder.ScenePath;
-
-            SetPrefabs(serialized.FindProperty("stickTreePrefabs"), StickTreePrefabPaths);
-            SetPrefabs(serialized.FindProperty("sporeMushroomPrefabs"), SporeMushroomPrefabPaths);
-
-            serialized.ApplyModifiedPropertiesWithoutUndo();
-            EditorSceneManager.MarkSceneDirty(scene);
-            EditorSceneManager.SaveScene(scene);
-        }
-
-        private static void SetPrefabs(SerializedProperty array, string[] paths)
-        {
-            array.arraySize = paths.Length;
-            for (var index = 0; index < paths.Length; index++)
-            {
-                array.GetArrayElementAtIndex(index).objectReferenceValue = Load<GameObject>(paths[index]);
-            }
-        }
 
         /// <summary>The scenes of the build, in order. Menus load one another by path: all three must be listed.</summary>
         [MenuItem("Fungiiiii/Playtest/4. Set Build Scenes")]
@@ -159,7 +105,6 @@ namespace Fungiiiii.Editor.Playtest
         {
             PlaytestLocalization.SetUp();
             MainMenuSceneBuilder.Build();
-            WireDemoLoopScene();
             SetBuildScenes();
             IncludePlaceholderShader();
         }

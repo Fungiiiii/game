@@ -28,69 +28,57 @@ namespace Fungiiiii.Demo
     /// zone audio, the spores and the ground mist, becomes the first-person view of the
     /// real Player prefab, used offline as in NetThrowScene.
     ///
-    /// Everything else is built at runtime: HUD, inventory holding only the capture net,
-    /// the quick bar, wandering Spongeus and Champoule, and the sticks and mushrooms to
-    /// gather, which a tick keeps around the player. The Champimaison hole is left out of
-    /// the playtest.
+    /// The world is made of the scene's components, set in the Inspector: the forest's
+    /// sticks and spore mushrooms (<see cref="ForestGathering"/>) and the mushrooms to catch
+    /// (<see cref="CreaturePopulation"/>), tuned by data assets. The rest is still built
+    /// here at runtime: HUD, inventory, quick bar, net, screens and key hints. The
+    /// Champimaison hole is left out of the playtest.
     /// </summary>
     internal sealed class DemoLoopBootstrap : MonoBehaviour
     {
         private const string ForestScenePath = "Assets/Scenes/Biomes/MysticForest.unity";
-
-        /// <summary>Hugo's hand-placed decor mushrooms are prefab instances under this root.</summary>
-        private const string LandmarksName = "Landmarks";
-        private const string DecorMushroomNamePrefix = "PF_MushroomCluster";
 
         /// <summary>The Player prefab's pivot is the centre of its 2 m capsule.</summary>
         private const float PlayerPivotAboveGround = 1.1f;
 
         private const float AimConeDegrees = 25f;
 
-        /// <summary>Spore mushrooms go 2 cm into the ground, so none floats on a slope.</summary>
-        private const float MushroomSink = 0.02f;
-
-        // A mushroom spot is dropped if this capsule, above the ground, touches a trunk or
-        // a rock. Up to a 30° slope it does not touch the ground itself.
-        private const float ObstacleCapsuleBottom = 0.9f;
-        private const float ObstacleCapsuleTop = 2f;
-        private const float ObstacleCapsuleRadius = 0.45f;
-
         private static readonly Color RefusedColor = new Color(1f, 0.45f, 0.1f);
 
-        [Header("Assets")]
+        /// <summary>How close the player must be to use the Champimaison hole, in metres.</summary>
+        private const float HoleReach = 2f;
+
+        [Header("Player")]
         [Tooltip("The player prefab, used offline: no network session is started in this scene.")]
         [SerializeField]
         private GameObject playerPrefab;
 
+        [Tooltip("The item whose behaviour in hand is the capture net.")]
         [SerializeField]
-        private GameObject spongeusModel;
+        private ItemDefinition netItem;
+
+        [Tooltip("What the player starts with, in the quick bar's slots from the first.")]
+        [SerializeField]
+        private ItemDefinition[] startingQuickBar = new ItemDefinition[0];
 
         [SerializeField]
-        private GameObject champouleModel;
+        private StaminaSettings staminaSettings;
 
-        [Tooltip("Every item of the game: the demo takes its wood, spores, mushrooms and net from it.")]
         [SerializeField]
-        private ItemCatalog itemCatalog;
+        private NetSettings netSettings;
 
-        [Tooltip("Decor mushroom of the forest: the Terrain's instances of it become spore spots.")]
+        [Header("World")]
+        [Tooltip("The sticks and spore mushrooms of the forest.")]
         [SerializeField]
-        private GameObject decorMushroomPrefab;
+        private ForestGathering gathering;
 
-        [Tooltip("Models of the spore mushrooms to gather: each one that appears draws one of them.")]
+        [Tooltip("The mushrooms to catch.")]
         [SerializeField]
-        private GameObject[] sporeMushroomPrefabs;
+        private CreaturePopulation creatures;
 
-        [Tooltip("Stick lying on the ground: the wood to gather, until a wood mushroom exists.")]
+        [Tooltip("The outline around what can be gathered or aimed at.")]
         [SerializeField]
-        private GameObject stickPrefab;
-
-        [Tooltip("Trees of the forest's Terrain under which sticks appear.")]
-        [SerializeField]
-        private GameObject[] stickTreePrefabs;
-
-        [Tooltip("Shader of the outline around what can be gathered (Fungiiiii/ItemOutline).")]
-        [SerializeField]
-        private Shader outlineShader;
+        private OutlineSettings outlineSettings;
 
         [Header("Menus")]
         [Tooltip("Font of the pause menu's buttons.")]
@@ -100,128 +88,6 @@ namespace Fungiiiii.Demo
         [Tooltip("Path of the home screen's scene, which the pause menu goes back to.")]
         [SerializeField]
         private string mainMenuScenePath = "Assets/Scenes/Menu/MainMenu.unity";
-
-        [Header("Stamina (RG_SU_03, RG_SU_04), in % of the maximum")]
-        [SerializeField, Min(0f)]
-        private float sprintCostPerSecond = 15f;
-
-        [SerializeField, Min(0f)]
-        private float dodgeCost = 20f;
-
-        [SerializeField, Min(0f)]
-        private float regenerationPerSecond = 20f;
-
-        [SerializeField, Min(0f)]
-        private float regenerationDelaySeconds = 1f;
-
-        [SerializeField, Min(0f)]
-        private float recoveryThreshold = 20f;
-
-        [Header("Gathering")]
-        [SerializeField, Min(0.1f)]
-        private float gatherReach = 2f;
-
-        [Tooltip("Seconds between two ticks: on each one, sticks and mushrooms appear on free spots around the players.")]
-        [SerializeField, Min(0.1f)]
-        private float spawnTickSeconds = 5f;
-
-        [Tooltip("Radius of the bubble around each player where sticks and mushrooms are kept, in metres.")]
-        [SerializeField, Min(1f)]
-        private float bubbleRadius = 50f;
-
-        [Tooltip("On a tick, nothing appears closer to a player than this, in metres.")]
-        [SerializeField, Min(0f)]
-        private float spawnMinPlayerDistance = 20f;
-
-        [Tooltip("At the start and after a reset, while the screen is black, the bubble fills from this distance, in metres.")]
-        [SerializeField, Min(0f)]
-        private float startMinPlayerDistance = 8f;
-
-        [Tooltip("What is further than this from every player goes away, in metres.")]
-        [SerializeField, Min(1f)]
-        private float despawnDistance = 75f;
-
-        [Tooltip("How many times as likely a spot straight ahead of the player is used as one behind: walking on, one keeps finding some.")]
-        [SerializeField, Min(1f)]
-        private float spawnAheadWeight = 4f;
-
-        [SerializeField, Min(0)]
-        private int sticksNearPlayer = 4;
-
-        [Tooltip("Most sticks on the whole map, all players together.")]
-        [SerializeField, Min(0)]
-        private int maxSticks = 30;
-
-        [Tooltip("Sticks that appear per tick and per player.")]
-        [SerializeField, Min(0)]
-        private int sticksPerTick = 1;
-
-        [SerializeField, Min(0)]
-        private int sporeMushroomsNearPlayer = 5;
-
-        [Tooltip("Most spore mushrooms on the whole map, all players together.")]
-        [SerializeField, Min(0)]
-        private int maxSporeMushrooms = 40;
-
-        [Tooltip("Spore mushrooms that appear per tick and per player.")]
-        [SerializeField, Min(0)]
-        private int sporeMushroomsPerTick = 1;
-
-        [Tooltip("Spore mushrooms at the foot of a tree stand between these two distances from its trunk, in metres.")]
-        [SerializeField]
-        private Vector2 mushroomTrunkDistance = new Vector2(1f, 2.2f);
-
-        [Tooltip("Spore mushrooms are also scattered over the playable area, this far apart, in metres.")]
-        [SerializeField, Min(1f)]
-        private float mushroomScatterSpacing = 15f;
-
-        [Tooltip("No spore mushroom on ground steeper than this, in degrees.")]
-        [SerializeField, Range(0f, 90f)]
-        private float mushroomMaxSlope = 30f;
-
-        [Tooltip("Size of a spore mushroom, drawn between these two scales.")]
-        [SerializeField]
-        private Vector2 mushroomScale = new Vector2(0.8f, 1.7f);
-
-        [Tooltip("No spore mushroom closer than this to a stick spot, in metres.")]
-        [SerializeField, Min(0f)]
-        private float mushroomStickClearance = 1.5f;
-
-        [Tooltip("No spore mushroom closer than this to another one, in metres.")]
-        [SerializeField, Min(0f)]
-        private float mushroomClearance = 1.2f;
-
-        [Tooltip("Sticks lie between these two distances from a trunk, in metres.")]
-        [SerializeField]
-        private Vector2 stickTrunkDistance = new Vector2(1f, 2.5f);
-
-        [Tooltip("No stick on ground steeper than this, in degrees.")]
-        [SerializeField, Range(0f, 90f)]
-        private float stickMaxSlope = 30f;
-
-        [Tooltip("Ground rectangle (x, z, width, depth) where sticks appear: the walkable part of the forest.")]
-        [SerializeField]
-        private Rect playableArea = new Rect(-290f, -290f, 580f, 580f);
-
-        [Header("Outline of what can be gathered")]
-        [Tooltip("Palette Body light, a mycelium cream.")]
-        [SerializeField]
-        private Color outlineColor = new Color32(0xF2, 0xE6, 0xCC, 0xFF);
-
-        [Tooltip("Width in pixels on a 1080p screen.")]
-        [SerializeField, Range(0f, 8f)]
-        private float outlineWidth = 2.5f;
-
-        [Tooltip("Cyan of what is aimed at, as on the Ramassage artboard.")]
-        [SerializeField]
-        private Color targetedOutlineColor = new Color32(0x6F, 0xD6, 0xEA, 0xFF);
-
-        [SerializeField, Range(0f, 8f)]
-        private float targetedOutlineWidth = 4f;
-
-        [Tooltip("The outline is at full strength up to the first distance and gone at the second, in metres.")]
-        [SerializeField]
-        private Vector2 outlineFade = new Vector2(16f, 30f);
 
         [Header("Champimaison")]
         [Tooltip("Off for the playtest: the hole and its fungal network are not built.")]
@@ -245,67 +111,14 @@ namespace Fungiiiii.Demo
         [SerializeField, Min(0)]
         private int stageTwoSpores = 4;
 
-        [Header("Mushrooms")]
-        [SerializeField, Min(0f)]
-        private float wanderRadius = 4f;
-
-        [SerializeField, Min(0f)]
-        private float wanderSpeed = 0.8f;
-
-        [SerializeField, Min(0f)]
-        private float wanderPauseSeconds = 1.5f;
-
-        [SerializeField, Min(0f)]
-        private float fleeSpeed = 4f;
-
-        [Header("Net: values of the validated net prototype")]
-        [SerializeField, Min(0.1f)]
-        private float launchSpeed = 11f;
-
-        [SerializeField, Min(0f)]
-        private float netGravity = 9.81f;
-
-        [SerializeField, Min(0.1f)]
-        private float impactRadius = 1.5f;
-
-        [SerializeField, Min(0f)]
-        private float scareRadius = 3f;
-
-        [SerializeField, Min(0f)]
-        private float holdSeconds = 0.5f;
-
-        [SerializeField, Min(0.1f)]
-        private float returnSeconds = 1f;
-
         [Tooltip("Seed of every random draw of the demo. 0 picks a different seed every run.")]
         [SerializeField]
         private int randomSeed;
 
-        // Homes of the mushrooms to catch, in world coordinates of the forest: the start
-        // clearing is centred on (0, -235) with a 16 m radius, and the player spawns at its
-        // south edge.
-        private static readonly Vector2[] SpongeusHomes = { new Vector2(4f, -228f), new Vector2(-7f, -224f) };
-        private static readonly Vector2[] ChampouleHomes = { new Vector2(10f, -236f), new Vector2(-3f, -217f) };
-
-        /// <summary>Mushrooms cannot flee out of this ground rectangle (x, z) around the spawn and the hole.</summary>
-        private static readonly Rect MushroomArea = new Rect(-30f, -260f, 80f, 65f);
-
         private readonly List<IInteractable> interactables = new List<IInteractable>();
-        private readonly List<Gatherable> gatherables = new List<Gatherable>();
-        private readonly List<GatherableField> fields = new List<GatherableField>();
-        private readonly List<NetDemoMushroom> mushrooms = new List<NetDemoMushroom>();
-        private readonly Dictionary<NetDemoMushroom, ItemDefinition> mushroomItems =
-            new Dictionary<NetDemoMushroom, ItemDefinition>();
         private readonly List<Material> materials = new List<Material>();
-        private readonly List<GatherableSpot> mushroomSpots = new List<GatherableSpot>();
-        private readonly List<GatherableSpot> stickSpots = new List<GatherableSpot>();
 
         private PlayerControls controls;
-        private ItemDefinition woodItem;
-        private ItemDefinition sporeItem;
-        private ItemDefinition spongeusItem;
-        private ItemDefinition champouleItem;
-        private ItemDefinition netItem;
         private ScreenStack screens;
         private ControlHintsPanel hintsPanel;
         private FixedHints gameHints;
@@ -331,7 +144,6 @@ namespace Fungiiiii.Demo
         private Hotbar hotbar;
         private PlayerHands hands;
         private NetTargetOutline targetOutline;
-        private TerrainData sessionTerrainData;
 
         /// <summary>True once the forest is loaded and the loop is built.</summary>
         public bool IsReady { get; private set; }
@@ -343,16 +155,16 @@ namespace Fungiiiii.Demo
 
         public NetThrower Thrower { get; private set; }
 
-        public IReadOnlyList<NetDemoMushroom> Mushrooms => mushrooms;
+        public IReadOnlyList<NetDemoMushroom> Mushrooms => creatures.Mushrooms;
 
         /// <summary>Every stick and mushroom built so far, on the map or waiting for a spot.</summary>
-        public IReadOnlyList<Gatherable> Gatherables => gatherables;
+        public IReadOnlyList<Gatherable> Gatherables => gathering.Gatherables;
 
         /// <summary>Every place a spore mushroom may appear, overlaps removed.</summary>
-        public IReadOnlyList<GatherableSpot> MushroomSpots => mushroomSpots;
+        public IReadOnlyList<GatherableSpot> MushroomSpots => gathering.MushroomSpots;
 
         /// <summary>Every place a stick may appear.</summary>
-        public IReadOnlyList<GatherableSpot> StickSpots => stickSpots;
+        public IReadOnlyList<GatherableSpot> StickSpots => gathering.StickSpots;
 
         /// <summary>Null while the hole is left out (see buildHole).</summary>
         public FungalHole Hole => hole;
@@ -387,7 +199,7 @@ namespace Fungiiiii.Demo
         public Hotbar Hotbar => hotbar;
 
         /// <summary>The inventory item a mushroom becomes once caught.</summary>
-        public ItemDefinition ItemFor(NetDemoMushroom mushroom) => mushroomItems[mushroom];
+        public ItemDefinition ItemFor(NetDemoMushroom mushroom) => creatures.ItemFor(mushroom);
 
         private void OnDestroy()
         {
@@ -423,31 +235,23 @@ namespace Fungiiiii.Demo
 
             outlines?.Dispose();
 
-            if (sessionTerrainData != null)
+            if (gathering != null)
             {
-                Destroy(sessionTerrainData);
+                gathering.GatherableCreated -= interactables.Add;
             }
         }
 
         private IEnumerator Start()
         {
-            if (playerPrefab == null || spongeusModel == null || champouleModel == null || decorMushroomPrefab == null ||
-                sporeMushroomPrefabs == null || sporeMushroomPrefabs.Length == 0 || System.Array.IndexOf(sporeMushroomPrefabs, null) >= 0 ||
-                stickPrefab == null || outlineShader == null || stickTreePrefabs == null || stickTreePrefabs.Length == 0 ||
-                menuFont == null || itemCatalog == null)
+            var problem = FindProblem();
+            if (problem != null)
             {
-                Debug.LogError("DemoLoopBootstrap is missing one of its assets.", this);
+                Debug.LogError($"DemoLoopBootstrap cannot start: {problem}", this);
                 enabled = false;
                 yield break;
             }
 
-            if (!TakeItems())
-            {
-                enabled = false;
-                yield break;
-            }
-
-            random =randomSeed != 0 ? new System.Random(randomSeed) : new System.Random();
+            random = randomSeed != 0 ? new System.Random(randomSeed) : new System.Random();
 
             yield return LoadForest();
 
@@ -508,27 +312,30 @@ namespace Fungiiiii.Demo
             IsReady = true;
         }
 
-        /// <summary>The demo's items, from the catalog. False, with the reason logged, when the catalog cannot give them.</summary>
-        private bool TakeItems()
+        /// <summary>What is missing for the demo to start, or null when nothing is.</summary>
+        private string FindProblem()
         {
-            var problems = itemCatalog.FindProblems();
-            if (problems.Count > 0)
+            if (playerPrefab == null || netItem == null || staminaSettings == null || netSettings == null || menuFont == null)
             {
-                Debug.LogError($"The item catalog is not sound: {string.Join(" ", problems)}", itemCatalog);
-                return false;
+                return "the player prefab, the net item, the stamina or net settings, or the menu font is missing.";
             }
 
-            if (!itemCatalog.TryGet(DemoItems.WoodId, out woodItem) ||
-                !itemCatalog.TryGet(DemoItems.SporeId, out sporeItem) ||
-                !itemCatalog.TryGet(DemoItems.SpongeusId, out spongeusItem) ||
-                !itemCatalog.TryGet(DemoItems.ChampouleId, out champouleItem) ||
-                !itemCatalog.TryGet(DemoItems.NetId, out netItem))
+            if (startingQuickBar.Length == 0 || System.Array.IndexOf(startingQuickBar, null) >= 0)
             {
-                Debug.LogError("The item catalog lacks one of the demo's items: wood, spore, spongeus, champoule or net.", itemCatalog);
-                return false;
+                return "the starting quick bar is empty or has an empty slot.";
             }
 
-            return true;
+            if (outlineSettings == null || outlineSettings.Shader == null)
+            {
+                return "the outline settings or their shader are missing.";
+            }
+
+            if (gathering == null || creatures == null)
+            {
+                return "the forest's gathering or its creatures are missing.";
+            }
+
+            return gathering.FindProblem() ?? creatures.FindProblem();
         }
 
         private static IEnumerator LoadForest()
@@ -596,12 +403,7 @@ namespace Fungiiiii.Demo
         private void BuildHudAndInventory()
         {
             vitals = new PlayerVitals(100f, 100f);
-            stamina = new StaminaRegulator(vitals, new StaminaRegulator.Settings(
-                sprintCostPerSecond,
-                dodgeCost,
-                regenerationPerSecond,
-                regenerationDelaySeconds,
-                recoveryThreshold));
+            stamina = new StaminaRegulator(vitals, staminaSettings.ToRegulatorSettings());
 
             var hud = new GameObject("Vitals HUD").AddComponent<VitalsHud>();
             hud.Initialize(vitals);
@@ -622,13 +424,16 @@ namespace Fungiiiii.Demo
             inventoryView.Font = menuFont;
             inventoryObject.SetActive(true);
             inventoryObject.SetActive(false);
-            PutNetInHotbar();
+            PutStartingItems();
         }
 
-        /// <summary>The net starts in the quick bar's first slot.</summary>
-        private void PutNetInHotbar()
+        /// <summary>The starting items, in the quick bar's slots from the first: the net.</summary>
+        private void PutStartingItems()
         {
-            Inventory.AddToSlot(backpack.Layout.QuickBarFirstSlot, netItem, 1);
+            for (var position = 0; position < startingQuickBar.Length; position++)
+            {
+                Inventory.AddToSlot(backpack.Layout.QuickBarSlot(position), startingQuickBar[position], 1);
+            }
         }
 
         /// <summary>The quick bar shows the inventory's own quick bar slots.</summary>
@@ -663,8 +468,8 @@ namespace Fungiiiii.Demo
                     new NetworkStageCost(stageOneWood, stageOneSpores),
                     new NetworkStageCost(stageTwoWood, stageTwoSpores),
                 },
-                DemoItems.WoodId,
-                DemoItems.SporeId);
+                gathering.Sticks.Item.Id,
+                gathering.SporeMushrooms.Item.Id);
 
             var holeObject = new GameObject("Champimaison Hole");
             holeObject.transform.position = centre;
@@ -672,7 +477,7 @@ namespace Fungiiiii.Demo
             // Lit filaments take the forest's light and fog, like the ground they lie on.
             var filaments = CreateLit("Fungal Network", networkColor);
             var holeRing = CreateUnlit("Champimaison Hole Ring", networkColor);
-            hole.Initialize(network, gatherReach, filaments, holeRing, refused, GroundHeight);
+            hole.Initialize(network, HoleReach, filaments, holeRing, refused, GroundHeight);
             interactables.Add(hole);
         }
 
@@ -694,239 +499,39 @@ namespace Fungiiiii.Demo
             return nearest;
         }
 
-        /// <summary>
-        /// Sticks and spore mushrooms around the player. Every decor mushroom of the forest
-        /// becomes a spot, so none stays that cannot be gathered; the foot of the trees and
-        /// a scatter over the forest add more, so that a few are always within reach.
-        /// </summary>
+        /// <summary>The forest's sticks and spore mushrooms, kept around the player; each one can be gathered with E.</summary>
         private void BuildGatherables(Scene forest)
         {
-            outlines = new ItemOutlineFactory(outlineShader, new ItemOutlineFactory.Settings(
-                outlineColor,
-                outlineWidth,
-                targetedOutlineColor,
-                targetedOutlineWidth,
-                outlineFade.x,
-                Mathf.Max(outlineFade.x, outlineFade.y)));
-
-            TakeHandPlacedMushrooms(forest, mushroomSpots);
-
-            // The mushrooms the Terrain draws are taken out of a copy of its data, made for
-            // this session: the forest's own asset is not changed.
-            sessionTerrainData = ForestResourceSpots.TakeDecorMushrooms(terrain, decorMushroomPrefab, mushroomSpots);
-            if (sessionTerrainData != null)
-            {
-                terrain.terrainData = sessionTerrainData;
-                if (terrain.TryGetComponent<TerrainCollider>(out var terrainCollider))
-                {
-                    terrainCollider.terrainData = sessionTerrainData;
-                }
-            }
-
-            ForestResourceSpots.FindStickSpots(
-                terrain,
-                stickTreePrefabs,
-                playableArea,
-                Mathf.Min(stickTrunkDistance.x, stickTrunkDistance.y),
-                Mathf.Max(stickTrunkDistance.x, stickTrunkDistance.y),
-                stickMaxSlope,
-                new System.Random(random.Next()),
-                stickSpots);
-
-            AddMoreMushroomSpots();
-            ForestResourceSpots.RemoveOverlaps(mushroomSpots, stickSpots, mushroomStickClearance, mushroomClearance, IsBlocked);
-
+            outlines = new ItemOutlineFactory(outlineSettings.Shader, outlineSettings.ToFactorySettings());
+            gathering.GatherableCreated += interactables.Add;
             var fieldPlayers = new[] { new FieldPlayer(player.transform, firstPersonCamera.Camera) };
-            AddField("Spore Mushrooms", sporeItem, sporeMushroomPrefabs, mushroomSpots, sporeMushroomsNearPlayer, maxSporeMushrooms, sporeMushroomsPerTick, fieldPlayers);
-            AddField("Sticks", woodItem, new[] { stickPrefab }, stickSpots, sticksNearPlayer, maxSticks, sticksPerTick, fieldPlayers);
-        }
-
-        /// <summary>
-        /// Spore spots at the foot of the trees and scattered over the forest, out of its
-        /// paths: with the decor mushrooms alone, some places had too few within reach.
-        /// </summary>
-        private void AddMoreMushroomSpots()
-        {
-            var pose = new MushroomPose(
-                Mathf.Min(mushroomScale.x, mushroomScale.y),
-                Mathf.Max(mushroomScale.x, mushroomScale.y),
-                MushroomSink);
-
-            ForestResourceSpots.FindTreeFootMushroomSpots(
-                terrain,
-                stickTreePrefabs,
-                playableArea,
-                Mathf.Min(mushroomTrunkDistance.x, mushroomTrunkDistance.y),
-                Mathf.Max(mushroomTrunkDistance.x, mushroomTrunkDistance.y),
-                mushroomMaxSlope,
-                pose,
-                new System.Random(random.Next()),
-                mushroomSpots);
-
-            var paths = new List<ExclusionCircle>();
-            foreach (var path in FindObjectsByType<ScatterExclusionPath>(FindObjectsSortMode.InstanceID))
-            {
-                paths.AddRange(path.ToCircles());
-            }
-
-            ForestResourceSpots.ScatterMushroomSpots(
-                terrain,
-                playableArea,
-                mushroomScatterSpacing,
-                mushroomMaxSlope,
-                paths,
-                pose,
-                new System.Random(random.Next()),
-                mushroomSpots);
-        }
-
-        /// <summary>Whether a mushroom standing here would go through a trunk or a rock. Triggers are ignored.</summary>
-        private static bool IsBlocked(Vector3 groundPoint)
-        {
-            return Physics.CheckCapsule(
-                groundPoint + Vector3.up * ObstacleCapsuleBottom,
-                groundPoint + Vector3.up * ObstacleCapsuleTop,
-                ObstacleCapsuleRadius,
-                Physics.DefaultRaycastLayers,
-                QueryTriggerInteraction.Ignore);
-        }
-
-        /// <summary>
-        /// Hugo's hand-placed decor mushrooms are scene objects: they are hidden, and their
-        /// places become spots like those of the Terrain.
-        /// </summary>
-        private static void TakeHandPlacedMushrooms(Scene forest, List<GatherableSpot> spots)
-        {
-            foreach (var root in forest.GetRootGameObjects())
-            {
-                if (root.name != LandmarksName)
-                {
-                    continue;
-                }
-
-                foreach (Transform child in root.transform)
-                {
-                    if (child.name.StartsWith(DecorMushroomNamePrefix))
-                    {
-                        spots.Add(new GatherableSpot(child.position, child.rotation, child.lossyScale));
-                        child.gameObject.SetActive(false);
-                    }
-                }
-            }
-        }
-
-        private void AddField(
-            string fieldName,
-            ItemDefinition item,
-            GameObject[] variants,
-            List<GatherableSpot> spots,
-            int nearPlayer,
-            int maxAlive,
-            int perTick,
-            IReadOnlyList<FieldPlayer> fieldPlayers)
-        {
-            if (spots.Count == 0)
-            {
-                Debug.LogWarning($"DemoLoopBootstrap found no spot for {fieldName}: none will appear.", this);
-            }
-
-            var radius = bubbleRadius;
-            var settings = new ResourceSpawner.Settings(
-                spawnTickSeconds,
-                perTick,
-                nearPlayer,
-                radius,
-                Mathf.Min(spawnMinPlayerDistance, radius),
-                Mathf.Min(startMinPlayerDistance, radius),
-                Mathf.Max(despawnDistance, radius),
-                spawnAheadWeight,
-                maxAlive);
-
-            var field = new GameObject(fieldName).AddComponent<GatherableField>();
-            field.Initialize(
-                item,
-                variants,
-                spots,
-                settings,
-                new System.Random(random.Next()),
-                fieldPlayers,
-                gatherReach,
-                outlines,
-                Register);
-            fields.Add(field);
-
-            void Register(Gatherable gatherable)
-            {
-                gatherables.Add(gatherable);
-                interactables.Add(gatherable);
-            }
+            gathering.Populate(forest, terrain, fieldPlayers, outlines, new System.Random(random.Next()));
         }
 
         private void SpawnMushrooms()
         {
-            foreach (var home in SpongeusHomes)
-            {
-                SpawnMushroom("Spongeus", home, spongeusModel, NetTargetProfile.Common, spongeusItem);
-            }
-
-            foreach (var home in ChampouleHomes)
-            {
-                SpawnMushroom("Champoule", home, champouleModel, NetTargetProfile.Rare, champouleItem);
-            }
-        }
-
-        private void SpawnMushroom(
-            string species,
-            Vector2 home,
-            GameObject model,
-            NetTargetProfile profile,
-            ItemDefinition item)
-        {
-            var mushroomObject = new GameObject($"Mushroom ({species})");
-            mushroomObject.transform.position = OnGround(home);
-
-            var mushroom = mushroomObject.AddComponent<NetDemoMushroom>();
-            mushroom.InitializeWithModel(profile, player.transform, MushroomArea, fleeSpeed, model);
-            mushroom.FollowGround(GroundHeight);
-            mushroom.EnableWander(new MushroomWander(
-                mushroomObject.transform.position,
-                wanderRadius,
-                wanderSpeed,
-                wanderPauseSeconds,
-                new System.Random(random.Next())));
-
-            mushrooms.Add(mushroom);
-            mushroomItems.Add(mushroom, item);
+            creatures.Populate(player.transform, GroundHeight, new System.Random(random.Next()));
         }
 
         private void SetUpThrower()
         {
-            var settings = new NetThrowSettings(
-                launchSpeed,
-                netGravity,
-                impactRadius,
-                scareRadius,
-                holdSeconds,
-                returnSeconds,
-                NetCaptureRates.Default);
-
             Thrower = player.AddComponent<NetThrower>();
             Thrower.Initialize(
-                settings,
+                netSettings.ToThrowSettings(),
                 firstPersonCamera.Camera,
                 playerController,
-                mushrooms,
+                creatures.Mushrooms,
                 new System.Random(random.Next()));
             Thrower.CatchReturned += HandleCatchReturned;
 
             targetOutline = new GameObject("Net Target Outline").AddComponent<NetTargetOutline>();
-            targetOutline.Initialize(Thrower, mushrooms, outlines);
+            targetOutline.Initialize(Thrower, creatures.Mushrooms, outlines);
         }
 
         private void HandleCatchReturned(NetDemoMushroom caught)
         {
             // RG_CA_03: the caught mushroom goes into the inventory as it is.
-            if (Inventory.Add(mushroomItems[caught], 1) == 0)
+            if (Inventory.Add(creatures.ItemFor(caught), 1) == 0)
             {
                 Debug.LogWarning($"The inventory is full: {caught.name} is lost.", this);
             }
@@ -1029,10 +634,7 @@ namespace Fungiiiii.Demo
             screens.CloseAll();
             Thrower.ResetNet();
 
-            foreach (var mushroom in mushrooms)
-            {
-                mushroom.ResetToSpawn();
-            }
+            creatures.ResetAll();
 
             // The player goes back first: the fields fill their bubble around where they stand.
             // A CharacterController keeps its own cached position and would snap back to
@@ -1042,10 +644,7 @@ namespace Fungiiiii.Demo
             playerController.enabled = true;
             firstPersonCamera.SetView(spawnYaw, 0f);
 
-            foreach (var field in fields)
-            {
-                field.ResetField();
-            }
+            gathering.ResetFields();
 
             if (hole != null)
             {
@@ -1053,7 +652,7 @@ namespace Fungiiiii.Demo
             }
 
             EmptyInventory();
-            PutNetInHotbar();
+            PutStartingItems();
             hotbar.Select(0);
             vitals.Reset();
             stamina.Reset();
