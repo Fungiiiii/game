@@ -1,6 +1,6 @@
 using System.Collections.Generic;
+using Fungiiiii.Items;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Fungiiiii.Capture
 {
@@ -49,11 +49,12 @@ namespace Fungiiiii.Capture
     ///
     /// The primary action throws the net; the secondary one, held, aims: only then are the
     /// arc and the impact circle shown, the view narrows and turns slower. A net can be
-    /// thrown without aiming, just without a preview. Both actions are given by the owner,
-    /// from the player's controls.
+    /// thrown without aiming, just without a preview. It is the net's behaviour in hand
+    /// (<see cref="IHeldItem"/>): <see cref="PlayerHands"/> gives it both actions, and the
+    /// shared <see cref="AimZoom"/> of the camera narrows the view.
     /// </summary>
     [DisallowMultipleComponent]
-    internal sealed class NetThrower : MonoBehaviour
+    internal sealed class NetThrower : MonoBehaviour, IHeldItem
     {
         private const float MaxFlightSeconds = 3f;
         private const int CastBufferSize = 8;
@@ -87,9 +88,8 @@ namespace Fungiiiii.Capture
         private static readonly Color NoTargetColor = new Color(0.85f, 0.85f, 0.85f);
         private static readonly Color RopeColor = new Color(0.55f, 0.45f, 0.3f);
 
-        /// <summary>While aiming, the view narrows to this, in degrees, over this time.</summary>
+        /// <summary>While aiming, the view narrows to this, in degrees.</summary>
         private const float AimFieldOfView = 45f;
-        private const float AimTransitionSeconds = 0.15f;
 
         /// <summary>Rope placeholder between the hand and the net.</summary>
         private const int RopePointCount = 12;
@@ -109,12 +109,9 @@ namespace Fungiiiii.Capture
         private NetLandingResolver resolver;
         private NetSegmentCast segmentCast;
         private NetGroundProbe groundProbe;
-        private InputAction primaryAction;
-        private InputAction secondaryAction;
-        private PrototypeFirstPersonCamera look;
-        private float baseFieldOfView;
-        private float aimBlend;
-        private bool throwInputEnabled = true;
+        private AimZoom zoom;
+        private bool secondaryHeld;
+        private bool controlsTaken;
 
         private NetTrajectory flight;
         private float flightSeconds;
@@ -135,30 +132,12 @@ namespace Fungiiiii.Capture
         private Material circleMaterial;
         private Material ropeMaterial;
         private LineRenderer rope;
-        private bool isEquipped = true;
+        private bool isEquipped;
 
         public NetCycle Cycle { get; private set; }
 
         /// <summary>Raised when the net is back in hand with a catch, with the mushroom caught.</summary>
         public event System.Action<NetDemoMushroom> CatchReturned;
-
-        /// <summary>
-        /// False ignores the primary and secondary actions, for instance while a menu uses
-        /// the mouse: the aim is dropped and the view widens back at once. The net in
-        /// flight carries on. <see cref="TryThrow"/> is not affected.
-        /// </summary>
-        public bool ThrowInputEnabled
-        {
-            get => throwInputEnabled;
-            set
-            {
-                throwInputEnabled = value;
-                if (!value)
-                {
-                    DropAim();
-                }
-            }
-        }
 
         /// <summary>Aims as if the secondary action were held: for tests, which have no device.</summary>
         public bool HoldAim { get; set; }
@@ -193,26 +172,11 @@ namespace Fungiiiii.Capture
         public float PreviewChance { get; private set; }
 
         /// <summary>
-        /// Whether the net is the item in hand. Put away, the net in hand and the aim are
-        /// hidden and the net cannot be thrown; a net already out still comes back.
+        /// Whether the net is the item in hand (<see cref="Equip"/>). Put away, the net in
+        /// hand and the aim are hidden and the net cannot be thrown; a net already out
+        /// still comes back.
         /// </summary>
-        public bool IsEquipped
-        {
-            get => isEquipped;
-            set
-            {
-                isEquipped = value;
-                if (!value)
-                {
-                    DropAim();
-                }
-
-                if (Cycle != null)
-                {
-                    ShowPhase();
-                }
-            }
-        }
+        public bool IsEquipped => isEquipped;
 
         /// <summary>True while the net in hand is drawn.</summary>
         public bool IsNetInHandShown => handNet != null && handNet.gameObject.activeSelf;
@@ -225,19 +189,17 @@ namespace Fungiiiii.Capture
             Camera viewCamera,
             Collider playerCollider,
             IReadOnlyList<NetDemoMushroom> targets,
-            System.Random random,
-            InputAction primary,
-            InputAction secondary)
+            System.Random random)
         {
-            primaryAction = primary;
-            secondaryAction = secondary;
             settings = netSettings;
             aimCamera = viewCamera;
             ownCollider = playerCollider;
             mushrooms = targets;
             resolver = new NetLandingResolver(settings.ImpactRadius, settings.ScareRadius, settings.Rates, random);
-            baseFieldOfView = aimCamera.fieldOfView;
-            aimCamera.TryGetComponent(out look);
+            if (!aimCamera.TryGetComponent(out zoom))
+            {
+                zoom = aimCamera.gameObject.AddComponent<AimZoom>();
+            }
             segmentCast = CastSegment;
             groundProbe = ProbeGround;
 
@@ -302,13 +264,8 @@ namespace Fungiiiii.Capture
                 return;
             }
 
-            if (throwInputEnabled && primaryAction.WasPressedThisFrame())
-            {
-                TryThrow(ThrowOrigin(), aimCamera.transform.forward);
-            }
-
-            IsAiming = throwInputEnabled && isEquipped && (HoldAim || secondaryAction.IsPressed());
-            UpdateZoom(Time.deltaTime);
+            IsAiming = isEquipped && !controlsTaken && (HoldAim || secondaryHeld);
+            zoom.SetAiming(IsAiming, AimFieldOfView);
 
             Cycle.Tick(Time.deltaTime);
             PreviewTarget = null;
@@ -337,22 +294,14 @@ namespace Fungiiiii.Capture
             ShowPhase();
         }
 
-        /// <summary>Narrows the view while aiming and slows the look by as much, widens it back otherwise.</summary>
-        private void UpdateZoom(float deltaTime)
-        {
-            aimBlend = Mathf.MoveTowards(aimBlend, IsAiming ? 1f : 0f, deltaTime / AimTransitionSeconds);
-            ApplyZoom();
-        }
-
         private void DropAim()
         {
             IsAiming = false;
             PreviewTarget = null;
             PreviewChance = 0f;
-            aimBlend = 0f;
-            if (aimCamera != null)
+            if (zoom != null)
             {
-                ApplyZoom();
+                zoom.Drop();
             }
 
             if (Cycle != null)
@@ -361,12 +310,53 @@ namespace Fungiiiii.Capture
             }
         }
 
-        private void ApplyZoom()
+        public void Equip()
         {
-            aimCamera.fieldOfView = Mathf.Lerp(baseFieldOfView, AimFieldOfView, aimBlend);
-            if (look != null)
+            SetEquipped(true);
+        }
+
+        public void Unequip()
+        {
+            SetEquipped(false);
+        }
+
+        /// <summary>Throws the net from the hand where the view points.</summary>
+        public void UsePrimary()
+        {
+            controlsTaken = false;
+            if (aimCamera != null)
             {
-                look.LookScale = aimCamera.fieldOfView / baseFieldOfView;
+                TryThrow(ThrowOrigin(), aimCamera.transform.forward);
+            }
+        }
+
+        /// <summary>Held, it aims: the arc and the impact circle show, the view narrows.</summary>
+        public void HoldSecondary(bool held)
+        {
+            controlsTaken = false;
+            secondaryHeld = held;
+        }
+
+        /// <summary>Drops the aim and widens the view at once. The net in flight carries on.</summary>
+        public void Cancel()
+        {
+            // Until the hands give the controls back, not even HoldAim aims.
+            controlsTaken = true;
+            secondaryHeld = false;
+            DropAim();
+        }
+
+        private void SetEquipped(bool equipped)
+        {
+            isEquipped = equipped;
+            if (!equipped)
+            {
+                DropAim();
+            }
+
+            if (Cycle != null)
+            {
+                ShowPhase();
             }
         }
 

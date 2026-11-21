@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Fungiiiii.Inventory;
+using Fungiiiii.Items;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -15,7 +16,7 @@ namespace Fungiiiii.UI
     ///
     /// The controls are given by the owner, from the player's controls.
     /// </summary>
-    internal sealed class Hotbar : MonoBehaviour
+    internal sealed class Hotbar : MonoBehaviour, IItemSelection
     {
         /// <summary>Above the vitals, under the inventory (100) and the pause menu (200).</summary>
         private const int CanvasSortingOrder = 50;
@@ -50,8 +51,8 @@ namespace Fungiiiii.UI
         private InputAction previousAction;
         private IReadOnlyList<InputAction> slotActions;
 
-        /// <summary>Raised when another slot is selected.</summary>
-        public event Action SelectionChanged;
+        /// <summary>Raised when another slot is selected, or when what the selected slot holds changes.</summary>
+        public event Action SelectedSlotChanged;
 
         /// <summary>Position of the selected slot in the bar, from 0.</summary>
         public int Selected { get; private set; }
@@ -100,7 +101,7 @@ namespace Fungiiiii.UI
                 views[index] = new SlotView(root, font, new Vector2(x, BottomMargin), EndFacetStarts[index % EndFacetStarts.Length]);
             }
 
-            inventory.Changed += Refresh;
+            inventory.Changed += HandleInventoryChanged;
             Refresh();
             views[Selected].Target = 1f;
         }
@@ -121,7 +122,7 @@ namespace Fungiiiii.UI
             views[Selected].Target = 0f;
             Selected = position;
             views[Selected].Target = 1f;
-            SelectionChanged?.Invoke();
+            SelectedSlotChanged?.Invoke();
         }
 
         public void SetVisible(bool visible)
@@ -133,7 +134,7 @@ namespace Fungiiiii.UI
         {
             if (inventory != null)
             {
-                inventory.Changed -= Refresh;
+                inventory.Changed -= HandleInventoryChanged;
             }
         }
 
@@ -173,6 +174,12 @@ namespace Fungiiiii.UI
                     Select(index);
                 }
             }
+        }
+
+        private void HandleInventoryChanged()
+        {
+            Refresh();
+            SelectedSlotChanged?.Invoke();
         }
 
         private void Refresh()

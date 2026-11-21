@@ -5,6 +5,7 @@ using Fungiiiii.Champimaison;
 using Fungiiiii.Controls;
 using Fungiiiii.Gathering;
 using Fungiiiii.Inventory;
+using Fungiiiii.Items;
 using Fungiiiii.Runtime.Champimaison;
 using Fungiiiii.Runtime.Player;
 using Fungiiiii.Runtime.World;
@@ -319,6 +320,7 @@ namespace Fungiiiii.Demo
         private ItemOutlineFactory outlines;
         private PauseMenu pauseMenu;
         private Hotbar hotbar;
+        private PlayerHands hands;
         private NetTargetOutline targetOutline;
         private TerrainData sessionTerrainData;
 
@@ -360,6 +362,9 @@ namespace Fungiiiii.Demo
         /// <summary>The player's first-person camera.</summary>
         public Camera ViewCamera => firstPersonCamera != null ? firstPersonCamera.Camera : null;
 
+        /// <summary>The player's hands, holding the item of the quick bar's selected slot.</summary>
+        public PlayerHands Hands => hands;
+
         /// <summary>The quick bar: the item of its selected slot is the one in hand.</summary>
         public Hotbar Hotbar => hotbar;
 
@@ -382,16 +387,6 @@ namespace Fungiiiii.Demo
             if (pauseMenu != null)
             {
                 pauseMenu.PausedChanged -= HandlePausedChanged;
-            }
-
-            if (hotbar != null)
-            {
-                hotbar.SelectionChanged -= UpdateItemInHand;
-            }
-
-            if (inventoryView != null)
-            {
-                inventoryView.Inventory.Changed -= UpdateItemInHand;
             }
 
             foreach (var material in materials)
@@ -611,16 +606,11 @@ namespace Fungiiiii.Demo
                 actions.HotbarNext,
                 actions.HotbarPrevious,
                 new[] { actions.HotbarSlot1, actions.HotbarSlot2, actions.HotbarSlot3 });
-            hotbar.SelectionChanged += UpdateItemInHand;
-            Inventory.Changed += UpdateItemInHand;
-            UpdateItemInHand();
-        }
 
-        /// <summary>The net is in hand only while its slot is the selected one.</summary>
-        private void UpdateItemInHand()
-        {
-            var selected = hotbar.SelectedSlot;
-            Thrower.IsEquipped = !selected.IsEmpty && selected.Item == netItem;
+            // The hands hold the item of the selected slot: the net does something there.
+            hands = player.AddComponent<PlayerHands>();
+            hands.Register(netItem, Thrower);
+            hands.Initialize(hotbar, controls, firstPersonCamera.transform);
         }
 
         private void BuildHole(Material refused)
@@ -896,9 +886,7 @@ namespace Fungiiiii.Demo
                 firstPersonCamera.Camera,
                 playerController,
                 mushrooms,
-                new System.Random(random.Next()),
-                controls.Player.UsePrimary,
-                controls.Player.UseSecondary);
+                new System.Random(random.Next()));
             Thrower.CatchReturned += HandleCatchReturned;
 
             targetOutline = new GameObject("Net Target Outline").AddComponent<NetTargetOutline>();
@@ -945,7 +933,7 @@ namespace Fungiiiii.Demo
         {
             controls.SetMenuOpen(!enabled);
             firstPersonCamera.enabled = enabled;
-            Thrower.ThrowInputEnabled = enabled;
+            hands.InputEnabled = enabled;
             hotbar.InputEnabled = enabled;
             interactor.enabled = enabled;
         }
