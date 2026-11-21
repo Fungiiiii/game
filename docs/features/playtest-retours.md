@@ -72,10 +72,18 @@
 - [ ] La main tient l'objet de la case sélectionnée de la barre rapide : le filet en main seulement sur sa case ; changer de case le range, revenir le reprend.
 - [ ] `NetThrowScene` marche comme avant : le filet y est toujours en main.
 
+**Aides de touches (21/11, artboard « Aides · 2 · textes collés »)**
+
+- [ ] En bas à droite, sans fond : une ligne par aide, la touche dessinée pour l'appareil en main (touche, souris, bouton Xbox ou forme PlayStation), puis le texte collé à 8 px.
+- [ ] En jeu, avec le filet : « Lancer le filet », « Viser », « Changer d'objet », « Inventaire ». En visant : « Lancer », « Relâcher : ne plus viser ». Pendant que le filet est parti, ses aides disparaissent.
+- [ ] Un objet visé ajoute « Ramasser » en tête ; au-delà de 4 lignes, « Changer d'objet » laisse sa place.
+- [ ] Inventaire ouvert : « Prendre ou poser », « La moitié, ou un seul », « Tout ramasser » (souris ×2 ou Y), « Fermer ». Les aides centrées en bas de l'inventaire sont retirées. En pause, aucune aide.
+- [ ] Les touches viennent des actions : une touche réassignée s'affiche réassignée. Les textes suivent la langue.
+
 ## Hors périmètre
 
 - Les icônes des objets : chaque objet reste un carré de sa couleur (décision de Hugo, 21/11).
-- Les aides de touches en bas à droite (lot 4) : en attente de la maquette, sur l'artboard « Aides de touches » du canvas *Accueil Fungiiiii*.
+- Une option pour masquer les aides de touches, comme le « guide des commandes » de Monster Hunter : proposée, pas décidée.
 - Les scènes prototypes et bancs de test gardent leurs touches dans le code : `MushroomCaptureDemo`, F1/F2 de `PlayerMovementDemoBootstrap`, R de `NetThrowDemo`, le banc poison, le banc HUD, `FirstPersonTestPlayer`.
 - Les noms traduits des objets : les fiches ont la clé, vide tant qu'aucun écran n'affiche un nom.
 - `RespawningResource` n'est toujours pas utilisée.
@@ -94,6 +102,7 @@
 - **Écrans** : `IGameScreen`, `ScreenStack` (C# pur) ; `PauseMenu` et `InventoryDemoController` sont des écrans.
 - **Interaction** : `InteractionTargeting` (boîte du modèle sous le viseur d'abord), `IInteractable` (ex-`IDemoInteractable`), `KeyPrompt.PopIn`.
 - **Apparitions** : `ArrivalCurves`, `GrowIn`, `FallIn` ; `GatherableSpot.DropHeight`, `ResourceSpawner.Settings.AheadWeight`.
+- **Aides de touches** : `InputGlyphs` (contrôle → dessin, C# pur), `ControlHint`, `HintInput`, `IHintSource`, `FixedHints`, `ControlHintsPanel`, `GlyphShapeGraphic` ; `IHeldItemHints` (le filet) ; sources : `PlayerInteractor`, `PlayerHands`, `InventoryDemoController`, `IInteractable.HintKey` ; douze textes `hint.*` dans la table `UI`.
 
 ## Décisions
 
@@ -108,6 +117,8 @@
 - **Écrans en pile, règle de Minecraft** : Échap ferme l'écran du dessus et n'ouvre la pause que si rien n'est ouvert ; un écran ouvert depuis un autre (une confirmation) se ferme d'abord. Une table de craft n'aura qu'à être un `IGameScreen` ouvert depuis son interaction.
 - **Visée de l'interaction** : ce qui est sous le viseur gagne (boîte du modèle, sans physique : les objets à ramasser n'ont pas de collider) ; sinon le plus proche du centre dans le cône.
 - **La mention de l'exception à la Charte IA est retirée** de la branche, sur décision de Hugo.
+- **Aides de touches en bas à droite, sans fond, textes collés à leur touche** (Hugo, 21/11, sur cinq essais du canvas) : la proximité dit à quelle touche va un texte ; aligner les textes sur la touche la plus large les éloignait des touches courtes. Comme le guide des commandes de Monster Hunter : icône puis texte court, contextuel, sans plaque. Texte crème avec contour sombre pour se lire sur la forêt.
+- **Chaque source déclare ses aides** (`IHintSource`) ; le panneau ne change jamais pour une nouvelle aide. Les touches sont lues dans les actions (réassignation comprise) ; seuls les boutons que lit l'event system (clics, A) sont des chemins fixes.
 - **Pas de note validée dans ClickUp** : voir l'en-tête.
 
 ## Tests
@@ -143,6 +154,8 @@ Lancés en batch sur le PC de Hugo (Unity 6000.3.21f1) à chaque étape.
 | `KeyPromptPlayModeTests` | PlayMode | Rebond de la touche | ✅ |
 | `DemoLoopScenePlayModeTests.TheInventory_IsTheOneThePlayerCarries_...`, `Escape_*` | PlayMode | Sac, écrans | ✅ |
 | `InventoryDemoControllerPlayModeTests` (navigation, focus, A, X, Y) | PlayMode | Inventaire à la manette | ✅ |
+| `InputGlyphsTests`, `ControlHintTests` | EditMode | Dessin des touches, schémas, réassignation | ✅ |
+| `DemoLoopScenePlayModeTests.InGame_TheHints_*`, `WhileAiming_*`, `WithATarget_*`, `TheInventory_ShowsItsOwnHints_*` | PlayMode | Aides de touches | ✅ |
 
 ### Manuels (dans Unity)
 
@@ -172,10 +185,15 @@ Lancés en batch sur le PC de Hugo (Unity 6000.3.21f1) à chaque étape.
 | 17 | À la manette, en jeu : bouger seulement le stick droit, viser un objet | La touche affiche **Y** / **△** | ⬜ |
 | 18 | Ouvrir `NetThrowScene` | Le filet est en main, se lance et vise comme avant | ⬜ |
 | 19 | Deux instances (hôte et client) dans `MouvementJoueurScene` | Chaque joueur ne bouge qu'avec sa propre instance | ⬜ |
+| 20 | En jeu, regarder en bas à droite, puis viser, puis lancer | Aides du filet, puis « Lancer / Relâcher », puis plus d'aide du filet tant qu'il est parti | ⬜ |
+| 21 | Viser un bâton | « Ramasser » en tête avec **E** ; « Changer d'objet » disparaît | ⬜ |
+| 22 | Tab ; puis manette Xbox ; puis manette PlayStation | Aides de l'inventaire ; souris et Tab, puis A X Y B, puis ✕ □ △ ○ | ⬜ |
+| 23 | Le filet en main | Le filet en bas à droite de l'écran ne passe pas sous les aides | ⬜ |
 
 ## Limitations connues
 
 - La police Fredoka Medium n'est pas dans le projet : « Barre rapide » et les aides sont en Fredoka SemiBold.
 - Rien n'a été testé dans un exécutable : les tests ont tourné dans l'Editor en batch.
+- Les anciennes clés `inventory.hint.*` restent dans les tables de la langue : `PlaytestLocalization` ajoute sans jamais retirer. À supprimer dans Window > Asset Management > Localization Tables.
 
 ## Modifié par
