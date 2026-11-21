@@ -52,6 +52,12 @@ namespace Fungiiiii.Editor.Playtest
             (UiText.HintGatherAll, "Tout ramasser", "Gather all"),
             (UiText.HintClose, "Fermer", "Close"),
             (UiText.HintDrop, "Jeter", "Drop"),
+            (UiText.HintRelease, "Sortir", "Take out"),
+            (UiText.HintSqueeze, "Presser", "Squeeze"),
+            (UiText.HintTakeBack, "Maintenir : reprendre", "Hold: take back"),
+
+            // Text over a full water fern, key of its definition (labelKey).
+            ("label.needs_spongeus", "Il faut un Spongeus", "Needs a Spongeus"),
 
             // Item names, keys of the items' definitions (nameKey).
             ("item.wood", "Bâton", "Stick"),
@@ -59,6 +65,7 @@ namespace Fungiiiii.Editor.Playtest
             ("item.net", "Filet", "Net"),
             ("item.spongeus", "Spongeus", "Spongeus"),
             ("item.champoule", "Champoule", "Champoule"),
+            ("item.water", "Eau", "Water"),
         };
 
         /// <summary>

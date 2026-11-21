@@ -181,3 +181,4 @@ Scène : `Assets/Scenes/Prototype/DemoLoopScene.unity`, puis **Play** et un clic
 
 - [playtest-base](./playtest-base.md) — la boucle sert de base au playtest : contour du modèle à la place de l'anneau cyan, bâtons et champignons répartis sur toute la map par tick, trou de la Champimaison retiré pour l'instant, menu pause sur Échap.
 - [playtest-retours](./playtest-retours.md) — le dodge est retiré du jeu (action, `PlayerDodge`, son coût d'endurance) ; Espace et A sautent (`PlayerMotor.TryJump`).
+- [spongeus-fougere](./spongeus-fougere.md) — un Spongeus capturé peut sortir de l'inventaire pour suivre le joueur, récolter l'eau des fougères de la brume, être pressé (E) ou repris (E maintenu).

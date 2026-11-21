@@ -122,6 +122,26 @@ MonoBehaviour:
     m_Localized: Champoule
     m_Metadata:
       m_Items: []
+  - m_Id: 391184999505920
+    m_Localized: Take out
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448960
+    m_Localized: Squeeze
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448961
+    m_Localized: 'Hold: take back'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448962
+    m_Localized: Needs a Spongeus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448963
+    m_Localized: Water
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

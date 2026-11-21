@@ -119,6 +119,26 @@ MonoBehaviour:
     m_Key: item.champoule
     m_Metadata:
       m_Items: []
+  - m_Id: 391184999505920
+    m_Key: hint.release
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448960
+    m_Key: hint.squeeze
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448961
+    m_Key: hint.take_back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448962
+    m_Key: label.needs_spongeus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448963
+    m_Key: item.water
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

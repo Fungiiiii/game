@@ -21,14 +21,7 @@ namespace Fungiiiii.Demo
         /// <summary>Spore mushrooms go 2 cm into the ground, so none floats on a slope.</summary>
         private const float MushroomSink = 0.02f;
 
-        // A mushroom spot is dropped if this capsule, above the ground, touches a trunk or
-        // a rock. Up to a 30° slope it does not touch the ground itself.
-        private const float ObstacleCapsuleBottom = 0.9f;
-        private const float ObstacleCapsuleTop = 2f;
-        private const float ObstacleCapsuleRadius = 0.45f;
-
-        /// <summary>The forest's group of hand-placed objects, and the prefix of its decor mushrooms.</summary>
-        private const string LandmarksName = "Landmarks";
+        /// <summary>The prefix of the forest's hand-placed decor mushrooms.</summary>
         private const string DecorMushroomNamePrefix = "PF_MushroomCluster";
 
         [SerializeField]
@@ -89,7 +82,6 @@ namespace Fungiiiii.Demo
         private readonly List<GatherableField> fields = new List<GatherableField>();
         private readonly List<GatherableSpot> mushroomSpots = new List<GatherableSpot>();
         private readonly List<GatherableSpot> stickSpots = new List<GatherableSpot>();
-        private TerrainData sessionTerrainData;
 
         /// <summary>Raised for every stick or mushroom built, so that the interact control can use it.</summary>
         public event Action<Gatherable> GatherableCreated;
@@ -124,21 +116,14 @@ namespace Fungiiiii.Demo
         }
 
         /// <summary>Finds every spot in the forest, then fills the bubble of each player.</summary>
-        public void Populate(Scene forest, Terrain terrain, IReadOnlyList<FieldPlayer> players, ItemOutlineFactory outlines, System.Random random)
+        /// <param name="session">The forest's Terrain for this session: its decor mushrooms are taken out of it.</param>
+        public void Populate(Scene forest, SessionTerrain session, IReadOnlyList<FieldPlayer> players, ItemOutlineFactory outlines, System.Random random)
         {
-            TakeHandPlacedMushrooms(forest);
-
-            // The mushrooms the Terrain draws are taken out of a copy of its data, made for
-            // this session: the forest's own asset is not changed.
-            sessionTerrainData = ForestResourceSpots.TakeDecorMushrooms(terrain, decorMushroomPrefab, mushroomSpots);
-            if (sessionTerrainData != null)
-            {
-                terrain.terrainData = sessionTerrainData;
-                if (terrain.TryGetComponent<TerrainCollider>(out var terrainCollider))
-                {
-                    terrainCollider.terrainData = sessionTerrainData;
-                }
-            }
+            // Hugo's hand-placed decor mushrooms are hidden, and their places become spots
+            // like those of the Terrain, whose own are taken out for this session.
+            ForestResourceSpots.TakeLandmarks(forest, DecorMushroomNamePrefix, mushroomSpots);
+            session.TakeTrees(decorMushroomPrefab, mushroomSpots);
+            var terrain = session.Terrain;
 
             ForestResourceSpots.FindStickSpots(
                 terrain,
@@ -151,7 +136,7 @@ namespace Fungiiiii.Demo
                 stickSpots);
 
             AddMoreMushroomSpots(terrain, random);
-            ForestResourceSpots.RemoveOverlaps(mushroomSpots, stickSpots, mushroomStickClearance, mushroomClearance, IsBlocked);
+            ForestResourceSpots.RemoveOverlaps(mushroomSpots, stickSpots, mushroomStickClearance, mushroomClearance, ForestResourceSpots.TouchesTrunkOrRock);
 
             AddField(sporeMushrooms, mushroomSpots, players, outlines, random);
             AddField(sticks, stickSpots, players, outlines, random);
@@ -166,13 +151,6 @@ namespace Fungiiiii.Demo
             }
         }
 
-        private void OnDestroy()
-        {
-            if (sessionTerrainData != null)
-            {
-                Destroy(sessionTerrainData);
-            }
-        }
 
         /// <summary>
         /// Spore spots at the foot of the trees and scattered over the forest, out of its
@@ -213,40 +191,7 @@ namespace Fungiiiii.Demo
                 mushroomSpots);
         }
 
-        /// <summary>Whether a mushroom standing here would go through a trunk or a rock. Triggers are ignored.</summary>
-        private static bool IsBlocked(Vector3 groundPoint)
-        {
-            return Physics.CheckCapsule(
-                groundPoint + Vector3.up * ObstacleCapsuleBottom,
-                groundPoint + Vector3.up * ObstacleCapsuleTop,
-                ObstacleCapsuleRadius,
-                Physics.DefaultRaycastLayers,
-                QueryTriggerInteraction.Ignore);
-        }
 
-        /// <summary>
-        /// Hugo's hand-placed decor mushrooms are scene objects: they are hidden, and their
-        /// places become spots like those of the Terrain.
-        /// </summary>
-        private void TakeHandPlacedMushrooms(Scene forest)
-        {
-            foreach (var root in forest.GetRootGameObjects())
-            {
-                if (root.name != LandmarksName)
-                {
-                    continue;
-                }
-
-                foreach (Transform child in root.transform)
-                {
-                    if (child.name.StartsWith(DecorMushroomNamePrefix))
-                    {
-                        mushroomSpots.Add(new GatherableSpot(child.position, child.rotation, child.lossyScale));
-                        child.gameObject.SetActive(false);
-                    }
-                }
-            }
-        }
 
         private void AddField(GatherableDefinition kind, List<GatherableSpot> spots, IReadOnlyList<FieldPlayer> players, ItemOutlineFactory outlines, System.Random random)
         {

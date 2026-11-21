@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Fungiiiii.Capture;
 using Fungiiiii.Champimaison;
+using Fungiiiii.Companions;
 using Fungiiiii.Controls;
 using Fungiiiii.Gathering;
 using Fungiiiii.Inventory;
@@ -30,7 +31,9 @@ namespace Fungiiiii.Demo
     ///
     /// The world and the interface are the scene's objects, set in the Inspector: the
     /// forest's sticks and spore mushrooms (<see cref="ForestGathering"/>), the mushrooms
-    /// to catch (<see cref="CreaturePopulation"/>), tuned by data assets, and the screens,
+    /// to catch (<see cref="CreaturePopulation"/>), the plants that fill up by chance
+    /// (<see cref="RefillingPlants"/>), the companions taken out of the quick bar
+    /// (<see cref="CompanionKeeper"/>), tuned by data assets, and the screens,
     /// quick bar and key hints, instances of their prefabs. This hands them the player
     /// once it is spawned. The Champimaison hole is left out of the playtest.
     /// </summary>
@@ -68,6 +71,14 @@ namespace Fungiiiii.Demo
         [Tooltip("The mushrooms to catch.")]
         [SerializeField]
         private CreaturePopulation creatures;
+
+        [Tooltip("The plants that fill up by chance and that only a companion can empty: the water ferns of the mist.")]
+        [SerializeField]
+        private RefillingPlants refillingPlants;
+
+        [Tooltip("The caught creatures that can be taken out of the quick bar to follow the player: the Spongeus.")]
+        [SerializeField]
+        private CompanionKeeper companions;
 
         [Tooltip("The outline around what can be gathered or aimed at.")]
         [SerializeField]
@@ -124,6 +135,7 @@ namespace Fungiiiii.Demo
         private ItemOutlineFactory outlines;
         private PlayerHands hands;
         private NetTargetOutline targetOutline;
+        private SessionTerrain sessionTerrain;
 
         /// <summary>True once the forest is loaded and the loop is built.</summary>
         public bool IsReady { get; private set; }
@@ -184,6 +196,12 @@ namespace Fungiiiii.Demo
         /// <summary>What the player dropped from the inventory and has not picked up again.</summary>
         public DroppedItems Dropped => droppedItems;
 
+        /// <summary>The water ferns of the mist, and any other plant that fills up by chance.</summary>
+        public RefillingPlants RefillingPlants => refillingPlants;
+
+        /// <summary>The companion out of the inventory, following the player.</summary>
+        public CompanionKeeper Companions => companions;
+
         /// <summary>The inventory item a mushroom becomes once caught.</summary>
         public ItemDefinition ItemFor(NetDemoMushroom mushroom) => creatures.ItemFor(mushroom);
 
@@ -200,6 +218,7 @@ namespace Fungiiiii.Demo
             }
 
             outlines?.Dispose();
+            sessionTerrain?.Dispose();
 
             if (gathering != null)
             {
@@ -263,6 +282,7 @@ namespace Fungiiiii.Demo
                 new System.Random(random.Next()));
             SpawnMushrooms();
             SetUpThrower();
+            refillingPlants.Populate(forest, sessionTerrain, outlines, interactables, new System.Random(random.Next()));
             SetUpHands();
 
             interactor = player.GetComponent<PlayerInteractor>();
@@ -308,12 +328,16 @@ namespace Fungiiiii.Demo
                 return "the outline settings or their shader are missing.";
             }
 
-            if (gathering == null || creatures == null)
+            if (gathering == null || creatures == null || refillingPlants == null || companions == null)
             {
-                return "the forest's gathering or its creatures are missing.";
+                return "the forest's gathering, its creatures, its refilling plants or the companions are missing.";
             }
 
-            return screens.FindProblem() ?? gathering.FindProblem() ?? creatures.FindProblem();
+            return screens.FindProblem()
+                ?? gathering.FindProblem()
+                ?? creatures.FindProblem()
+                ?? refillingPlants.FindProblem()
+                ?? companions.FindProblem();
         }
 
         private static IEnumerator LoadForest()
@@ -395,7 +419,10 @@ namespace Fungiiiii.Demo
             }
         }
 
-        /// <summary>The quick bar shows the inventory's own quick bar slots; the hands hold the item of its selected slot.</summary>
+        /// <summary>
+        /// The quick bar shows the inventory's own quick bar slots; the hands hold the item of
+        /// its selected slot: the net throws, a companion's item takes the companion out.
+        /// </summary>
         private void SetUpHands()
         {
             var actions = controls.Player;
@@ -407,8 +434,23 @@ namespace Fungiiiii.Demo
                 actions.HotbarPrevious,
                 new[] { actions.HotbarSlot1, actions.HotbarSlot2, actions.HotbarSlot3 });
 
+            companions.Bind(
+                player.transform,
+                firstPersonCamera.transform,
+                GroundHeight,
+                Inventory,
+                hotbar,
+                outlines,
+                interactables,
+                refillingPlants.Absorbable);
+
             hands = player.GetComponent<PlayerHands>();
             hands.Register(netItem, Thrower);
+            foreach (var (item, behaviour) in companions.HeldBehaviours)
+            {
+                hands.Register(item, behaviour);
+            }
+
             hands.Initialize(hotbar, controls, firstPersonCamera.transform);
         }
 
@@ -416,9 +458,11 @@ namespace Fungiiiii.Demo
         private void BuildGatherables(Scene forest)
         {
             outlines = new ItemOutlineFactory(outlineSettings.Shader, outlineSettings.ToFactorySettings());
+            // What the game takes out of the forest's Terrain is taken out of one copy, for this session.
+            sessionTerrain = new SessionTerrain(terrain);
             gathering.GatherableCreated += interactables.Add;
             var fieldPlayers = new[] { new FieldPlayer(player.transform, firstPersonCamera.Camera) };
-            gathering.Populate(forest, terrain, fieldPlayers, outlines, new System.Random(random.Next()));
+            gathering.Populate(forest, sessionTerrain, fieldPlayers, outlines, new System.Random(random.Next()));
         }
 
         private void SpawnMushrooms()
@@ -464,7 +508,7 @@ namespace Fungiiiii.Demo
             }
         }
 
-        /// <summary>Everything back to the start: player, gauges, inventory with only the net, resources, mushrooms.</summary>
+        /// <summary>Everything back to the start: player, gauges, inventory with only the net, resources, mushrooms, no companion out.</summary>
         public void ResetDemo()
         {
             screens.Stack.CloseAll();
@@ -481,6 +525,8 @@ namespace Fungiiiii.Demo
             firstPersonCamera.SetView(spawnYaw, 0f);
 
             gathering.ResetFields();
+            refillingPlants.RestartAll();
+            companions.Clear();
             droppedItems.Clear();
             pickupFeed.Clear();
 

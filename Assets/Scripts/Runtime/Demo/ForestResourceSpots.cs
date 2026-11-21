@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Fungiiiii.Runtime.World;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 namespace Fungiiiii.Demo
@@ -17,46 +18,53 @@ namespace Fungiiiii.Demo
         /// <summary>Directions tried around a trunk before the tree is given up.</summary>
         private const int DrawsPerTree = 6;
 
+        /// <summary>The forest's group of hand-placed objects.</summary>
+        private const string LandmarksName = "Landmarks";
+
         /// <summary>A stick falls from this share of its tree's height: from within the leaves.</summary>
         private const float StickDropShareOfCrown = 0.6f;
 
-        /// <summary>
-        /// The pose of every decor mushroom the Terrain draws, and a copy of the Terrain's
-        /// data without them. The copy is for this play session only: the asset of the
-        /// forest is never changed.
-        /// </summary>
-        /// <returns>The copy to give to the Terrain, or null when the Terrain draws no such mushroom.</returns>
-        public static TerrainData TakeDecorMushrooms(Terrain terrain, GameObject mushroomPrefab, List<GatherableSpot> spots)
+        // Something small standing on the ground is in the way if this capsule, above the
+        // ground, touches a trunk or a rock. Up to a 30° slope it does not touch the ground itself.
+        private const float ObstacleCapsuleBottom = 0.9f;
+        private const float ObstacleCapsuleTop = 2f;
+        private const float ObstacleCapsuleRadius = 0.45f;
+
+        /// <summary>Whether a mushroom or a plant standing here would go through a trunk or a rock. Triggers are ignored.</summary>
+        public static bool TouchesTrunkOrRock(Vector3 groundPoint)
         {
-            var data = terrain.terrainData;
-            var prototype = PrototypeIndexOf(data, mushroomPrefab);
-            if (prototype < 0)
-            {
-                return null;
-            }
+            return Physics.CheckCapsule(
+                groundPoint + Vector3.up * ObstacleCapsuleBottom,
+                groundPoint + Vector3.up * ObstacleCapsuleTop,
+                ObstacleCapsuleRadius,
+                Physics.DefaultRaycastLayers,
+                QueryTriggerInteraction.Ignore);
+        }
 
-            var origin = terrain.GetPosition();
-            var size = data.size;
-            var kept = new List<TreeInstance>(data.treeInstanceCount);
-
-            foreach (var tree in data.treeInstances)
+        /// <summary>
+        /// Hides the forest's hand-placed objects whose name starts with
+        /// <paramref name="namePrefix"/>, in its group of landmarks: decor that must not stay,
+        /// such as a mushroom that cannot be gathered. Their poses are added to
+        /// <paramref name="taken"/> when it is given.
+        /// </summary>
+        public static void TakeLandmarks(Scene forest, string namePrefix, List<GatherableSpot> taken = null)
+        {
+            foreach (var root in forest.GetRootGameObjects())
             {
-                if (tree.prototypeIndex != prototype)
+                if (root.name != LandmarksName)
                 {
-                    kept.Add(tree);
                     continue;
                 }
 
-                spots.Add(new GatherableSpot(
-                    origin + Vector3.Scale(tree.position, size),
-                    Quaternion.Euler(0f, tree.rotation * Mathf.Rad2Deg, 0f),
-                    new Vector3(tree.widthScale, tree.heightScale, tree.widthScale)));
+                foreach (Transform child in root.transform)
+                {
+                    if (child.name.StartsWith(namePrefix, System.StringComparison.Ordinal))
+                    {
+                        taken?.Add(new GatherableSpot(child.position, child.rotation, child.lossyScale));
+                        child.gameObject.SetActive(false);
+                    }
+                }
             }
-
-            var copy = Object.Instantiate(data);
-            copy.name = data.name + " (play session)";
-            copy.SetTreeInstances(kept.ToArray(), false);
-            return copy;
         }
 
         /// <summary>
@@ -298,7 +306,8 @@ namespace Fungiiiii.Demo
             return false;
         }
 
-        private static int PrototypeIndexOf(TerrainData data, GameObject prefab)
+        /// <summary>Index of <paramref name="prefab"/> among the Terrain's tree prototypes, or -1.</summary>
+        internal static int PrototypeIndexOf(TerrainData data, GameObject prefab)
         {
             var prototypes = data.treePrototypes;
             for (var index = 0; index < prototypes.Length; index++)

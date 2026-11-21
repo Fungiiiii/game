@@ -32,5 +32,10 @@ namespace Fungiiiii.UI
         public const string HintGatherAll = "hint.gather_all";
         public const string HintClose = "hint.close";
         public const string HintDrop = "hint.drop";
+
+        // Companions: taken out of the quick bar, squeezed, taken back by holding E.
+        public const string HintRelease = "hint.release";
+        public const string HintSqueeze = "hint.squeeze";
+        public const string HintTakeBack = "hint.take_back";
     }
 }

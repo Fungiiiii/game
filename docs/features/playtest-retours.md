@@ -242,3 +242,5 @@ Lancés en batch sur le PC de Hugo (Unity 6000.3.21f1) à chaque étape.
 - L'apparence des prefabs n'a été vue que sur un rendu de contrôle dans l'Editor, sans textes traduits : jauges, barre rapide, touche E, planches de la pause. Les aides, l'inventaire et l'accueil restent à regarder en jeu.
 
 ## Modifié par
+
+- [spongeus-fougere](./spongeus-fougere.md) — E peut aussi être maintenu (cercle autour de la touche, appui court décidé au relâchement) sur ce qui le demande ; la touche peut laisser place à un court texte ; trois aides de touches. Le contrôle « tronc ou rocher » des champignons passe dans `ForestResourceSpots.TouchesTrunkOrRock`, partagé avec les fougères à eau.

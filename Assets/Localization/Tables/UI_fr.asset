@@ -122,6 +122,26 @@ MonoBehaviour:
     m_Localized: Champoule
     m_Metadata:
       m_Items: []
+  - m_Id: 391184999505920
+    m_Localized: Sortir
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448960
+    m_Localized: Presser
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448961
+    m_Localized: 'Maintenir : reprendre'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448962
+    m_Localized: Il faut un Spongeus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448963
+    m_Localized: Eau
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

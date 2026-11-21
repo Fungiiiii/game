@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77a47eb64dfbae5428c8a22b2f736265, type: 3}
+  m_Name: WaterFern
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Gathering.RefillingPlantDefinition
+  prefab: {fileID: 2277399234681914541, guid: 7e3a542a827fd3d47bc86df8e95e3011, type: 3}
+  yield: {fileID: 11400000, guid: ea8aab103615bc74d905d1dd1190e5eb, type: 2}
+  lookAlikes:
+  - {fileID: 4505173097389533266, guid: 83af58674d3058a4184f7e9d2214d484, type: 3}
+  refillIntervalSeconds: 20
+  refillChance: 0.25
+  fullAtStart: 0.5
+  fullTint: {r: 0.7, g: 0.8, b: 0.85, a: 1}
+  fullSmoothness: 0.4
+  spacing: 30
+  maxSlope: 30
+  scale: {x: 0.9, y: 1.2}
+  reach: 4
+  labelKey: label.needs_spongeus
