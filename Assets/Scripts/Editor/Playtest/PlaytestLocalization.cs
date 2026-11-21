@@ -36,6 +36,16 @@ namespace Fungiiiii.Editor.Playtest
             (UiText.PauseResume, "Reprendre", "Resume"),
             (UiText.PauseHome, "Accueil", "Home"),
             (UiText.PauseQuit, "Quitter", "Quit"),
+            (UiText.InventoryTitle, "Inventaire", "Inventory"),
+            (UiText.InventoryHotbar, "Barre rapide", "Quick bar"),
+            (UiText.InventoryHintLeftKey, "Clic gauche", "Left click"),
+            (UiText.InventoryHintLeft, "prendre ou poser", "take or place"),
+            (UiText.InventoryHintRightKey, "Clic droit", "Right click"),
+            (UiText.InventoryHintRight, "la moitié, ou un seul", "half, or just one"),
+            (UiText.InventoryHintDoubleKey, "Double clic", "Double click"),
+            (UiText.InventoryHintDouble, "tout ramasser", "gather all"),
+            (UiText.InventoryHintCloseKey, "Tab", "Tab"),
+            (UiText.InventoryHintClose, "fermer", "close"),
         };
 
         [MenuItem("Fungiiiii/Playtest/1. Set Up Localization")]

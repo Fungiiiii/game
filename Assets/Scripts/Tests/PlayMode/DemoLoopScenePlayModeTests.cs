@@ -619,9 +619,15 @@ namespace Fungiiiii.Tests.PlayMode
             var player = Object.FindFirstObjectByType<PlayerMotor>().transform;
             var sticks = demo.Gatherables.Where(gatherable => gatherable.Item.Id == DemoItems.WoodId).ToArray();
             var maximum = sticks.Count(stick => stick.IsAvailable);
-            var before = sticks.Where(stick => stick.IsAvailable).Select(stick => stick.transform.position).ToArray();
+            var gathered = sticks.First(stick => stick.IsAvailable);
 
-            Assert.That(sticks.First(stick => stick.IsAvailable).Interact(demo.Inventory), Is.True);
+            // Gathered from afar, its spot may be drawn again at once: it does not count as staying.
+            var before = sticks
+                .Where(stick => stick.IsAvailable && stick != gathered)
+                .Select(stick => stick.transform.position)
+                .ToArray();
+
+            Assert.That(gathered.Interact(demo.Inventory), Is.True);
             Assert.That(sticks.Count(stick => stick.IsAvailable), Is.EqualTo(maximum - 1));
 
             // A tick is 5 s of game time: sped up, it comes within a second.

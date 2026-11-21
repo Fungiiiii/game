@@ -559,6 +559,7 @@ namespace Fungiiiii.Demo
             inventoryObject.SetActive(false);
             inventoryView = inventoryObject.AddComponent<InventoryDemoController>();
             inventoryView.SeedsDemoItems = false;
+            inventoryView.Font = menuFont;
             inventoryObject.SetActive(true);
             inventoryObject.SetActive(false);
             PutNetInHotbar();
@@ -953,6 +954,7 @@ namespace Fungiiiii.Demo
 
         private void EmptyInventory()
         {
+            inventoryView.Hand.Clear();
             var inventory = Inventory;
             for (var index = 0; index < inventory.SlotCount; index++)
             {

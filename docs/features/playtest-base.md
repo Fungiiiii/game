@@ -347,3 +347,5 @@ Aucun de ces tests n'a encore été joué par un humain : à dérouler par Hugo,
 - **Lancer les tests PlayMode supprime `Assets/AddressableAssetsData/link.xml`** (et son `.meta`) : c'est le package Addressables. `git restore` le remet ; ne pas commiter cette suppression.
 
 ## Modifié par
+
+- [playtest-retours](./playtest-retours.md) — retours du playtest du 20/11 : bâtons et champignons gardés autour du joueur (5 et 4 dans 50 m, jamais en vue) au lieu de toute la carte ; contour visé cyan avec la touche au-dessus ; inventaire refait ; arc du filet seulement en visant.

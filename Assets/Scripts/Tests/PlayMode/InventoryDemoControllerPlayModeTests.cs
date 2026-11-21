@@ -1,25 +1,64 @@
+using System.Collections;
 using Fungiiiii.UI;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.Localization.Settings;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 #if UNITY_EDITOR
 using UnityEditor.SceneManagement;
 #endif
-using System.Collections;
 
 namespace Fungiiiii.Tests.PlayMode
 {
     public sealed class InventoryDemoControllerPlayModeTests
     {
+        private const float TextTimeoutSeconds = 5f;
+
+        // The sample items: 5 mushrooms (a full stack) in the quick bar's first slot and
+        // 1 more in slot 1, 8 spores in the quick bar's third slot.
+        private const int FullMushrooms = InventoryDemoController.MainSlotCount;
+        private const int LoneMushroom = 1;
+        private const int Spores = InventoryDemoController.MainSlotCount + 2;
+
+        private GameObject subject;
+        private InventoryDemoController controller;
+
+        [UnitySetUp]
+        public IEnumerator CreateTheScreen()
+        {
+            subject = new GameObject("Inventory Under Test");
+            controller = subject.AddComponent<InventoryDemoController>();
+            yield return null;
+        }
+
+        [UnityTearDown]
+        public IEnumerator DestroyTheScreen()
+        {
+            if (subject != null)
+            {
+                Object.Destroy(subject);
+            }
+
+            yield return null;
+        }
+
+        private void Press(int slot, PointerEventData.InputButton button)
+        {
+            var slotObject = subject.transform.Find(
+                slot < InventoryDemoController.MainSlotCount
+                    ? $"InventoryCanvas/InventoryPanel/InventoryGrid_3x4/InventorySlot_{slot}"
+                    : $"InventoryCanvas/InventoryPanel/Hotbar_3Slots/InventorySlot_{slot}").gameObject;
+            var press = new PointerEventData(EventSystem.current) { button = button, position = new Vector2(100f, 100f) };
+            ExecuteEvents.Execute(slotObject, press, ExecuteEvents.pointerDownHandler);
+        }
+
+        private int QuantityIn(int slot) => controller.Inventory.GetSlot(slot).Quantity;
+
         [UnityTest]
         public IEnumerator Controller_CreatesThreeByFourInventoryAndQuickBar()
         {
-            var subject = new GameObject(nameof(Controller_CreatesThreeByFourInventoryAndQuickBar));
-            InventoryDemoController controller = subject.AddComponent<InventoryDemoController>();
-
-            yield return null;
-
             Assert.That(controller.Inventory.SlotCount, Is.EqualTo(InventoryDemoController.TotalSlotCount));
             Assert.That(controller.Inventory.Count("demo_mushroom"), Is.EqualTo(6));
             Assert.That(subject.transform.Find("InventoryCanvas/InventoryPanel/InventoryGrid_3x4"), Is.Not.Null);
@@ -36,8 +75,6 @@ namespace Fungiiiii.Tests.PlayMode
 
             Assert.That(controller.Inventory.MoveOrSwap(InventoryDemoController.MainSlotCount, 0), Is.True);
             Assert.That(controller.Inventory.GetSlot(0).ItemId, Is.EqualTo("demo_mushroom"));
-
-            Object.Destroy(subject);
             yield return null;
         }
 
@@ -49,10 +86,97 @@ namespace Fungiiiii.Tests.PlayMode
                 new LoadSceneParameters(LoadSceneMode.Single));
             yield return load;
 
-            InventoryDemoController controller = Object.FindFirstObjectByType<InventoryDemoController>();
-            Assert.That(controller, Is.Not.Null);
-            Assert.That(controller.Inventory.Count("demo_mushroom"), Is.EqualTo(6));
-            Assert.That(controller.Inventory.SlotCount, Is.EqualTo(InventoryDemoController.TotalSlotCount));
+            InventoryDemoController sceneController = Object.FindFirstObjectByType<InventoryDemoController>();
+            Assert.That(sceneController, Is.Not.Null);
+            Assert.That(sceneController.Inventory.Count("demo_mushroom"), Is.EqualTo(6));
+            Assert.That(sceneController.Inventory.SlotCount, Is.EqualTo(InventoryDemoController.TotalSlotCount));
+        }
+
+        [UnityTest]
+        public IEnumerator TheItemIsInHand_AsSoonAsTheSlotIsPressed()
+        {
+            Press(Spores, PointerEventData.InputButton.Left);
+
+            Assert.That(controller.Hand.Quantity, Is.EqualTo(8), "The press waited before taking the stack.");
+            Assert.That(subject.transform.Find("InventoryCanvas/HeldItem").gameObject.activeSelf, Is.True, "Nothing follows the mouse.");
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator ADoublePressWithin250ms_GathersEverythingOntoTheMouse()
+        {
+            Press(LoneMushroom, PointerEventData.InputButton.Left);
+            Press(LoneMushroom, PointerEventData.InputButton.Left);
+
+            Assert.That(controller.Hand.Quantity, Is.EqualTo(5), "A full stack of mushrooms is 5.");
+            Assert.That(QuantityIn(FullMushrooms), Is.EqualTo(1));
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator ASecondPressAfter300ms_PutsTheItemBack()
+        {
+            Press(LoneMushroom, PointerEventData.InputButton.Left);
+            yield return new WaitForSecondsRealtime(0.3f);
+            Press(LoneMushroom, PointerEventData.InputButton.Left);
+
+            Assert.That(controller.Hand.IsHolding, Is.False);
+            Assert.That(QuantityIn(LoneMushroom), Is.EqualTo(1));
+            Assert.That(QuantityIn(FullMushrooms), Is.EqualTo(5));
+        }
+
+        [UnityTest]
+        public IEnumerator ARightPress_TakesHalf()
+        {
+            Press(Spores, PointerEventData.InputButton.Right);
+
+            Assert.That(controller.Hand.Quantity, Is.EqualTo(4));
+            Assert.That(QuantityIn(Spores), Is.EqualTo(4));
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator ClosingTheInventory_PutsBackWhatWasHeld()
+        {
+            Press(Spores, PointerEventData.InputButton.Left);
+
+            subject.SetActive(false);
+
+            Assert.That(controller.Hand.IsHolding, Is.False);
+            Assert.That(QuantityIn(Spores), Is.EqualTo(8));
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator ASlotWithOneItem_ShowsNoNumber()
+        {
+            Assert.That(controller.QuantityTextOf(LoneMushroom), Is.Empty);
+            Assert.That(controller.QuantityTextOf(FullMushrooms), Is.EqualTo("5"));
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator TheTitles_FollowTheLanguage()
+        {
+            yield return LocalizationSettings.InitializationOperation;
+
+            LocalizationSettings.SelectedLocale = LocalizationSettings.AvailableLocales.GetLocale("en");
+            yield return WaitForText(controller.Title, "Inventory");
+
+            LocalizationSettings.SelectedLocale = LocalizationSettings.AvailableLocales.GetLocale("fr");
+            yield return WaitForText(controller.Title, "Inventaire");
+        }
+
+        private static IEnumerator WaitForText(UnityEngine.UI.Text label, string expected)
+        {
+            var elapsed = 0f;
+            while (elapsed < TextTimeoutSeconds && label.text != expected)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            Assert.That(label.text, Is.EqualTo(expected));
         }
     }
 }
