@@ -76,7 +76,7 @@ namespace Fungiiiii.UI
         private ControlHint[] hints = new ControlHint[0];
         private RectTransform canvasRect;
         private RectTransform held;
-        private Image heldItem;
+        private ItemIcon heldItem;
         private Text heldCount;
         private Text title;
         private Font font;
@@ -444,10 +444,10 @@ namespace Fungiiiii.UI
             selectable.transition = Selectable.Transition.None;
             slotSelectables[index] = selectable;
 
-            var item = CreateUiObject("ItemColor", slotObject.transform).AddComponent<Image>();
-            item.sprite = GetUiSprite();
-            item.raycastTarget = false;
-            SetRect(item.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(ItemSize, ItemSize), Vector2.zero);
+            var itemImage = CreateUiObject("ItemIcon", slotObject.transform).AddComponent<Image>();
+            itemImage.raycastTarget = false;
+            SetRect(itemImage.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(ItemSize, ItemSize), Vector2.zero);
+            var item = itemImage.gameObject.AddComponent<ItemIcon>();
 
             var count = CreateQuantity(slotObject.transform, new Vector2(-8f, 3f));
             return new SlotView(background, item, count);
@@ -533,9 +533,8 @@ namespace Fungiiiii.UI
             SetRect(held, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(HeldSize, HeldSize), Vector2.zero);
             held.localRotation = Quaternion.Euler(0f, 0f, HeldTiltDegrees);
 
-            heldItem = heldObject.AddComponent<Image>();
-            heldItem.sprite = GetUiSprite();
-            heldItem.raycastTarget = false;
+            heldObject.AddComponent<Image>().raycastTarget = false;
+            heldItem = heldObject.AddComponent<ItemIcon>();
             var shadow = heldObject.AddComponent<UnityEngine.UI.Shadow>();
             shadow.effectColor = HeldShadow;
             shadow.effectDistance = new Vector2(0f, -6f);
@@ -577,7 +576,7 @@ namespace Fungiiiii.UI
             held.gameObject.SetActive(hand.IsHolding);
             if (hand.IsHolding)
             {
-                heldItem.color = hand.Item.Color;
+                heldItem.Show(hand.Item);
                 heldCount.text = QuantityLabel(hand.Quantity);
                 held.SetAsLastSibling();
             }
@@ -675,10 +674,10 @@ namespace Fungiiiii.UI
         private sealed class SlotView
         {
             private readonly CutCornerGraphic background;
-            private readonly Image item;
+            private readonly ItemIcon item;
             private readonly Text count;
 
-            public SlotView(CutCornerGraphic background, Image item, Text count)
+            public SlotView(CutCornerGraphic background, ItemIcon item, Text count)
             {
                 this.background = background;
                 this.item = item;
@@ -689,11 +688,7 @@ namespace Fungiiiii.UI
 
             public void Show(InventorySlot slot)
             {
-                item.enabled = !slot.IsEmpty;
-                if (!slot.IsEmpty)
-                {
-                    item.color = slot.Item.Color;
-                }
+                item.Show(slot.Item);
                 count.text = slot.IsEmpty ? string.Empty : QuantityLabel(slot.Quantity);
             }
 

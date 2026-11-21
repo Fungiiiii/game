@@ -19,6 +19,10 @@ namespace Fungiiiii.Inventory
         [SerializeField]
         private string nameKey;
 
+        [Tooltip("What the interface shows for the item. Empty, it shows a square of the colour below.")]
+        [SerializeField]
+        private Sprite icon;
+
         [Tooltip("Colour of the placeholder square drawn until the item has an icon.")]
         [SerializeField]
         private Color color = Color.white;
@@ -33,6 +37,9 @@ namespace Fungiiiii.Inventory
         public string Id => id;
 
         public string NameKey => nameKey;
+
+        /// <summary>Null until the item's icon is drawn: the interface shows a square of <see cref="Color"/> instead.</summary>
+        public Sprite Icon => icon;
 
         public Color Color => color;
 
