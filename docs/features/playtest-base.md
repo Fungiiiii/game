@@ -1,4 +1,4 @@
-# Base du playtest : accueil, pause, vent, ressources par tick, contour
+# Base du playtest : accueil, pause, vent, ressources par tick, contour, barre d'objets
 
 - **Ticket ClickUp :** aucun. Hugo (owner) a demandé le 20/11 de travailler « directement sur GitHub, une branche », sans ticket. C'est un écart volontaire au workflow, noté aussi dans la PR.
 - **Note de design validée :** aucune sous-tâche de validation. Les choix ont été pris par Hugo en conversation le 20/11 : ils sont listés dans « Décisions ».
@@ -59,6 +59,19 @@
 
 - [ ] Le trou de la Champimaison et son réseau fongique ne sont plus dans la partie. Le bois et les spores s'accumulent dans l'inventaire.
 
+**Barre d'objets et filet**
+
+- [ ] En bas de l'écran, au centre, trois cases en planches de bois, comme les boutons des menus. Ce sont les trois cases de la barre rapide de l'inventaire.
+- [ ] Le filet est un objet : il est dans la première case au début de la partie. L'inventaire ne contient rien d'autre.
+- [ ] Une case est sélectionnée : sa planche est plus claire, monte un peu et n'est pas transparente. La première l'est au départ.
+- [ ] La molette change de case : vers le bas, la suivante ; vers le haut, la précédente. Après la troisième vient la première. Les touches 1, 2, 3 choisissent une case ; à la manette, LB et RB.
+- [ ] La main avec le filet, l'arc de visée et le cercle d'impact ne se voient que si la case sélectionnée contient le filet. Sinon le clic gauche ne lance rien.
+- [ ] Un filet déjà lancé finit sa course et revient avec sa prise, même si on change de case entre-temps.
+- [ ] Une case montre la couleur de son objet, et le nombre s'il y en a plus d'un.
+- [ ] Les cases 2 et 3 sont vides au départ. Ce qu'on cueille ou capture va d'abord dans la grille de l'inventaire, comme avant. Avec Tab, on peut déplacer n'importe quel objet dans la barre, filet compris.
+- [ ] Inventaire ouvert, la barre du bas disparaît (l'inventaire montre la sienne). En pause, elle ne répond plus.
+- [ ] R remet le filet dans la première case et la sélectionne.
+
 **Exécutable**
 
 - [ ] Le menu **Fungiiiii > Playtest > Build Windows Player** produit `Builds/Playtest/Fungiiiii.exe`, qui démarre sur l'accueil.
@@ -72,6 +85,9 @@
 - L'apparition par tick des Spongeus et des Champoule.
 - Le vent sur l'herbe, qui garde son mouvement.
 - La traduction de l'inventaire de Pol-Mattis, dont les textes restent en dur.
+- Un modèle de filet ou une icône : la case montre un carré de couleur, comme l'inventaire.
+- Le nom de l'objet affiché quand on change de case.
+- Tenir en main un autre objet que le filet (bois, spores, champignons).
 - Le multijoueur.
 - Toute modification de la scène `MysticForest` et de ses données de Terrain.
 
@@ -107,6 +123,7 @@ Les trois sont dans les Build Settings, dans cet ordre. `SampleScene` n'y est pl
 | `LocalizedLabel.cs`, `UiText.cs` | Affichent une entrée de la table `UI` ; clés des textes. |
 | `MenuCameraDrift.cs` | Flottement de la caméra de l'accueil. |
 | `GameExit.cs` | Quitter. |
+| `Hotbar.cs` | La barre d'objets du bas : trois planches, la case sélectionnée, molette, 1/2/3, LB/RB. |
 
 **Cueillette**
 
@@ -143,7 +160,9 @@ Les trois sont dans les Build Settings, dans cet ordre. `SampleScene` n'y est pl
 - `Stick.fbx.meta`, `MushroomCluster.fbx.meta` : `isReadable: 1`.
 - `ProjectSettings/EditorBuildSettings.asset` : scènes du build, réglages de localisation et d'Addressables.
 - `ProjectSettings/GraphicsSettings.asset` : `Universal Render Pipeline/Unlit` ajouté aux *Always Included Shaders*.
-- `DemoLoopBootstrap` : champs de cueillette, de contour et de menus ; `buildHole` (faux) ; `SetGameplayInput`.
+- `DemoLoopBootstrap` : champs de cueillette, de contour et de menus ; `buildHole` (faux) ; `SetGameplayInput` ; le filet posé dans la barre, et équipé selon la case sélectionnée.
+- `DemoItems.Net` : le filet comme objet d'inventaire (un seul, couleur du filet provisoire).
+- `NetThrower.IsEquipped` : rangé, le filet en main et la visée sont cachés et il ne part pas. Vrai par défaut : `NetThrowScene` ne change pas.
 - `Runtime/AssemblyInfo.cs` : les types internes sont visibles de `Fungiiiii.Editor`.
 
 Réglages de la partie, sur `DemoLoopBootstrap` dans `DemoLoopScene` : tick (10 s), distance au joueur (20 m), maximums (80 et 120), objets par tick (1 et 2), distance au tronc (1 à 2,5 m), pente max des bâtons (30°), zone jouable, couleur, épaisseur et portée du contour.
@@ -192,6 +211,23 @@ Prises pendant l'implémentation :
 - **`RespawningResource` n'est plus utilisée** par la démo. Elle et ses tests sont laissés en place : supprimer un fichier demande l'accord de Hugo.
 - **Les scènes sont écrites par des outils d'Editor**, rejouables depuis le menu, plutôt qu'à la main.
 
+Barre d'objets, décidée par Hugo le 20/11 en conversation (même branche, pas de ticket) :
+
+- **Le filet est un objet**, dans la première case ; les deux autres cases sont vides au départ.
+- **Molette, 1/2/3 et LB/RB.** La molette boucle.
+- **Un filet lancé revient** même si on change de case.
+- **Faire simple, comme les autres jeux** : un index de case sélectionnée ; à chaque changement, ce qui est tenu en main est montré ou caché, comme le `SetActive` habituel sur l'objet tenu.
+
+Prises pendant l'implémentation :
+
+- **La barre affiche les cases de la barre rapide existante** de l'inventaire (`InventoryDemoController`), pas une deuxième liste : déplacer le filet avec Tab change ce qu'on a en main.
+- **La molette est liée comme un bouton** (`<Mouse>/scroll/down` et `/up`, Input System 1.20) : un cran, une case, sans seuil à régler.
+- **Molette vers le bas = case suivante**, comme dans la plupart des jeux à barre rapide.
+- **`TryThrow` refuse un filet rangé**, en plus de l'entrée : un filet qu'on ne tient pas ne part pas.
+- **Inventaire ouvert, la barre du bas est cachée** : le panneau de l'inventaire la recouvrirait, et il montre déjà la barre rapide.
+- **Un seul objet ne montre pas de nombre** dans la barre (le filet).
+- **Un creux sombre (« Wood dark ») sous l'objet** : sans lui, le carré du bois, de la couleur des planches, ne se voyait pas. Constaté sur une capture, corrigé, revérifié.
+
 ## Tests
 
 ### Automatisés (Unity Test Runner)
@@ -201,6 +237,8 @@ Lancés en batchmode avec Unity 6000.3.21f1 le 20/11, sur la machine de Hugo, ap
 **Exécutable.** Construit par `PlaytestSetup.BuildWindowsPlayer` (113 Mo), puis lancé en fenêtre 1280 × 720 avec un script temporaire, retiré depuis, qui jouait le parcours seul et écrivait dans le log du player : accueil affiché avec « Jouer » et « Quitter », 3 170 arbres sur la map d'accueil, partie prête, 80 bâtons et 120 champignons sur la map, contour actif, shaders des placeholders présents, 4 champignons à capturer, pas de trou, pause (temps à 0, « Reprendre »), retour à l'accueil, fermeture. Aucune erreur ni exception dans le log. Trois captures de l'exécutable ont été regardées : accueil, partie, pause. Environ 430 images par seconde au spawn dans cette fenêtre : une seule mesure, à l'arrêt, pas un test de performance.
 
 L'exécutable final, reconstruit sans ce script, démarre sans erreur dans son log. Son parcours n'a pas été rejoué, et personne n'y a encore joué à la main.
+
+**Barre d'objets.** Après son ajout, relancés en batchmode le 20/11 sur la machine de Hugo, sur le code final : **EditMode 216/216, PlayMode 52/52**, log et XML lus, aucune erreur de compilation. Deux captures de la partie, rendues par un test temporaire retiré depuis, ont été regardées : filet sélectionné (main, arc et cercle visibles) et case 2 sélectionnée (rien en main). L'exécutable n'a pas été reconstruit avec la barre.
 
 | Test | Mode | Couvre | Résultat |
 |---|---|---|---|
@@ -220,7 +258,14 @@ L'exécutable final, reconstruit sans ce script, démarre sans erreur dans son l
 | `MainMenuPlayModeTests.Play_LoadsTheGame` | PlayMode | Jouer charge la partie jusqu'à ce qu'elle soit prête, l'accueil est déchargé | ✅ |
 | `PlaytestLoopPlayModeTests.FromTheHomeScreen_PlayReachesTheGame_AndPauseComesBackHome` | PlayMode | Le parcours entier, scènes chargées comme dans un build : accueil, textes chargés, Jouer, partie prête avec ses ressources et leur contour, pause, retour à l'accueil | ✅ |
 
-**Test existant modifié, exigence changée :** `DemoLoopScenePlayModeTests.SceneLoad_LoadsTheForest_WithOnePlayerAndOneCamera` vérifiait que le trou existe ; il vérifie maintenant qu'il n'y en a pas, puisque le trou est retiré. Les autres tests existants ne sont pas modifiés.
+| `DemoLoopScenePlayModeTests.TheNet_StartsInTheFirstSlotOfTheQuickBar_InHand` | PlayMode | Un seul filet, dans la première case de la barre ; barre visible, 3 cases, la première sélectionnée ; filet en main | ✅ |
+| `DemoLoopScenePlayModeTests.SelectingAnotherSlot_PutsTheNetAway_AndSelectingItAgainGivesItBack` | PlayMode | Autre case : filet rangé, main cachée, lancer refusé. Retour sur la case : filet en main, lancer possible | ✅ |
+| `DemoLoopScenePlayModeTests.ANetThrown_ComesBack_EvenWhenAnotherSlotIsSelected` | PlayMode | Un filet lancé puis rangé revient ; la main reste cachée | ✅ |
+| `DemoLoopScenePlayModeTests.MovingTheNetOutOfTheSelectedSlot_PutsItAway` | PlayMode | Filet déplacé dans une autre case : rangé ; cette case sélectionnée : en main | ✅ |
+| `DemoLoopScenePlayModeTests.TheInventory_HidesTheQuickBar_AndThePause_FreezesIt` | PlayMode | Inventaire ouvert : barre cachée et sans effet ; pause : barre sans effet | ✅ |
+| `DemoLoopScenePlayModeTests.Reset_PutsTheNetBackInTheFirstSlot_InHand` | PlayMode | R : un seul filet, dans la première case, sélectionnée, en main | ✅ |
+
+**Tests existants modifiés, exigence changée :** `DemoLoopScenePlayModeTests.SceneLoad_LoadsTheForest_WithOnePlayerAndOneCamera` vérifiait que le trou existe ; il vérifie maintenant qu'il n'y en a pas, puisque le trou est retiré. Il vérifiait aussi que l'inventaire démarre vide ; il démarre maintenant avec le filet seul, dans la première case de la barre. Les autres tests existants ne sont pas modifiés.
 
 `GatheringTests` garde ses 7 tests de `RespawningResource`, classe que la démo n'utilise plus (voir « Limitations connues »).
 
@@ -260,6 +305,15 @@ Aucun de ces tests n'a encore été joué par un humain : à dérouler par Hugo,
 | 24 | Pendant le Play, fenêtre **Stats**, au spawn puis en zone B | Noter les FPS dans la PR. Objectif : 120 FPS ou plus sur RX 6800 XT + i5-12400F | ⬜ |
 | 25 | Ouvrir `MysticForest` seule, Play. Puis `git status` | La forêt marche avec son joueur de test, ses champignons de décor sont tous là. La scène et `MysticForestTerrainData.asset` ne sont pas modifiés | ⬜ |
 | 26 | Ouvrir `NetThrowScene`, `InventaireScene` et `MouvementJoueurScene`, Play | Comme avant | ⬜ |
+| 31 | `DemoLoopScene`, Play, regarder le bas de l'écran | Trois planches au centre ; la première, plus claire et plus haute, montre un carré beige (le filet). Le filet est en main, l'arc de visée se voit | ⬜ |
+| 32 | Molette vers le bas, un cran à la fois, quatre fois | La sélection passe à la 2, la 3, revient à la 1, puis la 2. Sur les cases 2 et 3 : plus de filet en main, ni arc ni cercle, le clic gauche ne lance rien | ⬜ |
+| 33 | Molette vers le haut ; puis touches 3, 1 ; puis LB et RB à la manette | Même chose dans l'autre sens ; 3 et 1 choisissent directement ; LB précédente, RB suivante | ⬜ |
+| 34 | Case 1, lancer le filet sur un Spongeus, puis tout de suite touche 2 | Le filet finit sa course et revient avec sa prise ; il ne réapparaît pas en main. Touche 1 : il est de nouveau en main | ⬜ |
+| 35 | Cueillir trois bâtons | Ils vont dans la grille de l'inventaire, pas dans la barre | ⬜ |
+| 36 | Tab, déplacer les bâtons dans la case 2 de la barre, Tab | Inventaire ouvert, la barre du bas a disparu. Fermé : la case 2 montre un carré brun et « 3 » | ⬜ |
+| 37 | Tab, déplacer le filet dans la grille, Tab | Plus de filet en main, sur aucune case. Le remettre dans la barre le rend | ⬜ |
+| 38 | Échap, molette | La sélection ne bouge pas en pause | ⬜ |
+| 39 | Sélectionner la case 3, R | Le filet revient dans la case 1, sélectionnée, en main | ⬜ |
 
 **Exécutable**
 
@@ -289,5 +343,7 @@ Aucun de ces tests n'a encore été joué par un humain : à dérouler par Hugo,
 - **`RespawningResource` et ses 7 tests** ne servent plus à la démo. À supprimer avec l'accord de Hugo.
 - **Noms de fichiers avec espaces** dans `Assets/Localization/` et `Assets/AddressableAssetsData/` : ce sont les noms que donnent les packages.
 - **Langue** : pas de choix en jeu. Elle suit le système, ou l'argument `-language=en` au lancement.
+- **La barre n'a été vue que sur des images fixes** : la molette, les touches et la manette n'ont été essayées par personne ; les tests appellent la sélection directement.
+- **Lancer les tests PlayMode supprime `Assets/AddressableAssetsData/link.xml`** (et son `.meta`) : c'est le package Addressables. `git restore` le remet ; ne pas commiter cette suppression.
 
 ## Modifié par

@@ -1,3 +1,4 @@
+using Fungiiiii.Capture;
 using Fungiiiii.Inventory;
 using UnityEngine;
 
@@ -12,6 +13,7 @@ namespace Fungiiiii.Demo
     {
         public const string WoodId = "wood";
         public const string SporeId = "spore";
+        public const string NetId = "net";
 
         private const int ResourceStackSize = 16;
         private const int MushroomStackSize = 4;
@@ -27,6 +29,10 @@ namespace Fungiiiii.Demo
         /// <summary>Palette "Sponge", #9CC3DA.</summary>
         public static readonly InventoryItemDefinition Spongeus =
             new InventoryItemDefinition("spongeus", new Color32(0x9C, 0xC3, 0xDA, 0xFF), MushroomStackSize);
+
+        /// <summary>The capture net: one, the colour of its placeholder.</summary>
+        public static readonly InventoryItemDefinition Net =
+            new InventoryItemDefinition(NetId, NetThrower.NetColor, 1);
 
         /// <summary>Palette "Bulb on", #FFE9A3.</summary>
         public static readonly InventoryItemDefinition Champoule =
