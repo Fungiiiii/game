@@ -181,10 +181,10 @@ namespace Fungiiiii.UI
 
         private void SeedDemoItems()
         {
-            var mushroom = new InventoryItemDefinition(DemoMushroomId, new Color(0.95f, 0.52f, 0.18f, 1f), demoMaxStackSize);
-            var herb = new InventoryItemDefinition(DemoHerbId, new Color(0.25f, 0.78f, 0.35f, 1f), 10);
-            var spore = new InventoryItemDefinition(DemoSporeId, new Color(0.55f, 0.35f, 0.92f, 1f), 16);
-            var crystal = new InventoryItemDefinition(DemoCrystalId, new Color(0.25f, 0.75f, 0.95f, 1f), 4);
+            var mushroom = ItemDefinition.Create(DemoMushroomId, new Color(0.95f, 0.52f, 0.18f, 1f), demoMaxStackSize);
+            var herb = ItemDefinition.Create(DemoHerbId, new Color(0.25f, 0.78f, 0.35f, 1f), 10);
+            var spore = ItemDefinition.Create(DemoSporeId, new Color(0.55f, 0.35f, 0.92f, 1f), 16);
+            var crystal = ItemDefinition.Create(DemoCrystalId, new Color(0.25f, 0.75f, 0.95f, 1f), 4);
 
             inventory.Add(mushroom, 6);
             inventory.Add(herb, 3);
@@ -547,7 +547,10 @@ namespace Fungiiiii.UI
             public void Show(InventorySlot slot)
             {
                 item.enabled = !slot.IsEmpty;
-                item.color = slot.Color;
+                if (!slot.IsEmpty)
+                {
+                    item.color = slot.Item.Color;
+                }
                 count.text = slot.IsEmpty ? string.Empty : QuantityLabel(slot.Quantity);
             }
 

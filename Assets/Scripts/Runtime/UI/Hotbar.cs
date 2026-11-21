@@ -248,7 +248,10 @@ namespace Fungiiiii.UI
             public void Show(InventorySlot slot)
             {
                 item.enabled = !slot.IsEmpty;
-                item.color = slot.Color;
+                if (!slot.IsEmpty)
+                {
+                    item.color = slot.Item.Color;
+                }
                 // A single item shows no number, as in most quick bars.
                 quantity.text = slot.Quantity > 1 ? slot.Quantity.ToString() : string.Empty;
             }

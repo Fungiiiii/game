@@ -61,7 +61,7 @@ namespace Fungiiiii.Demo
         private readonly List<int> despawned = new List<int>();
         private readonly List<ResourceViewer> viewers = new List<ResourceViewer>();
 
-        private InventoryItemDefinition item;
+        private ItemDefinition item;
         private IReadOnlyList<GameObject> variants;
         private Stack<Gatherable>[] hidden;
         private IReadOnlyList<GatherableSpot> spots;
@@ -78,7 +78,7 @@ namespace Fungiiiii.Demo
         /// <param name="gatherablePrefabs">Model variants: each appearance draws one.</param>
         /// <param name="onCreated">Called once for each gatherable the field builds.</param>
         public void Initialize(
-            InventoryItemDefinition gatheredItem,
+            ItemDefinition gatheredItem,
             IReadOnlyList<GameObject> gatherablePrefabs,
             IReadOnlyList<GatherableSpot> fieldSpots,
             ResourceSpawner.Settings settings,

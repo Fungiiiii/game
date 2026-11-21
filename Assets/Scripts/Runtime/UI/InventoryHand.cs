@@ -34,7 +34,8 @@ namespace Fungiiiii.UI
 
         public bool IsHolding => Quantity > 0;
 
-        public InventoryItemDefinition Item { get; private set; }
+        /// <summary>The item held, null when nothing is.</summary>
+        public ItemDefinition Item { get; private set; }
 
         public int Quantity { get; private set; }
 
@@ -63,7 +64,7 @@ namespace Fungiiiii.UI
             }
 
             var target = inventory.GetSlot(slot);
-            if (target.IsEmpty || IsSameItem(target))
+            if (target.IsEmpty || target.Item == Item)
             {
                 PutDown(slot, Quantity);
                 return;
@@ -83,7 +84,7 @@ namespace Fungiiiii.UI
                 return;
             }
 
-            if (target.IsEmpty || IsSameItem(target))
+            if (target.IsEmpty || target.Item == Item)
             {
                 PutDown(slot, 1);
             }
@@ -104,7 +105,7 @@ namespace Fungiiiii.UI
             if (OriginSlot != NoSlot)
             {
                 var origin = inventory.GetSlot(OriginSlot);
-                if (origin.IsEmpty || IsSameItem(origin))
+                if (origin.IsEmpty || origin.Item == Item)
                 {
                     Quantity -= inventory.AddToSlot(OriginSlot, Item, Quantity);
                 }
@@ -168,7 +169,7 @@ namespace Fungiiiii.UI
             for (var index = 0; index < inventory.SlotCount && Quantity < Item.MaxStackSize; index++)
             {
                 var slot = inventory.GetSlot(index);
-                if (slot.IsEmpty || !IsSameItem(slot) || (slot.Quantity >= slot.MaxStackSize) != fullStacks)
+                if (slot.IsEmpty || slot.Item != Item || (slot.Quantity >= Item.MaxStackSize) != fullStacks)
                 {
                     continue;
                 }
@@ -177,16 +178,11 @@ namespace Fungiiiii.UI
             }
         }
 
-        private bool IsSameItem(InventorySlot slot)
-        {
-            return slot.ItemId == Item.Id && slot.MaxStackSize == Item.MaxStackSize && slot.Color == Item.Color;
-        }
-
         private void AfterChange()
         {
             if (!IsHolding)
             {
-                Item = default;
+                Item = null;
                 OriginSlot = NoSlot;
             }
 

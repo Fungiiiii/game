@@ -67,6 +67,10 @@ namespace Fungiiiii.Demo
         [SerializeField]
         private GameObject champouleModel;
 
+        [Tooltip("Every item of the game: the demo takes its wood, spores, mushrooms and net from it.")]
+        [SerializeField]
+        private ItemCatalog itemCatalog;
+
         [Tooltip("Decor mushroom of the forest: the Terrain's instances of it become spore spots.")]
         [SerializeField]
         private GameObject decorMushroomPrefab;
@@ -285,13 +289,18 @@ namespace Fungiiiii.Demo
         private readonly List<Gatherable> gatherables = new List<Gatherable>();
         private readonly List<GatherableField> fields = new List<GatherableField>();
         private readonly List<NetDemoMushroom> mushrooms = new List<NetDemoMushroom>();
-        private readonly Dictionary<NetDemoMushroom, InventoryItemDefinition> mushroomItems =
-            new Dictionary<NetDemoMushroom, InventoryItemDefinition>();
+        private readonly Dictionary<NetDemoMushroom, ItemDefinition> mushroomItems =
+            new Dictionary<NetDemoMushroom, ItemDefinition>();
         private readonly List<Material> materials = new List<Material>();
         private readonly List<GatherableSpot> mushroomSpots = new List<GatherableSpot>();
         private readonly List<GatherableSpot> stickSpots = new List<GatherableSpot>();
 
         private PlayerControls controls;
+        private ItemDefinition woodItem;
+        private ItemDefinition sporeItem;
+        private ItemDefinition spongeusItem;
+        private ItemDefinition champouleItem;
+        private ItemDefinition netItem;
         private InputAction inventoryAction;
         private InputAction resetAction;
         private System.Random random;
@@ -351,7 +360,7 @@ namespace Fungiiiii.Demo
         public Hotbar Hotbar => hotbar;
 
         /// <summary>The inventory item a mushroom becomes once caught.</summary>
-        public InventoryItemDefinition ItemFor(NetDemoMushroom mushroom) => mushroomItems[mushroom];
+        public ItemDefinition ItemFor(NetDemoMushroom mushroom) => mushroomItems[mushroom];
 
         private void OnDestroy()
         {
@@ -402,14 +411,20 @@ namespace Fungiiiii.Demo
             if (playerPrefab == null || spongeusModel == null || champouleModel == null || decorMushroomPrefab == null ||
                 sporeMushroomPrefabs == null || sporeMushroomPrefabs.Length == 0 || System.Array.IndexOf(sporeMushroomPrefabs, null) >= 0 ||
                 stickPrefab == null || outlineShader == null || stickTreePrefabs == null || stickTreePrefabs.Length == 0 ||
-                menuFont == null)
+                menuFont == null || itemCatalog == null)
             {
                 Debug.LogError("DemoLoopBootstrap is missing one of its assets.", this);
                 enabled = false;
                 yield break;
             }
 
-            random = randomSeed != 0 ? new System.Random(randomSeed) : new System.Random();
+            if (!TakeItems())
+            {
+                enabled = false;
+                yield break;
+            }
+
+            random =randomSeed != 0 ? new System.Random(randomSeed) : new System.Random();
 
             yield return LoadForest();
 
@@ -460,6 +475,29 @@ namespace Fungiiiii.Demo
             resetAction.performed += OnResetPerformed;
 
             IsReady = true;
+        }
+
+        /// <summary>The demo's items, from the catalog. False, with the reason logged, when the catalog cannot give them.</summary>
+        private bool TakeItems()
+        {
+            var problems = itemCatalog.FindProblems();
+            if (problems.Count > 0)
+            {
+                Debug.LogError($"The item catalog is not sound: {string.Join(" ", problems)}", itemCatalog);
+                return false;
+            }
+
+            if (!itemCatalog.TryGet(DemoItems.WoodId, out woodItem) ||
+                !itemCatalog.TryGet(DemoItems.SporeId, out sporeItem) ||
+                !itemCatalog.TryGet(DemoItems.SpongeusId, out spongeusItem) ||
+                !itemCatalog.TryGet(DemoItems.ChampouleId, out champouleItem) ||
+                !itemCatalog.TryGet(DemoItems.NetId, out netItem))
+            {
+                Debug.LogError("The item catalog lacks one of the demo's items: wood, spore, spongeus, champoule or net.", itemCatalog);
+                return false;
+            }
+
+            return true;
         }
 
         private static IEnumerator LoadForest()
@@ -552,7 +590,7 @@ namespace Fungiiiii.Demo
         /// <summary>The net starts in the quick bar's first slot.</summary>
         private void PutNetInHotbar()
         {
-            Inventory.AddToSlot(InventoryDemoController.MainSlotCount, DemoItems.Net, 1);
+            Inventory.AddToSlot(InventoryDemoController.MainSlotCount, netItem, 1);
         }
 
         /// <summary>The quick bar shows the inventory's own quick bar slots.</summary>
@@ -577,7 +615,7 @@ namespace Fungiiiii.Demo
         private void UpdateItemInHand()
         {
             var selected = hotbar.SelectedSlot;
-            Thrower.IsEquipped = !selected.IsEmpty && selected.ItemId == DemoItems.NetId;
+            Thrower.IsEquipped = !selected.IsEmpty && selected.Item == netItem;
         }
 
         private void BuildHole(Material refused)
@@ -666,8 +704,8 @@ namespace Fungiiiii.Demo
             ForestResourceSpots.RemoveOverlaps(mushroomSpots, stickSpots, mushroomStickClearance, mushroomClearance, IsBlocked);
 
             var fieldPlayers = new[] { new FieldPlayer(player.transform, firstPersonCamera.Camera) };
-            AddField("Spore Mushrooms", DemoItems.Spore, sporeMushroomPrefabs, mushroomSpots, sporeMushroomsNearPlayer, maxSporeMushrooms, sporeMushroomsPerTick, fieldPlayers);
-            AddField("Sticks", DemoItems.Wood, new[] { stickPrefab }, stickSpots, sticksNearPlayer, maxSticks, sticksPerTick, fieldPlayers);
+            AddField("Spore Mushrooms", sporeItem, sporeMushroomPrefabs, mushroomSpots, sporeMushroomsNearPlayer, maxSporeMushrooms, sporeMushroomsPerTick, fieldPlayers);
+            AddField("Sticks", woodItem, new[] { stickPrefab }, stickSpots, sticksNearPlayer, maxSticks, sticksPerTick, fieldPlayers);
         }
 
         /// <summary>
@@ -754,7 +792,7 @@ namespace Fungiiiii.Demo
 
         private void AddField(
             string fieldName,
-            InventoryItemDefinition item,
+            ItemDefinition item,
             GameObject[] variants,
             List<GatherableSpot> spots,
             int nearPlayer,
@@ -803,12 +841,12 @@ namespace Fungiiiii.Demo
         {
             foreach (var home in SpongeusHomes)
             {
-                SpawnMushroom("Spongeus", home, spongeusModel, NetTargetProfile.Common, DemoItems.Spongeus);
+                SpawnMushroom("Spongeus", home, spongeusModel, NetTargetProfile.Common, spongeusItem);
             }
 
             foreach (var home in ChampouleHomes)
             {
-                SpawnMushroom("Champoule", home, champouleModel, NetTargetProfile.Rare, DemoItems.Champoule);
+                SpawnMushroom("Champoule", home, champouleModel, NetTargetProfile.Rare, champouleItem);
             }
         }
 
@@ -817,7 +855,7 @@ namespace Fungiiiii.Demo
             Vector2 home,
             GameObject model,
             NetTargetProfile profile,
-            InventoryItemDefinition item)
+            ItemDefinition item)
         {
             var mushroomObject = new GameObject($"Mushroom ({species})");
             mushroomObject.transform.position = OnGround(home);
