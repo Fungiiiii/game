@@ -72,7 +72,7 @@
 - **Forêt** : `TerrainForestGenerator` (emprise des calques), `ForestScatter` (`fadeSouth`, `fadeNorth`), menu **Fungiiiii > Playtest > 6. Regenerate Mystic Forest** ; `MysticForest.unity` et `MysticForestTerrainData.asset` regénérés.
 - **Champignons** : `generate_forest_models.py`, `MushroomCluster_02` à `_04` (FBX, `.meta`, prefabs) ; `DemoLoopBootstrap.sporeMushroomPrefabs`, renseigné par **3. Wire Demo Loop Scene**.
 - **Ressources** : `ResourceSpawner` réécrit (bulles par joueur, `ResourceViewer`) ; `GatherableField` (liste de joueurs `FieldPlayer`, variantes avec leur réserve, disparition) ; `ForestResourceSpots` (`FindTreeFootMushroomSpots`, `ScatterMushroomSpots`, `RemoveOverlaps`, `MushroomPose`) ; réglages dans `DemoLoopBootstrap` et `DemoLoopScene.unity`.
-- **Touche E** : `IDemoInteractable.PromptPoint`, `PlayerInteractor` (cible, libellé du binding), `KeyPrompt`, `KeyCapGraphic`, `TriangleGlyphGraphic`, `Polygon` (partagé avec `PlankGraphic`).
+- **Touche E** : `IInteractable.PromptPoint`, `PlayerInteractor` (cible, libellé du binding), `KeyPrompt`, `KeyCapGraphic`, `TriangleGlyphGraphic`, `Polygon` (partagé avec `PlankGraphic`).
 - **Filet** : `NetThrower` (actions `NetPrimary` / `NetSecondary`, `HoldAim`, zoom, `PreviewTarget`, `PreviewChance`), `NetPreviewDots`, `PrototypeFirstPersonCamera.LookScale`, `NetTargetOutline`, `ItemOutlineFactory.CreateChanceOutline`, `ItemOutline.SetVisible` ; `Spongeus.fbx` et `Champoule.fbx` en Read/Write.
 - **Inventaire** : `InventoryHand` (logique des clics, C# pur), `InventoryDemoController` (écran refait), `CutCornerGraphic` ; dix textes dans la table `UI` (`UiText`, `PlaytestLocalization`).
 

@@ -286,7 +286,7 @@ namespace Fungiiiii.Demo
         /// <summary>Mushrooms cannot flee out of this ground rectangle (x, z) around the spawn and the hole.</summary>
         private static readonly Rect MushroomArea = new Rect(-30f, -260f, 80f, 65f);
 
-        private readonly List<IDemoInteractable> interactables = new List<IDemoInteractable>();
+        private readonly List<IInteractable> interactables = new List<IInteractable>();
         private readonly List<Gatherable> gatherables = new List<Gatherable>();
         private readonly List<GatherableField> fields = new List<GatherableField>();
         private readonly List<NetDemoMushroom> mushrooms = new List<NetDemoMushroom>();

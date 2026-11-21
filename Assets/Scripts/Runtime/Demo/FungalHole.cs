@@ -13,7 +13,7 @@ namespace Fungiiiii.Demo
     /// filaments on the ground that spread further at each stage. All placeholders.
     /// The rules are in <see cref="FungalNetwork"/>.
     /// </summary>
-    internal sealed class FungalHole : MonoBehaviour, IDemoInteractable
+    internal sealed class FungalHole : MonoBehaviour, IInteractable
     {
         private const float HoleRadius = 1f;
         private const float FilamentLift = 0.04f;

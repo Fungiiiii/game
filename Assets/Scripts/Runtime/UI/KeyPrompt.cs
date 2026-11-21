@@ -105,6 +105,19 @@ namespace Fungiiiii.UI
             ApplyPop();
         }
 
+        /// <summary>Plays the pop again, for a key that moves to another target.</summary>
+        public void PopIn()
+        {
+            popElapsed = 0f;
+            if (IsVisible)
+            {
+                ApplyPop();
+            }
+        }
+
+        /// <summary>Scale of the key: below 1 while it pops in.</summary>
+        public float Scale => key != null ? key.localScale.x : 0f;
+
         public void Hide()
         {
             canvasObject.SetActive(false);
