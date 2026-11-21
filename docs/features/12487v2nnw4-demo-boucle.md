@@ -75,12 +75,12 @@ La démo utilise la [Forêt mystique](./12487v2byt9-mystic-forest.md) **sans la 
 | `FungalHole.cs` | Le trou et les filaments du réseau, en placeholders. |
 | `DemoGroundRing.cs` | Anneau au sol qui suit le relief. |
 | `DemoItems.cs` | Les objets de la démo : identifiants et couleurs d'inventaire (palette du projet). |
-| `IDemoInteractable.cs` | Ce que E peut utiliser. |
+| `IInteractable.cs` | Ce que E peut utiliser. |
 
 **Code existant modifié :**
 
 - `PlayerMotor` : `SprintAllowed` et `DodgeAllowed` (vrais par défaut), `IsSprintMoving`, événement `Dodged`. Sans propriétaire d'endurance, rien ne change : `MouvementJoueurScene` et `NetThrowScene` gardent leur comportement.
-- `InventoryDemoController` (Pol-Mattis) : `SeedsDemoItems`, vrai par défaut. Faux, l'inventaire démarre vide. `InventaireScene` ne change pas. Le risque n° 4 de la note est couvert par ce seul ajout : `Inventory.Add` existait déjà.
+- `InventoryScreen` (Pol-Mattis) : `SeedsDemoItems`, vrai par défaut. Faux, l'inventaire démarre vide. `InventaireScene` ne change pas. Le risque n° 4 de la note est couvert par ce seul ajout : `Inventory.Add` existait déjà.
 - `NetDemoMushroom` : `InitializeWithModel`, `EnableWander`, `FollowGround` (voir « Docs précédents »).
 - `NetThrower` : événement `CatchReturned`, propriété `ThrowInputEnabled`.
 
@@ -132,7 +132,7 @@ Lancés en batchmode avec Unity 6000.3.21f1 le 19/11, sur la machine d'Ilyes. Re
 | `DemoLoopScenePlayModeTests.GatheringASpot_PutsOneItemInTheInventory_AndHidesIt` | PlayMode | Cueillir donne 1 objet, le point disparaît et ne se cueille pas deux fois | ✅ |
 | `DemoLoopScenePlayModeTests.ACapture_PutsTheMushroomInTheInventory` | PlayMode | Un filet lâché sur un Spongeus finit par le capturer, et il entre dans l'inventaire (jusqu'à 12 essais, reset entre chaque) | ✅ |
 
-Les tests existants ne sont pas modifiés et doivent rester verts, en particulier `NetThrowScenePlayModeTests`, `PlayerMovementDemoPlayModeTests` et `InventoryDemoControllerPlayModeTests`.
+Les tests existants ne sont pas modifiés et doivent rester verts, en particulier `NetThrowScenePlayModeTests`, `PlayerMovementDemoPlayModeTests` et `InventoryScreenPlayModeTests`.
 
 ### Manuels (dans Unity)
 
@@ -178,3 +178,6 @@ Scène : `Assets/Scenes/Prototype/DemoLoopScene.unity`, puis **Play** et un clic
 - **Shaders par `Shader.Find`** pour les placeholders, comme le filet : valable dans l'Editor, pas garanti dans un build.
 
 ## Modifié par
+
+- [playtest-base](./playtest-base.md) — la boucle sert de base au playtest : contour du modèle à la place de l'anneau cyan, bâtons et champignons répartis sur toute la map par tick, trou de la Champimaison retiré pour l'instant, menu pause sur Échap.
+- [playtest-retours](./playtest-retours.md) — le dodge est retiré du jeu (action, `PlayerDodge`, son coût d'endurance) ; Espace et A sautent (`PlayerMotor.TryJump`).

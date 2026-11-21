@@ -7,16 +7,40 @@ namespace Fungiiiii.Tests.EditMode
 {
     public sealed class PlayerInventoryTests
     {
-        private static InventoryItemDefinition CreateItem(int maxStackSize = 5)
+        private static ItemDefinition CreateItem(int maxStackSize = 5)
         {
-            return new InventoryItemDefinition("test_item", Color.magenta, maxStackSize);
+            return ItemDefinition.Create("test_item", Color.magenta, maxStackSize);
+        }
+
+        [Test]
+        public void Collect_AddsAndTellsWhatWasCollected_WhereAddTellsNothing()
+        {
+            var inventory = new PlayerInventory(1);
+            ItemDefinition item = CreateItem(maxStackSize: 5);
+            ItemDefinition collected = null;
+            var count = 0;
+            inventory.Collected += (what, quantity) =>
+            {
+                collected = what;
+                count += quantity;
+            };
+
+            inventory.Add(item, 2);
+            Assert.That(count, Is.Zero, "Moving items is not collecting them.");
+
+            Assert.That(inventory.Collect(item, 6), Is.EqualTo(3));
+            Assert.That(collected, Is.SameAs(item));
+            Assert.That(count, Is.EqualTo(3), "Only what fitted was collected.");
+
+            Assert.That(inventory.Collect(item, 1), Is.Zero);
+            Assert.That(count, Is.EqualTo(3), "Nothing was collected into a full inventory.");
         }
 
         [Test]
         public void Add_FillsExistingStackBeforeOpeningAnotherSlot()
         {
             var inventory = new PlayerInventory(3);
-            InventoryItemDefinition item = CreateItem();
+            ItemDefinition item = CreateItem();
 
             Assert.That(inventory.Add(item, 7), Is.EqualTo(7));
             Assert.That(inventory.GetSlot(0).Quantity, Is.EqualTo(5));
@@ -28,7 +52,7 @@ namespace Fungiiiii.Tests.EditMode
         public void Add_WhenFull_ReturnsOnlyQuantityThatFits()
         {
             var inventory = new PlayerInventory(1);
-            InventoryItemDefinition item = CreateItem(2);
+            ItemDefinition item = CreateItem(2);
 
             Assert.That(inventory.Add(item, 5), Is.EqualTo(2));
             Assert.That(inventory.Count(item.Id), Is.EqualTo(2));
@@ -38,7 +62,7 @@ namespace Fungiiiii.Tests.EditMode
         public void Remove_ReleasesLastStackFirst()
         {
             var inventory = new PlayerInventory(3);
-            InventoryItemDefinition item = CreateItem();
+            ItemDefinition item = CreateItem();
             inventory.Add(item, 7);
 
             Assert.That(inventory.Remove(item.Id, 2), Is.EqualTo(2));
@@ -50,8 +74,8 @@ namespace Fungiiiii.Tests.EditMode
         public void MoveOrSwap_MovesToEmptySlotAndSwapsOccupiedSlots()
         {
             var inventory = new PlayerInventory(3);
-            InventoryItemDefinition item = CreateItem();
-            InventoryItemDefinition other = new InventoryItemDefinition("other_item", Color.cyan, 5);
+            ItemDefinition item = CreateItem();
+            ItemDefinition other = ItemDefinition.Create("other_item", Color.cyan, 5);
             inventory.Add(item, 2);
             inventory.Add(other, 1);
 
@@ -68,10 +92,10 @@ namespace Fungiiiii.Tests.EditMode
         public void TakeAndAddToSlot_SupportSplitStackInteractions()
         {
             var inventory = new PlayerInventory(3);
-            InventoryItemDefinition item = CreateItem();
+            ItemDefinition item = CreateItem();
             inventory.Add(item, 5);
 
-            int taken = inventory.TakeFromSlot(0, 3, out InventoryItemDefinition carriedItem);
+            int taken = inventory.TakeFromSlot(0, 3, out ItemDefinition carriedItem);
             int placed = inventory.AddToSlot(1, carriedItem, 1);
 
             Assert.That(taken, Is.EqualTo(3));
@@ -85,9 +109,9 @@ namespace Fungiiiii.Tests.EditMode
         public void StackAll_ConsolidatesCompatibleStacksIntoThePreferredSlot()
         {
             var inventory = new PlayerInventory(3);
-            InventoryItemDefinition item = CreateItem();
+            ItemDefinition item = CreateItem();
             inventory.Add(item, 5);
-            inventory.TakeFromSlot(0, 2, out InventoryItemDefinition carriedItem);
+            inventory.TakeFromSlot(0, 2, out ItemDefinition carriedItem);
             inventory.AddToSlot(1, carriedItem, 2);
 
             Assert.That(inventory.StackAll(item.Id, 1), Is.True);
@@ -96,10 +120,37 @@ namespace Fungiiiii.Tests.EditMode
         }
 
         [Test]
+        public void TwoDefinitions_NeverStack_EvenWhenTheyLookAlike()
+        {
+            var inventory = new PlayerInventory(2);
+            var item = ItemDefinition.Create("test_item", Color.magenta, 5);
+            var lookAlike = ItemDefinition.Create("test_item_copy", Color.magenta, 5);
+            inventory.Add(item, 1);
+
+            inventory.Add(lookAlike, 1);
+
+            Assert.That(inventory.GetSlot(0).Item, Is.SameAs(item));
+            Assert.That(inventory.GetSlot(1).Item, Is.SameAs(lookAlike));
+        }
+
+        [Test]
+        public void AnEmptySlot_HasNoItem()
+        {
+            var inventory = new PlayerInventory(1);
+            var item = CreateItem();
+            inventory.Add(item, 1);
+
+            inventory.Remove(item.Id, 1);
+
+            Assert.That(inventory.GetSlot(0).Item, Is.Null);
+            Assert.That(inventory.GetSlot(0).ItemId, Is.Null);
+        }
+
+        [Test]
         public void Changed_IsRaisedOncePerSuccessfulOperation()
         {
             var inventory = new PlayerInventory(2);
-            InventoryItemDefinition item = CreateItem();
+            ItemDefinition item = CreateItem();
             int changes = 0;
             inventory.Changed += () => changes++;
 
@@ -113,7 +164,7 @@ namespace Fungiiiii.Tests.EditMode
         public void InvalidArguments_AreRejected()
         {
             Assert.Throws<ArgumentOutOfRangeException>(() => new PlayerInventory(0));
-            Assert.Throws<System.ArgumentException>(() => new InventoryItemDefinition(string.Empty, Color.white, 1));
+            Assert.Throws<System.ArgumentException>(() => ItemDefinition.Create(string.Empty, Color.white, 1));
             Assert.Throws<ArgumentOutOfRangeException>(() => CreateItem(0));
         }
     }

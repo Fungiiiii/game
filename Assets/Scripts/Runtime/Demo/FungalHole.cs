@@ -3,6 +3,7 @@ using Fungiiiii.Capture;
 using Fungiiiii.Champimaison;
 using Fungiiiii.Gathering;
 using Fungiiiii.Inventory;
+using Fungiiiii.UI;
 using UnityEngine;
 
 namespace Fungiiiii.Demo
@@ -13,7 +14,7 @@ namespace Fungiiiii.Demo
     /// filaments on the ground that spread further at each stage. All placeholders.
     /// The rules are in <see cref="FungalNetwork"/>.
     /// </summary>
-    internal sealed class FungalHole : MonoBehaviour, IDemoInteractable
+    internal sealed class FungalHole : MonoBehaviour, IInteractable
     {
         private const float HoleRadius = 1f;
         private const float FilamentLift = 0.04f;
@@ -39,6 +40,11 @@ namespace Fungiiiii.Demo
         private float refusedFlashLeft;
 
         public FungalNetwork Network => network;
+
+        /// <summary>The key to press floats a metre above the centre of the hole.</summary>
+        public Vector3 PromptPoint => transform.position + Vector3.up;
+
+        public string HintKey => UiText.HintDeposit;
 
         public InteractionCandidate Candidate =>
             new InteractionCandidate(transform.position, reach, !network.IsComplete);

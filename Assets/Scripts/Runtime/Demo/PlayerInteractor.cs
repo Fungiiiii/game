@@ -1,65 +1,96 @@
 using System.Collections.Generic;
+using Fungiiiii.Capture;
+using Fungiiiii.Controls;
 using Fungiiiii.Gathering;
 using Fungiiiii.Inventory;
+using Fungiiiii.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.DualShock;
 
 namespace Fungiiiii.Demo
 {
     /// <summary>
-    /// The interact control of the demo: shows what the player aims at close by, and uses
-    /// it on a press. Interact is built in code, like Dodge in PlayerInputReader.
+    /// The interact control of the demo: shows what the player aims at close by, with the
+    /// key to press above it, and uses it on a press. The key is that of the Interact
+    /// action on the device the player used last.
     /// </summary>
-    internal sealed class PlayerInteractor : MonoBehaviour
+    internal sealed class PlayerInteractor : MonoBehaviour, IHintSource
     {
         private readonly List<InteractionCandidate> candidates = new List<InteractionCandidate>();
+        private readonly List<ControlHint> hints = new List<ControlHint>();
 
+        [Tooltip("How far from the centre of the view a target can be aimed at, in degrees.")]
+        [SerializeField, Range(1f, 90f)]
+        private float maxAimAngleDegrees = 25f;
+
+        private PrototypeFirstPersonCamera viewCamera;
         private Camera view;
         private PlayerInventory inventory;
-        private IReadOnlyList<IDemoInteractable> interactables;
-        private float maxAimAngleDegrees;
-        private InputAction interactAction;
-        private IDemoInteractable targeted;
+        private IReadOnlyList<IInteractable> interactables;
+        private PlayerControls controls;
+        private IInteractable targeted;
+        private KeyPrompt prompt;
+        private readonly List<string> keyPaths = new List<string>();
+        private InputDevice glyphDevice;
+        private Glyph? keyGlyph;
+
+        /// <summary>The key shown above the target.</summary>
+        public KeyPrompt Prompt => prompt;
+
+        /// <summary>What the player aims at, or null.</summary>
+        public IInteractable Targeted => targeted;
+
+        /// <summary>Raised when the target changes, and with it the hint.</summary>
+        public event System.Action HintsChanged;
+
+        /// <summary>What the interact control does with the target; nothing without one.</summary>
+        public IReadOnlyList<ControlHint> Hints => hints;
 
         public void Initialize(
-            Camera viewCamera,
+            PrototypeFirstPersonCamera firstPersonCamera,
             PlayerInventory playerInventory,
-            IReadOnlyList<IDemoInteractable> usable,
-            float aimConeDegrees)
+            IReadOnlyList<IInteractable> usable,
+            KeyPrompt keyPrompt,
+            PlayerControls playerControls)
         {
-            view = viewCamera;
+            controls = playerControls;
+            controls.MenuOpenChanged += OnMenuOpenChanged;
+            viewCamera = firstPersonCamera;
+            view = firstPersonCamera.Camera;
+            // The key goes over the target once the view has moved for the frame.
+            viewCamera.Moved += ShowPrompt;
             inventory = playerInventory;
             interactables = usable;
-            maxAimAngleDegrees = aimConeDegrees;
-        }
-
-        private void Awake()
-        {
-            interactAction = new InputAction("Interact", InputActionType.Button);
-            interactAction.AddBinding("<Keyboard>/e");
-            interactAction.AddBinding("<Gamepad>/buttonNorth");
-        }
-
-        private void OnEnable()
-        {
-            interactAction?.Enable();
+            prompt = keyPrompt;
         }
 
         private void OnDisable()
         {
-            interactAction?.Disable();
             SetTarget(null);
+        }
+
+        private void OnMenuOpenChanged(bool open)
+        {
+            enabled = !open;
         }
 
         private void OnDestroy()
         {
-            interactAction?.Dispose();
-            interactAction = null;
+            if (controls != null)
+            {
+                controls.MenuOpenChanged -= OnMenuOpenChanged;
+            }
+
+            if (viewCamera != null)
+            {
+                viewCamera.Moved -= ShowPrompt;
+            }
         }
 
         private void Update()
         {
-            if (view == null || interactables == null)
+            if (view == null || interactables == null || controls == null)
             {
                 return;
             }
@@ -79,22 +110,79 @@ namespace Fungiiiii.Demo
 
             SetTarget(index == InteractionTargeting.None ? null : interactables[index]);
 
-            if (targeted != null && interactAction.WasPressedThisFrame())
+            if (targeted != null && controls.Player.Interact.WasPressedThisFrame())
             {
                 targeted.Interact(inventory);
             }
         }
 
-        private void SetTarget(IDemoInteractable next)
+        private void SetTarget(IInteractable next)
         {
             if (next == targeted)
             {
                 return;
             }
 
+            var previous = targeted;
             targeted?.SetTargeted(false);
             targeted = next;
             targeted?.SetTargeted(true);
+
+            hints.Clear();
+            if (targeted != null && controls != null)
+            {
+                hints.Add(new ControlHint(targeted.HintKey, HintInput.Of(controls.Player.Interact)));
+            }
+
+            HintsChanged?.Invoke();
+
+            // From one target straight to another, the key pops in again over the new one.
+            if (previous != null && next != null && prompt != null)
+            {
+                prompt.PopIn();
+            }
+
+            ShowPrompt();
+        }
+
+        private void ShowPrompt()
+        {
+            if (prompt == null)
+            {
+                return;
+            }
+
+            if (targeted == null || !isActiveAndEnabled || view == null)
+            {
+                prompt.Hide();
+                return;
+            }
+
+            var screenPoint = view.WorldToScreenPoint(targeted.PromptPoint);
+            if (screenPoint.z <= 0f)
+            {
+                // Behind the camera, it would show mirrored on the screen.
+                prompt.Hide();
+                return;
+            }
+
+            prompt.Show(screenPoint, KeyGlyph());
+        }
+
+        /// <summary>The interact control as the key hints draw it, on the device used last; worked out again only when that device changes.</summary>
+        private Glyph KeyGlyph()
+        {
+            var device = controls.CurrentDevice;
+            if (keyGlyph.HasValue && glyphDevice == device)
+            {
+                return keyGlyph.Value;
+            }
+
+            glyphDevice = device;
+            keyPaths.Clear();
+            HintInput.Of(controls.Player.Interact).CollectPaths(controls.CurrentScheme.bindingGroup, keyPaths);
+            keyGlyph = InputGlyphs.Describe(keyPaths, device is DualShockGamepad);
+            return keyGlyph.Value;
         }
     }
 }

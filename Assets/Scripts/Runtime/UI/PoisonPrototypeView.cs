@@ -20,7 +20,7 @@ namespace Fungiiiii.UI
         private static readonly Color Warning = new Color(1f, 0.65f, 0.35f);
 
         private PoisonTestBenchController controller;
-        private VitalsHud hud;
+        private VitalGauges hud;
         private Canvas hudCanvas;
         private Font font;
         private Text healthValue;
@@ -38,19 +38,21 @@ namespace Fungiiiii.UI
         private bool lastDead;
         private bool resumeAfterHelp;
 
-        public bool IsPoisonVisible => hud != null && hud.PoisonBarVisible;
+        public bool IsPoisonVisible => hud != null && hud.PoisonGaugeVisible;
         public float PoisonPercentage => hud == null ? 0f : hud.PoisonPercentage;
         public bool IsDeathVisible => deathPanel != null && deathPanel.activeSelf;
         public bool IsHelpVisible => helpPanel != null && helpPanel.activeSelf;
 
-        public void Initialize(PoisonTestBenchController owner)
+        public void Initialize(PoisonTestBenchController owner, VitalGauges playerGauges)
         {
             if (owner == null) throw new ArgumentNullException(nameof(owner));
+            if (playerGauges == null) throw new ArgumentNullException(nameof(playerGauges));
             if (controller != null) throw new InvalidOperationException("The test bench is already initialized.");
             if (owner.Vitals == null || owner.Poison == null)
                 throw new InvalidOperationException("The test bench controller must have initialized vitals.");
 
             controller = owner;
+            hud = playerGauges;
             font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             Build();
             Refresh();
@@ -179,10 +181,9 @@ namespace Fungiiiii.UI
             BuildHelp(page);
             EnsureEventSystem();
 
-            // The existing player HUD owns every gauge. Render it above the developer canvas.
-            hud = gameObject.AddComponent<VitalsHud>();
+            // The player's gauges own every gauge. Render them above the developer canvas.
             hud.Initialize(controller.Vitals);
-            hudCanvas = transform.Find("VitalsCanvas").GetComponent<Canvas>();
+            hudCanvas = hud.GetComponent<Canvas>();
             hudCanvas.sortingOrder = canvas.sortingOrder + 1;
         }
 

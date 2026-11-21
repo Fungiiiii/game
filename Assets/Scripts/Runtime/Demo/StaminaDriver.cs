@@ -6,7 +6,7 @@ namespace Fungiiiii.Demo
 {
     /// <summary>
     /// Connects the stamina rules (<see cref="StaminaRegulator"/>) to the player motor:
-    /// sprinting and dodging spend stamina, and exhaustion forbids both.
+    /// sprinting spends stamina, and exhaustion forbids it.
     /// </summary>
     internal sealed class StaminaDriver : MonoBehaviour
     {
@@ -17,7 +17,6 @@ namespace Fungiiiii.Demo
         {
             motor = playerMotor;
             stamina = regulator;
-            motor.Dodged += HandleDodged;
             ApplyLimits();
         }
 
@@ -32,24 +31,9 @@ namespace Fungiiiii.Demo
             ApplyLimits();
         }
 
-        private void OnDestroy()
-        {
-            if (motor != null)
-            {
-                motor.Dodged -= HandleDodged;
-            }
-        }
-
-        private void HandleDodged()
-        {
-            stamina.TryDodge();
-            ApplyLimits();
-        }
-
         private void ApplyLimits()
         {
             motor.SprintAllowed = stamina.CanSprint;
-            motor.DodgeAllowed = stamina.CanDodge;
         }
     }
 }

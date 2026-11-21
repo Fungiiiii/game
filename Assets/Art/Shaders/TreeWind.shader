@@ -1,26 +1,26 @@
-// URP Lit, with foliage that moves in the wind while trunks and branches stay
-// still. Every pass is URP's own: a wrapper moves the vertex first, then hands it to
-// the Lit vertex function unchanged, so the trees keep exactly the look of
-// Palette.mat and the shadows of the foliage follow its motion.
+// URP Lit, for trees and undergrowth that sway in the wind. Every pass is URP's own:
+// a wrapper moves the vertex first, then hands it to the Lit vertex function unchanged,
+// so the models keep exactly the look of Palette.mat and their shadows follow the motion.
 //
-// Two layers, as in the classic split between main and detail bending (Crysis,
-// GPU Gems 3 ch. 16): the whole crown sways slowly downwind, and a slow wave runs
-// across it so each clump moves a little on its own. The gust heard in the sound
-// (_WindGust, see Wind.hlsl) pushes the foliage further downwind.
+// The motion is the simple one of stylised low poly games, not a simulation: the whole
+// plant leans downwind from its foot, more and more with the height, and its crown
+// drifts slowly on top of that. Both are smooth functions of where a point is, never of
+// what it is made of: wood and leaves that touch move together, so a branch stays on
+// its trunk and foliage on its branch. Nothing trembles.
 //
-// What is wood is read from the palette cell the UV points at (Wood, Wood dark,
-// Bark pale): the models carry no wind data of their own. Foliage moves as nearly
-// rigid clumps, so the faceted low poly shapes stay crisp.
+// The wind itself is in Wind.hlsl: waves that travel downwind, so a blow is seen
+// passing from tree to tree, with lulls and stronger spells.
 Shader "Fungiiiii/TreeWind"
 {
     Properties
     {
         [Header(Wind)]
-        _TreeSway ("Crown sway (m)", Range(0, 1)) = 0.12
-        _TreeRipple ("Clump ripple (m)", Range(0, 0.5)) = 0.06
-        _TreeGustLean ("Extra lean in a heard gust (m)", Range(0, 1)) = 0.3
-        _TreeWindSpeed ("Speed", Range(0, 3)) = 0.6
-        _TreeFlutter ("Leaf flutter (m)", Range(0, 0.1)) = 0.015
+        _TreeHeight ("Height of the model (m, before scale)", Range(0.1, 60)) = 20
+        _TreeCrownRadius ("Radius of the crown (m, before scale)", Range(0.1, 30)) = 6
+        _TreeSway ("Lean of the top in a steady wind (m)", Range(0, 2)) = 0.5
+        _TreeGustLean ("Extra lean of the top in a heard gust (m)", Range(0, 2)) = 0.8
+        _TreeRipple ("Drift of the crown (m)", Range(0, 1)) = 0.15
+        _TreeWindSpeed ("Speed of the crown drift", Range(0, 3)) = 0.6
 
         [Header(Surface)]
         [MainTexture] _BaseMap ("Palette", 2D) = "white" {}
@@ -57,53 +57,47 @@ Shader "Fungiiiii/TreeWind"
         // Outside UnityPerMaterial, which LitInput.hlsl declares and owns: these
         // make the shader incompatible with the SRP Batcher, not with GPU instancing,
         // which is how the Terrain draws its trees.
+        half _TreeHeight;
+        half _TreeCrownRadius;
         half _TreeSway;
-        half _TreeRipple;
         half _TreeGustLean;
+        half _TreeRipple;
         half _TreeWindSpeed;
-        half _TreeFlutter;
 
-        // 1 for foliage, 0 for wood. Palette cells are (row, col) on an 8 x 8 grid,
-        // as in tools/palette/generate_palette.py; UVs point at cell centres.
-        float FoliageWeight(float2 uv)
+        // Call after UNITY_SETUP_INSTANCE_ID, so the matrices are the plant's own.
+        float3 TreeWindPositionOS(float3 positionOS)
         {
-            int col = (int)floor(uv.x * 8);
-            int row = (int)floor((1 - uv.y) * 8);
-            bool wood = (row == 3 && (col == 2 || col == 3)) || (row == 6 && col == 4);
-            return wood ? 0 : 1;
-        }
-
-        // Call after UNITY_SETUP_INSTANCE_ID, so the matrices are the tree's own.
-        float3 TreeWindPositionOS(float3 positionOS, float2 uv)
-        {
-            float foliage = FoliageWeight(uv);
-            if (foliage == 0)
-            {
-                return positionOS;
-            }
-
             float3 positionWS = TransformObjectToWorld(positionOS);
             float3 rootWS = TransformObjectToWorld(float3(0, 0, 0));
 
-            // Higher foliage is on thinner wood: it moves more than the lowest tiers.
-            float reach = 0.5 + 0.5 * saturate((positionWS.y - rootWS.y) / 20);
+            // The Terrain scales every instance: heights and radii follow.
+            float3x3 objectToWorld = (float3x3)GetObjectToWorldMatrix();
+            float scale = pow(abs(determinant(objectToWorld)), 1.0 / 3.0);
 
-            // Main: one phase per tree, so neighbours do not sway in step.
-            float phase = _Time.y * _TreeWindSpeed + dot(rootWS.xz, float2(0.13, 0.17));
-            float sway = _TreeSway * (0.5 + 0.5 * sin(phase));
+            // 0 at the foot, 1 at the top. Squared: the foot stays planted and the trunk
+            // bends like a rod, most near its top.
+            float height = saturate((positionWS.y - rootWS.y) / max(_TreeHeight * scale, 0.01));
+            float bend = height * height;
 
-            // Detail: a long, slow wave across the crown. Points of one clump are close,
-            // so they move together; clumps metres apart move out of step.
-            float ripplePhase = phase * 1.7 + dot(positionWS, float3(0.23, 0.11, 0.19));
-            float2 ripple = _TreeRipple * float2(sin(ripplePhase), cos(ripplePhase * 0.8)) * (1 + _WindGust);
+            // One wind per plant, read at its foot: the whole plant leans as one. The gust
+            // heard in the sound rides the waves, so it too is seen running through the trees.
+            float wind = WindStrengthAt(rootWS.xz);
+            float lean = (_TreeSway * wind + _TreeGustLean * _WindGust * (0.55 + 0.45 * wind)) * bend;
 
-            float gust = _TreeGustLean * _WindGust;
+            // The crown drifts slowly around that lean, more at the tip of the branches.
+            // The wave is long next to a clump of leaves, so facets stay crisp.
+            float2 fromTrunk = positionWS.xz - rootWS.xz;
+            float reach = saturate(length(fromTrunk) / max(_TreeCrownRadius * scale, 0.01));
+            float driftTime = _Time.y * _TreeWindSpeed;
+            float2 drift = float2(
+                sin(driftTime * 1.3 + dot(positionWS, float3(0.21, 0.13, 0.17))),
+                cos(driftTime * 1.1 + dot(positionWS, float3(0.16, 0.19, 0.23))));
+            drift *= _TreeRipple * height * (0.35 + 0.65 * reach) * (0.6 + 0.8 * WindStrengthAt(positionWS.xz));
 
-            positionWS.xz += (WindDirection * (sway + gust) + ripple) * reach;
+            positionWS.xz += WindDirection * lean + drift;
 
-            // A small quiver per vertex, faster in a gust.
-            float quiver = sin(_Time.y * (4 + 4 * _WindGust) + dot(positionWS, float3(1.7, 2.3, 1.3)));
-            positionWS += float3(0.6, 0.3, 0.7) * (_TreeFlutter * (1 + _WindGust) * quiver);
+            // A rod that bends gets a little lower: without this the crown would stretch.
+            positionWS.y -= lean * lean * 0.5 / max(_TreeHeight * scale, 0.01);
 
             return TransformWorldToObject(positionWS);
         }
@@ -154,7 +148,7 @@ Shader "Fungiiiii/TreeWind"
             Varyings TreeWindVertex(Attributes input)
             {
                 UNITY_SETUP_INSTANCE_ID(input);
-                input.positionOS.xyz = TreeWindPositionOS(input.positionOS.xyz, input.texcoord);
+                input.positionOS.xyz = TreeWindPositionOS(input.positionOS.xyz);
                 return LitPassVertex(input);
             }
             ENDHLSL
@@ -184,7 +178,7 @@ Shader "Fungiiiii/TreeWind"
             Varyings TreeWindShadowVertex(Attributes input)
             {
                 UNITY_SETUP_INSTANCE_ID(input);
-                input.positionOS.xyz = TreeWindPositionOS(input.positionOS.xyz, input.texcoord);
+                input.positionOS.xyz = TreeWindPositionOS(input.positionOS.xyz);
                 return ShadowPassVertex(input);
             }
             ENDHLSL
@@ -212,7 +206,7 @@ Shader "Fungiiiii/TreeWind"
             Varyings TreeWindDepthVertex(Attributes input)
             {
                 UNITY_SETUP_INSTANCE_ID(input);
-                input.position.xyz = TreeWindPositionOS(input.position.xyz, input.texcoord);
+                input.position.xyz = TreeWindPositionOS(input.position.xyz);
                 return DepthOnlyVertex(input);
             }
             ENDHLSL
@@ -240,7 +234,7 @@ Shader "Fungiiiii/TreeWind"
             Varyings TreeWindDepthNormalsVertex(Attributes input)
             {
                 UNITY_SETUP_INSTANCE_ID(input);
-                input.positionOS.xyz = TreeWindPositionOS(input.positionOS.xyz, input.texcoord);
+                input.positionOS.xyz = TreeWindPositionOS(input.positionOS.xyz);
                 return DepthNormalsVertex(input);
             }
             ENDHLSL

@@ -1,3 +1,4 @@
+using Fungiiiii.Controls;
 using Fungiiiii.Runtime.Player;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -10,7 +11,7 @@ namespace Fungiiiii.Capture
     /// so that forward follows the view.
     ///
     /// Not the game's camera: the definitive first-person camera belongs to the player
-    /// movement ticket. The Look action is built in code, like Dodge in PlayerInputReader.
+    /// movement ticket. Its actions come from the player's controls.
     /// </summary>
     [RequireComponent(typeof(Camera))]
     [DisallowMultipleComponent]
@@ -26,6 +27,8 @@ namespace Fungiiiii.Capture
         private const float EyeDepthBelowTop = 0.25f;
 
         private InputAction lookAction;
+        private InputAction cursorCaptureAction;
+        private IMenuState menu;
         private PlayerMotor motor;
         private CharacterController characterController;
         private float yaw;
@@ -33,8 +36,25 @@ namespace Fungiiiii.Capture
 
         public Camera Camera { get; private set; }
 
-        public void Initialize(PlayerMotor playerMotor, float initialYawDegrees)
+        /// <summary>
+        /// Raised once the view has followed the player this frame. What is drawn over the
+        /// world at a point of the screen is placed then, not on its own LateUpdate, whose
+        /// order with this one Unity does not guarantee.
+        /// </summary>
+        public event System.Action Moved;
+
+        /// <summary>Multiplies how fast the view turns: the net's aim slows it as it narrows the view.</summary>
+        public float LookScale { get; set; } = 1f;
+
+        /// <param name="look">Turns the view.</param>
+        /// <param name="cursorCapture">Takes the cursor back after Escape released it in the Editor.</param>
+        /// <param name="menuState">Under a menu the view stops turning and the pointer is freed.</param>
+        public void Initialize(PlayerMotor playerMotor, float initialYawDegrees, InputAction look, InputAction cursorCapture, IMenuState menuState)
         {
+            menu = menuState;
+            menu.MenuOpenChanged += OnMenuOpenChanged;
+            lookAction = look;
+            cursorCaptureAction = cursorCapture;
             motor = playerMotor;
             characterController = playerMotor.GetComponent<CharacterController>();
             yaw = initialYawDegrees;
@@ -54,37 +74,42 @@ namespace Fungiiiii.Capture
         {
             Camera = GetComponent<Camera>();
             Camera.nearClipPlane = 0.05f;
-
-            lookAction = new InputAction("Look", InputActionType.Value, expectedControlType: "Vector2");
-            lookAction.AddBinding("<Mouse>/delta");
-            lookAction.AddBinding("<Gamepad>/rightStick");
         }
 
         private void OnEnable()
         {
-            lookAction?.Enable();
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
 
         private void OnDisable()
         {
-            lookAction?.Disable();
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
 
         private void OnDestroy()
         {
-            lookAction?.Dispose();
-            lookAction = null;
+            if (menu != null)
+            {
+                menu.MenuOpenChanged -= OnMenuOpenChanged;
+            }
+        }
+
+        private void OnMenuOpenChanged(bool open)
+        {
+            enabled = !open;
         }
 
         private void Update()
         {
+            if (lookAction == null)
+            {
+                return;
+            }
+
             // Escape releases the cursor in the Editor: a click takes it back.
-            var mouse = Mouse.current;
-            if (mouse != null && mouse.leftButton.wasPressedThisFrame && Cursor.lockState != CursorLockMode.Locked)
+            if (cursorCaptureAction.WasPressedThisFrame() && Cursor.lockState != CursorLockMode.Locked)
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
@@ -92,7 +117,7 @@ namespace Fungiiiii.Capture
 
             var look = lookAction.ReadValue<Vector2>();
             var fromMouse = lookAction.activeControl != null && lookAction.activeControl.device is Mouse;
-            var scale = fromMouse ? MouseDegreesPerPixel : StickDegreesPerSecond * Time.deltaTime;
+            var scale = (fromMouse ? MouseDegreesPerPixel : StickDegreesPerSecond * Time.deltaTime) * LookScale;
 
             yaw += look.x * scale;
             pitch = Mathf.Clamp(pitch - look.y * scale, -MaxPitchDegrees, MaxPitchDegrees);
@@ -127,6 +152,7 @@ namespace Fungiiiii.Capture
             transform.SetPositionAndRotation(
                 playerTransform.position + Vector3.up * eyeHeight,
                 Quaternion.Euler(pitch, yaw, 0f));
+            Moved?.Invoke();
         }
     }
 }

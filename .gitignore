@@ -62,3 +62,7 @@ Thumbs.db
 /.githooks/post-commit
 /.githooks/post-merge
 /.githooks/pre-push
+
+# Addressables build output, written by every player build
+/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/Windows/
+/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/Windows.meta

@@ -1,0 +1,132 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: UI Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: UI
+  m_TableCollectionNameGuidString: 1a342a7ebec9cce47ab26ab594c31542
+  m_Entries:
+  - m_Id: 892329984
+    m_Key: game.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 942661632
+    m_Key: menu.play
+    m_Metadata:
+      m_Items: []
+  - m_Id: 942661633
+    m_Key: menu.quit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 942661634
+    m_Key: pause.resume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946855936
+    m_Key: pause.home
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946855937
+    m_Key: pause.quit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 141727196241920
+    m_Key: inventory.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 141727229796352
+    m_Key: inventory.hotbar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545630007296
+    m_Key: hint.throw_net
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545655173120
+    m_Key: hint.aim
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367424
+    m_Key: hint.throw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367425
+    m_Key: hint.stop_aiming
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367426
+    m_Key: hint.switch_item
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367427
+    m_Key: hint.inventory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367428
+    m_Key: hint.gather
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367429
+    m_Key: hint.deposit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367430
+    m_Key: hint.take_or_place
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367431
+    m_Key: hint.half_or_one
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367432
+    m_Key: hint.gather_all
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367433
+    m_Key: hint.close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971049836544
+    m_Key: hint.drop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971083390976
+    m_Key: item.wood
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971083390977
+    m_Key: item.spore
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971083390978
+    m_Key: item.net
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971087585280
+    m_Key: item.spongeus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971087585281
+    m_Key: item.champoule
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 4072107752291041304
+  references:
+    version: 2
+    RefIds:
+    - rid: 4072107752291041304
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1795190557234

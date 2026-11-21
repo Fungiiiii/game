@@ -44,15 +44,10 @@ namespace Fungiiiii.Runtime.Player
         [SerializeField, Min(0.1f)]
         private float stanceTransitionSpeed = 6f;
 
-        [Header("Dodge")]
+        [Header("Jump")]
+        [Tooltip("How high the feet rise, in metres.")]
         [SerializeField, Min(0f)]
-        private float dodgeSpeed = 10f;
-
-        [SerializeField, Min(0.05f)]
-        private float dodgeDurationSeconds = 0.25f;
-
-        [SerializeField, Min(0.05f)]
-        private float dodgeCooldownSeconds = 0.7f;
+        private float jumpHeight = 1.2f;
 
         [Header("Gravity and turning")]
         [Tooltip("Twice the real world value: a realistic fall feels floaty in a game.")]
@@ -67,7 +62,6 @@ namespace Fungiiiii.Runtime.Player
         private float turnSpeedDegreesPerSecond = 720f;
 
         private CharacterController characterController;
-        private PlayerDodge dodge;
         private float verticalVelocity;
 
         /// <summary>
@@ -95,20 +89,11 @@ namespace Fungiiiii.Runtime.Player
         /// </summary>
         public bool SprintAllowed { get; set; } = true;
 
-        /// <summary>False refuses every dodge. True by default.</summary>
-        public bool DodgeAllowed { get; set; } = true;
-
         /// <summary>True if the last tick moved the player at sprint speed.</summary>
         public bool IsSprintMoving { get; private set; }
 
-        /// <summary>Raised each time a dodge starts.</summary>
-        public event System.Action Dodged;
-
         /// <summary>Horizontal velocity applied during the last tick, in world space.</summary>
         public Vector3 HorizontalVelocity { get; private set; }
-
-        /// <summary>True while a dodge is overriding normal movement.</summary>
-        public bool IsDodging => dodge is { IsDodging: true };
 
         public bool IsGrounded => characterController != null && characterController.isGrounded;
 
@@ -119,28 +104,17 @@ namespace Fungiiiii.Runtime.Player
         }
 
         /// <summary>
-        /// Requests a dodge along the current move direction, or straight ahead when
-        /// there is no input. Refused while a dodge or its cooldown is running.
+        /// Leaves the ground with the speed that reaches <see cref="jumpHeight"/>. Refused in
+        /// the air and while crouching.
         /// </summary>
-        public bool TryDodge()
+        public bool TryJump()
         {
-            if (dodge == null || !DodgeAllowed)
+            if (characterController == null || !characterController.isGrounded || IsCrouching)
             {
                 return false;
             }
 
-            var inputDirection =
-                PlayerMovementCalculator.CalculateHorizontalVelocity(MoveInput, MovementYawDegrees, 1f);
-
-            var dodgeDirection =
-                inputDirection.sqrMagnitude > NegligibleSqrMagnitude ? inputDirection : transform.forward;
-
-            if (!dodge.TryStart(dodgeDirection))
-            {
-                return false;
-            }
-
-            Dodged?.Invoke();
+            verticalVelocity = PlayerMovementCalculator.JumpSpeed(jumpHeight, gravity);
             return true;
         }
 
@@ -157,30 +131,20 @@ namespace Fungiiiii.Runtime.Player
                 return;
             }
 
-            dodge.Tick(deltaTime);
-
             var sprinting = IsSprinting && SprintAllowed;
-            IsSprintMoving = false;
+            IsSprintMoving = sprinting && !IsCrouching && MoveInput.sqrMagnitude > NegligibleSqrMagnitude;
 
-            if (dodge.IsDodging)
-            {
-                HorizontalVelocity = dodge.Velocity;
-            }
-            else
-            {
-                IsSprintMoving = sprinting && !IsCrouching && MoveInput.sqrMagnitude > NegligibleSqrMagnitude;
+            var speed = PlayerMovementCalculator.SelectSpeed(
+                sprinting,
+                IsCrouching,
+                walkSpeed,
+                sprintSpeed,
+                crouchSpeed);
 
-                var speed = PlayerMovementCalculator.SelectSpeed(
-                    sprinting,
-                    IsCrouching,
-                    walkSpeed,
-                    sprintSpeed,
-                    crouchSpeed);
+            HorizontalVelocity =
+                PlayerMovementCalculator.CalculateHorizontalVelocity(MoveInput, MovementYawDegrees, speed);
 
-                HorizontalVelocity =
-                    PlayerMovementCalculator.CalculateHorizontalVelocity(MoveInput, MovementYawDegrees, speed);
-            }
-
+            var previousVerticalVelocity = verticalVelocity;
             verticalVelocity = PlayerMovementCalculator.ApplyGravity(
                 verticalVelocity,
                 characterController.isGrounded,
@@ -188,7 +152,10 @@ namespace Fungiiiii.Runtime.Player
                 groundedStickSpeed,
                 deltaTime);
 
-            var displacement = HorizontalVelocity + Vector3.up * verticalVelocity;
+            // The mean of the speeds before and after the step is exact under constant
+            // gravity: a jump rises as high at any frame rate.
+            var meanVerticalVelocity = (previousVerticalVelocity + verticalVelocity) * 0.5f;
+            var displacement = HorizontalVelocity + Vector3.up * meanVerticalVelocity;
             characterController.Move(displacement * deltaTime);
 
             UpdateStance(deltaTime);
@@ -198,10 +165,6 @@ namespace Fungiiiii.Runtime.Player
         private void Awake()
         {
             characterController = GetComponent<CharacterController>();
-            dodge = new PlayerDodge(new PlayerDodge.Configuration(
-                dodgeSpeed,
-                dodgeDurationSeconds,
-                Mathf.Max(dodgeCooldownSeconds, dodgeDurationSeconds)));
 
             ApplyHeight(standingHeight);
         }
@@ -214,9 +177,9 @@ namespace Fungiiiii.Runtime.Player
                 IsSprinting = inputReader.IsSprintHeld;
                 IsCrouching = inputReader.IsCrouchHeld;
 
-                if (inputReader.WasDodgePressedThisFrame)
+                if (inputReader.WasJumpPressedThisFrame)
                 {
-                    TryDodge();
+                    TryJump();
                 }
             }
 
@@ -274,8 +237,7 @@ namespace Fungiiiii.Runtime.Player
             standingHeight = Mathf.Max(0.1f, standingHeight);
             crouchHeight = Mathf.Clamp(crouchHeight, 0.1f, standingHeight);
             stanceTransitionSpeed = Mathf.Max(0.1f, stanceTransitionSpeed);
-            dodgeDurationSeconds = Mathf.Max(0.05f, dodgeDurationSeconds);
-            dodgeCooldownSeconds = Mathf.Max(dodgeCooldownSeconds, dodgeDurationSeconds);
+            jumpHeight = Mathf.Max(0f, jumpHeight);
             groundedStickSpeed = Mathf.Max(0f, groundedStickSpeed);
             turnSpeedDegreesPerSecond = Mathf.Max(0f, turnSpeedDegreesPerSecond);
         }

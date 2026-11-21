@@ -262,3 +262,5 @@ Lancés en batchmode avec Unity 6000.3.21f1 sur la machine de Hugo (17/11, aprè
 
 - [12487v2byt9-mystic-forest-audio](./12487v2byt9-mystic-forest-audio.md) — la scène a maintenant des sons d'ambiance : un objet `Audio` (fonds de zone, rafales, arbre géant, pierres dressées).
 - [12487v2byt9-mystic-forest-tree-wind](./12487v2byt9-mystic-forest-tree-wind.md) — le feuillage des arbres bouge, troncs immobiles ; l'herbe se penche aussi pendant les rafales que l'on entend (`GrassWind` lit `_WindGust`).
+- [playtest-base](./playtest-base.md) — les buissons et les fougères bougent avec le vent (`BushWind.mat`, `FernWind.mat`) ; `Stick` et `MushroomCluster` sont importés en Read/Write. La scène n'est pas modifiée.
+- [playtest-retours](./playtest-retours.md) — les arbres sont écartés des rochers selon leur emprise et les calques se fondent en bord de zone (`fadeSouth`, `fadeNorth`) ; `Border_Rocks` passe avant `Border_TreePine` ; Terrain regénéré ; `MushroomCluster` régénéré (même GUID) et variantes `_02` à `_04`.

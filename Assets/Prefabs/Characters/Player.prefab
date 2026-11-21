@@ -152,6 +152,8 @@ GameObject:
   - component: {fileID: 7122779636474258140}
   - component: {fileID: 197616014687580458}
   - component: {fileID: 5656921746844737173}
+  - component: {fileID: 5337675983456430014}
+  - component: {fileID: 2343040079730607943}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -198,7 +200,7 @@ CharacterController:
   m_SlopeLimit: 45
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
-  m_MinMoveDistance: 0.001
+  m_MinMoveDistance: 0
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &2450777415633583429
 MonoBehaviour:
@@ -305,9 +307,7 @@ MonoBehaviour:
   standingHeight: 2
   crouchHeight: 1.2
   stanceTransitionSpeed: 6
-  dodgeSpeed: 10
-  dodgeDurationSeconds: 0.25
-  dodgeCooldownSeconds: 0.7
+  jumpHeight: 1.2
   gravity: -19.62
   groundedStickSpeed: 2
   turnSpeedDegreesPerSecond: 720
@@ -332,3 +332,29 @@ MonoBehaviour:
   remotePlayerColour: {r: 0.25, g: 0.55, b: 0.95, a: 1}
   firstSpawnPosition: {x: 0, y: 1.2, z: 0}
   spawnSpacing: 2
+--- !u!114 &5337675983456430014
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3378215888684738756}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75aa87cc747f453aa102e7c0d0389b0c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Controls.PlayerControls
+--- !u!114 &2343040079730607943
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3378215888684738756}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0630a2855e8345c8b3ccf4b46626dda9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Runtime.Player.Backpack
+  bagSlotCount: 12
+  quickBarSlotCount: 3

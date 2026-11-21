@@ -11,6 +11,8 @@ namespace Fungiiiii.Tests.EditMode
     public sealed class ForestScatterEditorTests
     {
         private const string PrefabPath = "Assets/ForestScatterEditorTests_Prefab.prefab";
+        private const string BoulderPrefabPath = "Assets/ForestScatterEditorTests_Boulder.prefab";
+        private const string TrunkPrefabPath = "Assets/ForestScatterEditorTests_Trunk.prefab";
         private const int OriginalSeed = 7;
         private const float TerrainSize = 60f;
 
@@ -47,6 +49,8 @@ namespace Fungiiiii.Tests.EditMode
             Object.DestroyImmediate(terrainObject);
             Object.DestroyImmediate(data);
             AssetDatabase.DeleteAsset(PrefabPath);
+            AssetDatabase.DeleteAsset(BoulderPrefabPath);
+            AssetDatabase.DeleteAsset(TrunkPrefabPath);
         }
 
         [Test]
@@ -115,6 +119,86 @@ namespace Fungiiiii.Tests.EditMode
                     var a = new Vector2(instances[i].position.x, instances[i].position.z) * TerrainSize;
                     var b = new Vector2(instances[j].position.x, instances[j].position.z) * TerrainSize;
                     Assert.That(Vector2.Distance(a, b), Is.GreaterThanOrEqualTo(spacing - 0.001f));
+                }
+            }
+        }
+
+        [Test]
+        public void CrossLayerSpacingNeverLetsTwoFootprintsOverlap()
+        {
+            // Small models: the layers' own spacing rule is the larger one.
+            Assert.That(TerrainForestGenerator.CrossLayerSpacing(5f, 0.5f, 5f, 0.5f), Is.EqualTo(2.5f));
+
+            // A 2.4x boulder of the forest's border and a pine: their footprints win.
+            Assert.That(TerrainForestGenerator.CrossLayerSpacing(13f, 2.13f * 2.4f, 3.5f, 0.45f * 1.45f),
+                Is.EqualTo(2.13f * 2.4f + 0.45f * 1.45f).Within(0.0001f));
+        }
+
+        [Test]
+        public void FootprintIsTheTrunkOrHowFarTheModelReachesFromItsPivot()
+        {
+            GameObject trunk = SavePrefab(TrunkPrefabPath, root =>
+            {
+                CapsuleCollider capsule = root.AddComponent<CapsuleCollider>();
+                capsule.radius = 0.45f;
+                GameObject crown = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                crown.transform.SetParent(root.transform, false);
+                crown.transform.localScale = new Vector3(10f, 1f, 10f);
+            });
+
+            // A rock leaning to one side of its pivot: 1 m on the left, 3 m on the right.
+            GameObject boulder = SavePrefab(BoulderPrefabPath, root =>
+            {
+                GameObject body = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                body.transform.SetParent(root.transform, false);
+                body.transform.localPosition = new Vector3(1f, 0f, 0f);
+                body.transform.localScale = new Vector3(4f, 2f, 2f);
+            });
+
+            Assert.That(TerrainForestGenerator.FootprintRadius(trunk), Is.EqualTo(0.45f).Within(0.0001f), "a canopy may spread over a rock, a trunk may not stand in it");
+            Assert.That(TerrainForestGenerator.FootprintRadius(boulder), Is.EqualTo(3f).Within(0.0001f));
+        }
+
+        // Regression: border pines grew inside the boulders at the foot of the cliffs. The
+        // layers kept half their smaller minimum distance apart (1.75 m for a pine and a
+        // boulder), however big the boulder was.
+        [Test]
+        public void NoTreeStandsInsideARockOfAnEarlierLayer()
+        {
+            GameObject boulder = SavePrefab(BoulderPrefabPath, root =>
+            {
+                GameObject body = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                body.transform.SetParent(root.transform, false);
+                body.transform.localScale = new Vector3(8f, 3f, 8f);
+                root.AddComponent<LODGroup>().SetLODs(new[] { new LOD(0.01f, root.GetComponentsInChildren<Renderer>()) });
+            });
+
+            ForestScatter rocks = CreateLayer("Boulders", seed: 31);
+            rocks.Configure(new Vector2(TerrainSize, TerrainSize), 14f, 1f, 1f, rotate: false, newSeed: 31);
+            var serialized = new SerializedObject(rocks);
+            serialized.FindProperty("prefab").objectReferenceValue = boulder;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            rocks.transform.SetSiblingIndex(0);
+
+            TerrainForestGenerator.Generate(terrain, NoExclusions);
+
+            TreeInstance[] instances = terrain.terrainData.treeInstances;
+            int rockPrototype = System.Array.FindIndex(terrain.terrainData.treePrototypes, p => p.prefab == boulder);
+            Assume.That(rockPrototype, Is.GreaterThanOrEqualTo(0));
+            TreeInstance[] rockInstances = instances.Where(i => i.prototypeIndex == rockPrototype).ToArray();
+            TreeInstance[] treeInstances = instances.Where(i => i.prototypeIndex != rockPrototype).ToArray();
+            Assume.That(rockInstances, Is.Not.Empty);
+            Assume.That(treeInstances, Is.Not.Empty);
+
+            float treeFootprint = TerrainForestGenerator.FootprintRadius(prefab);
+            foreach (TreeInstance tree in treeInstances)
+            {
+                var treeGround = new Vector2(tree.position.x, tree.position.z) * TerrainSize;
+                foreach (TreeInstance rock in rockInstances)
+                {
+                    var rockGround = new Vector2(rock.position.x, rock.position.z) * TerrainSize;
+                    Assert.That(Vector2.Distance(treeGround, rockGround), Is.GreaterThanOrEqualTo(4f + treeFootprint * tree.widthScale - 0.001f),
+                        "a tree grows inside a rock");
                 }
             }
         }
@@ -229,6 +313,15 @@ namespace Fungiiiii.Tests.EditMode
             serialized.FindProperty("prefab").objectReferenceValue = prefab;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             return layer;
+        }
+
+        private static GameObject SavePrefab(string path, System.Action<GameObject> build)
+        {
+            var root = new GameObject(System.IO.Path.GetFileNameWithoutExtension(path));
+            build(root);
+            GameObject saved = PrefabUtility.SaveAsPrefabAsset(root, path);
+            Object.DestroyImmediate(root);
+            return saved;
         }
 
         private int Seed() => new SerializedObject(trees).FindProperty("seed").intValue;

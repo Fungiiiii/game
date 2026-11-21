@@ -14,8 +14,9 @@ namespace Fungiiiii.Editor.World
     /// of tree instances, so the whole forest is rewritten at once, as one undo step.
     ///
     /// Layers are written in hierarchy order and the first one wins: an instance
-    /// closer than <see cref="CrossLayerSpacing"/> to an instance of an earlier
-    /// layer is dropped, so two models never grow into each other. Every instance
+    /// closer than <see cref="CrossLayerSpacing(float, float, float, float)"/> to an
+    /// instance of an earlier layer is dropped, so two models never grow into each
+    /// other, whatever their size: a tree never stands inside a boulder. Every instance
     /// is sunk into the ground by what its foot needs on a slope, so no side of
     /// it floats.
     /// </summary>
@@ -67,7 +68,8 @@ namespace Fungiiiii.Editor.World
 
                 prototypes[index] = new TreePrototype { prefab = layer.Prefab };
                 float footRadius = FootRadius(layer.Prefab);
-                var accepted = new List<Vector2>();
+                float footprintRadius = FootprintRadius(layer.Prefab);
+                var accepted = new List<(Vector2 position, float footprint)>();
 
                 foreach (ForestScatter.Placement placement in layer.ComputePlacements(exclusions))
                 {
@@ -90,12 +92,13 @@ namespace Fungiiiii.Editor.World
                     }
 
                     var ground = new Vector2(placement.Position.x, placement.Position.z);
-                    if (placed.HasNeighbour(ground, layer.MinDistance))
+                    float footprint = footprintRadius * placement.Scale;
+                    if (placed.HasNeighbour(ground, layer.MinDistance, footprint))
                     {
                         continue;
                     }
 
-                    accepted.Add(ground);
+                    accepted.Add((ground, footprint));
                     float sink = SinkDepth(footRadius * placement.Scale, steepness);
                     normalised.y = Mathf.Max(0f, (data.GetInterpolatedHeight(normalised.x, normalised.z) - sink) / size.y);
 
@@ -112,9 +115,9 @@ namespace Fungiiiii.Editor.World
                 }
 
                 // Added after the layer, so a layer keeps its own Poisson spacing.
-                foreach (Vector2 ground in accepted)
+                foreach ((Vector2 ground, float footprint) in accepted)
                 {
-                    placed.Add(ground, layer.MinDistance);
+                    placed.Add(ground, layer.MinDistance, footprint);
                 }
             }
 
@@ -205,6 +208,18 @@ namespace Fungiiiii.Editor.World
         }
 
         /// <summary>
+        /// Two instances of different layers stay at least this far apart: half the
+        /// smaller of the layers' minimum distances, and never closer than their
+        /// footprints touching. The footprints are radii on the ground, already scaled.
+        /// The first rule alone ignored the models' size: a 2.4x boulder could swallow
+        /// a pine standing 2 m from its centre.
+        /// </summary>
+        internal static float CrossLayerSpacing(float minDistanceA, float footprintA, float minDistanceB, float footprintB)
+        {
+            return Mathf.Max(CrossLayerSpacing(minDistanceA, minDistanceB), footprintA + footprintB);
+        }
+
+        /// <summary>
         /// How deep the foot of a model must go so that its downhill edge still
         /// touches the ground on a slope of <paramref name="steepness"/> degrees.
         /// </summary>
@@ -224,6 +239,37 @@ namespace Fungiiiii.Editor.World
                 return trunk.radius;
             }
 
+            Bounds? bounds = MeshBounds(prefab);
+            return bounds.HasValue ? Mathf.Min(bounds.Value.extents.x, bounds.Value.extents.z) : 0f;
+        }
+
+        /// <summary>
+        /// Radius of the ground the model takes up, at scale 1: its trunk capsule when
+        /// it has one (a canopy may spread over a rock, a trunk may not stand in it),
+        /// otherwise how far its renderers reach from its pivot on the ground.
+        /// </summary>
+        internal static float FootprintRadius(GameObject prefab)
+        {
+            if (prefab.TryGetComponent(out CapsuleCollider trunk))
+            {
+                return trunk.radius;
+            }
+
+            Bounds? bounds = MeshBounds(prefab);
+            if (!bounds.HasValue)
+            {
+                return 0f;
+            }
+
+            // Measured from the pivot, where the instance stands, not from the centre of the mesh.
+            Vector3 min = bounds.Value.min;
+            Vector3 max = bounds.Value.max;
+            return Mathf.Max(Mathf.Max(-min.x, max.x), Mathf.Max(-min.z, max.z));
+        }
+
+        /// <summary>Bounds of the prefab's meshes in its root's space, or null when it has none.</summary>
+        private static Bounds? MeshBounds(GameObject prefab)
+        {
             // Renderer.bounds is empty on a prefab asset: measure the meshes instead.
             Bounds? bounds = null;
             foreach (MeshFilter filter in prefab.GetComponentsInChildren<MeshFilter>())
@@ -255,7 +301,7 @@ namespace Fungiiiii.Editor.World
                 }
             }
 
-            return bounds.HasValue ? Mathf.Min(bounds.Value.extents.x, bounds.Value.extents.z) : 0f;
+            return bounds;
         }
 
         /// <summary>Accepted instances, bucketed by 16 m cells for a fast neighbour test.</summary>
@@ -263,36 +309,47 @@ namespace Fungiiiii.Editor.World
         {
             private const float CellSize = 16f;
 
-            private readonly Dictionary<Vector2Int, List<(Vector2 position, float minDistance)>> cells =
-                new Dictionary<Vector2Int, List<(Vector2 position, float minDistance)>>();
+            private readonly Dictionary<Vector2Int, List<(Vector2 position, float minDistance, float footprint)>> cells =
+                new Dictionary<Vector2Int, List<(Vector2 position, float minDistance, float footprint)>>();
 
-            public void Add(Vector2 position, float minDistance)
+            private float largestMinDistance;
+            private float largestFootprint;
+
+            public void Add(Vector2 position, float minDistance, float footprint)
             {
                 Vector2Int cell = CellOf(position);
-                if (!cells.TryGetValue(cell, out List<(Vector2 position, float minDistance)> list))
+                if (!cells.TryGetValue(cell, out List<(Vector2 position, float minDistance, float footprint)> list))
                 {
-                    list = new List<(Vector2 position, float minDistance)>();
+                    list = new List<(Vector2 position, float minDistance, float footprint)>();
                     cells[cell] = list;
                 }
 
-                list.Add((position, minDistance));
+                list.Add((position, minDistance, footprint));
+                largestMinDistance = Mathf.Max(largestMinDistance, minDistance);
+                largestFootprint = Mathf.Max(largestFootprint, footprint);
             }
 
-            public bool HasNeighbour(Vector2 position, float minDistance)
+            public bool HasNeighbour(Vector2 position, float minDistance, float footprint)
             {
+                // Far enough to reach any instance whose spacing to this one could matter.
+                float reachDistance = Mathf.Max(
+                    CrossLayerSpacing(minDistance, largestMinDistance),
+                    footprint + largestFootprint);
+                int reach = Mathf.Max(1, Mathf.CeilToInt(reachDistance / CellSize));
+
                 Vector2Int centre = CellOf(position);
-                for (int dz = -1; dz <= 1; dz++)
+                for (int dz = -reach; dz <= reach; dz++)
                 {
-                    for (int dx = -1; dx <= 1; dx++)
+                    for (int dx = -reach; dx <= reach; dx++)
                     {
-                        if (!cells.TryGetValue(centre + new Vector2Int(dx, dz), out List<(Vector2 position, float minDistance)> list))
+                        if (!cells.TryGetValue(centre + new Vector2Int(dx, dz), out List<(Vector2 position, float minDistance, float footprint)> list))
                         {
                             continue;
                         }
 
-                        foreach ((Vector2 other, float otherDistance) in list)
+                        foreach ((Vector2 other, float otherDistance, float otherFootprint) in list)
                         {
-                            float spacing = CrossLayerSpacing(minDistance, otherDistance);
+                            float spacing = CrossLayerSpacing(minDistance, footprint, otherDistance, otherFootprint);
                             if ((other - position).sqrMagnitude < spacing * spacing)
                             {
                                 return true;

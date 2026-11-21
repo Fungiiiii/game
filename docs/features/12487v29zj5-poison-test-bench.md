@@ -64,3 +64,5 @@ Cette scène est un **outil de développeur**, non une interface joueur de produ
 Les seuils, l'antidote, la pause et le guide ont été observés dans la Game View ; le fonctionnement des boutons a été confirmé manuellement. La Console, les raccourcis au clavier physique et le redémarrage après mort restent à contrôler avant fusion. La scène est un outil de prototype et ne doit pas être ajoutée à l'interface joueur de production.
 
 ## Modifié par
+
+- [playtest-retours](./playtest-retours.md) — `VitalsHud` devient `VitalGauges`, un prefab placé dans `PoisonScene` ; `PoisonTestBenchController` le reçoit dans l'Inspector (`gauges`) et le donne à `PoisonPrototypeView`.
