@@ -37,5 +37,11 @@ namespace Fungiiiii.UI
         public const string HintRelease = "hint.release";
         public const string HintSqueeze = "hint.squeeze";
         public const string HintTakeBack = "hint.take_back";
+
+        // The Champimaison: woken up, grown, its thread collected, entered.
+        public const string HintAwaken = "hint.awaken";
+        public const string HintUpgrade = "hint.upgrade";
+        public const string HintCollectThread = "hint.collect_thread";
+        public const string HintEnter = "hint.enter";
     }
 }

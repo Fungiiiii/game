@@ -260,12 +260,6 @@ namespace Fungiiiii.Game
             screens.Inventory.Bind(backpack.Inventory, backpack.Layout);
             PutStartingItems();
 
-            if (holeSpawner != null && holeSpawner.isActiveAndEnabled)
-            {
-                hole = holeSpawner.Spawn(spawnPosition, GroundHeight, gathering.Sticks.Item.Id, gathering.SporeMushrooms.Item.Id);
-                interactables.Add(hole);
-            }
-
             BuildGatherables(forest);
             pickupFeed.Bind(Inventory);
             droppedItems.Bind(

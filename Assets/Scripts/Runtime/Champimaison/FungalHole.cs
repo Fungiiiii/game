@@ -1,7 +1,5 @@
+using System;
 using System.Collections.Generic;
-using Fungiiiii.Capture;
-using Fungiiiii.Champimaison;
-using Fungiiiii.Gathering;
 using Fungiiiii.Interaction;
 using Fungiiiii.Inventory;
 using Fungiiiii.Runtime.World;
@@ -11,59 +9,95 @@ using UnityEngine;
 namespace Fungiiiii.Champimaison
 {
     /// <summary>
-    /// The Champimaison hole: a dark disc in the ground where the interact
-    /// control drops wood and spores, and the fungal network around it, drawn as cream
-    /// filaments on the ground that spread further at each stage. All placeholders.
-    /// The rules are in <see cref="FungalNetwork"/>.
+    /// The Champimaison, once planted: a dark hole in the ground and the fungal network
+    /// around it, drawn as cream filaments that spread further at each stage. All
+    /// placeholders. Holding the interact control drops into it what the next stage lacks
+    /// (<see cref="FungalNetwork"/>); a short press collects the mycelium thread it
+    /// produces once awake, or enters it once the last stage opens it.
     /// </summary>
-    internal sealed class FungalHole : MonoBehaviour, IInteractable
+    internal sealed class FungalHole : MonoBehaviour, IInteractable, IHoldInteractable
     {
         private const float HoleRadius = 1f;
         private const float FilamentLift = 0.04f;
         private const float FilamentWidth = 0.05f;
         private const int FilamentPointCount = 10;
-        private const float RefusedFlashSeconds = 0.5f;
         private const int FilamentSeed = 20716;
 
-        /// <summary>Filaments per stage, and how far each stage reaches from the hole edge.</summary>
+        /// <summary>The key to press floats this high above the centre of the hole.</summary>
+        private const float PromptHeight = 0.9f;
+
+        /// <summary>The panel of what the next stage costs floats this high, above the key.</summary>
+        private const float PanelHeight = 1.5f;
+
         private static readonly int[] FilamentsPerStage = { 7, 12 };
         private static readonly float[] StageReach = { 3f, 6f };
-
         private static readonly Color HoleColor = new Color(0.05f, 0.04f, 0.035f);
 
         private readonly List<GameObject[]> stageFilaments = new List<GameObject[]>();
 
         private FungalNetwork network;
+        private ThreadProduction thread;
+        private ItemDefinition threadItem;
+        private PlayerInventory inventory;
         private GroundRing ring;
         private Material holeMaterial;
-        private Material ringMaterial;
-        private Material refusedMaterial;
         private float reach;
-        private float refusedFlashLeft;
+
+        /// <summary>Raised when the player enters the Champimaison.</summary>
+        public event Action Entered;
 
         public FungalNetwork Network => network;
 
-        /// <summary>The key to press floats a metre above the centre of the hole.</summary>
-        public Vector3 PromptPoint => transform.position + Vector3.up;
+        public ThreadProduction Thread => thread;
 
-        public string HintKey => UiText.HintDeposit;
+        public bool CanBeEntered => network.HasUnlocked(TierUnlock.Entrance);
 
-        public InteractionCandidate Candidate =>
-            new InteractionCandidate(transform.position, reach, !network.IsComplete);
+        public Vector3 PromptPoint => transform.position + Vector3.up * PromptHeight;
+
+        /// <summary>Where the panel of what the next stage costs is shown.</summary>
+        public Vector3 PanelPoint => transform.position + Vector3.up * PanelHeight;
+
+        public float Reach => reach;
+
+        public string HintKey => CanBeEntered ? UiText.HintEnter
+            : thread.Stored > 0 ? UiText.HintCollectThread
+            : null;
+
+        public string HoldHintKey
+        {
+            get
+            {
+                if (network.IsComplete || !network.Progress.CanTakeFrom(inventory))
+                {
+                    return null;
+                }
+
+                if (!network.Progress.WouldComplete(inventory))
+                {
+                    return UiText.HintDeposit;
+                }
+
+                return network.Stage == 0 ? UiText.HintAwaken : UiText.HintUpgrade;
+            }
+        }
+
+        public InteractionCandidate Candidate => new InteractionCandidate(transform.position, reach, true);
 
         public void Initialize(
             FungalNetwork fungalNetwork,
+            ThreadProduction threadProduction,
+            ItemDefinition producedThread,
+            PlayerInventory playerInventory,
             float interactionReach,
             Material filamentMaterial,
             Material holeRingMaterial,
-            Material refusedRingMaterial,
-            System.Func<Vector3, float> groundHeight)
+            Func<Vector3, float> groundHeight)
         {
             network = fungalNetwork;
+            thread = threadProduction;
+            threadItem = producedThread;
+            inventory = playerInventory;
             reach = interactionReach + HoleRadius;
-            ringMaterial = holeRingMaterial;
-            refusedMaterial = refusedRingMaterial;
-
             holeMaterial = Primitives.CreateUnlitMaterial("Champimaison Hole Placeholder", HoleColor);
             Primitives.Create(
                 PrimitiveType.Cylinder,
@@ -73,10 +107,8 @@ namespace Fungiiiii.Champimaison
                 new Vector3(HoleRadius * 2f, 0.01f, HoleRadius * 2f),
                 holeMaterial,
                 keepCollider: false);
-
-            ring = new GroundRing(transform, transform.position, HoleRadius + 0.15f, ringMaterial, groundHeight);
+            ring = new GroundRing(transform, transform.position, HoleRadius + 0.15f, holeRingMaterial, groundHeight);
             BuildFilaments(filamentMaterial, groundHeight);
-
             network.Grew += HandleGrew;
             ShowStage(network.Stage);
         }
@@ -86,38 +118,27 @@ namespace Fungiiiii.Champimaison
             ring.SetTargeted(targeted);
         }
 
-        /// <summary>Drops the next stage's wood and spores. Refused, taking nothing, without enough of either.</summary>
-        public bool Interact(PlayerInventory inventory)
+        /// <summary>A short press: enters once the Champimaison is open, otherwise collects its thread.</summary>
+        public bool Interact(PlayerInventory playerInventory)
         {
-            if (network.TryGrow(inventory))
+            if (CanBeEntered)
             {
+                Entered?.Invoke();
                 return true;
             }
 
-            refusedFlashLeft = RefusedFlashSeconds;
-            ring.SetMaterial(refusedMaterial);
-            return false;
+            return threadItem != null && thread.Collect(playerInventory, threadItem) > 0;
         }
 
-        /// <summary>Back to an empty hole, for a reset.</summary>
-        public void ResetNetwork()
+        /// <summary>Holding the control: drops what the next stage lacks.</summary>
+        public bool InteractHold(PlayerInventory playerInventory)
         {
-            network.Reset();
-            ShowStage(0);
+            return network.Deposit(playerInventory) > 0;
         }
 
         private void Update()
         {
-            if (refusedFlashLeft <= 0f)
-            {
-                return;
-            }
-
-            refusedFlashLeft -= Time.deltaTime;
-            if (refusedFlashLeft <= 0f)
-            {
-                ring.SetMaterial(ringMaterial);
-            }
+            thread.Tick(Time.deltaTime);
         }
 
         private void OnDestroy()
@@ -136,6 +157,10 @@ namespace Fungiiiii.Champimaison
         private void HandleGrew(int stage)
         {
             ShowStage(stage);
+            if (network.HasUnlocked(TierUnlock.MyceliumThread))
+            {
+                thread.Start();
+            }
         }
 
         private void ShowStage(int stage)
@@ -147,21 +172,17 @@ namespace Fungiiiii.Champimaison
                     filament.SetActive(index < stage);
                 }
             }
-
-            ring.SetVisible(stage < network.StageCount);
         }
 
-        private void BuildFilaments(Material material, System.Func<Vector3, float> groundHeight)
+        private void BuildFilaments(Material material, Func<Vector3, float> groundHeight)
         {
-            // Fixed seed: the network looks the same every run, and after a reset.
+            // Fixed seed: the network looks the same every run.
             var random = new System.Random(FilamentSeed);
             var centre = transform.position;
-
             for (var stage = 0; stage < FilamentsPerStage.Length; stage++)
             {
                 var filaments = new GameObject[FilamentsPerStage[stage]];
                 var length = StageReach[stage];
-
                 for (var index = 0; index < filaments.Length; index++)
                 {
                     var angle = (index + (float)random.NextDouble() * 0.6f) * Mathf.PI * 2f / filaments.Length;
@@ -178,11 +199,10 @@ namespace Fungiiiii.Champimaison
             float length,
             Material material,
             System.Random random,
-            System.Func<Vector3, float> groundHeight)
+            Func<Vector3, float> groundHeight)
         {
             var filamentObject = new GameObject("Network Filament");
             filamentObject.transform.SetParent(transform, false);
-
             var line = filamentObject.AddComponent<LineRenderer>();
             line.sharedMaterial = material;
             line.useWorldSpace = true;
@@ -191,7 +211,6 @@ namespace Fungiiiii.Champimaison
             line.widthCurve = AnimationCurve.Linear(0f, 1f, 1f, 0.2f);
             line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             line.receiveShadows = false;
-
             // Normals and tangents, so a lit material shades the filament like the ground.
             line.generateLightingData = true;
             line.alignment = LineAlignment.TransformZ;
