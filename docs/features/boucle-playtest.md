@@ -130,6 +130,8 @@ Chemins relatifs à `Assets/Scripts/`.
    - la scène `Assets/Scenes/Game/ChampimaisonInterior.unity` et les scènes du build.
 3. Relire le diff (prefabs, scène, `EditorBuildSettings.asset`), régler la mise en page dans l'Inspector si besoin, commiter, puis **supprimer `PlaytestLoopSetup.cs`**.
 
+**Fait le 22/11/2026** en batchmode (`-executeMethod Fungiiiii.Editor.Playtest.PlaytestLoopSetup.SetUp`), puis le script a été supprimé. La mise en page des prefabs d'interface n'a pas encore été regardée dans l'Editor.
+
 ## Décisions
 
 Validées par Hugo le 22/11 :
@@ -173,25 +175,34 @@ Architecture :
 
 ### Automatisés (Unity Test Runner)
 
-Écrits sans Editor : **ni compilés ni lancés**. Une vérification de syntaxe (analyseur C#) passe sur tous les fichiers modifiés.
+Lancés le 22/11/2026 en batchmode sur le PC de Hugo (Unity 6000.3.21f1), après le script de mise en place : tous les EditMode (381/381), et les fixtures PlayMode qui touchent la boucle (`Champimaison`, `CraftingPanel`, `GameScene`, `ItemNames`, `KeyPrompt`, `Slingshot`, `SpongeusCompanion`, `InventoryScreen`, `PlaytestLoop`, `MainMenu`, `PlayModeRunnerSmokeTests`). Les autres fixtures PlayMode (forêt, vent, sons, saut, bancs d'essai…) n'ont pas été relancées.
+
+Corrigé à ce moment-là, sans changer ce que les tests exigent :
+
+- **Compilation** : `PlaytestLoopGame.Game` était masqué par le namespace `Fungiiiii.Game` (renommé `Bootstrap`) ; `ChampimaisonTier` était ambigu entre le jeu et les prototypes dans `PlayModeRunnerSmokeTests` (alias) ; le script de mise en place utilisait `??` sur des objets Unity (règles UNT0007/UNT0008).
+- **Script de mise en place** : ouvrir la scène `Game` déchargeait les prefabs qu'il venait d'écrire. Il les recharge maintenant par leur chemin.
+- **`GameScenePlayModeTests.Wait`** comptait la durée de l'image où l'attente commence, qui est celle de la fin du chargement (0,31 s) : la visée n'avait pas encore commencé. L'attente compte maintenant les images qui suivent.
+- **Exigences changées par la boucle** : `PlaytestLoopPlayModeTests` attend 13 objets autour du joueur (4 cailloux en plus) ; `ItemNamesPlayModeTests` met le filet dans la case (départ mains vides) ; `GameScenePlayModeTests.OnlyTheMushroomAimedAt_IsOutlined_InTheColourOfItsChance` emmène le joueur à 10 m du Spongeus, qui vit maintenant dans la brume.
+
+**Instable** : `SpongeusCompanionPlayModeTests.HoldingE_TakesItBack_SqueezedFirstWhenFull` a échoué une fois sur quatre (le Spongeus n'était pas plein en 5 s), puis a passé deux fois. Cause non cherchée.
 
 | Test | Mode | Couvre | Résultat |
 |---|---|---|---|
-| `RequirementProgressTests` | EditMode | Jamais plus que ce qui manque ; dépôt partiel gardé ; ligne complète intouchée ; rien de ce qui n'est pas demandé ; `Changed` ; `WouldComplete` | ⬜ |
-| `FungalNetworkTests` (réécrit) | EditMode | Graine endormie au départ ; dépôt partiel sans pousse ; le dernier dépôt fait pousser et le reste passe au palier suivant ; entrée au dernier palier | ⬜ |
-| `ThreadProductionTests` | EditMode | Rien avant le démarrage ; un fil par période ; stock plein en attente ; ce qui ne rentre pas reste | ⬜ |
-| `PlantingRulesTests` | EditMode | Texte ou touche selon la graine | ⬜ |
-| `CrafterTests` | EditMode | Tout ou rien ; ingrédients rendus si le résultat ne rentre pas ; barre rapide d'abord, affiché comme ramassé | ⬜ |
-| `RecipeTrackerTests` | EditMode | Traquer, ne plus traquer, ordre, retirée après fabrication | ⬜ |
-| `ObjectiveRulesTests` | EditMode | Ordre des objectifs ; un texte par objectif | ⬜ |
-| `WildSoakTests` | EditMode | Source la plus proche ; sources sèches ou d'un autre objet ignorées ; imbibition ; source qui sèche en route ; interruption | ⬜ |
-| `CreatureHealthTests` | EditMode | Chute à zéro, une seule fois | ⬜ |
-| `ChampimaisonPlayModeTests` | PlayMode | Graine à l'arbre géant ; plantation (sac, main) ; panneau et dépôt ; fil ; entrée et fin de démo | ⬜ |
-| `CraftingPanelPlayModeTests` | PlayMode | Ouverture sans recette ouverte ; clic puis deuxième clic ; ingrédient manquant et provenance ; recette traquée en haut à droite jusqu'à sa fabrication | ⬜ |
-| `SlingshotPlayModeTests` | PlayMode | Champignons dans la brume ; un Spongeus boit à une fougère pleine ; un caillou par tir, seulement en main ; eau lâchée seulement par un Spongeus mouillé | ⬜ |
-| `GameScenePlayModeTests.SticksMushroomsAndPebbles_AreAroundThePlayer` | PlayMode | 4 cailloux à moins de 50 m, comme les bâtons | ⬜ |
-| `KeyPromptPlayModeTests` (4 tests ajoutés) | PlayMode | Triangle sans bord pour un appui ; bord vide puis rempli, sans triangle, pour un maintien ; les deux ensemble ; texte à la place de la touche | ⬜ |
-| `ChampimaisonPlayModeTests.Aimed_TheChampimaison_ShowsItsKeysInItsPanel_NotOverIt` | PlayMode | Pas de touche flottante sur la Champimaison visée ; « Déposer » au pied du panneau ; pas de touche d'appui court inutile ; pied caché hors de portée | ⬜ |
+| `RequirementProgressTests` | EditMode | Jamais plus que ce qui manque ; dépôt partiel gardé ; ligne complète intouchée ; rien de ce qui n'est pas demandé ; `Changed` ; `WouldComplete` | ✅ |
+| `FungalNetworkTests` (réécrit) | EditMode | Graine endormie au départ ; dépôt partiel sans pousse ; le dernier dépôt fait pousser et le reste passe au palier suivant ; entrée au dernier palier | ✅ |
+| `ThreadProductionTests` | EditMode | Rien avant le démarrage ; un fil par période ; stock plein en attente ; ce qui ne rentre pas reste | ✅ |
+| `PlantingRulesTests` | EditMode | Texte ou touche selon la graine | ✅ |
+| `CrafterTests` | EditMode | Tout ou rien ; ingrédients rendus si le résultat ne rentre pas ; barre rapide d'abord, affiché comme ramassé | ✅ |
+| `RecipeTrackerTests` | EditMode | Traquer, ne plus traquer, ordre, retirée après fabrication | ✅ |
+| `ObjectiveRulesTests` | EditMode | Ordre des objectifs ; un texte par objectif | ✅ |
+| `WildSoakTests` | EditMode | Source la plus proche ; sources sèches ou d'un autre objet ignorées ; imbibition ; source qui sèche en route ; interruption | ✅ |
+| `CreatureHealthTests` | EditMode | Chute à zéro, une seule fois | ✅ |
+| `ChampimaisonPlayModeTests` | PlayMode | Graine à l'arbre géant ; plantation (sac, main) ; panneau et dépôt ; fil ; entrée et fin de démo | ✅ |
+| `CraftingPanelPlayModeTests` | PlayMode | Ouverture sans recette ouverte ; clic puis deuxième clic ; ingrédient manquant et provenance ; recette traquée en haut à droite jusqu'à sa fabrication | ✅ |
+| `SlingshotPlayModeTests` | PlayMode | Champignons dans la brume ; un Spongeus boit à une fougère pleine ; un caillou par tir, seulement en main ; eau lâchée seulement par un Spongeus mouillé | ✅ |
+| `GameScenePlayModeTests.SticksMushroomsAndPebbles_AreAroundThePlayer` | PlayMode | 4 cailloux à moins de 50 m, comme les bâtons | ✅ |
+| `KeyPromptPlayModeTests` (4 tests ajoutés) | PlayMode | Triangle sans bord pour un appui ; bord vide puis rempli, sans triangle, pour un maintien ; les deux ensemble ; texte à la place de la touche | ✅ |
+| `ChampimaisonPlayModeTests.Aimed_TheChampimaison_ShowsItsKeysInItsPanel_NotOverIt` | PlayMode | Pas de touche flottante sur la Champimaison visée ; « Déposer » au pied du panneau ; pas de touche d'appui court inutile ; pied caché hors de portée | ✅ |
 
 **Tests existants dont l'exigence change :** `FungalNetworkTests` (réécrit) ; dans `GameScenePlayModeTests`, le test de départ vérifie les mains vides et l'absence de Champimaison, `TheNet_StartsInTheFirstSlotOfTheQuickBar_InHand` devient `ThePlayer_StartsEmptyHanded_TheNetPutInTheQuickBarIsInHand`, les tests du filet reçoivent le filet (`LoadGameWithNet`), le test de l'objet jeté cherche le filet parmi les objets au sol (la graine y est aussi) ; `ItemNamesPlayModeTests` met le filet dans la case ; les tests de reset (`Reset_*`, `CloseAll_*`, `Clear_*`) sont retirés avec le reset ; le test de capture calme sa cible et reprend le filet lui-même ; `SpongeusCompanionPlayModeTests.Aimed_TheSpongeus_ShowsTheKey_WithoutRingUntilHeld_AndTheHoldHint` devient `Aimed_AnEmptySpongeus_ShowsTheKeyWithItsEmptyBorder_AndTheHoldHint` (le bord est visible avant l'appui, sans triangle) ; `GameScenePlayModeTests.TheKey_ShowsEAboveTheTarget_AndFollowsIt` vérifie en plus le triangle.
 
@@ -221,8 +232,7 @@ Architecture :
 
 ## Limitations connues
 
-- **Rien n'a été compilé ni lancé** : la branche a été écrite dans un conteneur sans Unity. Compilation, tests et partie restent à faire sur la machine de Hugo.
-- **Le jeu ne démarre pas avant le script de mise en place** : `GameBootstrap` signale dans la Console ce qui manque (modèles, prefabs, `Slingshot` sur le joueur).
+- **Compilé et testé en batchmode le 22/11/2026, pas encore joué** : aucune partie n'a été faite, aucun test manuel n'a été vérifié.
 - **Mise en page des prefabs d'interface** écrite par code, jamais vue : tailles et placements à régler dans l'Inspector.
 - **E Fabriquer est absent plutôt que grisé** quand une recette ne peut pas être faite : le panneau d'aides de touches ne sait pas griser une ligne.
 - **Au-dessus d'un trou de taupe, la touche flotte seule** : « Planter » est dans les aides en bas à droite, pas à côté de la touche comme sur le canevas. Les blocs Production et Débloque du canevas ne sont pas encore dans le panneau de la Champimaison.
