@@ -71,6 +71,43 @@ namespace Fungiiiii.Tests.PlayMode
             Release(keyboard.leftCtrlKey);
         }
 
+        [UnityTest]
+        public IEnumerator LookingAtAFullSpongeus_FromSevenMetres_ShowsTheCrouchKey_UntilTheFirstSqueeze()
+        {
+            var keyboard = InputSystem.AddDevice<Keyboard>();
+            yield return Load();
+            var game = Bootstrap;
+            var wet = WetSpongeus(game);
+            yield return WaitUntil(() => wet.IsDripping, 15f);
+            Assert.That(wet.IsDripping, Is.True, "The Spongeus did not fill up.");
+            var hint = game.SneakHint;
+
+            StandBehind(game, wet, 7f);
+            yield return null;
+            yield return null;
+            Assert.That(hint.IsShown, Is.True, "Nothing says to sneak up on the full Spongeus.");
+            Assert.That(hint.ActionKey, Is.EqualTo(UiText.HintSneak));
+            Assert.That(hint.KeyLabel, Is.Not.Empty, "The crouch key has no name.");
+
+            game.ViewCamera.GetComponent<FirstPersonCamera>().SetView(wet.transform.eulerAngles.y + 180f, 0f);
+            yield return null;
+            yield return null;
+            Assert.That(hint.IsShown, Is.False, "The hint shows without looking at the Spongeus.");
+
+            Press(keyboard.leftCtrlKey);
+            StandBehind(game, wet, 7f);
+            yield return null;
+            yield return null;
+            Assert.That(hint.IsShown, Is.False, "The hint stays once the player crouches.");
+
+            StandBehind(game, wet, 1.2f);
+            yield return null;
+            yield return null;
+            Assert.That(wet.GetComponent<WildSqueeze>().Interact(game.Inventory), Is.True);
+            Assert.That(hint.IsLearned, Is.True, "The first squeeze did not end the hint.");
+            Release(keyboard.leftCtrlKey);
+        }
+
         /// <summary>A wild Spongeus next to a full fern, the player looking at it from 8 m: it goes and drinks.</summary>
         private static WildMushroom WetSpongeus(Fungiiiii.Game.GameBootstrap game)
         {

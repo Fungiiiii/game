@@ -57,8 +57,12 @@ namespace Fungiiiii.UI
         [SerializeField]
         private LocalizedLabel holdAction;
 
+        /// <summary>Room left either side of a long key name, such as "Ctrl", in canvas units.</summary>
+        private const float KeyNamePadding = 10f;
+
         private Glyph shown;
         private float popElapsed = PopSeconds;
+        private float squareKeyWidth;
 
         public bool IsVisible => IsKeyVisible || IsTextVisible;
 
@@ -105,6 +109,7 @@ namespace Fungiiiii.UI
 
         private void Awake()
         {
+            squareKeyWidth = key.sizeDelta.x;
             Hide();
         }
 
@@ -124,6 +129,9 @@ namespace Fungiiiii.UI
             {
                 shown = control;
                 glyph.Show(control);
+
+                // A key is square, unless its name is too long for it ("Ctrl"): it widens then.
+                key.sizeDelta = new Vector2(Mathf.Max(squareKeyWidth, glyph.TextWidth + 2f * KeyNamePadding), key.sizeDelta.y);
             }
 
             ApplyPop();

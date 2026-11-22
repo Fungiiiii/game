@@ -22,6 +22,9 @@ namespace Fungiiiii.UI
         /// <summary>What the text reads, empty when the control is drawn.</summary>
         public string Label => text != null ? text.text : string.Empty;
 
+        /// <summary>Width the text needs on one line, in canvas units: a long key name widens its key.</summary>
+        public float TextWidth => text != null ? text.preferredWidth : 0f;
+
         public void Show(Glyph glyph)
         {
             if (text != null)

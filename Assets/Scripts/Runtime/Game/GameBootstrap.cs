@@ -118,6 +118,10 @@ namespace Fungiiiii.Game
         [SerializeField]
         private ThreadTag threadTag;
 
+        [Tooltip("The crouch key by a full creature looked at, until the first squeeze.")]
+        [SerializeField]
+        private SneakHint sneakHint;
+
         [Tooltip("Top centre: the cardinal points and a yellow mark where the objective lies.")]
         [SerializeField]
         private Fungiiiii.UI.Compass compass;
@@ -273,6 +277,8 @@ namespace Fungiiiii.Game
 
         public CreatureNameTag NameTag => nameTag;
 
+        public SneakHint SneakHint => sneakHint;
+
         public ThreadTag ThreadTag => threadTag;
 
         public Fungiiiii.UI.Compass Compass => compass;
@@ -381,6 +387,7 @@ namespace Fungiiiii.Game
             interactor.Initialize(firstPersonCamera, Inventory, interactables, keyPrompt, controls);
 
             nameTag.Bind(firstPersonCamera, creatures.Mushrooms, creatures.ItemFor, companions);
+            sneakHint.Bind(firstPersonCamera, creatures, player.GetComponent<PlayerMotor>(), controls);
             screens.Bind(controls, hands);
             IsReady = true;
             intro.Play(firstPersonCamera.Camera, firstPersonCamera, controls, seed.transform, playerStart, GroundHeight);
@@ -409,9 +416,9 @@ namespace Fungiiiii.Game
                 return "the screens, the quick bar, the key prompt, the vital gauges, the pickup feed, the dropped items, the requirement panel or the objective are missing.";
             }
 
-            if (nameTag == null || threadTag == null || compass == null)
+            if (nameTag == null || threadTag == null || compass == null || sneakHint == null)
             {
-                return "the creature name tag, the thread tag or the compass is missing.";
+                return "the creature name tag, the thread tag, the compass or the sneak hint is missing.";
             }
 
             if (screens.Inventory == null || screens.Inventory.Crafting == null)
@@ -444,6 +451,7 @@ namespace Fungiiiii.Game
                 ?? nameTag.FindProblem()
                 ?? threadTag.FindProblem()
                 ?? compass.FindProblem()
+                ?? sneakHint.FindProblem()
                 ?? companions.FindProblem()
                 ?? moleHoles.FindProblem();
         }

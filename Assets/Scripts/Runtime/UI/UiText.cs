@@ -35,6 +35,7 @@ namespace Fungiiiii.UI
         // Companions: taken out of the quick bar, squeezed, taken back by holding E.
         public const string HintRelease = "hint.release";
         public const string HintSqueeze = "hint.squeeze";
+        public const string HintSneak = "hint.sneak";
         public const string HintTakeBack = "hint.take_back";
 
         // The Champimaison: woken up, grown, its thread collected, entered.

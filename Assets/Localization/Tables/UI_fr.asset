@@ -370,6 +370,10 @@ MonoBehaviour:
     m_Localized: "!"
     m_Metadata:
       m_Items: []
+  - m_Id: 391185041449022
+    m_Localized: S’approcher discrètement
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

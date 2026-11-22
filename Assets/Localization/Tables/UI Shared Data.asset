@@ -367,6 +367,10 @@ MonoBehaviour:
     m_Key: compass.objective
     m_Metadata:
       m_Items: []
+  - m_Id: 391185041449022
+    m_Key: hint.sneak
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

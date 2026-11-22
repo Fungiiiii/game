@@ -74,6 +74,9 @@ namespace Fungiiiii.Capture
         private ICollection<IInteractable> interactables;
         private Action<ItemDefinition, Vector3> loot;
 
+        /// <summary>Raised when the player squeezes one by hand.</summary>
+        public event Action Squeezed;
+
         /// <summary>All of them, the hidden ones too.</summary>
         public IReadOnlyList<WildMushroom> Mushrooms => mushrooms;
 
@@ -302,7 +305,7 @@ namespace Fungiiiii.Capture
 
                 // Crouched behind it, the player squeezes it by hand.
                 var squeeze = mushroomObject.AddComponent<WildSqueeze>();
-                squeeze.Initialize(mushroom, creature.SoaksUp, threat, creature.SqueezeReach);
+                squeeze.Initialize(mushroom, creature.SoaksUp, threat, creature.SqueezeReach, () => Squeezed?.Invoke());
                 interactables.Add(squeeze);
             }
 
