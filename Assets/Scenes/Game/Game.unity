@@ -130,12 +130,12 @@ GameObject:
   - component: {fileID: 123151327}
   - component: {fileID: 123151326}
   m_Layer: 0
-  m_Name: Champimaison Hole
+  m_Name: Champimaison
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &123151326
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -148,11 +148,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5bb28341012411482365fa65a6928ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Champimaison.FungalHoleSpawner
+  definition: {fileID: 11400000, guid: d0798f63127a413da563efa3aff81bc8, type: 2}
+  reach: 2
   networkColor: {r: 0.9490196, g: 0.9019608, b: 0.8, a: 1}
-  stageOneWood: 2
-  stageOneSpores: 2
-  stageTwoWood: 4
-  stageTwoSpores: 4
 --- !u!4 &123151327
 Transform:
   m_ObjectHideFlags: 0
@@ -199,8 +197,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Game.GameBootstrap
   playerPrefab: {fileID: 115626252226540898, guid: 6b68423f1f9d42743a16adbd720a848c, type: 3}
   netItem: {fileID: 11400000, guid: 755566013f3545c1b999a2b65804c6c1, type: 2}
-  startingQuickBar:
-  - {fileID: 11400000, guid: 755566013f3545c1b999a2b65804c6c1, type: 2}
+  startingQuickBar: []
   staminaSettings: {fileID: 11400000, guid: 71580e11f52d48e18011c50192776d35, type: 2}
   netSettings: {fileID: 11400000, guid: 443ee77a94514bd58562ff2e0ed70920, type: 2}
   gathering: {fileID: 1100000003}
@@ -214,7 +211,8 @@ MonoBehaviour:
   vitalGauges: {fileID: 1335842181}
   pickupFeed: {fileID: 2107753912}
   droppedItems: {fileID: 332564108}
-  holeSpawner: {fileID: 123151326}
+  moleHoles: {fileID: 1200000003}
+  seedSpot: {fileID: 1200000012}
   randomSeed: 0
 --- !u!4 &167378463
 Transform:
@@ -1390,6 +1388,85 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6c093eca83743dc838ed11ae970a972, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.PickupFeed
+--- !u!1 &1200000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1200000002}
+  - component: {fileID: 1200000003}
+  m_Layer: 0
+  m_Name: Mole Holes
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1200000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1200000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1200000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1200000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2c54b2f2f584bd1b2a1a91be80c4fed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Champimaison.MoleHoles
+  model: {fileID: 0}
+  seed: {fileID: 11400000, guid: 57a4b495dad74db7be4a6a7c01b2406f, type: 2}
+  champimaison: {fileID: 123151326}
+  reach: 2
+--- !u!1 &1200000011
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1200000012}
+  m_Layer: 0
+  m_Name: Seed Spot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1200000012
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1200000011}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 23.8, y: 0, z: -111.9}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1410,3 +1487,5 @@ SceneRoots:
   - {fileID: 332564109}
   - {fileID: 228711579}
   - {fileID: 371452097}
+  - {fileID: 1200000002}
+  - {fileID: 1200000012}

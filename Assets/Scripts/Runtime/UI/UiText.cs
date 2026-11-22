@@ -43,5 +43,15 @@ namespace Fungiiiii.UI
         public const string HintUpgrade = "hint.upgrade";
         public const string HintCollectThread = "hint.collect_thread";
         public const string HintEnter = "hint.enter";
+
+        // Mole holes: where the seed is planted.
+        public const string HintPlant = "hint.plant";
+        public const string LabelNeedsSeed = "label.needs_seed";
+        public const string LabelHoldSeed = "label.hold_seed";
+
+        // The panel over the Champimaison: what its next stage costs.
+        public const string PanelAwakenTitle = "panel.awaken_title";
+        public const string PanelGrowTitle = "panel.grow_title";
+        public const string PanelInBackpack = "panel.in_backpack";
     }
 }

@@ -71,7 +71,22 @@ namespace Fungiiiii.Items
             forward = forward.sqrMagnitude > 0.0001f ? forward.normalized : Vector3.forward;
             var landing = view.position + forward * distance;
             landing.y = groundHeight(landing);
+            return Spawn(item, quantity, landing, view.position.y - landing.y - 0.5f);
+        }
 
+        /// <summary>
+        /// Puts a stack on the ground at <paramref name="point"/>, falling from
+        /// <paramref name="fallHeight"/> metres: the seed waiting at the giant tree, what a
+        /// felled mushroom lets go of.
+        /// </summary>
+        public DroppedItem Place(ItemDefinition item, int quantity, Vector3 point, float fallHeight = 0f)
+        {
+            point.y = groundHeight(point);
+            return Spawn(item, quantity, point, fallHeight);
+        }
+
+        private DroppedItem Spawn(ItemDefinition item, int quantity, Vector3 landing, float fallHeight)
+        {
             var dropped = new GameObject($"Dropped {item.name}").AddComponent<DroppedItem>();
             dropped.transform.SetParent(transform, false);
             dropped.transform.SetPositionAndRotation(landing, Quaternion.Euler(0f, (float)random.NextDouble() * 360f, 0f));
@@ -81,7 +96,11 @@ namespace Fungiiiii.Items
             items.Add(dropped);
             interactables.Add(dropped);
 
-            dropped.gameObject.AddComponent<FallIn>().Play(view.position.y - landing.y - 0.5f, (float)random.NextDouble());
+            if (fallHeight > 0f)
+            {
+                dropped.gameObject.AddComponent<FallIn>().Play(fallHeight, (float)random.NextDouble());
+            }
+
             return dropped;
         }
 

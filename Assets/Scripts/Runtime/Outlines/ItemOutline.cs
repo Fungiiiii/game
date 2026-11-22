@@ -23,8 +23,12 @@ namespace Fungiiiii.Outlines
             targeted = targetedMaterial;
         }
 
+        /// <summary>False once hidden by <see cref="SetVisible"/>.</summary>
+        public bool IsVisible { get; private set; } = true;
+
         public void SetVisible(bool visible)
         {
+            IsVisible = visible;
             foreach (var outlineRenderer in renderers)
             {
                 if (outlineRenderer != null)

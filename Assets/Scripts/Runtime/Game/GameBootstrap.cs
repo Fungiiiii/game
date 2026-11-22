@@ -24,7 +24,8 @@ using UnityEditor.SceneManagement;
 namespace Fungiiiii.Game
 {
     /// <summary>
-    /// Entry point of the game (explore, gather, capture, feed the network), placed
+    /// Entry point of the game (find the seed, plant the Champimaison, gather, craft,
+    /// capture, feed the network), placed
     /// alone in the Game scene. It loads Hugo's MysticForest additively without changing
     /// it: the forest's test player is switched off and its Main Camera, which carries the
     /// zone audio, the spores and the ground mist, becomes the first-person view of the
@@ -34,9 +35,9 @@ namespace Fungiiiii.Game
     /// forest's sticks and spore mushrooms (<see cref="ForestGathering"/>), the mushrooms
     /// to catch (<see cref="CreaturePopulation"/>), the plants that fill up by chance
     /// (<see cref="RefillingPlants"/>), the companions taken out of the quick bar
-    /// (<see cref="CompanionKeeper"/>), tuned by data assets, and the screens,
-    /// quick bar and key hints, instances of their prefabs. This hands them the player
-    /// once it is spawned. The Champimaison hole is left out of the playtest.
+    /// (<see cref="CompanionKeeper"/>), the mole holes where the seed is planted
+    /// (<see cref="MoleHoles"/>), tuned by data assets, and the screens, quick bar and key
+    /// hints, instances of their prefabs. This hands them the player once it is spawned.
     /// </summary>
     internal sealed class GameBootstrap : MonoBehaviour
     {
@@ -54,7 +55,7 @@ namespace Fungiiiii.Game
         [SerializeField]
         private ItemDefinition netItem;
 
-        [Tooltip("What the player starts with, in the quick bar's slots from the first.")]
+        [Tooltip("What the player starts with, in the quick bar's slots from the first. Empty: the player starts empty-handed.")]
         [SerializeField]
         private ItemDefinition[] startingQuickBar = new ItemDefinition[0];
 
@@ -105,13 +106,21 @@ namespace Fungiiiii.Game
         [SerializeField]
         private PickupFeed pickupFeed;
 
+        [Tooltip("What the Champimaison's next stage costs, over it.")]
+        [SerializeField]
+        private RequirementPanel requirementPanel;
+
         [Tooltip("What the player drops from the inventory, until picked up again.")]
         [SerializeField]
         private DroppedItems droppedItems;
 
-        [Tooltip("Builds the Champimaison hole while active; inactive for the playtest.")]
+        [Tooltip("The mole holes where the seed is planted, and the Champimaison it grows into.")]
         [SerializeField]
-        private FungalHoleSpawner holeSpawner;
+        private MoleHoles moleHoles;
+
+        [Tooltip("Where the seed waits at the start: at the foot of the giant tree.")]
+        [SerializeField]
+        private Transform seedSpot;
 
         [Tooltip("Seed of every random draw of the game. 0 picks a different seed every run.")]
         [SerializeField]
@@ -131,7 +140,6 @@ namespace Fungiiiii.Game
         private StaminaRegulator stamina;
         private Backpack backpack;
         private PlayerInteractor interactor;
-        private FungalHole hole;
         private ItemOutlineFactory outlines;
         private PlayerHands hands;
         private NetTargetOutline targetOutline;
@@ -158,8 +166,10 @@ namespace Fungiiiii.Game
         /// <summary>Every place a stick may appear.</summary>
         public IReadOnlyList<GatherableSpot> StickSpots => gathering.StickSpots;
 
-        /// <summary>Null while the hole is left out (see holeSpawner).</summary>
-        public FungalHole Hole => hole;
+        /// <summary>The planted Champimaison; null until the seed is planted.</summary>
+        public FungalHole Hole => moleHoles.Champimaison;
+
+        public MoleHoles MoleHoles => moleHoles;
 
         public bool IsInventoryOpen => screens.IsInventoryOpen;
 
@@ -219,6 +229,11 @@ namespace Fungiiiii.Game
             {
                 gathering.GatherableCreated -= interactables.Add;
             }
+
+            if (moleHoles != null)
+            {
+                moleHoles.Planted -= HandlePlanted;
+            }
         }
 
         private IEnumerator Start()
@@ -269,10 +284,13 @@ namespace Fungiiiii.Game
                 outlines,
                 interactables,
                 new System.Random(random.Next()));
+            droppedItems.Place(moleHoles.Seed, 1, seedSpot.position);
             SpawnMushrooms();
             SetUpThrower();
             refillingPlants.Populate(forest, sessionTerrain, outlines, interactables, new System.Random(random.Next()));
             SetUpHands();
+            moleHoles.Populate(forest, GroundHeight, outlines, interactables, hotbar, Inventory, new System.Random(random.Next()));
+            moleHoles.Planted += HandlePlanted;
 
             interactor = player.GetComponent<PlayerInteractor>();
             interactor.Initialize(firstPersonCamera, Inventory, interactables, keyPrompt, controls);
@@ -298,14 +316,14 @@ namespace Fungiiiii.Game
                 return "the player prefab lacks its hands, interact control, net, net target outline or stamina.";
             }
 
-            if (screens == null || hotbar == null || keyPrompt == null || vitalGauges == null || pickupFeed == null || droppedItems == null)
+            if (screens == null || hotbar == null || keyPrompt == null || vitalGauges == null || pickupFeed == null || droppedItems == null || requirementPanel == null)
             {
-                return "the screens, the quick bar, the key prompt, the vital gauges, the pickup feed or the dropped items are missing.";
+                return "the screens, the quick bar, the key prompt, the vital gauges, the pickup feed, the dropped items or the requirement panel are missing.";
             }
 
-            if (startingQuickBar.Length == 0 || System.Array.IndexOf(startingQuickBar, null) >= 0)
+            if (System.Array.IndexOf(startingQuickBar, null) >= 0)
             {
-                return "the starting quick bar is empty or has an empty slot.";
+                return "the starting quick bar has an empty slot.";
             }
 
             if (outlineSettings == null || outlineSettings.Shader == null)
@@ -313,16 +331,17 @@ namespace Fungiiiii.Game
                 return "the outline settings or their shader are missing.";
             }
 
-            if (gathering == null || creatures == null || refillingPlants == null || companions == null)
+            if (gathering == null || creatures == null || refillingPlants == null || companions == null || moleHoles == null || seedSpot == null)
             {
-                return "the forest's gathering, its creatures, its refilling plants or the companions are missing.";
+                return "the forest's gathering, its creatures, its refilling plants, the companions, the mole holes or the seed spot are missing.";
             }
 
             return screens.FindProblem()
                 ?? gathering.FindProblem()
                 ?? creatures.FindProblem()
                 ?? refillingPlants.FindProblem()
-                ?? companions.FindProblem();
+                ?? companions.FindProblem()
+                ?? moleHoles.FindProblem();
         }
 
         private static IEnumerator LoadForest()
@@ -468,6 +487,11 @@ namespace Fungiiiii.Game
 
             targetOutline = player.GetComponent<NetTargetOutline>();
             targetOutline.Initialize(Thrower, creatures.Mushrooms, outlines);
+        }
+
+        private void HandlePlanted(FungalHole champimaison)
+        {
+            requirementPanel.Bind(champimaison, Inventory, firstPersonCamera.Camera, controls);
         }
 
         private void HandleCatchReturned(WildMushroom caught)
