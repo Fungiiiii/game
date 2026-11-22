@@ -29,8 +29,8 @@ MSG
   exit 1
 fi
 
-if [ ${#subject} -gt 72 ]; then
-  echo "Subject is ${#subject} chars, keep it under 72: $subject" >&2
+if [ ${#subject} -gt 80 ]; then
+  echo "Subject is ${#subject} chars, keep it to 80 at most: $subject" >&2
   exit 1
 fi
 
