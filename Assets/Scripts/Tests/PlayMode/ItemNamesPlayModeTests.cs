@@ -72,6 +72,9 @@ namespace Fungiiiii.Tests.PlayMode
             yield return Wait(2.6f);
             Assert.That(heldName.IsVisible, Is.False, "The name does not fade out.");
 
+            // The player starts empty-handed: the net is put in the first slot, out of hand.
+            game.Inventory.AddToSlot(Layout.QuickBarFirstSlot, game.NetItem, 1);
+            yield return null;
             game.Hotbar.Select(0);
             yield return null;
             Assert.That(heldName.IsVisible, Is.True);

@@ -47,8 +47,9 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(game, Is.Not.Null, "Play did not load the game.");
             Assert.That(game.IsReady, Is.True, "The game was not ready in time.");
 
-            // Since the playtest of 20/11, 4 sticks and 5 mushrooms are kept around the player.
-            Assert.That(game.Gatherables.Count(gatherable => gatherable.IsAvailable), Is.EqualTo(9), "Not everything to gather is around the player.");
+            // Since the playtest of 20/11, 4 sticks and 5 mushrooms are kept around the player;
+            // since the playtest loop, 4 pebbles too.
+            Assert.That(game.Gatherables.Count(gatherable => gatherable.IsAvailable), Is.EqualTo(13), "Not everything to gather is around the player.");
             var outline = game.Gatherables
                 .First(gatherable => gatherable.IsAvailable)
                 .GetComponentsInChildren<MeshRenderer>()

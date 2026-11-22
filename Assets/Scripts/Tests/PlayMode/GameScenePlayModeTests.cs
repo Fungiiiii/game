@@ -584,11 +584,13 @@ namespace Fungiiiii.Tests.PlayMode
 
         private static IEnumerator Wait(float seconds)
         {
+            // The frame first, then its time: the time of the frame the wait starts in was
+            // spent before the wait, and the frame that ends the loading lasts long.
             var elapsed = 0f;
             while (elapsed < seconds)
             {
-                elapsed += Time.unscaledDeltaTime;
                 yield return null;
+                elapsed += Time.unscaledDeltaTime;
             }
         }
 
@@ -685,6 +687,13 @@ namespace Fungiiiii.Tests.PlayMode
             var game = Object.FindFirstObjectByType<GameBootstrap>();
             var thrower = game.Thrower;
             var target = game.Mushrooms[0];
+
+            // The wild mushrooms keep to their area in the mist, far from where the player
+            // arrives: the player goes to the target, which can then be put where the net lands.
+            // The view stays level, as on arrival, so that the net lands out of the alert distance.
+            PlaytestLoopGame.StandBefore(target.transform.position, 10f);
+            Object.FindFirstObjectByType<FirstPersonCamera>().SetView(0f, 0f);
+            yield return null;
 
             foreach (var mushroom in game.Mushrooms)
             {
