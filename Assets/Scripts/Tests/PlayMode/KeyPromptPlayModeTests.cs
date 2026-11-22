@@ -101,6 +101,23 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator AText_IsReadOnItsPanel_WhichGrowsAroundIt()
+        {
+            prompt.ShowText(new Vector2(100f, 100f), UiText.LabelNeedsSeed);
+            var panel = System.Linq.Enumerable.First(prompt.GetComponentsInChildren<RectTransform>(true), rect => rect.name == "TextPanel");
+            var label = panel.GetComponentInChildren<UnityEngine.UI.Text>(true);
+            for (var frame = 0; frame < 120 && string.IsNullOrEmpty(label.text); frame++)
+            {
+                yield return null;
+            }
+
+            yield return null;
+            Assert.That(label.gameObject.activeInHierarchy, Is.True, "The text of the panel is hidden: only the bottom of the wood shows.");
+            Assert.That(label.text, Is.Not.Empty, "The panel shows no text.");
+            Assert.That(panel.rect.width, Is.GreaterThan(100f), "The panel did not grow around its text.");
+        }
+
+        [UnityTest]
         public IEnumerator PopIn_PlaysThePopAgain_OnAKeyAlreadyShown()
         {
             prompt.Show(new Vector2(100f, 100f), KeyE);
