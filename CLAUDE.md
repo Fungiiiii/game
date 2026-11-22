@@ -127,6 +127,14 @@ Every `feat/` branch ships `docs/features/<id>-<description>.md` — the branch 
 
 ---
 
+## UI text sizes
+
+The interface targets 16:9 PC screens, 1920×1080 or 1280×720, and every canvas follows the screen's height (`Match` = 1). **Text uses four sizes only**, at 1080p: **60** a screen's title, **36** a block's title, **26** body text (names, hints, counts), **22** small text (descriptions, sources, labels). In the inventory's 720-unit canvas they are 40, 24, 17 and 15. Nothing smaller: at 720p, 22 is already about 15 px.
+
+A new text picks one of the four; a text that does not fit is reworded, wrapped or given room, never shrunk to an in-between size. The only exceptions are display text (the home screen's and the end's titles, the planks) and the letters drawn on a key. `UiTextSizeTests` enforces it: a new UI prefab without its own canvas is declared there with the canvas that shows it.
+
+---
+
 ## Git
 
 The full workflow is `docs/workflow.md`; the commands are in `docs/git-cheatsheet.md`.
