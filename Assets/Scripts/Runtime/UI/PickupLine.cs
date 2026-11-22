@@ -5,7 +5,10 @@ using UnityEngine.UI;
 
 namespace Fungiiiii.UI
 {
-    /// <summary>One line of the <see cref="PickupFeed"/>: the item, then the amount and its name in the current language.</summary>
+    /// <summary>
+    /// One line of the <see cref="PickupFeed"/>: the item, then the amount and its name in the
+    /// current language, worded by the <c>pickup.line</c> entry so that each language orders them.
+    /// </summary>
     internal sealed class PickupLine : MonoBehaviour
     {
         [SerializeField]
@@ -19,6 +22,8 @@ namespace Fungiiiii.UI
         private CanvasGroup group;
 
         private LocalizedString itemName;
+        private LocalizedString line;
+        private bool isLineShown;
         private string shownName = string.Empty;
         private float age;
 
@@ -38,6 +43,7 @@ namespace Fungiiiii.UI
                 icon.Show(item);
                 if (!string.IsNullOrEmpty(item.NameKey))
                 {
+                    line = new LocalizedString(UiText.Table, UiText.PickupLine);
                     itemName = new LocalizedString(UiText.Table, item.NameKey);
                     itemName.StringChanged += ShowName;
                 }
@@ -63,9 +69,29 @@ namespace Fungiiiii.UI
             Refresh();
         }
 
+        private void ShowLine(string localized)
+        {
+            text.text = localized;
+        }
+
         private void Refresh()
         {
-            text.text = string.IsNullOrEmpty(shownName) ? $"+{Count}" : $"+{Count} {shownName}";
+            if (line == null || string.IsNullOrEmpty(shownName))
+            {
+                text.text = $"+{Count}"; // i18n-exempt: a number, no words
+                return;
+            }
+
+            line.Arguments = new object[] { Count, shownName };
+            if (isLineShown)
+            {
+                line.RefreshString();
+            }
+            else
+            {
+                isLineShown = true;
+                line.StringChanged += ShowLine;
+            }
         }
 
         private void OnDestroy()
@@ -73,6 +99,11 @@ namespace Fungiiiii.UI
             if (itemName != null)
             {
                 itemName.StringChanged -= ShowName;
+            }
+
+            if (isLineShown)
+            {
+                line.StringChanged -= ShowLine;
             }
         }
     }

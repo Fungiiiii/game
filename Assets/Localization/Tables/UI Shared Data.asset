@@ -303,6 +303,10 @@ MonoBehaviour:
     m_Key: panel.hold
     m_Metadata:
       m_Items: []
+  - m_Id: 391185041449005
+    m_Key: pickup.line
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

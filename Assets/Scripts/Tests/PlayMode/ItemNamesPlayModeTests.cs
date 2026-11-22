@@ -131,6 +131,13 @@ namespace Fungiiiii.Tests.PlayMode
 
             Assert.That(corners[0].x, Is.LessThan(Screen.width * 0.25f), "The pickup line is not on the left.");
             Assert.That(corners[0].y, Is.LessThan(Screen.height * 0.25f), "The pickup line is not at the bottom.");
+
+            // Worded by the pickup.line entry, with the amount and the item's name from the table.
+            var pickup = game.Pickups.Lines[0];
+            yield return Wait(1f);
+            Assert.That(pickup.Text, Does.StartWith("+1 "), "The line has no name after its amount.");
+            Assert.That(pickup.Text.Length, Is.GreaterThan(3));
+            Assert.That(pickup.Text, Does.Not.Contain("No translation").And.Not.Contain("{"), "The pickup.line entry is missing or not filled.");
         }
     }
 }

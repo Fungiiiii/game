@@ -306,6 +306,10 @@ MonoBehaviour:
     m_Localized: Maintenir
     m_Metadata:
       m_Items: []
+  - m_Id: 391185041449005
+    m_Localized: '+{0} {1}'
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

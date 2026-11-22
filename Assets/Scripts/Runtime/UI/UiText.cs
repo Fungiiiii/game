@@ -54,6 +54,7 @@ namespace Fungiiiii.UI
         public const string PanelGrowTitle = "panel.grow_title";
         public const string PanelInBackpack = "panel.in_backpack";
         public const string PanelHold = "panel.hold";
+        public const string PickupLine = "pickup.line";
 
         // The crafting panel, next to the inventory.
         public const string CraftTitle = "craft.title";
