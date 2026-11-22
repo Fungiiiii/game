@@ -9,7 +9,9 @@ namespace Fungiiiii.UI
     /// The screens over the game and the key hints. Escape, or B, closes the screen on top,
     /// or pauses when none is open; Tab opens and closes the inventory. While a screen is
     /// open the menus have the controls, and the inventory, which shows its own quick bar,
-    /// hides the game's one. The hints are those of the screen on top, or of the game.
+    /// hides the game's one, the vitals and the objective: its panels take the width of a
+    /// 16:9 screen. The hints are those of the screen on top, or of the game; the inventory
+    /// shows its own, on one line under its panels.
     /// </summary>
     internal sealed class GameScreens : MonoBehaviour
     {
@@ -24,6 +26,14 @@ namespace Fungiiiii.UI
 
         [SerializeField]
         private ControlHintsPanel hints;
+
+        [Tooltip("Top left; hidden while the inventory is open.")]
+        [SerializeField]
+        private VitalGauges vitals;
+
+        [Tooltip("Top right; hidden while the inventory is open.")]
+        [SerializeField]
+        private ObjectiveHud objective;
 
         private PlayerControls controls;
         private ScreenStack stack;
@@ -46,9 +56,9 @@ namespace Fungiiiii.UI
         /// <summary>What is missing, or null when nothing is.</summary>
         public string FindProblem()
         {
-            return hotbar == null || inventory == null || pauseMenu == null || hints == null
-                ? "a piece of the interface is missing: quick bar, inventory, pause menu or key hints."
-                : null;
+            return hotbar == null || inventory == null || pauseMenu == null || hints == null || vitals == null || objective == null
+                ? "a piece of the interface is missing: quick bar, inventory, pause menu, key hints, vitals or objective."
+                : inventory.FindProblem();
         }
 
         /// <summary>
@@ -72,6 +82,7 @@ namespace Fungiiiii.UI
                 new ControlHint(UiText.HintSwitchItem, HintInput.Of(actions.HotbarNext, actions.HotbarPrevious), optional: true),
                 new ControlHint(UiText.HintInventory, HintInput.Of(controls.Screens.Inventory)))).ToArray();
             hints.Initialize(controls);
+            inventory.HintsPanel.Initialize(controls);
 
             stack = new ScreenStack(pauseMenu);
             stack.Changed += Apply;
@@ -124,18 +135,30 @@ namespace Fungiiiii.UI
 
         private void Apply()
         {
-            hotbar.SetVisible(!stack.IsOpen(inventory));
+            var inventoryOpen = stack.IsOpen(inventory);
+            hotbar.SetVisible(!inventoryOpen);
+            vitals.SetVisible(!inventoryOpen);
+            objective.SetVisible(!inventoryOpen);
             // Every system that stops under a menu listens to the controls itself.
             controls.SetMenuOpen(stack.IsAnyOpen);
             ShowHints();
         }
 
-        /// <summary>The hints of the screen on top, or of the game when none is open; the pause shows none.</summary>
+        /// <summary>
+        /// The hints of the screen on top, or of the game when none is open; the pause shows
+        /// none. The inventory shows its own, in its panel under its slots.
+        /// </summary>
         private void ShowHints()
         {
+            var inventoryOnTop = stack.IsAnyOpen && ReferenceEquals(stack.Top, inventory);
+            inventory.HintsPanel.ShowFrom(inventoryOnTop ? new IHintSource[] { inventory } : new IHintSource[0]);
             if (!stack.IsAnyOpen)
             {
                 hints.ShowFrom(gameHints);
+            }
+            else if (inventoryOnTop)
+            {
+                hints.ShowFrom();
             }
             else if (stack.Top is IHintSource screenHints)
             {

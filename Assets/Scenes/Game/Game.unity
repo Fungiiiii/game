@@ -821,6 +821,8 @@ MonoBehaviour:
   inventory: {fileID: 329161194}
   pauseMenu: {fileID: 1926559556}
   hints: {fileID: 2105432305}
+  vitals: {fileID: 1335842181}
+  objective: {fileID: 340570194}
 --- !u!4 &1085797578
 Transform:
   m_ObjectHideFlags: 0

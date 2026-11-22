@@ -10,6 +10,7 @@ namespace Fungiiiii.UI
     /// Top right during play, as in Palworld: the objective, then the recipes the player
     /// tracks with their ingredients, kept up to date as the inventory changes.
     /// </summary>
+    [RequireComponent(typeof(Canvas))]
     internal sealed class ObjectiveHud : MonoBehaviour
     {
         [SerializeField]
@@ -26,10 +27,32 @@ namespace Fungiiiii.UI
         private Func<string> objectiveKey;
         private RecipeTracker tracker;
         private PlayerInventory inventory;
+        private Canvas canvas;
 
         public string ObjectiveKey => objective.EntryKey;
 
         public IReadOnlyList<TrackedRecipeView> TrackedViews => views;
+
+        /// <summary>Whether it is drawn. Hidden while the inventory is open, it keeps following the game.</summary>
+        public bool IsVisible => Canvas.enabled;
+
+        private Canvas Canvas
+        {
+            get
+            {
+                if (canvas == null)
+                {
+                    canvas = GetComponent<Canvas>();
+                }
+
+                return canvas;
+            }
+        }
+
+        public void SetVisible(bool visible)
+        {
+            Canvas.enabled = visible;
+        }
 
         /// <param name="currentObjectiveKey">The objective's text now, a key of the UI string table.</param>
         public void Bind(Func<string> currentObjectiveKey, RecipeTracker recipeTracker, PlayerInventory playerInventory)

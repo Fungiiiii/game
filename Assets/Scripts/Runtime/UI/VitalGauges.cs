@@ -7,6 +7,7 @@ namespace Fungiiiii.UI
     /// The player's vitals as gauges, top left: health and stamina always, poison while
     /// the player is poisoned. A placeholder look until the HUD is designed.
     /// </summary>
+    [RequireComponent(typeof(Canvas))]
     public sealed class VitalGauges : MonoBehaviour
     {
         [SerializeField]
@@ -20,6 +21,7 @@ namespace Fungiiiii.UI
         private Gauge poison;
 
         private PlayerVitals model;
+        private Canvas canvas;
 
         public bool HealthGaugeVisible => health.IsVisible;
 
@@ -28,6 +30,27 @@ namespace Fungiiiii.UI
         public bool PoisonGaugeVisible => poison.IsVisible;
 
         public float PoisonPercentage => poison.Value * PoisonState.MaxIntensity;
+
+        /// <summary>Whether it is drawn. Hidden while the inventory is open, it keeps following the game.</summary>
+        public bool IsVisible => Canvas.enabled;
+
+        private Canvas Canvas
+        {
+            get
+            {
+                if (canvas == null)
+                {
+                    canvas = GetComponent<Canvas>();
+                }
+
+                return canvas;
+            }
+        }
+
+        public void SetVisible(bool visible)
+        {
+            Canvas.enabled = visible;
+        }
 
         /// <summary>Shows these vitals, and follows them as they change.</summary>
         public void Initialize(PlayerVitals vitals)

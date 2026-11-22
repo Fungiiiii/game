@@ -56,6 +56,10 @@ namespace Fungiiiii.UI
         [SerializeField]
         private CraftingPanel crafting;
 
+        [Tooltip("Its key hints, on one line under the panels: the game's ones, bottom right, would be under the crafting panel.")]
+        [SerializeField]
+        private ControlHintsPanel hintsPanel;
+
         private PlayerInventory inventory;
         private InventoryLayout layout = InventoryLayout.Standard;
         private InventoryHand hand;
@@ -179,6 +183,14 @@ namespace Fungiiiii.UI
 
         /// <summary>The crafting panel next to the inventory; null on a screen without one.</summary>
         internal CraftingPanel Crafting => crafting;
+
+        internal ControlHintsPanel HintsPanel => hintsPanel;
+
+        /// <summary>What is missing, or null when nothing is.</summary>
+        public string FindProblem()
+        {
+            return hintsPanel == null ? $"{name} has no key hints panel under its slots." : null;
+        }
 
         /// <summary>The top slot of the bag's right column: where the stick goes left from the recipes.</summary>
         internal Selectable RightmostSlot => SelectableOf(BagColumnCount - 1);

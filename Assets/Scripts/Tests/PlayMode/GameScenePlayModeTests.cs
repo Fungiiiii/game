@@ -531,6 +531,33 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator TheInventory_HidesTheVitalsAndTheObjective_AndKeepsItsHintsUnderItsPanels()
+        {
+            yield return LoadGame();
+            var game = Object.FindFirstObjectByType<GameBootstrap>();
+            var vitals = Object.FindFirstObjectByType<VitalGauges>();
+            Assert.That(vitals.IsVisible && game.ObjectiveHud.IsVisible, Is.True, "The vitals or the objective are hidden in play.");
+
+            game.SetInventoryOpen(true);
+            yield return null;
+            yield return null;
+            Assert.That(vitals.IsVisible, Is.False, "The vitals show under the inventory panel.");
+            Assert.That(game.ObjectiveHud.IsVisible, Is.False, "The objective shows under the crafting panel.");
+
+            // Every menu follows the screen's height: whatever the width, the hints stay under the panels.
+            var hints = new Vector3[4];
+            ((RectTransform)game.InventoryView.HintsPanel.transform).GetWorldCorners(hints);
+            var panel = new Vector3[4];
+            ((RectTransform)game.Crafting.transform).GetWorldCorners(panel);
+            Assert.That(hints[1].y, Is.LessThan(panel[0].y), "The hints are not under the panels.");
+            Assert.That(hints[0].y, Is.GreaterThanOrEqualTo(0f), "The hints are below the screen.");
+
+            game.SetInventoryOpen(false);
+            yield return null;
+            Assert.That(vitals.IsVisible && game.ObjectiveHud.IsVisible, Is.True, "The vitals or the objective did not come back.");
+        }
+
+        [UnityTest]
         public IEnumerator TheInventory_ShowsItsOwnHints_AndThePause_None()
         {
             yield return LoadGameWithNet();
@@ -538,9 +565,12 @@ namespace Fungiiiii.Tests.PlayMode
 
             game.SetInventoryOpen(true);
             yield return null;
+            // Under its panels, not bottom right where the crafting panel is.
+            var own = game.InventoryView.HintsPanel;
+            Assert.That(game.Hints.Shown, Is.Empty, "The game's hints show under the crafting panel.");
             // Gathering all is optional: with dropping, there are five, one too many.
-            Assert.That(HintLabels(game), Is.EqualTo(new[] { UiText.HintTakeOrPlace, UiText.HintHalfOrOne, UiText.HintDrop, UiText.HintClose }));
-            Assert.That(game.Hints.ShownGlyphs[2].Text, Is.EqualTo("Q"), "Dropping is not on Q.");
+            Assert.That(own.Shown.Select(hint => hint.LabelKey).ToArray(), Is.EqualTo(new[] { UiText.HintTakeOrPlace, UiText.HintHalfOrOne, UiText.HintDrop, UiText.HintClose }));
+            Assert.That(own.ShownGlyphs[2].Text, Is.EqualTo("Q"), "Dropping is not on Q.");
 
             game.Screens.Back();
             game.Screens.Back();
