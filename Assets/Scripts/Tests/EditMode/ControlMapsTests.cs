@@ -22,6 +22,20 @@ namespace Fungiiiii.Tests.EditMode
         }
 
         [Test]
+        public void Crouching_IsHeldOnCtrl_NotOnC()
+        {
+            var keyboard = InputSystem.AddDevice<Keyboard>();
+
+            Press(keyboard.leftCtrlKey);
+            Assert.That(maps.Player.Crouch.IsPressed(), Is.True, "Left Ctrl does not crouch.");
+            Release(keyboard.leftCtrlKey);
+
+            Press(keyboard.cKey);
+            Assert.That(maps.Player.Crouch.IsPressed(), Is.False, "C still crouches.");
+            Release(keyboard.cKey);
+        }
+
+        [Test]
         public void InGame_ThePlayerAndScreenMapsAreOn_NotTheUiMap()
         {
             Assert.That(maps.Player.enabled, Is.True);

@@ -394,7 +394,7 @@ namespace Fungiiiii.Controls
                 {
                     ""name"": """",
                     ""id"": ""7af0432c-237f-446b-af67-eb4413988853"",
-                    ""path"": ""<Keyboard>/c"",
+                    ""path"": ""<Keyboard>/ctrl"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""Keyboard&Mouse"",
