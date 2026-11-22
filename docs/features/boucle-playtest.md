@@ -9,7 +9,7 @@
 ## Docs précédents
 
 - [playtest-base](./playtest-base.md) — l'inventaire de départ est vide : le filet n'est plus donné, il se fabrique. Le trou de la Champimaison revient, planté par le joueur. R ne remet plus la partie à zéro.
-- [playtest-retours](./playtest-retours.md) — un panneau « Fabrication » s'ouvre à côté de l'inventaire. Les cailloux rejoignent les bâtons et les champignons autour du joueur. En haut à droite : l'objectif et les recettes traquées.
+- [playtest-retours](./playtest-retours.md) — un panneau « Fabrication » s'ouvre à côté de l'inventaire. Les cailloux rejoignent les bâtons et les champignons autour du joueur. En haut à droite : l'objectif et les recettes suivies.
 - [spongeus-fougere](./spongeus-fougere.md) — les Spongeus sauvages vivent dans la brume et vont boire aux fougères mouillées. L'aspect mouillé est partagé entre le compagnon et le Spongeus sauvage.
 - [12487v2nnw4-demo-boucle](./12487v2nnw4-demo-boucle.md) — la Champimaison se plante dans un trou de taupe avec la graine trouvée au pied de l'arbre géant ; ses paliers se paient en dépôt progressif (eau, spores, bois). Plus de champignons dans la clairière du spawn. Le filet n'est plus en main au départ. R ne remet plus la partie à zéro.
 
@@ -40,7 +40,7 @@
 
 **Champimaison**
 
-- [ ] Au-dessus de la Champimaison, un panneau en bois avec sa pointe vers elle : le titre (« Réveiller la graine », « Agrandir la Champimaison ») et le palier à droite (« 1/2 ») ; une ligne pointillée ; une ligne par ressource : icône dans un creux sombre, nom, « N dans le sac » tant qu'elle n'est pas complète, « déposé/requis » en corail quand le sac n'en a pas, en or quand il en a, en vert avec une coche une fois complète.
+- [ ] Au-dessus de la Champimaison, un panneau en bois avec sa pointe vers elle : le titre (« Réveiller la graine », « Améliorer la Champimaison ») et le palier à droite (« 1/2 ») ; une ligne pointillée ; une ligne par ressource : icône dans un creux sombre, nom, « N dans le sac » tant qu'elle n'est pas complète, « déposé/requis » en corail quand le sac n'en a pas, en or quand il en a, en vert avec une coche une fois complète.
 - [ ] Quand la Champimaison est visée, le pied du panneau montre ses touches, et aucune touche ne flotte au-dessus d'elle : E avec le triangle et « Récupérer le fil » ou « Entrer » pour l'appui court ; E avec son bord, « Maintenir » et « Déposer », « Réveiller » ou « Améliorer » pour l'appui long. Le bord se remplit pendant l'appui. Une touche qui ne ferait rien n'est pas montrée ; sans touche, le pied et sa ligne pointillée disparaissent.
 - [ ] Une fois le dernier palier atteint, le panneau ne garde que la touche « Entrer ».
 - [ ] E maintenu dépose ce que le joueur porte et qui manque encore, jamais plus. La Champimaison garde ce qui a été déposé. Le dernier dépôt déclenche le palier.
@@ -57,15 +57,15 @@
 - [ ] Tab ouvre l'inventaire et, à sa droite, le panneau « Fabrication ».
 - [ ] En haut du panneau, sur toute la largeur : toutes les recettes, même impossibles, avec « Possible » ou « Il manque ». Aucune n'est ouverte à l'ouverture.
 - [ ] Cliquer une recette ouvre ses détails en bas du panneau ; à la manette, la recette sélectionnée s'ouvre : icône, nom, description, ingrédients « possédé / requis ». Un ingrédient qui manque est en corail, avec sa provenance ; un ingrédient en quantité suffisante est en vert, avec une coche.
-- [ ] En bas du panneau : **E Fabriquer** (absent tant qu'il manque un ingrédient) et **R Traquer** / **Ne plus traquer**.
-- [ ] Fabriquer utilise la même touche que déplacer un objet : deuxième clic sur la recette ouverte, ou E ; **A** à la manette. Traquer : R ; **Y** à la manette. Sur une case de l'inventaire, A, X et Y gardent leur rôle.
+- [ ] En bas du panneau : **E Fabriquer** (absent tant qu'il manque un ingrédient) et **R Suivre** / **Ne plus suivre**.
+- [ ] Fabriquer utilise la même touche que déplacer un objet : deuxième clic sur la recette ouverte, ou E ; **A** à la manette. Suivre : R ; **Y** à la manette. Sur une case de l'inventaire, A, X et Y gardent leur rôle.
 - [ ] Fabriquer prend tous les ingrédients d'un coup. L'objet va d'abord dans la barre rapide et s'affiche dans le fil des objets ramassés. Si l'objet ne rentre pas, rien n'est pris.
 - [ ] Recettes : Lance-pierre = 2 Bois + 1 Caillou ; Filet = 3 Fils de mycélium + 2 Bois.
 
 **Haut à droite**
 
 - [ ] L'objectif en cours : « Découvre ce qui se passe sous le grand arbre », « Plante la graine », « Réveille la graine », « Fabrique un filet », « Améliore la Champimaison », « Entre dans la Champimaison ».
-- [ ] Sous l'objectif, les recettes traquées, avec leurs ingrédients mis à jour pendant le jeu. Une recette fabriquée n'est plus traquée.
+- [ ] Sous l'objectif, les recettes suivies, avec leurs ingrédients mis à jour pendant le jeu. Une recette fabriquée n'est plus suivie.
 
 **Spongeus sauvages**
 
@@ -90,7 +90,7 @@ Le canevas Claude Design « Panneaux en bois » (https://claude.ai/artifact/6QKk
 
 **Plus de remise à zéro**
 
-- [ ] R ne remet plus la partie à zéro : l'action de développement `ResetGame` est retirée. Recommencer une partie passe par Pause → Accueil → Jouer, qui recharge tout.
+- [ ] R ne remet plus la partie à zéro : l'action de développement `ResetGame` est retirée. Recommencer une partie passe par Pause → Menu principal → Jouer, qui recharge tout.
 
 ## Hors périmètre
 
@@ -149,8 +149,8 @@ Validées par Hugo le 22/11 :
 - **Panneau de coût au-dessus de la Champimaison**, sur le modèle de beaucoup de jeux : la liste des ressources, puis ses touches.
 - **Design system des panneaux en bois** (canevas Claude Design « Panneaux en bois ») : un cadre qui prend la taille de son contenu, des blocs empilés (en-tête, lignes de ressource, pied d'actions). Appui simple : triangle posé sur le bord haut de la touche. Appui long : bord collé à la touche qui se remplit depuis le coin haut gauche. Plus de liseré cyan sur les touches. Les menus, l'inventaire et les jauges suivaient déjà ce style.
 - **Dépôt progressif** : la Champimaison garde ce qui a été déposé. Coop prévue plus tard : plusieurs joueurs contribuent à la même progression.
-- **Panneau « Fabrication » à côté de l'inventaire** (maquette B), liste en haut, détails en bas, E Fabriquer, R Traquer ; à la manette A et Y. Fabriquer = la même touche que déplacer un objet.
-- **Objectif et recettes traquées en haut à droite**, à la manière de Palworld.
+- **Panneau « Fabrication » à côté de l'inventaire** (maquette B), liste en haut, détails en bas, E Fabriquer, R Suivre ; à la manette A et Y. Fabriquer = la même touche que déplacer un objet.
+- **Objectif et recettes suivies en haut à droite**, à la manière de Palworld.
 - **Cailloux** : un nouveau modèle, mêmes règles que les bâtons ; les petits cailloux du décor restent.
 - **Lance-pierre**, avec le coup de bâton comme repli si le temps manque.
 - **La Champoule est mise de côté** pour cette boucle.
@@ -158,11 +158,12 @@ Validées par Hugo le 22/11 :
 - **Placeholders** : trou de taupe en cubes de terre autour d'un petit trou ; caillou en cube.
 - **L'interface est faite pour du 16:9, en 1920×1080 ou 1280×720, sur PC** (Hugo, 22/11) : pas de console ni de tablette. Tous les canevas suivent la hauteur de l'écran (`Match` = 1) : en 16:9 rien ne change, sur un écran plus large rien n'est coupé en bas, il y a seulement plus d'espace sur les côtés.
 - **L'inventaire ouvert cache les jauges et l'objectif**, et ses aides passent sur une ligne, centrée sous ses panneaux (Hugo, 22/11). Ses deux panneaux prennent la largeur d'un écran 16:9 : les jauges, l'objectif et les aides en bas à droite passaient dessous.
-- **Les touches de la fabrication ne bougent pas** (Hugo, 22/11) : E Fabriquer toujours à gauche, grisé quand la recette ne peut pas être faite ou qu'aucune n'est ouverte ; R Traquer toujours à droite, grisé quand aucune recette n'est ouverte. Chaque touche est centrée dans sa moitié de la ligne, à la taille des aides du jeu.
+- **Relecture des textes en français** (Hugo, 22/11) : « Suivre / Suivie / Ne plus suivre » remplacent « Traquer » (calque de l'anglais *track*) ; « Menu principal » et « Quitter le jeu » en pause ; « Améliorer la Champimaison » partout, au lieu d'« Agrandir » dans le titre du panneau ; « dans l’inventaire » au lieu de « dans le sac », comme le reste du jeu ; « Champignon à spores », pour ne pas confondre la ressource avec les Spongeus ; « Reprendre » seul, puisque « Maintenir » est déjà affiché à côté ; espace insécable avant « ! ». Le tutoiement reste pour les objectifs et les consignes, l'infinitif pour les actions des touches.
+- **Les touches de la fabrication ne bougent pas** (Hugo, 22/11) : E Fabriquer toujours à gauche, grisé quand la recette ne peut pas être faite ou qu'aucune n'est ouverte ; R Suivre toujours à droite, grisé quand aucune recette n'est ouverte. Chaque touche est centrée dans sa moitié de la ligne, à la taille des aides du jeu.
 - **Quatre tailles de texte** (Hugo, 22/11) : 60 titre d'écran, 36 titre de bloc, 26 texte courant, 22 petit texte, en 1080p (40, 24, 17, 15 dans le canevas de 720 de l'inventaire). Rien en dessous. La règle est dans `CLAUDE.md` (*UI text sizes*) et `UiTextSizeTests` la vérifie. L'objectif en jeu et le titre du panneau de la Champimaison sont en texte courant, pas en titre de bloc : « Entre dans la Champimaison » passerait sur deux lignes.
 - **Une plaque sombre semi-transparente derrière l'objectif** (Hugo, 22/11), aux coins coupés comme les panneaux : lisible sur le feuillage clair sans peser comme un panneau en bois. Les aides en bas à droite restent sans fond.
 - **Le détail de la recette suit la liste**, sous une ligne pointillée, au lieu d'être collé en bas du panneau : plus de grand vide avec deux recettes. La provenance d'un ingrédient est en sable discret, seul le compteur manquant est en corail.
-- **Dans le panneau de la Champimaison, « 2 dans le sac » passe sous le nom** de la ressource : en petit texte, il ne tient plus à côté. Le panneau passe à 420 unités de large.
+- **Dans le panneau de la Champimaison, « 2 dans l’inventaire » passe sous le nom** de la ressource : en petit texte, il ne tient plus à côté. Le panneau passe à 420 unités de large.
 - **Le premier objectif dit où aller** (Hugo, 22/11) : « Découvre ce qui se passe sous le grand arbre ».
 - **Une lueur violet clair qui respire sur la graine** (Hugo, 22/11), pour attirer l'œil : une lumière ponctuelle (`PF_SeedGlow`, `LightPulse`), posée sur la graine de l'arbre géant et partie avec elle. C'est un effet visuel fait par script : Hugo l'a décidé malgré la Charte IA.
 - **Les prefabs d'interface restent dans `Assets/Prefabs/UI/`** (Hugo, 22/11), nommés d'après leur composant, comme Unity les range. `scripts/check-art-assets.sh` ne leur applique plus le dossier de domaine ni le préfixe `PF_`, qui visent les prefabs de modèles (ADR-0005). Ceux-là gardent la règle : `Player` et `PlaytestPlayer` deviennent `PF_Player` et `PF_PlaytestPlayer`, même GUID.
@@ -184,11 +185,11 @@ Architecture :
 - **Un Spongeus sauvage ne boit que sous les yeux du joueur** (`soaksWhenPlayerWithin`, 15 m, et `soaksWhenSeenWithinDegrees`, 40°, dans `Spongeus.asset` ; Hugo, 22/11, a demandé la condition du regard) : sans ça, il boit dans les premières secondes, bien avant l'arrivée du joueur, et celui-ci ne trouve que des Spongeus déjà mouillés. Au-delà de 3,5 m il reste calme : on peut le regarder boire. L'imbibition passe de 1,5 à 3 s pour qu'on ait le temps de voir le chapeau changer.
 - **Le zoom de visée est partagé** (`AimZoom`) : le filet ne le règle plus qu'au début et à la fin de sa visée. Avant, il le remettait à « pas de visée » à chaque image, même rangé, et le lance-pierre ne zoomait jamais. Le lance-pierre ne garde plus de verrou après un menu : les mains ne lui donnent pas les commandes sous un menu, il reprend la visée dès qu'elles reviennent (comme le filet).
 - **L'objectif est calculé à partir de l'état du jeu** (`ObjectiveRules` : graine, plantation, palier, filet), pas de l'ordre des événements : perdre la graine avant de la planter ramène au premier objectif.
-- **Les recettes traquées** sont un `RecipeTracker` en C# pur tenu par `GameBootstrap`, partagé par le panneau de fabrication et l'objectif.
+- **Les recettes suivies** sont un `RecipeTracker` en C# pur tenu par `GameBootstrap`, partagé par le panneau de fabrication et l'objectif.
 - **Le lance-pierre est un composant de la variante `PlaytestPlayer`**, comme le filet sur le joueur : seul le jeu en a besoin.
 - **Ce que lâche un champignon abattu** passe par un rappel donné à `CreaturePopulation` : la capture ne dépend pas des objets au sol.
 - **Le caillou ignore le collider des champignons** quand il teste le décor : un champignon est touché par sa distance au trajet.
-- **Les textes « 1/3 » sont deux nombres** : ils ne passent pas par la table (marqués `i18n-exempt`). « 2 dans le sac » est une entrée avec `{0}`.
+- **Les textes « 1/3 » sont deux nombres** : ils ne passent pas par la table (marqués `i18n-exempt`). « 2 dans l’inventaire » est une entrée avec `{0}`.
 - **« +2 Bâton », en bas à gauche, est l'entrée `pickup.line`** (`+{0} {1}`) : chaque langue place le nombre et le nom à sa façon. Sans nom, seul « +2 » s'affiche.
 - **Une fabrication dont le résultat ne rentre pas ne bouge rien** : `Crafter` l'essaie d'abord sur une copie de l'inventaire (`PlayerInventory.Copy`). Avant, il rendait les ingrédients après coup, et ils pouvaient changer de case.
 - **Prefabs, câblage de `Game.unity` et données créés par un script d'Editor à usage unique** (CLAUDE.md, « Scenes, prefabs and data ») : la branche a été écrite sans Editor. Le script est lancé une fois, son résultat relu et commité, puis il est supprimé.
@@ -216,12 +217,12 @@ Corrigé à ce moment-là, sans changer ce que les tests exigent :
 | `PlantingRulesTests` | EditMode | Texte ou touche selon la graine | ✅ |
 | `CrafterTests` | EditMode | Tout ou rien ; ingrédients rendus si le résultat ne rentre pas, sans qu'aucune case ne bouge ; barre rapide d'abord, affiché comme ramassé | ✅ |
 | `ItemNamesPlayModeTests.WhatIsCollected_ShowsBottomLeft_NotAboveTheQuickBar` | PlayMode | En bas à gauche ; « +1 » suivi du nom, tiré de l'entrée `pickup.line` | ✅ |
-| `RecipeTrackerTests` | EditMode | Traquer, ne plus traquer, ordre, retirée après fabrication | ✅ |
+| `RecipeTrackerTests` | EditMode | Suivre, ne plus suivre, ordre, retirée après fabrication | ✅ |
 | `ObjectiveRulesTests` | EditMode | Ordre des objectifs ; un texte par objectif | ✅ |
 | `WildSoakTests` | EditMode | Source la plus proche ; sources sèches ou d'un autre objet ignorées ; imbibition ; source qui sèche en route ; interruption | ✅ |
 | `CreatureHealthTests` | EditMode | Chute à zéro, une seule fois | ✅ |
 | `ChampimaisonPlayModeTests` | PlayMode | Graine à l'arbre géant, avec sa lueur violette ; plantation (sac, main) ; panneau et dépôt ; fil ; entrée et fin de démo | ✅ |
-| `CraftingPanelPlayModeTests` | PlayMode | Ouverture sans recette ouverte, E et R grisés ; clic puis deuxième clic ; ingrédient manquant et provenance, E grisé à sa place ; recette traquée en haut à droite jusqu'à sa fabrication | ✅ |
+| `CraftingPanelPlayModeTests` | PlayMode | Ouverture sans recette ouverte, E et R grisés ; clic puis deuxième clic ; ingrédient manquant et provenance, E grisé à sa place ; recette suivie en haut à droite jusqu'à sa fabrication | ✅ |
 | `GameScenePlayModeTests.TheInventory_HidesTheVitalsAndTheObjective_AndKeepsItsHintsUnderItsPanels` | PlayMode | Jauges et objectif cachés pendant l'inventaire, revenus à sa fermeture ; ses aides sous ses panneaux | ✅ |
 | `UiTextSizeTests` | EditMode | Chaque texte des prefabs d'interface a l'une des quatre tailles | ✅ |
 | `SlingshotPlayModeTests` | PlayMode | Champignons dans la brume ; un Spongeus boit à une fougère pleine ; un caillou par tir, seulement en main ; eau lâchée seulement par un Spongeus mouillé | ✅ |
@@ -246,16 +247,16 @@ Corrigé à ce moment-là, sans changer ce que les tests exigent :
 | 5 | Cueillir 3 champignons, viser la Champimaison, maintenir E | Aucune touche ne flotte ; au pied du panneau, E avec son bord, « Maintenir Déposer ». Le bord se remplit depuis le coin haut gauche. Spores 3/3 en vert avec sa coche, Eau 0/1 reste, et le pied disparaît | ⬜ |
 | 6 | Ramasser des bâtons et des cailloux, Tab, en 1920×1080 puis en 1280×720 | Panneau « Fabrication » à droite, aucune recette ouverte, E et R grisés. Ni jauges ni objectif ; les aides sur une ligne sous les panneaux, rien ne se recouvre | ⬜ |
 | 7 | Cliquer « Filet », R | Détails en bas, « Fil de mycélium 0/3 » en rouge avec sa provenance. Le filet apparaît en haut à droite | ⬜ |
-| 8 | Cliquer deux fois « Lance-pierre » | Lance-pierre dans la barre rapide, « +1 Lance-pierre », bâtons et caillou retirés. Compteurs du filet traqué à jour | ⬜ |
+| 8 | Cliquer deux fois « Lance-pierre » | Lance-pierre dans la barre rapide, « +1 Lance-pierre », bâtons et caillou retirés. Compteurs du filet suivi à jour | ⬜ |
 | 9 | Depuis l'arbre géant, entrer dans la brume et s'approcher de la première fougère à eau, en s'arrêtant à 5–10 m dos à elle, puis se retourner | Elle est pleine, un Spongeus à côté. Dos tourné, rien. Face à lui, il va y boire, son chapeau fonce peu à peu, la fougère sèche. Visée de près, la fougère affiche « Il faut un Spongeus » en entier sur son panneau | ⬜ |
 | 10 | Tirer sur un Spongeus sec jusqu'à l'abattre | Il disparaît, rien au sol | ⬜ |
 | 11 | Tirer sur un Spongeus mouillé jusqu'à l'abattre | 1 Eau au sol, E la ramasse | ⬜ |
 | 12 | Maintenir E sur la Champimaison | Texte « Réveiller ». Le réseau pousse, objectif « Fabrique un filet » | ⬜ |
 | 13 | Attendre, appui court sur E | Fil de mycélium récupéré | ⬜ |
 | 14 | Fabriquer le filet, capturer un Spongeus, le presser | Eau dans l'inventaire | ⬜ |
-| 15 | Payer le palier 2, appui court sur E | Intérieur, puis « Fin de la démo », planche Accueil | ⬜ |
-| 16 | Tout le parcours à la manette | Mêmes résultats ; A fabrique, Y traque | ⬜ |
-| 17 | R en jeu | Rien ne se passe. Échap, Accueil, Jouer : nouvelle partie, mains vides, graine au pied de l'arbre | ⬜ |
+| 15 | Payer le palier 2, appui court sur E | Intérieur, puis « Fin de la démo », planche Menu principal | ⬜ |
+| 16 | Tout le parcours à la manette | Mêmes résultats ; A fabrique, Y suit | ⬜ |
+| 17 | R en jeu | Rien ne se passe. Échap, Menu principal, Jouer : nouvelle partie, mains vides, graine au pied de l'arbre | ⬜ |
 | 18 | Exécutable Windows, partie complète par quelqu'un qui ne connaît pas le jeu | Fin atteinte en 20 min au plus | ⬜ |
 | 19 | Viser un bâton, puis un Spongeus vide sorti, puis un Spongeus plein | Bâton : triangle, pas de bord. Spongeus vide : bord vide, pas de triangle. Plein : les deux. Maintenir E : le bord se remplit | ⬜ |
 | 20 | Comparer les touches en jeu au canevas « Panneaux en bois » | Bois clair sans liseré, triangle à cheval sur le bord haut, bord collé à la touche ; touches des aides en bas de l'écran de la même couleur | ⬜ |
