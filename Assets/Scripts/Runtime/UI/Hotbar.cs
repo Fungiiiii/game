@@ -55,6 +55,9 @@ namespace Fungiiiii.UI
 
         public bool IsVisible => slots.gameObject.activeSelf;
 
+        /// <summary>The row of slots, laid out on the screen.</summary>
+        public RectTransform Slots => slots;
+
         /// <summary>The name of the item in hand, above the planks.</summary>
         public HeldItemName HeldItemName => heldItemName;
 

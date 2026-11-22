@@ -119,19 +119,21 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator WhatIsCollected_ShowsBottomLeft_NotAboveTheQuickBar()
+        public IEnumerator WhatIsCollected_ShowsLeftOfTheQuickBar_NotAboveIt()
         {
             yield return LoadGame();
             game.Inventory.Collect(Spongeus, 1);
             yield return null;
+            Canvas.ForceUpdateCanvases();
 
             Assert.That(game.Pickups.Lines.Count, Is.EqualTo(1));
-            var line = (RectTransform)game.Pickups.Lines[0].transform;
-            var corners = new Vector3[4];
-            line.GetWorldCorners(corners);
+            var line = WorldCorners((RectTransform)game.Pickups.Lines[0].transform);
+            var bar = WorldCorners(game.Hotbar.Slots);
 
-            Assert.That(corners[0].x, Is.LessThan(Screen.width * 0.25f), "The pickup line is not on the left.");
-            Assert.That(corners[0].y, Is.LessThan(Screen.height * 0.25f), "The pickup line is not at the bottom.");
+            // Beside the bar, not above it where the held item's name shows.
+            Assert.That(line[2].x, Is.LessThan(bar[0].x), "The pickup line is not left of the quick bar.");
+            Assert.That(bar[0].x - line[2].x, Is.LessThan(Screen.height * 0.05f), "The pickup line is far from the quick bar.");
+            Assert.That(line[0].y, Is.EqualTo(bar[0].y).Within(Screen.height * 0.01f), "The pickup line does not sit on the quick bar's bottom.");
 
             // Worded by the pickup.line entry, with the amount and the item's name from the table.
             var pickup = game.Pickups.Lines[0];
@@ -139,6 +141,13 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(pickup.Text, Does.StartWith("+1 "), "The line has no name after its amount.");
             Assert.That(pickup.Text.Length, Is.GreaterThan(3));
             Assert.That(pickup.Text, Does.Not.Contain("No translation").And.Not.Contain("{"), "The pickup.line entry is missing or not filled.");
+        }
+
+        private static Vector3[] WorldCorners(RectTransform rect)
+        {
+            var corners = new Vector3[4];
+            rect.GetWorldCorners(corners);
+            return corners;
         }
     }
 }
