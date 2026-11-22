@@ -111,7 +111,7 @@ namespace Fungiiiii.UI
             {
                 var glyph = hint.GlyphFor(scheme, playStation);
                 shownGlyphs.Add(glyph);
-                Instantiate(rowPrefab, list).Show(PrefabFor(glyph), glyph, hint.IsTwiceWith(scheme), hint.LabelKey);
+                Instantiate(rowPrefab, list).Show(PrefabFor(glyph), glyph, hint.IsTwiceWith(scheme), hint.LabelKey, hint.IsAvailable);
             }
         }
 

@@ -32,6 +32,10 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(panel.OpenedRecipe, Is.Null);
             Assert.That(panel.AreDetailsShown, Is.False);
             Assert.That(panel.Rows.All(row => !row.CanBeCrafted), Is.True, "A recipe can be made from an empty inventory.");
+
+            // Both keys always there, craft on the left, track on the right, greyed while nothing is open.
+            Assert.That(panel.Hints.Select(hint => hint.LabelKey), Is.EqualTo(new[] { UiText.HintCraft, UiText.HintTrack }));
+            Assert.That(panel.Hints.All(hint => !hint.IsAvailable), Is.True, "A key is lit while no recipe is open.");
         }
 
         [UnityTest]
@@ -50,7 +54,8 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(panel.OpenedRecipe, Is.SameAs(panel.Rows[slingshot].Recipe));
             Assert.That(panel.AreDetailsShown, Is.True);
             Assert.That(panel.Rows[slingshot].CanBeCrafted, Is.True);
-            Assert.That(panel.Hints.Any(hint => hint.LabelKey == UiText.HintCraft), Is.True, "No key to craft.");
+            Assert.That(panel.Hints[0].LabelKey, Is.EqualTo(UiText.HintCraft), "The craft key is not first.");
+            Assert.That(panel.Hints[0].IsAvailable, Is.True, "The craft key is greyed for a recipe that can be made.");
 
             panel.Click(slingshot);
             yield return null;
@@ -63,7 +68,7 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator AMissingIngredient_ShowsWhereItComesFrom_AndTheCraftKeyIsGone()
+        public IEnumerator AMissingIngredient_ShowsWhereItComesFrom_AndTheCraftKeyIsGreyed()
         {
             yield return Load();
             var game = Bootstrap;
@@ -79,8 +84,10 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(thread.IsMissing, Is.True);
             Assert.That(thread.ShowsSource, Is.True, "Where the thread comes from is not shown.");
             Assert.That(thread.CountText, Is.EqualTo("0/3"));
-            Assert.That(panel.Hints.Any(hint => hint.LabelKey == UiText.HintCraft), Is.False, "The craft key shows for a recipe that cannot be made.");
-            Assert.That(panel.Hints.Any(hint => hint.LabelKey == UiText.HintTrack), Is.True);
+            Assert.That(panel.Hints[0].LabelKey, Is.EqualTo(UiText.HintCraft), "The craft key left its place.");
+            Assert.That(panel.Hints[0].IsAvailable, Is.False, "The craft key is lit for a recipe that cannot be made.");
+            Assert.That(panel.Hints[1].LabelKey, Is.EqualTo(UiText.HintTrack));
+            Assert.That(panel.Hints[1].IsAvailable, Is.True);
         }
 
         [UnityTest]

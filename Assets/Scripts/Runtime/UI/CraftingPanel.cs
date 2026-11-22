@@ -13,7 +13,9 @@ namespace Fungiiiii.UI
     /// <summary>
     /// The crafting panel, next to the inventory (mockup B): every recipe at the top, even
     /// those that cannot be made yet; the open recipe's details at the bottom, with what is
-    /// missing in red and where it comes from; under them, the keys to craft and to track.
+    /// missing in red and where it comes from; under them, the keys to craft and to track,
+    /// always both and always in that order: craft on the left, greyed while it cannot be
+    /// done, track on the right, greyed while no recipe is open.
     /// Crafting uses the control that moves items: a second click on the open recipe, A on
     /// a gamepad, or the craft key. It opens and closes with the inventory, nothing open.
     /// </summary>
@@ -272,21 +274,21 @@ namespace Fungiiiii.UI
             }
         }
 
-        /// <summary>Craft while the open recipe can be made, track or untrack while one is open.</summary>
+        /// <summary>
+        /// Craft, then track or untrack: both always shown, in their place, greyed while they
+        /// cannot be done, so that the keys never move under the player's eyes.
+        /// </summary>
         private void RefreshHints()
         {
             hints.Clear();
-            if (open != None)
-            {
-                var recipe = rows[open].Recipe;
-                if (rows[open].CanBeCrafted)
-                {
-                    hints.Add(new ControlHint(UiText.HintCraft, HintInput.Of(craftAction), HintInput.At("<Gamepad>/buttonSouth")));
-                }
-
-                hints.Add(new ControlHint(tracker.IsTracked(recipe) ? UiText.HintUntrack : UiText.HintTrack, HintInput.Of(trackAction)));
-            }
-
+            var isOpen = open != None;
+            var isTracked = isOpen && tracker.IsTracked(rows[open].Recipe);
+            hints.Add(new ControlHint(
+                UiText.HintCraft,
+                HintInput.Of(craftAction),
+                HintInput.At("<Gamepad>/buttonSouth"),
+                available: isOpen && rows[open].CanBeCrafted));
+            hints.Add(new ControlHint(isTracked ? UiText.HintUntrack : UiText.HintTrack, HintInput.Of(trackAction), available: isOpen));
             HintsChanged?.Invoke();
         }
 

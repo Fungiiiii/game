@@ -32,6 +32,16 @@ namespace Fungiiiii.Tests.EditMode
         }
 
         [Test]
+        public void AHint_IsAvailableUnlessSaidOtherwise()
+        {
+            var interact = HintInput.Of(controls.Player.Interact);
+
+            Assert.That(new ControlHint("hint.gather", interact).IsAvailable, Is.True);
+            Assert.That(new ControlHint("hint.gather", interact, available: false).IsAvailable, Is.False);
+            Assert.That(new ControlHint("hint.gather", interact, interact, available: false).IsAvailable, Is.False);
+        }
+
+        [Test]
         public void ARemappedAction_ShowsItsNewKey()
         {
             controls.Player.Interact.ApplyBindingOverride(0, "<Keyboard>/f");

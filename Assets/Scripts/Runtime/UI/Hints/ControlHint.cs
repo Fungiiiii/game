@@ -67,13 +67,14 @@ namespace Fungiiiii.UI
         public const string GamepadScheme = "Gamepad";
 
         /// <param name="optional">Left out first when there are too many hints to show.</param>
-        public ControlHint(string labelKey, HintInput input, bool optional = false)
-            : this(labelKey, input, input, twiceWithMouse: false, optional)
+        /// <param name="available">False: shown greyed, in its place, for an action that cannot be done now.</param>
+        public ControlHint(string labelKey, HintInput input, bool optional = false, bool available = true)
+            : this(labelKey, input, input, twiceWithMouse: false, optional, available)
         {
         }
 
         /// <param name="twiceWithMouse">Pressed twice with the mouse: a double click.</param>
-        public ControlHint(string labelKey, HintInput keyboardMouse, HintInput gamepad, bool twiceWithMouse = false, bool optional = false)
+        public ControlHint(string labelKey, HintInput keyboardMouse, HintInput gamepad, bool twiceWithMouse = false, bool optional = false, bool available = true)
         {
             if (string.IsNullOrEmpty(labelKey))
             {
@@ -85,6 +86,7 @@ namespace Fungiiiii.UI
             Gamepad = gamepad;
             TwiceWithMouse = twiceWithMouse;
             IsOptional = optional;
+            IsAvailable = available;
         }
 
         public string LabelKey { get; }
@@ -96,6 +98,9 @@ namespace Fungiiiii.UI
         public bool TwiceWithMouse { get; }
 
         public bool IsOptional { get; }
+
+        /// <summary>False when the action cannot be done now: the hint stays, greyed.</summary>
+        public bool IsAvailable { get; }
 
         /// <summary>How the controls are drawn with <paramref name="scheme"/>, a PlayStation pad or not.</summary>
         public Glyph GlyphFor(InputControlScheme scheme, bool playStation)
