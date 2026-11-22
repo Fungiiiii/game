@@ -19,6 +19,7 @@ namespace Fungiiiii.Capture
         private Transform player;
         private float reach;
         private float height = 0.5f;
+        private Action squeezed;
 
         /// <summary>Whether a press would squeeze it now.</summary>
         public bool CanBeSqueezed =>
@@ -40,13 +41,15 @@ namespace Fungiiiii.Capture
         /// <param name="item">What a squeeze gives: what it soaked up.</param>
         /// <param name="squeezer">The player, whom it runs from once squeezed.</param>
         /// <param name="squeezeReach">Furthest ground distance a squeeze is done from, in metres.</param>
-        public void Initialize(WildMushroom creature, ItemDefinition item, Transform squeezer, float squeezeReach)
+        /// <param name="onSqueezed">Told after each squeeze.</param>
+        public void Initialize(WildMushroom creature, ItemDefinition item, Transform squeezer, float squeezeReach, Action onSqueezed)
         {
+            squeezed = onSqueezed;
             mushroom = creature != null ? creature : throw new ArgumentNullException(nameof(creature));
             gives = item != null ? item : throw new ArgumentNullException(nameof(item));
             player = squeezer != null ? squeezer : throw new ArgumentNullException(nameof(squeezer));
             reach = squeezeReach;
-            height = HeightOf(creature);
+            height = ModelHeight.Of(creature.transform);
         }
 
         public void SetTargeted(bool targeted)
@@ -61,26 +64,8 @@ namespace Fungiiiii.Capture
             }
 
             mushroom.Squeeze(player.position);
+            squeezed?.Invoke();
             return true;
-        }
-
-        private static float HeightOf(WildMushroom creature)
-        {
-            if (creature.Model == null)
-            {
-                return 0.5f;
-            }
-
-            var top = float.MinValue;
-            foreach (var renderer in creature.Model.GetComponentsInChildren<Renderer>())
-            {
-                if (!(renderer is ParticleSystemRenderer))
-                {
-                    top = Mathf.Max(top, renderer.bounds.max.y);
-                }
-            }
-
-            return top > float.MinValue ? Mathf.Max(0.1f, top - creature.transform.position.y) : 0.5f;
         }
     }
 }

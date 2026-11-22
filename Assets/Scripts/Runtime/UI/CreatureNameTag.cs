@@ -201,22 +201,7 @@ namespace Fungiiiii.UI
                 return height;
             }
 
-            height = 0.5f;
-            var top = float.MinValue;
-            foreach (var renderer in creature.GetComponentsInChildren<Renderer>())
-            {
-                // What drips from it is not its body.
-                if (!(renderer is ParticleSystemRenderer))
-                {
-                    top = Mathf.Max(top, renderer.bounds.max.y);
-                }
-            }
-
-            if (top > float.MinValue)
-            {
-                height = Mathf.Max(0.1f, top - creature.position.y);
-            }
-
+            height = ModelHeight.Of(creature);
             heights[creature] = height;
             return height;
         }
