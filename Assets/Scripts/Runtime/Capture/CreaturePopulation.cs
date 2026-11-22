@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Fungiiiii.Combat;
+using Fungiiiii.Companions;
 using Fungiiiii.Inventory;
 using UnityEngine;
 
@@ -30,6 +32,8 @@ namespace Fungiiiii.Capture
 
         private readonly List<WildMushroom> mushrooms = new List<WildMushroom>();
         private readonly Dictionary<WildMushroom, CreatureDefinition> species = new Dictionary<WildMushroom, CreatureDefinition>();
+        private IReadOnlyList<IAbsorbable> sources;
+        private Action<ItemDefinition, Vector3> loot;
 
         public IReadOnlyList<WildMushroom> Mushrooms => mushrooms;
 
@@ -58,14 +62,44 @@ namespace Fungiiiii.Capture
 
         /// <param name="threat">What the mushrooms watch and run from: the player.</param>
         /// <param name="groundHeight">Height of the ground under a point.</param>
-        public void Populate(Transform threat, Func<Vector3, float> groundHeight, System.Random random)
+        /// <param name="absorbable">What a creature that soaks something up may soak up: the water ferns.</param>
+        /// <param name="dropLoot">Puts on the ground, at a point, what a felled creature lets go of.</param>
+        public void Populate(
+            Transform threat,
+            Func<Vector3, float> groundHeight,
+            System.Random random,
+            IReadOnlyList<IAbsorbable> absorbable,
+            Action<ItemDefinition, Vector3> dropLoot)
         {
+            sources = absorbable ?? throw new ArgumentNullException(nameof(absorbable));
+            loot = dropLoot ?? throw new ArgumentNullException(nameof(dropLoot));
             foreach (var spawn in spawns)
             {
                 foreach (var home in spawn.homes)
                 {
                     SpawnOne(spawn.creature, home, threat, groundHeight, random);
                 }
+            }
+        }
+
+        private void OnDestroy()
+        {
+            foreach (var mushroom in mushrooms)
+            {
+                if (mushroom != null)
+                {
+                    mushroom.Felled -= OnFelled;
+                }
+            }
+        }
+
+        /// <summary>A felled creature lets go of its water if it drank: a dry one leaves nothing.</summary>
+        private void OnFelled(WildMushroom mushroom)
+        {
+            var drop = species[mushroom].WetDrop;
+            if (mushroom.IsWet && drop != null)
+            {
+                loot(drop, mushroom.transform.position);
             }
         }
 
@@ -86,6 +120,22 @@ namespace Fungiiiii.Capture
                 creature.WanderSpeed,
                 creature.WanderPauseSeconds,
                 new System.Random(random.Next())));
+
+            mushroom.EnableHealth(new CreatureHealth(creature.MaxHealth));
+            mushroom.Felled += OnFelled;
+            if (creature.SoaksUp != null)
+            {
+                var look = new WetLook(
+                    mushroom.Model.GetComponentsInChildren<Renderer>(),
+                    creature.WetPartMaterial,
+                    creature.WetTint,
+                    creature.WetSmoothness);
+                mushroom.EnableSoak(
+                    new WildSoak(creature.SoakReach, creature.SoakSeconds, creature.SoakArrivalDistance, creature.SoaksUp),
+                    sources,
+                    creature.WanderSpeed,
+                    look);
+            }
 
             mushrooms.Add(mushroom);
             species.Add(mushroom, creature);

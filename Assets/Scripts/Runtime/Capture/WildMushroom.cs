@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using Fungiiiii.Combat;
+using Fungiiiii.Companions;
 using Fungiiiii.Runtime.World;
 using UnityEngine;
 
@@ -15,8 +18,9 @@ namespace Fungiiiii.Capture
     /// thrown from beyond the calm distance would make the mushroom flee for one frame only.
     ///
     /// In a level: <see cref="InitializeWithModel"/> shows the species' model, <see cref="EnableWander"/> makes it
-    /// stroll around its spawn while unaware, and <see cref="FollowGround"/> keeps it on
-    /// uneven ground.
+    /// stroll around its spawn while unaware, <see cref="FollowGround"/> keeps it on
+    /// uneven ground, <see cref="EnableSoak"/> sends it to drink at the water ferns while
+    /// calm (<see cref="WildSoak"/>), and <see cref="EnableHealth"/> lets the slingshot fell it.
     /// </summary>
     internal sealed class WildMushroom : MonoBehaviour
     {
@@ -53,6 +57,15 @@ namespace Fungiiiii.Capture
         private Vector3? threatPoint;
         private bool isHeld;
         private bool isCaught;
+        private bool isFelled;
+        private WildSoak soak;
+        private IReadOnlyList<IAbsorbable> soakSources;
+        private float soakSpeed;
+        private WetLook wetLook;
+        private CreatureHealth health;
+
+        /// <summary>Raised once, when the slingshot fells it.</summary>
+        public event Action<WildMushroom> Felled;
 
         public NetTargetProfile Profile { get; private set; }
 
@@ -62,7 +75,18 @@ namespace Fungiiiii.Capture
         public MushroomCaptureState State => stateMachine.CurrentState;
 
         /// <summary>True while the net may target this mushroom: present and not captured.</summary>
-        public bool IsAvailable => !isCaught && stateMachine.CurrentState != MushroomCaptureState.Captured;
+        public bool IsAvailable => !isCaught && !isFelled && stateMachine.CurrentState != MushroomCaptureState.Captured;
+
+        /// <summary>It drank at a water fern: felled, it lets go of its water.</summary>
+        public bool IsWet => soak != null && soak.IsWet;
+
+        public bool IsFelled => isFelled;
+
+        /// <summary>What it soaks up, and whether it is busy doing so; null when it does not.</summary>
+        public WildSoak Soak => soak;
+
+        /// <summary>Null when the slingshot cannot hit it.</summary>
+        public CreatureHealth Health => health;
 
         /// <summary>True if the mushroom has not noticed the player.</summary>
         public bool IsUnaware => stateMachine.CurrentState == MushroomCaptureState.Idle;
@@ -112,6 +136,47 @@ namespace Fungiiiii.Capture
         public void EnableWander(MushroomWander stroll)
         {
             wander = stroll;
+        }
+
+        /// <param name="sources">What it may soak up.</param>
+        /// <param name="speed">How fast it walks to a source, in metres per second.</param>
+        /// <param name="look">The part of its model that shows it wet; null when it shows nothing.</param>
+        public void EnableSoak(WildSoak soaking, IReadOnlyList<IAbsorbable> sources, float speed, WetLook look)
+        {
+            soak = soaking ?? throw new ArgumentNullException(nameof(soaking));
+            soakSources = sources ?? throw new ArgumentNullException(nameof(sources));
+            soakSpeed = speed;
+            wetLook = look;
+            wetLook?.Show(0f);
+        }
+
+        public void EnableHealth(CreatureHealth creatureHealth)
+        {
+            health = creatureHealth ?? throw new ArgumentNullException(nameof(creatureHealth));
+        }
+
+        /// <summary>
+        /// A hit, from the slingshot: it runs from where the shot came from, and falls once
+        /// its health runs out.
+        /// </summary>
+        /// <returns>False when it cannot be hit: no health, caught, or already felled.</returns>
+        public bool Hit(float damage, Vector3 from)
+        {
+            if (health == null || !IsAvailable)
+            {
+                return false;
+            }
+
+            Scare(from);
+            if (health.Damage(damage))
+            {
+                isFelled = true;
+                SetCollidersEnabled(false);
+                gameObject.SetActive(false);
+                Felled?.Invoke(this);
+            }
+
+            return true;
         }
 
         /// <summary>Keeps the mushroom on the ground: <paramref name="heightAt"/> gives the ground height under a point.</summary>
@@ -199,6 +264,7 @@ namespace Fungiiiii.Capture
         {
             isHeld = false;
             isCaught = false;
+            isFelled = false;
             threatPoint = null;
             transform.position = spawnPosition;
             transform.rotation = spawnRotation;
@@ -222,6 +288,7 @@ namespace Fungiiiii.Capture
 
             if (stateMachine.CurrentState == MushroomCaptureState.Flee)
             {
+                soak?.Interrupt();
                 FleeFrom(threat);
             }
             else if (stateMachine.CurrentState == MushroomCaptureState.Idle)
@@ -229,10 +296,20 @@ namespace Fungiiiii.Capture
                 // Calmed down: the net it fled from is forgotten.
                 threatPoint = null;
 
-                if (wander != null)
+                var soakStep = soak?.Step(transform.position, soakSources, soakSpeed, Time.deltaTime);
+                if (soakStep.HasValue)
+                {
+                    MoveTo(soakStep.Value);
+                }
+                else if (wander != null)
                 {
                     MoveTo(wander.Step(transform.position, Time.deltaTime));
                 }
+            }
+
+            if (soak != null)
+            {
+                wetLook?.Show(soak.Wetness);
             }
         }
 

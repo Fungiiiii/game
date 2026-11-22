@@ -16,6 +16,9 @@ namespace Fungiiiii.Editor.Playtest
     {
         internal const string GameScenePath = "Assets/Scenes/Game/Game.unity";
 
+        /// <summary>Inside the Champimaison: the end of the demo.</summary>
+        internal const string InteriorScenePath = "Assets/Scenes/Game/ChampimaisonInterior.unity";
+
         private const string ForestScenePath = "Assets/Scenes/Biomes/MysticForest.unity";
         private const string PlayerPath = "Builds/Playtest/Fungiiiii.exe";
         private const string GraphicsSettingsPath = "ProjectSettings/GraphicsSettings.asset";
@@ -33,9 +36,10 @@ namespace Fungiiiii.Editor.Playtest
             MainMenuSceneBuilder.ScenePath,
             GameScenePath,
             ForestScenePath,
+            InteriorScenePath,
         };
 
-        /// <summary>The scenes of the build, in order. Menus load one another by path: all three must be listed.</summary>
+        /// <summary>The scenes of the build, in order. Menus and the game load one another by path: all must be listed.</summary>
         [MenuItem("Fungiiiii/Playtest/4. Set Build Scenes")]
         internal static void SetBuildScenes()
         {

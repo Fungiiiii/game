@@ -72,5 +72,14 @@ namespace Fungiiiii.UI
         public const string ObjectiveCraftNet = "objective.craft_net";
         public const string ObjectiveGrow = "objective.grow";
         public const string ObjectiveEnter = "objective.enter";
+
+        // The slingshot in hand.
+        public const string HintShoot = "hint.shoot";
+        public const string HintNoPebble = "hint.no_pebble";
+
+        // The end of the demo, inside the Champimaison.
+        public const string DemoEndTitle = "demo_end.title";
+        public const string DemoEndThanks = "demo_end.thanks";
+        public const string DemoEndHome = "demo_end.home";
     }
 }

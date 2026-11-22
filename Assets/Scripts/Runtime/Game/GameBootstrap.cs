@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Fungiiiii.Capture;
 using Fungiiiii.Champimaison;
+using Fungiiiii.Combat;
 using Fungiiiii.Companions;
 using Fungiiiii.Controls;
 using Fungiiiii.Crafting;
@@ -47,6 +48,9 @@ namespace Fungiiiii.Game
         /// <summary>The Player prefab's pivot is the centre of its 2 m capsule.</summary>
         private const float PlayerPivotAboveGround = 1.1f;
 
+        /// <summary>What a felled mushroom lets go of falls from this height, in metres.</summary>
+        private const float LootFallHeight = 0.6f;
+
         [Header("Player")]
         [Tooltip("The player, with its hands, interact control, net and stamina; used offline: no network session is started in this scene.")]
         [SerializeField]
@@ -65,6 +69,13 @@ namespace Fungiiiii.Game
 
         [SerializeField]
         private NetSettings netSettings;
+
+        [Tooltip("The item whose behaviour in hand is the slingshot.")]
+        [SerializeField]
+        private ItemDefinition slingshotItem;
+
+        [SerializeField]
+        private SlingshotSettings slingshotSettings;
 
         [Header("World")]
         [Tooltip("The sticks and spore mushrooms of the forest.")]
@@ -127,6 +138,10 @@ namespace Fungiiiii.Game
         [SerializeField]
         private Transform seedSpot;
 
+        [Tooltip("Inside the Champimaison: the end of the demo. Loaded by path, so it must be in the build settings.")]
+        [SerializeField]
+        private string interiorScenePath = "Assets/Scenes/Game/ChampimaisonInterior.unity";
+
         [Tooltip("Seed of every random draw of the game. 0 picks a different seed every run.")]
         [SerializeField]
         private int randomSeed;
@@ -160,6 +175,8 @@ namespace Fungiiiii.Game
         public InventoryScreen InventoryView => screens.Inventory;
 
         public NetThrower Thrower { get; private set; }
+
+        public Slingshot Slingshot { get; private set; }
 
         public IReadOnlyList<WildMushroom> Mushrooms => creatures.Mushrooms;
 
@@ -306,9 +323,11 @@ namespace Fungiiiii.Game
                 interactables,
                 new System.Random(random.Next()));
             droppedItems.Place(moleHoles.Seed, 1, seedSpot.position);
+            // The ferns first: the wild Spongeus go and drink at them.
+            refillingPlants.Populate(forest, sessionTerrain, outlines, interactables, new System.Random(random.Next()));
             SpawnMushrooms();
             SetUpThrower();
-            refillingPlants.Populate(forest, sessionTerrain, outlines, interactables, new System.Random(random.Next()));
+            SetUpSlingshot();
             SetUpHands();
             moleHoles.Populate(forest, GroundHeight, outlines, interactables, hotbar, Inventory, new System.Random(random.Next()));
             moleHoles.Planted += HandlePlanted;
@@ -327,18 +346,19 @@ namespace Fungiiiii.Game
         /// <summary>What is missing for the game to start, or null when nothing is.</summary>
         private string FindProblem()
         {
-            if (playerPrefab == null || netItem == null || staminaSettings == null || netSettings == null)
+            if (playerPrefab == null || netItem == null || staminaSettings == null || netSettings == null || slingshotItem == null || slingshotSettings == null)
             {
-                return "the player prefab, the net item, or the stamina or net settings are missing.";
+                return "the player prefab, the net or slingshot item, or the stamina, net or slingshot settings are missing.";
             }
 
             if (playerPrefab.GetComponent<PlayerHands>() == null
                 || playerPrefab.GetComponent<PlayerInteractor>() == null
                 || playerPrefab.GetComponent<NetThrower>() == null
                 || playerPrefab.GetComponent<NetTargetOutline>() == null
+                || playerPrefab.GetComponent<Slingshot>() == null
                 || playerPrefab.GetComponent<StaminaDriver>() == null)
             {
-                return "the player prefab lacks its hands, interact control, net, net target outline or stamina.";
+                return "the player prefab lacks its hands, interact control, net, net target outline, slingshot or stamina.";
             }
 
             if (screens == null || hotbar == null || keyPrompt == null || vitalGauges == null || pickupFeed == null || droppedItems == null || requirementPanel == null || objectiveHud == null)
@@ -481,6 +501,7 @@ namespace Fungiiiii.Game
 
             hands = player.GetComponent<PlayerHands>();
             hands.Register(netItem, Thrower);
+            hands.Register(slingshotItem, Slingshot);
             foreach (var (item, behaviour) in companions.HeldBehaviours)
             {
                 hands.Register(item, behaviour);
@@ -502,7 +523,12 @@ namespace Fungiiiii.Game
 
         private void SpawnMushrooms()
         {
-            creatures.Populate(player.transform, GroundHeight, new System.Random(random.Next()));
+            creatures.Populate(
+                player.transform,
+                GroundHeight,
+                new System.Random(random.Next()),
+                refillingPlants.Absorbable,
+                (item, point) => droppedItems.Place(item, 1, point, LootFallHeight));
         }
 
         private void SetUpThrower()
@@ -520,9 +546,45 @@ namespace Fungiiiii.Game
             targetOutline.Initialize(Thrower, creatures.Mushrooms, outlines);
         }
 
+        private void SetUpSlingshot()
+        {
+            Slingshot = player.GetComponent<Slingshot>();
+            Slingshot.Initialize(
+                slingshotSettings,
+                firstPersonCamera.Camera,
+                playerController,
+                creatures.Mushrooms,
+                Inventory,
+                gathering.Pebbles.Item);
+        }
+
         private void HandlePlanted(FungalHole champimaison)
         {
             requirementPanel.Bind(champimaison, Inventory, firstPersonCamera.Camera, controls);
+            champimaison.Entered += EnterChampimaison;
+        }
+
+        /// <summary>The last stage opens the Champimaison: entering it is the end of the demo, in its own scene.</summary>
+        private void EnterChampimaison()
+        {
+            if (Hole != null)
+            {
+                Hole.Entered -= EnterChampimaison;
+            }
+
+            StartCoroutine(LoadInterior());
+        }
+
+        private IEnumerator LoadInterior()
+        {
+#if UNITY_EDITOR
+            // Played from the Editor: the scene need not be in the build settings.
+            yield return EditorSceneManager.LoadSceneAsyncInPlayMode(
+                interiorScenePath,
+                new LoadSceneParameters(LoadSceneMode.Single));
+#else
+            yield return SceneManager.LoadSceneAsync(interiorScenePath, LoadSceneMode.Single);
+#endif
         }
 
         private void HandleCatchReturned(WildMushroom caught)

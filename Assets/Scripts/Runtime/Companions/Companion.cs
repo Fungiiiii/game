@@ -19,15 +19,11 @@ namespace Fungiiiii.Companions
     /// </summary>
     internal sealed class Companion : MonoBehaviour, IInteractable, IHoldInteractable
     {
-        private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
-        private static readonly int SmoothnessId = Shader.PropertyToID("_Smoothness");
-
         private const float AimHeight = 0.3f;
 
         /// <summary>The key to press floats this far above the top of the model.</summary>
         private const float PromptAboveTop = 0.25f;
 
-        private readonly List<(Renderer Renderer, int Slot)> fullParts = new List<(Renderer, int)>();
         private CompanionDefinition definition;
         private CompanionBrain brain;
         private Transform player;
@@ -36,9 +32,7 @@ namespace Fungiiiii.Companions
         private IReadOnlyList<IAbsorbable> sources;
         private ItemOutline outline;
         private Renderer[] renderers;
-        private MaterialPropertyBlock tintBlock;
-        private float shownFullness = -1f;
-        private float drySmoothness;
+        private WetLook wetLook;
         private Transform model;
         private float hopPhase;
 
@@ -51,7 +45,7 @@ namespace Fungiiiii.Companions
         public CompanionBrain Brain => brain;
 
         /// <summary>How dark its full part is drawn, from 0 (its colour) to 1 (full).</summary>
-        public float ShownFullness => Mathf.Max(0f, shownFullness);
+        public float ShownFullness => wetLook.Shown;
 
         public InteractionCandidate Candidate =>
             new InteractionCandidate(transform.position + Vector3.up * AimHeight, definition.Reach, true, ModelBounds());
@@ -94,9 +88,13 @@ namespace Fungiiiii.Companions
             sources = absorbable;
             outline = itemOutline;
             renderers = GetComponentsInChildren<Renderer>(true);
-            tintBlock = new MaterialPropertyBlock();
-            FindFullParts();
-            ShowFullness(0f);
+            wetLook = new WetLook(renderers, companion.FullPartMaterial, companion.FullTint, companion.FullSmoothness);
+            if (!wetLook.HasParts)
+            {
+                Debug.LogWarning($"No part of {name} uses {(companion.FullPartMaterial != null ? companion.FullPartMaterial.name : "its full part's material")}: it will not look full.", this);
+            }
+
+            wetLook.Show(0f);
         }
 
         private void Update()
@@ -188,52 +186,13 @@ namespace Fungiiiii.Companions
         private void UpdateFullness()
         {
             var target = brain.Fullness;
+            var shownFullness = wetLook.Shown;
             var shown = target >= shownFullness
                 ? target
                 : definition.DrySeconds > 0f
                     ? Mathf.Max(target, shownFullness - Time.deltaTime / definition.DrySeconds)
                     : target;
-            ShowFullness(shown);
-        }
-
-        private void ShowFullness(float fullness)
-        {
-            if (Mathf.Approximately(fullness, shownFullness))
-            {
-                return;
-            }
-
-            shownFullness = fullness;
-            tintBlock.SetColor(BaseColorId, Color.Lerp(Color.white, definition.FullTint, fullness));
-            tintBlock.SetFloat(SmoothnessId, Mathf.Lerp(drySmoothness, definition.FullSmoothness, fullness));
-            foreach (var (partRenderer, slot) in fullParts)
-            {
-                partRenderer.SetPropertyBlock(tintBlock, slot);
-            }
-        }
-
-        /// <summary>The material slots of the model drawn with the full part's material.</summary>
-        private void FindFullParts()
-        {
-            fullParts.Clear();
-            var material = definition.FullPartMaterial;
-            drySmoothness = material.HasProperty(SmoothnessId) ? material.GetFloat(SmoothnessId) : 0f;
-            foreach (var modelRenderer in renderers)
-            {
-                var materials = modelRenderer.sharedMaterials;
-                for (var slot = 0; slot < materials.Length; slot++)
-                {
-                    if (materials[slot] == definition.FullPartMaterial)
-                    {
-                        fullParts.Add((modelRenderer, slot));
-                    }
-                }
-            }
-
-            if (fullParts.Count == 0)
-            {
-                Debug.LogWarning($"No part of {name} uses {definition.FullPartMaterial.name}: it will not look full.", this);
-            }
+            wetLook.Show(shown);
         }
 
         private Bounds ModelBounds()

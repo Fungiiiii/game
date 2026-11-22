@@ -36,6 +36,41 @@ namespace Fungiiiii.Capture
         [SerializeField, Min(0f)]
         private float fleeSpeed = 4f;
 
+        [Header("Hit by the slingshot")]
+        [SerializeField, Min(0.1f)]
+        private float maxHealth = 2f;
+
+        [Tooltip("What it lets go of when felled wet. Empty: nothing.")]
+        [SerializeField]
+        private ItemDefinition wetDrop;
+
+        [Header("Soaking up, calm: what it soaks up. Empty: it does not.")]
+        [SerializeField]
+        private ItemDefinition soaksUp;
+
+        [Tooltip("How far it goes to soak something up, in metres.")]
+        [SerializeField, Min(0.1f)]
+        private float soakReach = 12f;
+
+        [SerializeField, Min(0.1f)]
+        private float soakSeconds = 1.5f;
+
+        [Tooltip("It soaks up standing this close, in metres.")]
+        [SerializeField, Min(0.1f)]
+        private float soakArrivalDistance = 0.6f;
+
+        [Tooltip("The material of the model's part that looks wet: the Spongeus's cap.")]
+        [SerializeField]
+        private Material wetPartMaterial;
+
+        [Tooltip("Colour the wet part is multiplied by.")]
+        [SerializeField]
+        private Color wetTint = new Color(0.65f, 0.65f, 0.7f, 1f);
+
+        [Tooltip("Sheen of the wet part, from 0 (matt) to 1.")]
+        [SerializeField, Range(0f, 1f)]
+        private float wetSmoothness = 0.4f;
+
         public GameObject Model => model;
 
         public NetTargetProfile Profile => profile;
@@ -49,6 +84,26 @@ namespace Fungiiiii.Capture
         public float WanderPauseSeconds => wanderPauseSeconds;
 
         public float FleeSpeed => fleeSpeed;
+
+        public float MaxHealth => maxHealth;
+
+        /// <summary>Null when a felled creature lets go of nothing.</summary>
+        public ItemDefinition WetDrop => wetDrop;
+
+        /// <summary>Null when it does not soak anything up.</summary>
+        public ItemDefinition SoaksUp => soaksUp;
+
+        public float SoakReach => soakReach;
+
+        public float SoakSeconds => soakSeconds;
+
+        public float SoakArrivalDistance => soakArrivalDistance;
+
+        public Material WetPartMaterial => wetPartMaterial;
+
+        public Color WetTint => wetTint;
+
+        public float WetSmoothness => wetSmoothness;
 
         /// <summary>What is missing for it to be used, or null when it is sound.</summary>
         public string FindProblem()

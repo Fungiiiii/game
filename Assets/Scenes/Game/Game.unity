@@ -200,6 +200,8 @@ MonoBehaviour:
   startingQuickBar: []
   staminaSettings: {fileID: 11400000, guid: 71580e11f52d48e18011c50192776d35, type: 2}
   netSettings: {fileID: 11400000, guid: 443ee77a94514bd58562ff2e0ed70920, type: 2}
+  slingshotItem: {fileID: 11400000, guid: 4342c27fc17540aeb16ac208a55aa8ba, type: 2}
+  slingshotSettings: {fileID: 11400000, guid: c0421d40f3b846d2bb0651402ae924e2, type: 2}
   gathering: {fileID: 1100000003}
   creatures: {fileID: 1100000013}
   refillingPlants: {fileID: 228711578}
@@ -213,6 +215,7 @@ MonoBehaviour:
   droppedItems: {fileID: 332564108}
   moleHoles: {fileID: 1200000003}
   seedSpot: {fileID: 1200000012}
+  interiorScenePath: Assets/Scenes/Game/ChampimaisonInterior.unity
   randomSeed: 0
 --- !u!4 &167378463
 Transform:
@@ -733,18 +736,18 @@ MonoBehaviour:
   spawns:
   - creature: {fileID: 11400000, guid: bf402ca1399e42a197ecead4d6f4bd22, type: 2}
     homes:
-    - {x: 4, y: -228}
-    - {x: -7, y: -224}
-  - creature: {fileID: 11400000, guid: ffbd14d7effb49ee93fc18baf335a6bc, type: 2}
-    homes:
-    - {x: 10, y: -236}
-    - {x: -3, y: -217}
+    - {x: -200, y: -20}
+    - {x: -120, y: 60}
+    - {x: -40, y: 10}
+    - {x: 40, y: 80}
+    - {x: 120, y: -30}
+    - {x: 200, y: 40}
   area:
     serializedVersion: 2
-    x: -30
-    y: -260
-    width: 80
-    height: 65
+    x: -290
+    y: -60
+    width: 580
+    height: 180
 --- !u!1001 &1110914249
 PrefabInstance:
   m_ObjectHideFlags: 0
