@@ -299,6 +299,10 @@ MonoBehaviour:
     m_Key: demo_end.thanks
     m_Metadata:
       m_Items: []
+  - m_Id: 391185041449004
+    m_Key: panel.hold
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

@@ -286,7 +286,7 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator Aimed_TheSpongeus_ShowsTheKey_WithoutRingUntilHeld_AndTheHoldHint()
+        public IEnumerator Aimed_AnEmptySpongeus_ShowsTheKeyWithItsEmptyBorder_AndTheHoldHint()
         {
             yield return LoadGame();
             yield return TakeOut();
@@ -302,7 +302,11 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(game.Interactor.Targeted, Is.SameAs(companion));
             var prompt = game.Interactor.Prompt;
             Assert.That(prompt.IsKeyVisible, Is.True);
-            Assert.That(prompt.IsHoldRingVisible, Is.False, "The ring shows before E is held.");
+            // Held, it is taken back: the border shows before E is held, empty. Empty, it
+            // cannot be squeezed: no triangle.
+            Assert.That(prompt.IsHoldBorderVisible, Is.True, "No border round a key that can be held.");
+            Assert.That(prompt.HoldProgress, Is.Zero, "The border fills before E is held.");
+            Assert.That(prompt.IsPressMarkVisible, Is.False, "A triangle over a key that a short press does nothing with.");
             Assert.That(game.Interactor.Hints.Select(hint => hint.LabelKey), Is.EqualTo(new[] { UiText.HintTakeBack }));
         }
 

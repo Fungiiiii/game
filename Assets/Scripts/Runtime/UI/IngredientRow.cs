@@ -6,7 +6,9 @@ namespace Fungiiiii.UI
 {
     /// <summary>
     /// One ingredient in a recipe's details: its icon and name, how many the player has out
-    /// of how many are needed, and, while some are missing, where the item comes from.
+    /// of how many are needed, and, while some are missing, where the item comes from. As
+    /// in the lines of a wooden panel, the count is moss green with a tick when there are
+    /// enough, coral when some are missing.
     /// </summary>
     internal sealed class IngredientRow : MonoBehaviour
     {
@@ -28,11 +30,15 @@ namespace Fungiiiii.UI
         [SerializeField]
         private Text count;
 
+        [Tooltip("Optional: shown when there are enough.")]
         [SerializeField]
-        private Color enoughColor = new Color32(0xF2, 0xE6, 0xCC, 0xFF);
+        private GameObject tick;
 
         [SerializeField]
-        private Color missingColor = new Color32(0xF0, 0x84, 0x6B, 0xFF);
+        private Color enoughColor = new Color32(0x9C, 0xB9, 0x55, 0xFF);
+
+        [SerializeField]
+        private Color missingColor = new Color32(0xF0, 0x8A, 0x74, 0xFF);
 
         public string CountText => count.text;
 
@@ -51,6 +57,10 @@ namespace Fungiiiii.UI
             IsMissing = owned < needed;
             count.text = $"{owned}/{needed}"; // i18n-exempt: two numbers, no words
             count.color = IsMissing ? missingColor : enoughColor;
+            if (tick != null && tick.activeSelf == IsMissing)
+            {
+                tick.SetActive(!IsMissing);
+            }
 
             if (source == null)
             {

@@ -116,6 +116,31 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator Aimed_TheChampimaison_ShowsItsKeysInItsPanel_NotOverIt()
+        {
+            yield return Load();
+            var game = Game;
+            var champimaison = Plant(game);
+            game.Inventory.Add(champimaison.Network.Progress.Required(1).Item, 2);
+            StandBefore(champimaison.transform.position, 2f);
+            yield return WaitUntil(() => ReferenceEquals(game.Interactor.Targeted, champimaison), 2f);
+            yield return null;
+
+            Assert.That(game.Interactor.Targeted, Is.SameAs(champimaison), "The Champimaison is not aimed at from 2 m.");
+            Assert.That(game.Interactor.Prompt.IsVisible, Is.False, "A key floats over the Champimaison.");
+            var panel = Object.FindFirstObjectByType<RequirementPanel>();
+            Assert.That(panel.HoldKey, Is.EqualTo(UiText.HintDeposit), "The panel does not show the key to hold.");
+            Assert.That(panel.PressKey, Is.Empty, "A key to press is shown while a short press does nothing.");
+
+            StandBefore(champimaison.transform.position, 7f);
+            yield return null;
+            yield return null;
+
+            Assert.That(panel.IsVisible, Is.True, "The panel is hidden within its distance.");
+            Assert.That(panel.HoldKey, Is.Empty, "The keys show while the Champimaison is not aimed at.");
+        }
+
+        [UnityTest]
         public IEnumerator AnAwakeChampimaison_ProducesThread_ThatAShortPressCollects()
         {
             yield return Load();

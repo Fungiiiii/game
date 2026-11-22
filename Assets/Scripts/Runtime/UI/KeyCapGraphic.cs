@@ -4,45 +4,33 @@ using UnityEngine.UI;
 namespace Fungiiiii.UI
 {
     /// <summary>
-    /// A low poly key cap drawn as flat facets, without any texture: a dark wooden square
-    /// with its four corners cut, a cyan rim all around it, corners included, and a darker
-    /// base inside the rim, as on the Ramassage artboard.
+    /// A low poly key cap drawn as flat facets, without any texture: a square of light wood
+    /// with its four corners cut and a dark base, like the planks of the menus. No rim: a
+    /// short press is shown by a triangle over the key (<see cref="TriangleMarkGraphic"/>),
+    /// a hold by a border around it (<see cref="HoldBorderGraphic"/>).
     /// </summary>
     [RequireComponent(typeof(CanvasRenderer))]
     internal sealed class KeyCapGraphic : MaskableGraphic
     {
-        /// <summary>Palette "Wood dark", the shadow brown and the cyan of what is aimed at.</summary>
-        private static readonly Color32 Face = new Color32(0x4F, 0x34, 0x24, 0xFF);
+        /// <summary>Palette "Wood" and the shadow brown.</summary>
+        private static readonly Color32 Face = new Color32(0x8A, 0x5F, 0x42, 0xFF);
         private static readonly Color32 Base = new Color32(0x2B, 0x27, 0x23, 0xFF);
-        private static readonly Color32 Rim = new Color32(0x6F, 0xD6, 0xEA, 0xFF);
 
         /// <summary>Sizes on a 44 unit key, scaled with it.</summary>
         private const float DesignSize = 44f;
-        private const float DesignCorner = 6f;
-        private const float DesignBase = 4f;
-        private const float DesignRim = 2f;
-
-        /// <summary>
-        /// Moving a 45 degree cut inwards by the rim's width shortens it by this share of
-        /// the width, so that the rim keeps the same thickness along the cut.
-        /// </summary>
-        private const float CutInset = 0.41421356f;
+        private const float DesignCorner = 7f;
+        private const float DesignBase = 5f;
 
         protected override void OnPopulateMesh(VertexHelper vertexHelper)
         {
             vertexHelper.Clear();
 
-            var outer = GetPixelAdjustedRect();
-            var unit = Mathf.Min(outer.width, outer.height) / DesignSize;
-            var rim = DesignRim * unit;
-            var cut = Mathf.Min(DesignCorner * unit, outer.width * 0.5f, outer.height * 0.5f);
+            var rect = GetPixelAdjustedRect();
+            var unit = Mathf.Min(rect.width, rect.height) / DesignSize;
+            var cut = Mathf.Min(DesignCorner * unit, rect.width * 0.5f, rect.height * 0.5f);
 
-            var inner = new Rect(outer.xMin + rim, outer.yMin + rim, outer.width - 2f * rim, outer.height - 2f * rim);
-            var innerCut = Mathf.Max(0f, cut - rim * CutInset);
-
-            Polygon.Add(vertexHelper, Tint(Rim), Octagon(outer, cut));
-            Polygon.Add(vertexHelper, Tint(Face), Octagon(inner, innerCut));
-            Polygon.Add(vertexHelper, Tint(Base), LowerBand(inner, innerCut, DesignBase * unit));
+            Polygon.Add(vertexHelper, Tint(Face), Octagon(rect, cut));
+            Polygon.Add(vertexHelper, Tint(Base), LowerBand(rect, cut, DesignBase * unit));
         }
 
         /// <summary>A rectangle with its four corners cut at 45 degrees, clockwise from the top left.</summary>

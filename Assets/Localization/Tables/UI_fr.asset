@@ -302,6 +302,10 @@ MonoBehaviour:
     m_Localized: "Merci d\u2019avoir jou\xE9 !"
     m_Metadata:
       m_Items: []
+  - m_Id: 391185041449004
+    m_Localized: Maintenir
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

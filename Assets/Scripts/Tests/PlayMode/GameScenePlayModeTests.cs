@@ -472,6 +472,8 @@ namespace Fungiiiii.Tests.PlayMode
 
             Assert.That(prompt.IsVisible, Is.True, "No key over the target.");
             Assert.That(prompt.Label, Is.EqualTo("E"));
+            Assert.That(prompt.IsPressMarkVisible, Is.True, "No triangle over the key of an item to gather.");
+            Assert.That(prompt.IsHoldBorderVisible, Is.False, "An item to gather shows a key to hold.");
             Assert.That(Vector2.Distance(prompt.ScreenPoint, camera.WorldToScreenPoint(pair[0].PromptPoint)), Is.LessThan(2f));
             Assert.That(pair[0].PromptPoint.y, Is.GreaterThan(pair[0].transform.position.y + 0.25f), "The key is not above the item.");
 

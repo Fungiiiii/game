@@ -16,10 +16,12 @@ namespace Fungiiiii.Interaction
     /// key to press above it, and uses it on a press. The key is that of the Interact
     /// action on the device the player used last.
     ///
-    /// A target that can also be held (<see cref="IHoldInteractable"/>) gets a ring around
-    /// the key that fills while it is held, once the press is past a short one; on it, a short press is decided on the release
-    /// (<see cref="TapOrHold"/>). A target that shows a text (<see cref="ILabelledInteractable"/>)
-    /// gets the text instead of the key.
+    /// A triangle over the key says a short press does something. A target that can be
+    /// held (<see cref="IHoldInteractable"/>) gets a border around the key, which fills
+    /// while it is held, once the press is past a short one; on it, a short press is
+    /// decided on the release (<see cref="TapOrHold"/>). A target that shows a text
+    /// (<see cref="ILabelledInteractable"/>) gets the text instead of the key, and one that
+    /// shows its keys in its own panel (<see cref="IPanelledInteractable"/>) no key at all.
     /// </summary>
     internal sealed class PlayerInteractor : MonoBehaviour, IHintSource
     {
@@ -57,6 +59,12 @@ namespace Fungiiiii.Interaction
 
         /// <summary>What the player aims at, or null.</summary>
         public IInteractable Targeted => targeted;
+
+        /// <summary>How much of a hold is done, from 0 to 1: 0 during what may still be a short press.</summary>
+        public float HoldProgress => press?.HoldProgress ?? 0f;
+
+        /// <summary>The interact control as the key hints draw it, on the device used last.</summary>
+        public Glyph InteractGlyph => KeyGlyph();
 
         /// <summary>Raised when the target changes, and with it the hint.</summary>
         public event System.Action HintsChanged;
@@ -236,7 +244,7 @@ namespace Fungiiiii.Interaction
                 return;
             }
 
-            if (targeted == null || !isActiveAndEnabled || view == null)
+            if (targeted == null || !isActiveAndEnabled || view == null || targeted is IPanelledInteractable)
             {
                 prompt.Hide();
                 return;
@@ -258,9 +266,10 @@ namespace Fungiiiii.Interaction
             }
 
             prompt.Show(screenPoint, KeyGlyph());
-            // The ring shows only once the key is clearly held, past a short press.
-            var progress = press.HoldProgress;
-            prompt.SetHold(targeted is IHoldInteractable && progress > 0f, progress);
+            var canHold = (targeted as IHoldInteractable)?.HoldHintKey != null;
+            // A key that does nothing when held is always a key to press.
+            var canPress = targeted.HintKey != null || !canHold;
+            prompt.SetMarks(canPress, canHold, canHold ? press.HoldProgress : 0f);
         }
 
         /// <summary>The interact control as the key hints draw it, on the device used last; worked out again only when that device changes.</summary>

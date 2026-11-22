@@ -149,7 +149,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   corner: 12
-  face: {r: 0.30980393, g: 0.20392157, b: 0.14117648, a: 1}
+  face: {r: 0.5411765, g: 0.37254903, b: 0.25882354, a: 1}
   topBand: {r: 0, g: 0, b: 0, a: 0}
   topBandHeight: 0
   bottomBand: {r: 0.16862746, g: 0.15294118, b: 0.13725491, a: 1}

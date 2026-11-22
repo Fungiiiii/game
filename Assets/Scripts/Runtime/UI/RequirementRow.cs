@@ -5,8 +5,10 @@ using UnityEngine.UI;
 namespace Fungiiiii.UI
 {
     /// <summary>
-    /// One line of a cost: the item's icon and name, how many were dropped out of how many
-    /// are required, how many the player carries, and a tick once the line is complete.
+    /// One line of a cost: the item's icon and name, how many the player carries while the
+    /// line is not complete, and how many were dropped out of how many are required, in
+    /// the colour of the line's state: coral when nothing can be dropped, gold when some
+    /// can, moss green with a tick once complete.
     /// </summary>
     internal sealed class RequirementRow : MonoBehaviour
     {
@@ -28,6 +30,15 @@ namespace Fungiiiii.UI
         [SerializeField]
         private GameObject tick;
 
+        [SerializeField]
+        private Color nothingToDropColor = new Color32(0xF0, 0x8A, 0x74, 0xFF);
+
+        [SerializeField]
+        private Color someToDropColor = new Color32(0xE8, 0xCF, 0x7E, 0xFF);
+
+        [SerializeField]
+        private Color completeColor = new Color32(0x9C, 0xB9, 0x55, 0xFF);
+
         /// <summary>What the count reads, for the tests.</summary>
         public string CountText => count.text;
 
@@ -47,9 +58,11 @@ namespace Fungiiiii.UI
             var complete = done >= required;
             tick.SetActive(complete);
 
+            count.color = complete ? completeColor : inBackpack > 0 ? someToDropColor : nothingToDropColor;
+
             ShownCarried = complete ? 0 : inBackpack;
-            carried.gameObject.SetActive(ShownCarried > 0);
-            if (ShownCarried > 0)
+            carried.gameObject.SetActive(!complete);
+            if (!complete)
             {
                 carried.Show(UiText.PanelInBackpack, ShownCarried);
             }

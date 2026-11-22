@@ -51,6 +51,55 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(prompt.GetComponentInChildren<TriangleGlyphGraphic>().enabled, Is.False);
         }
 
+        [Test]
+        public void AKeyToPress_HasTheTriangle_AndNoBorder()
+        {
+            prompt.Show(new Vector2(100f, 100f), KeyE);
+            prompt.SetMarks(true, false, 0f);
+
+            Assert.That(prompt.IsPressMarkVisible, Is.True, "No triangle over a key to press.");
+            Assert.That(prompt.IsHoldBorderVisible, Is.False, "A key that cannot be held has a border.");
+        }
+
+        [Test]
+        public void AKeyToHold_HasItsBorder_FilledAsFarAsItIsHeld_AndNoTriangle()
+        {
+            prompt.Show(new Vector2(100f, 100f), KeyE);
+            prompt.SetMarks(false, true, 0f);
+
+            Assert.That(prompt.IsHoldBorderVisible, Is.True, "No border before the key is held.");
+            Assert.That(prompt.HoldProgress, Is.Zero);
+            Assert.That(prompt.IsPressMarkVisible, Is.False);
+
+            prompt.SetMarks(false, true, 0.4f);
+
+            Assert.That(prompt.HoldProgress, Is.EqualTo(0.4f).Within(0.001f));
+        }
+
+        [Test]
+        public void AKeyToPressAndToHold_HasBoth()
+        {
+            prompt.Show(new Vector2(100f, 100f), KeyE);
+            prompt.SetMarks(true, true, 0f);
+
+            Assert.That(prompt.IsPressMarkVisible, Is.True);
+            Assert.That(prompt.IsHoldBorderVisible, Is.True);
+        }
+
+        [Test]
+        public void AText_TakesTheKeysPlace_OnItsSmallPanel()
+        {
+            prompt.Show(new Vector2(100f, 100f), KeyE);
+            prompt.SetMarks(true, false, 0f);
+
+            prompt.ShowText(new Vector2(100f, 100f), UiText.LabelHoldSeed);
+
+            Assert.That(prompt.IsTextVisible, Is.True);
+            Assert.That(prompt.IsKeyVisible, Is.False);
+            Assert.That(prompt.IsPressMarkVisible, Is.False, "The triangle of a hidden key is still reported.");
+            Assert.That(prompt.TextKey, Is.EqualTo(UiText.LabelHoldSeed));
+        }
+
         [UnityTest]
         public IEnumerator PopIn_PlaysThePopAgain_OnAKeyAlreadyShown()
         {

@@ -1,13 +1,15 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Fungiiiii.UI
 {
     /// <summary>
-    /// What is shown over what the player aims at, as on the Ramassage artboard: the key to
-    /// press, a square wooden key cap with a cyan rim and, in cream, the control as the key
-    /// hints draw it (<see cref="Glyph"/>): a name, a PlayStation shape, a mouse. When the
-    /// key can also be held, a ring around it fills while it is held. Where nothing can be
-    /// done, a short text takes the key's place instead (<c>label.needs_spongeus</c>). It pops
+    /// What is shown over what the player aims at, as in the wooden panels design system:
+    /// the key, a square wooden key cap with, in cream, the control as the key hints draw it
+    /// (<see cref="Glyph"/>): a name, a PlayStation shape, a mouse. A cyan triangle laid over
+    /// its top edge says a short press does something; a border around it says the key can
+    /// be held, and fills while it is held. Where nothing can be done, a short text on a
+    /// small wooden panel takes the key's place instead (<c>label.needs_spongeus</c>). It pops
     /// in when it appears. Where it goes and what it shows is told by its owner.
     /// </summary>
     internal sealed class KeyPrompt : MonoBehaviour
@@ -21,9 +23,18 @@ namespace Fungiiiii.UI
         [SerializeField]
         private GlyphView glyph;
 
-        [Tooltip("Around the key: fills while a key that can be held is held.")]
+        [Tooltip("Over the top edge of the key: a short press does something.")]
         [SerializeField]
-        private HoldRingGraphic holdRing;
+        private TriangleMarkGraphic pressMark;
+
+        [Tooltip("Around the key: it can be held, and fills while it is held.")]
+        [FormerlySerializedAs("holdRing")]
+        [SerializeField]
+        private HoldBorderGraphic holdBorder;
+
+        [Tooltip("The small wooden panel of the short text, shown instead of the key.")]
+        [SerializeField]
+        private RectTransform textPanel;
 
         [Tooltip("The short text shown instead of the key.")]
         [SerializeField]
@@ -38,7 +49,7 @@ namespace Fungiiiii.UI
         public bool IsKeyVisible => key.gameObject.activeSelf;
 
         /// <summary>Whether the short text is shown instead of the key.</summary>
-        public bool IsTextVisible => text.gameObject.activeSelf;
+        public bool IsTextVisible => textPanel.gameObject.activeSelf;
 
         /// <summary>What the key reads, empty while hidden or when the control is drawn.</summary>
         public string Label => IsKeyVisible ? glyph.Label : string.Empty;
@@ -49,11 +60,14 @@ namespace Fungiiiii.UI
         /// <summary>The control shown, while the key is visible.</summary>
         public Glyph Shown => shown;
 
-        /// <summary>Whether the ring around the key is shown: the key can be held.</summary>
-        public bool IsHoldRingVisible => IsKeyVisible && holdRing.gameObject.activeSelf;
+        /// <summary>Whether the triangle over the key is shown: a short press does something.</summary>
+        public bool IsPressMarkVisible => IsKeyVisible && pressMark.gameObject.activeSelf;
 
-        /// <summary>How much of the ring is filled, from 0 to 1.</summary>
-        public float HoldProgress => holdRing.Progress;
+        /// <summary>Whether the border around the key is shown: the key can be held.</summary>
+        public bool IsHoldBorderVisible => IsKeyVisible && holdBorder.gameObject.activeSelf;
+
+        /// <summary>How much of the border is filled, from 0 to 1.</summary>
+        public float HoldProgress => holdBorder.Progress;
 
         /// <summary>Where it stands on the screen, in pixels.</summary>
         public Vector2 ScreenPoint => Root.position;
@@ -61,7 +75,7 @@ namespace Fungiiiii.UI
         /// <summary>Scale of what is shown: below 1 while it pops in.</summary>
         public float Scale => Root.localScale.x;
 
-        private RectTransform Root => IsTextVisible ? (RectTransform)text.transform : key;
+        private RectTransform Root => IsTextVisible ? textPanel : key;
 
         private void Awake()
         {
@@ -72,7 +86,7 @@ namespace Fungiiiii.UI
         public void Show(Vector2 screenPoint, Glyph control)
         {
             var wasVisible = IsVisible;
-            text.gameObject.SetActive(false);
+            textPanel.gameObject.SetActive(false);
             key.gameObject.SetActive(true);
             if (!wasVisible)
             {
@@ -95,13 +109,13 @@ namespace Fungiiiii.UI
             var wasVisible = IsVisible;
             key.gameObject.SetActive(false);
             shown = default;
-            text.gameObject.SetActive(true);
+            textPanel.gameObject.SetActive(true);
             if (!wasVisible)
             {
                 popElapsed = 0f;
             }
 
-            text.transform.position = screenPoint;
+            textPanel.position = screenPoint;
             if (text.EntryKey != entryKey)
             {
                 text.Show(entryKey);
@@ -110,15 +124,23 @@ namespace Fungiiiii.UI
             ApplyPop();
         }
 
-        /// <summary>Shows the ring around the key when it can be held, filled to <paramref name="progress"/>.</summary>
-        public void SetHold(bool canHold, float progress)
+        /// <summary>
+        /// Shows the triangle when a short press does something, and the border when the key
+        /// can be held, filled to <paramref name="holdProgress"/>. Both can show at once.
+        /// </summary>
+        public void SetMarks(bool canPress, bool canHold, float holdProgress)
         {
-            if (holdRing.gameObject.activeSelf != canHold)
+            if (pressMark.gameObject.activeSelf != canPress)
             {
-                holdRing.gameObject.SetActive(canHold);
+                pressMark.gameObject.SetActive(canPress);
             }
 
-            holdRing.Progress = canHold ? progress : 0f;
+            if (holdBorder.gameObject.activeSelf != canHold)
+            {
+                holdBorder.gameObject.SetActive(canHold);
+            }
+
+            holdBorder.Progress = canHold ? holdProgress : 0f;
         }
 
         /// <summary>Plays the pop again, for a key that moves to another target.</summary>
@@ -134,8 +156,8 @@ namespace Fungiiiii.UI
         public void Hide()
         {
             key.gameObject.SetActive(false);
-            text.gameObject.SetActive(false);
-            SetHold(false, 0f);
+            textPanel.gameObject.SetActive(false);
+            SetMarks(false, false, 0f);
             shown = default;
         }
 

@@ -563,7 +563,7 @@ namespace Fungiiiii.Game
 
         private void HandlePlanted(FungalHole champimaison)
         {
-            requirementPanel.Bind(champimaison, Inventory, firstPersonCamera.Camera, controls);
+            requirementPanel.Bind(champimaison, Inventory, firstPersonCamera.Camera, controls, interactor);
             champimaison.Entered += EnterChampimaison;
         }
 

@@ -21,8 +21,10 @@ namespace Fungiiiii.Editor.Playtest
     /// wiring of the playtest loop, which was coded without an Editor. Run it once from
     /// Fungiiiii/Playtest, review what it wrote, commit it, then delete this file.
     ///
-    /// It writes: the mole hole and pebble placeholders; the requirement panel, crafting
-    /// panel, objective and end-of-demo prefabs; the crafting panel inside the inventory;
+    /// It writes: the mole hole and pebble placeholders; the floating key in the style of the
+    /// wooden panels design system (triangle for a press, border for a hold, texts on a
+    /// small wooden panel); the requirement panel, crafting panel, objective and
+    /// end-of-demo prefabs; the crafting panel inside the inventory;
     /// the slingshot on the playtest player; the Game scene's new references; the
     /// Champimaison's interior scene and the build scenes.
     /// </summary>
@@ -36,6 +38,7 @@ namespace Fungiiiii.Editor.Playtest
         private const string HoleMaterialPath = "Assets/Art/Materials/PlaceholderHole.mat";
         private const string StoneMaterialPath = "Assets/Art/Materials/PlaceholderStone.mat";
         private const string InventoryPath = UiFolder + "/Inventory.prefab";
+        private const string KeyPromptPath = UiFolder + "/KeyPrompt.prefab";
         private const string ControlHintsPath = UiFolder + "/ControlHints.prefab";
         private const string PlankButtonPath = UiFolder + "/PlankButton.prefab";
         private const string PlayerPath = "Assets/Prefabs/Characters/PlaytestPlayer.prefab";
@@ -48,7 +51,10 @@ namespace Fungiiiii.Editor.Playtest
         private static readonly Color WoodLight = new Color32(0xA8, 0x90, 0x78, 0xFF);
         private static readonly Color WoodDark = new Color32(0x2B, 0x27, 0x23, 0xFF);
         private static readonly Color Cyan = new Color32(0x6F, 0xD6, 0xEA, 0xFF);
-        private static readonly Color Missing = new Color32(0xF0, 0x84, 0x6B, 0xFF);
+        private static readonly Color Missing = new Color32(0xF0, 0x8A, 0x74, 0xFF);
+        private static readonly Color Muted = new Color32(0xCD, 0xB8, 0x96, 0xFF);
+        private static readonly Color Separator = new Color(0xE0 / 255f, 0xCB / 255f, 0xA4 / 255f, 0.35f);
+        private static readonly Color Facet = new Color(0x2B / 255f, 0x27 / 255f, 0x23 / 255f, 0.28f);
         private static readonly Color Bg = new Color32(0x1E, 0x26, 0x30, 0xFF);
 
         private static Font font;
@@ -68,7 +74,8 @@ namespace Fungiiiii.Editor.Playtest
             var pebble = BuildPebble();
             SetArray(AssetDatabase.LoadAssetAtPath<GatherableDefinition>(PebblesPath), "variants", pebble);
 
-            var requirementPanel = BuildRequirementPanel();
+            var key = RestyleKeyPrompt();
+            var requirementPanel = BuildRequirementPanel(key);
             var objectiveHud = BuildObjectiveHud();
             var demoEnd = BuildDemoEnd();
             AddCraftingPanel();
@@ -144,26 +151,113 @@ namespace Fungiiiii.Editor.Playtest
             return material;
         }
 
+        // ---------------------------------------------------------------- the floating key
+
+        /// <summary>
+        /// The wooden panels design system on the floating key: the triangle of a short press
+        /// over the key's top edge, the border of a hold close around it, the short text on a
+        /// small wooden panel with its pointer. Returns the key, which the panels copy.
+        /// </summary>
+        private static GameObject RestyleKeyPrompt()
+        {
+            var root = PrefabUtility.LoadPrefabContents(KeyPromptPath);
+            try
+            {
+                var prompt = root.GetComponent<KeyPrompt>();
+                var key = FindDeep(root.transform, "Key") ?? throw new InvalidOperationException("The KeyPrompt prefab has no Key.");
+                var border = FindDeep(root.transform, "HoldRing") ?? FindDeep(root.transform, "HoldBorder")
+                    ?? throw new InvalidOperationException("The KeyPrompt prefab has no HoldRing.");
+                border.name = "HoldBorder";
+                var borderGraphic = border.GetComponent<HoldBorderGraphic>();
+                var borderRect = (RectTransform)border;
+                borderRect.anchorMin = borderRect.anchorMax = borderRect.pivot = new Vector2(0.5f, 0.5f);
+                borderRect.anchoredPosition = Vector2.zero;
+                // 1 unit of space, then 4 of border, round the 44 unit key.
+                borderRect.sizeDelta = new Vector2(54f, 54f);
+                var serialized = new SerializedObject(borderGraphic);
+                Find(serialized, "thickness").floatValue = 4f;
+                Find(serialized, "corner").floatValue = 9f;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+
+                var existingMark = FindDeep(key, "PressMark");
+                if (existingMark != null)
+                {
+                    Object.DestroyImmediate(existingMark.gameObject);
+                }
+
+                var mark = UiObject("PressMark", key);
+                var markRect = (RectTransform)mark.transform;
+                markRect.anchorMin = markRect.anchorMax = markRect.pivot = new Vector2(0.5f, 1f);
+                // Over the key's top edge: a third of it above the key, two thirds on it.
+                markRect.anchoredPosition = new Vector2(0f, 7f);
+                markRect.sizeDelta = new Vector2(19f, 12f);
+                var markGraphic = mark.AddComponent<TriangleMarkGraphic>();
+                markGraphic.color = Cyan;
+                markGraphic.raycastTarget = false;
+                mark.transform.SetAsLastSibling();
+
+                var text = FindDeep(root.transform, "Text") ?? throw new InvalidOperationException("The KeyPrompt prefab has no Text.");
+                var textPanel = FindDeep(root.transform, "TextPanel")?.gameObject;
+                if (textPanel == null)
+                {
+                    textPanel = UiObject("TextPanel", root.transform);
+                    textPanel.transform.SetSiblingIndex(text.GetSiblingIndex());
+                    WoodPanel(textPanel);
+                    var layout = Horizontal(textPanel, 0f, new RectOffset(18, 18, 14, 16));
+                    layout.childAlignment = TextAnchor.MiddleCenter;
+                    var fitter = textPanel.AddComponent<ContentSizeFitter>();
+                    fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+                    fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+                    text.SetParent(textPanel.transform, false);
+                    text.GetComponent<Text>().horizontalOverflow = HorizontalWrapMode.Overflow;
+                    Pointer(textPanel.transform);
+                }
+
+                SetRef(prompt, "pressMark", markGraphic);
+                SetRef(prompt, "holdBorder", borderGraphic);
+                SetRef(prompt, "textPanel", textPanel.transform);
+                PrefabUtility.SaveAsPrefabAsset(root, KeyPromptPath);
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(root);
+            }
+
+            return AssetDatabase.LoadAssetAtPath<GameObject>(KeyPromptPath).transform.Find("Key").gameObject;
+        }
+
+        /// <summary>The small triangle under a wooden panel, pointing down at what it is about.</summary>
+        private static void Pointer(Transform panel)
+        {
+            var tail = UiObject("Pointer", panel);
+            tail.AddComponent<LayoutElement>().ignoreLayout = true;
+            var rect = (RectTransform)tail.transform;
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = new Vector2(24f, 12f);
+            var graphic = tail.AddComponent<TriangleMarkGraphic>();
+            graphic.color = WoodDark;
+            graphic.raycastTarget = false;
+        }
+
         // ---------------------------------------------------------------- the Champimaison's panel
 
-        private static RequirementPanel BuildRequirementPanel()
+        private static RequirementPanel BuildRequirementPanel(GameObject keyModel)
         {
             var row = UiObject("RequirementRow", null);
-            Size(row, 320f, 36f);
-            var rowLayout = Horizontal(row, 8f, new RectOffset(0, 0, 0, 0));
+            Size(row, 316f, 40f);
+            var rowLayout = Horizontal(row, 12f, new RectOffset(0, 0, 0, 0));
             rowLayout.childAlignment = TextAnchor.MiddleLeft;
-            var icon = Icon(row.transform, 30f);
-            var name = Label(row.transform, "Name", 20, Cream, TextAnchor.MiddleLeft, null);
+            row.AddComponent<LayoutElement>().preferredHeight = 40f;
+            var icon = IconWell(row.transform, 40f);
+            var name = Label(row.transform, "Name", 18, Cream, TextAnchor.MiddleLeft, null);
             name.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1f;
-            var carried = Label(row.transform, "Carried", 15, Sand, TextAnchor.MiddleRight, null);
-            carried.gameObject.AddComponent<LayoutElement>().preferredWidth = 110f;
-            var count = NewText(row.transform, "Count", 20, Cream, TextAnchor.MiddleRight);
-            count.gameObject.AddComponent<LayoutElement>().preferredWidth = 52f;
-            var tick = UiObject("Tick", row.transform);
-            Cut(tick, Cyan, 3f);
-            var tickElement = tick.AddComponent<LayoutElement>();
-            tickElement.preferredWidth = 14f;
-            tickElement.preferredHeight = 14f;
+            var carried = Label(row.transform, "Carried", 14, Muted, TextAnchor.MiddleRight, null);
+            carried.gameObject.AddComponent<LayoutElement>().preferredWidth = 96f;
+            var count = NewText(row.transform, "Count", 18, Cream, TextAnchor.MiddleRight);
+            count.gameObject.AddComponent<LayoutElement>().preferredWidth = 44f;
+            var tick = TickSlot(row.transform, 22f);
             var rowView = row.AddComponent<RequirementRow>();
             SetRef(rowView, "icon", icon);
             SetRef(rowView, "itemName", name);
@@ -176,23 +270,115 @@ namespace Fungiiiii.Editor.Playtest
             var panel = UiObject("Panel", root.transform);
             var rect = (RectTransform)panel.transform;
             rect.anchorMin = rect.anchorMax = Vector2.zero;
+            // Placed by its bottom edge, over the Champimaison; its pointer hangs under it.
             rect.pivot = new Vector2(0.5f, 0f);
             rect.sizeDelta = new Vector2(360f, 0f);
             WoodPanel(panel);
-            var layout = Vertical(panel, 6f, new RectOffset(18, 18, 16, 14));
+            var layout = Vertical(panel, 10f, new RectOffset(22, 22, 22, 24));
             layout.childControlHeight = true;
             panel.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-            var title = Label(panel.transform, "Title", 22, Cream, TextAnchor.MiddleLeft, UiText.PanelAwakenTitle);
+
+            var header = UiObject("Header", panel.transform);
+            Horizontal(header, 8f, new RectOffset(0, 0, 0, 0)).childAlignment = TextAnchor.LowerLeft;
+            var title = Label(header.transform, "Title", 22, Cream, TextAnchor.LowerLeft, UiText.PanelAwakenTitle);
+            title.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1f;
+            var stage = NewText(header.transform, "Stage", 14, Muted, TextAnchor.LowerRight);
+            stage.gameObject.AddComponent<LayoutElement>().preferredWidth = 40f;
+            var costLine = Dashes(panel.transform, "CostLine");
             var rows = UiObject("Rows", panel.transform);
-            Vertical(rows, 4f, new RectOffset(0, 0, 4, 4));
-            var action = Label(panel.transform, "Action", 18, Cyan, TextAnchor.MiddleRight, UiText.HintDeposit);
+            Vertical(rows, 8f, new RectOffset(0, 0, 0, 0));
+            var footerLine = Dashes(panel.transform, "FooterLine");
+            var footer = UiObject("Footer", panel.transform);
+            Vertical(footer, 10f, new RectOffset(0, 0, 0, 0));
+            var pressLine = BuildActionLine(footer.transform, "PressLine", keyModel);
+            var holdLine = BuildActionLine(footer.transform, "HoldLine", keyModel);
+            Pointer(panel.transform);
+
             var view = root.AddComponent<RequirementPanel>();
             SetRef(view, "panel", rect);
+            SetArray(view, "costParts", header, costLine, rows);
             SetRef(view, "title", title);
+            SetRef(view, "stage", stage);
             SetRef(view, "rowPrefab", rowPrefab);
             SetRef(view, "rows", rows.transform);
-            SetRef(view, "action", action);
+            SetArray(view, "footerParts", footerLine, footer);
+            SetRef(view, "pressLine", pressLine);
+            SetRef(view, "holdLine", holdLine);
             return SavePrefab(root, UiFolder + "/RequirementPanel.prefab").GetComponent<RequirementPanel>();
+        }
+
+        /// <summary>
+        /// A key and what it does, at the foot of a panel: a copy of the floating key, shrunk
+        /// to the panel's 32 unit keys, so that every device's control is drawn the same way.
+        /// </summary>
+        private static ActionLine BuildActionLine(Transform parent, string name, GameObject keyModel)
+        {
+            var line = UiObject(name, parent);
+            var layout = Horizontal(line, 8f, new RectOffset(0, 0, 0, 0));
+            layout.childAlignment = TextAnchor.MiddleLeft;
+            line.AddComponent<LayoutElement>().preferredHeight = 44f;
+
+            var slot = UiObject("Key", line.transform);
+            var slotElement = slot.AddComponent<LayoutElement>();
+            slotElement.preferredWidth = 44f;
+            slotElement.preferredHeight = 44f;
+            var key = Object.Instantiate(keyModel, slot.transform);
+            key.name = "KeyCap";
+            key.SetActive(true);
+            var keyRect = (RectTransform)key.transform;
+            keyRect.anchorMin = keyRect.anchorMax = keyRect.pivot = new Vector2(0.5f, 0.5f);
+            keyRect.anchoredPosition = Vector2.zero;
+            keyRect.localScale = Vector3.one * (32f / 44f);
+
+            var holdWord = Label(line.transform, "HoldWord", 14, Muted, TextAnchor.MiddleLeft, UiText.PanelHold);
+            holdWord.gameObject.AddComponent<LayoutElement>().preferredWidth = 74f;
+            var action = Label(line.transform, "Action", 18, Cream, TextAnchor.MiddleLeft, UiText.HintDeposit);
+            action.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1f;
+
+            var view = line.AddComponent<ActionLine>();
+            SetRef(view, "glyph", key.GetComponent<GlyphView>());
+            SetRef(view, "pressMark", key.GetComponentInChildren<TriangleMarkGraphic>(true));
+            SetRef(view, "holdBorder", key.GetComponentInChildren<HoldBorderGraphic>(true));
+            SetRef(view, "holdWord", holdWord);
+            SetRef(view, "action", action);
+            return view;
+        }
+
+        /// <summary>The dashed line that parts the heading, the body and the keys of a panel.</summary>
+        private static GameObject Dashes(Transform parent, string name)
+        {
+            var line = UiObject(name, parent);
+            line.AddComponent<LayoutElement>().preferredHeight = 2f;
+            var graphic = line.AddComponent<DashedLineGraphic>();
+            graphic.color = Separator;
+            graphic.raycastTarget = false;
+            return line;
+        }
+
+        /// <summary>An item's icon in a dark well, as in the lines of a panel.</summary>
+        private static ItemIcon IconWell(Transform parent, float size)
+        {
+            var well = UiObject("IconWell", parent);
+            Cut(well, WoodDark, 6f);
+            var element = well.AddComponent<LayoutElement>();
+            element.preferredWidth = size;
+            element.preferredHeight = size;
+            var icon = Icon(well.transform, size - 12f);
+            Centre(icon.gameObject, size - 12f);
+            return icon;
+        }
+
+        /// <summary>The place of the tick of a complete line, kept when the tick is hidden so that the counts stay aligned. Returns the tick.</summary>
+        private static GameObject TickSlot(Transform parent, float size)
+        {
+            var slot = UiObject("TickSlot", parent);
+            var element = slot.AddComponent<LayoutElement>();
+            element.preferredWidth = size;
+            element.preferredHeight = size;
+            var tick = UiObject("Tick", slot.transform);
+            Stretch(tick);
+            tick.AddComponent<TickGraphic>().raycastTarget = false;
+            return tick;
         }
 
         // ---------------------------------------------------------------- crafting
@@ -222,7 +408,9 @@ namespace Fungiiiii.Editor.Playtest
 
             var count = NewText(row.transform, "Count", textSize + 2, Cream, TextAnchor.MiddleRight);
             count.gameObject.AddComponent<LayoutElement>().preferredWidth = 52f;
+            var tick = TickSlot(row.transform, withSource ? 22f : 16f);
             var view = row.AddComponent<IngredientRow>();
+            SetRef(view, "tick", tick);
             SetRef(view, "icon", icon);
             SetRef(view, "itemName", name);
             SetRef(view, "source", source);
@@ -702,14 +890,18 @@ namespace Fungiiiii.Editor.Playtest
             return graphic;
         }
 
+        /// <summary>The frame of the wooden panels design system: cut corners, a lit top edge, a dark underside, a darker facet over the right part.</summary>
         private static void WoodPanel(GameObject go)
         {
-            var graphic = Cut(go, new Color(Wood.r, Wood.g, Wood.b, 0.94f), 14f);
+            var graphic = Cut(go, Wood, 14f);
             var serialized = new SerializedObject(graphic);
-            serialized.FindProperty("topBand").colorValue = WoodLight;
-            serialized.FindProperty("topBandHeight").floatValue = 6f;
-            serialized.FindProperty("bottomBand").colorValue = WoodDark;
-            serialized.FindProperty("bottomBandHeight").floatValue = 8f;
+            Find(serialized, "topBand").colorValue = WoodLight;
+            Find(serialized, "topBandHeight").floatValue = 6f;
+            Find(serialized, "bottomBand").colorValue = WoodDark;
+            Find(serialized, "bottomBandHeight").floatValue = 9f;
+            Find(serialized, "facet").colorValue = Facet;
+            Find(serialized, "facetTopShare").floatValue = 0.7f;
+            Find(serialized, "facetBottomShare").floatValue = 0.64f;
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 

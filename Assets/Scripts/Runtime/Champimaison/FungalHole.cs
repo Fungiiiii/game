@@ -13,9 +13,10 @@ namespace Fungiiiii.Champimaison
     /// around it, drawn as cream filaments that spread further at each stage. All
     /// placeholders. Holding the interact control drops into it what the next stage lacks
     /// (<see cref="FungalNetwork"/>); a short press collects the mycelium thread it
-    /// produces once awake, or enters it once the last stage opens it.
+    /// produces once awake, or enters it once the last stage opens it. Its keys are shown
+    /// in its wooden panel (<see cref="RequirementPanel"/>), not over it.
     /// </summary>
-    internal sealed class FungalHole : MonoBehaviour, IInteractable, IHoldInteractable
+    internal sealed class FungalHole : MonoBehaviour, IInteractable, IHoldInteractable, IPanelledInteractable
     {
         private const float HoleRadius = 1f;
         private const float FilamentLift = 0.04f;
@@ -23,11 +24,11 @@ namespace Fungiiiii.Champimaison
         private const int FilamentPointCount = 10;
         private const int FilamentSeed = 20716;
 
-        /// <summary>The key to press floats this high above the centre of the hole.</summary>
+        /// <summary>The point aimed at, this high above the centre of the hole: no key floats there, its panel shows the keys.</summary>
         private const float PromptHeight = 0.9f;
 
-        /// <summary>The panel of what the next stage costs floats this high, above the key.</summary>
-        private const float PanelHeight = 1.5f;
+        /// <summary>The bottom of the wooden panel, its pointer, floats this high above the centre of the hole.</summary>
+        private const float PanelHeight = 1.2f;
 
         private static readonly int[] FilamentsPerStage = { 7, 12 };
         private static readonly float[] StageReach = { 3f, 6f };
