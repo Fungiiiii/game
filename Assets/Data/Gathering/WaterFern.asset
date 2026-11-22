@@ -23,6 +23,6 @@ MonoBehaviour:
   fullSmoothness: 0.4
   spacing: 30
   maxSlope: 30
-  scale: {x: 0.9, y: 1.2}
+  scale: {x: 0.6, y: 0.8}
   reach: 4
   labelKey: label.needs_spongeus

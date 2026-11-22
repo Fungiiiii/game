@@ -54,7 +54,7 @@
 
 **Cailloux**
 
-- [ ] Des cailloux ramassables apparaissent autour du joueur, comme les bâtons (2 bâtons et 3 champignons à spores gardés autour du joueur, 15 et 20 au plus sur la carte) : 4 cailloux à moins de 50 m au départ, aucun à moins de 8 m ; toutes les 5 s, s'il en manque, 1 au plus entre 20 et 50 m, plus souvent devant le joueur ; disparus au-delà de 75 m ; 30 au plus.
+- [ ] Des cailloux ramassables apparaissent autour du joueur, comme les bâtons (3 bâtons et 3 champignons à spores gardés autour du joueur, 20 de chaque au plus sur la carte) : 4 cailloux à moins de 50 m au départ, aucun à moins de 8 m ; toutes les 5 s, s'il en manque, 1 au plus entre 20 et 50 m, plus souvent devant le joueur ; disparus au-delà de 75 m ; 30 au plus.
 - [ ] Ils sortent du sol, hors des chemins, des troncs et des rochers, avec le contour de ce qui se ramasse. Placeholder : un cube gris. Les petits cailloux du décor restent.
 
 **Fabrication**
@@ -76,6 +76,7 @@
 
 **Spongeus sauvages**
 
+- [ ] Les fougères à eau font entre 0,6 et 0,8 fois la taille de leur modèle : le Spongeus à côté reste bien visible.
 - [ ] Plus aucun champignon dans la clairière du spawn. Les Spongeus vivent dans la brume, et seulement à côté des fougères à eau : un seul, à 2,5 m, sur environ 1 fougère sur 6. Seuls les 6 plus proches du joueur, à moins de 50 m, sont présents ; au-delà de 60 m, un Spongeus disparaît, et revient à sa place quand le joueur revient. Les 3 fougères les plus proches de l'arbre géant (les premières qu'on croise en entrant dans la brume) ont toujours leur Spongeus et sont pleines au départ.
 - [ ] Calme et sec, un Spongeus va boire à une fougère mouillée proche, mais seulement quand le joueur est à moins de 15 m et le regarde (à moins de 40° du centre de la vue) : il boit sous ses yeux, jamais à l'autre bout de la forêt ni dans son dos. Parti boire, il continue tant que le joueur reste à moins de 15 m. Il s'imbibe en 3 s, l'éponge passe du jaune clair au jaune foncé et brille peu à peu ; plein, des gouttes en tombent, comme de la fougère pleine. La fougère sèche.
 - [ ] Visé, à moins de 15 m, un Spongeus (sauvage ou sorti) montre son nom au-dessus de sa tête : le nom seul, en petit texte crème avec un contour sombre, sans panneau, qui apparaît et disparaît en fondu (0,15 s). Rien à travers un tronc.
@@ -231,7 +232,8 @@ Architecture :
   - **L'indice de l'eau reste mystérieux** (Hugo : « trop clair, un peu moins ? ») : « Sur des plantes, dans la brume ».
   - **Fabriquer prend 1 s après l'appui** (Hugo : « on attend 1 s après le press simple de E »), pas un appui maintenu.
   - **Objets ramassés à gauche de la barre**, comme dans Valheim, Subnautica ou Zelda, qui les empilent sur le côté, loin du nom de l'objet en main.
-  - **Plus de bâtons et de champignons divisés par deux** : 2 bâtons et 3 champignons autour du joueur (5 → 3, arrondi au-dessus pour les 8 spores de la boucle).
+  - **Fougères à eau plus petites** (Hugo, en jeu : trop grandes à côté du Spongeus) : leur taille est tirée entre 0,6 et 0,8 fois le modèle au lieu de 0,9 et 1,2 (`scale` dans `WaterFern.asset`), sans toucher au modèle. Les gouttes suivent la fougère.
+  - **Moins de champignons, autant de bâtons** : 3 champignons autour du joueur au lieu de 5 (arrondi au-dessus de la moitié, pour les 8 spores de la boucle). Les bâtons, d'abord passés de 4 à 2, remontent à 3 : Hugo n'en trouvait plus (« autant de bâtons que de champis »).
   - **L'intro finit par un recul jusqu'au joueur**, qui regarde la graine (Hugo : pour que le joueur voie qu'elle est devant lui).
   - **Fin de démo** : Échap ne faisait rien et le joueur voulait quitter ; la planche « Quitter le jeu » s'ajoute.
 - **Prefabs, câblage de `Game.unity` et données créés par un script d'Editor à usage unique** (CLAUDE.md, « Scenes, prefabs and data ») : la branche a été écrite sans Editor. Le script est lancé une fois, son résultat relu et commité, puis il est supprimé.
@@ -273,7 +275,7 @@ Corrigé à ce moment-là, sans changer ce que les tests exigent :
 | `KeyPromptPlayModeTests.AText_IsReadOnItsPanel_WhichGrowsAroundIt` | PlayMode | Le texte du petit panneau est actif et lu, le panneau grandit autour (échouait avant la correction : texte caché) | ✅ |
 | `SeedFallIntroPlayModeTests` | PlayMode | Au chargement : intro en cours, ni commandes ni objectif, caméra devant la graine qui regarde le feuillage ; puis la graine tombe, la caméra la suit, la vue se resserre ; à la fin, graine au sol, vue et commandes rendues au joueur, interface revenue. Un premier appui affiche l'indice sans passer, un second passe l'intro, graine posée ; l'indice part après 3 s, un appui plus tard le réaffiche sans passer | ✅ |
 | `SlingshotAimPlayModeTests` | PlayMode | Vrai clic droit simulé : le lance-pierre vise et la vue se resserre, encore après l'inventaire (échouait avant la correction : la vue ne se resserrait pas) | ✅ |
-| `GameScenePlayModeTests.SticksMushroomsAndPebbles_AreAroundThePlayer` | PlayMode | 2 bâtons, 3 champignons, 4 cailloux à moins de 50 m | ✅ |
+| `GameScenePlayModeTests.SticksMushroomsAndPebbles_AreAroundThePlayer` | PlayMode | 3 bâtons, 3 champignons, 4 cailloux à moins de 50 m | ✅ |
 | `ItemIconTests.TheDroppedIconMaterial_CutsOutTheTransparentCorners` | EditMode | Le matériau des objets au sol est un asset qui découpe la transparence | ✅ |
 | `ControlMapsTests.Crouching_IsHeldOnCtrl_NotOnC` | EditMode | Ctrl accroupit, C non | ✅ |
 | `ItemTextsTests` | EditMode | Chaque objet a une description dans la table, et sa provenance quand il en a une | ✅ |
@@ -328,6 +330,7 @@ Corrigé à ce moment-là, sans changer ce que les tests exigent :
 | 32 | Tab, survoler chaque objet ; fabriquer le lance-pierre | Nom, description, provenance ; la barre se remplit en 1 s avant que l'objet arrive | ⬜ |
 | 33 | Ramasser quelque chose | « +1 … » à gauche de la barre rapide | ⬜ |
 | 34 | Jouer jusqu'à la fin de l'intro | La vue recule de la graine jusqu'au joueur, qui la voit devant lui | ⬜ |
+| 35 | Entrer dans la brume, regarder une fougère et son Spongeus | La fougère ne cache plus le Spongeus ; ses gouttes tombent de ses feuilles quand elle est pleine | ⬜ |
 
 ## Limitations connues
 
