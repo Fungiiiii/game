@@ -31,6 +31,7 @@ namespace Fungiiiii.Tests.EditMode
             { "PickupLine", At1080 },
             { "TrackedRecipe", At1080 },
             { "TrackedIngredientRow", At1080 },
+            { "ObjectiveNeed", At1080 },
             { "RequirementRow", At1080 },
         };
 
