@@ -74,7 +74,7 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(spongeus.IsWet, Is.False, "The Spongeus drank behind the player's back.");
             Assert.That(fern.IsFull, Is.True);
 
-            look.SetView(0f, 20f);
+            LookAt(game, look, spongeus.transform.position);
             yield return WaitUntil(() => spongeus.IsWet, 15f);
             Assert.That(spongeus.IsWet, Is.True, "The Spongeus did not drink, looked at from 8 m.");
             Assert.That(fern.IsFull, Is.False, "The fern did not dry.");
@@ -178,6 +178,15 @@ namespace Fungiiiii.Tests.PlayMode
         private static System.Collections.Generic.List<WildMushroom> WildSpongeus(Fungiiiii.Game.GameBootstrap game)
         {
             return game.Mushrooms.Where(mushroom => mushroom.Soak != null).ToList();
+        }
+
+        /// <summary>Turns the view to the middle of <paramref name="point"/>'s Spongeus: it wanders around its fern.</summary>
+        private static void LookAt(Fungiiiii.Game.GameBootstrap game, Fungiiiii.Runtime.Player.FirstPersonCamera look, Vector3 point)
+        {
+            var toPoint = point + Vector3.up * 0.3f - game.ViewCamera.transform.position;
+            var yaw = Mathf.Atan2(toPoint.x, toPoint.z) * Mathf.Rad2Deg;
+            var pitch = -Mathf.Atan2(toPoint.y, new Vector2(toPoint.x, toPoint.z).magnitude) * Mathf.Rad2Deg;
+            look.SetView(yaw, pitch);
         }
 
         private static float Flat(Vector3 a, Vector3 b)

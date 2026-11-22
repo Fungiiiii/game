@@ -16,7 +16,7 @@ MonoBehaviour:
   nameKey: item.spongeus
   descriptionKey: 
   sourceKey: 
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 47c72f5c797711c48b6b1e7cb461732b, type: 3}
   color: {r: 0.6117647, g: 0.7647059, b: 0.854902, a: 1}
   maxStackSize: 4
   heldPrefab: {fileID: 0}

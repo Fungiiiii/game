@@ -266,7 +266,7 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(Vector3.Distance(Flat(dropped.transform.position), Flat(player)), Is.LessThan(2.5f), "It is not in front of the player.");
             var picture = dropped.GetComponentInChildren<FacesCamera>();
             Assert.That(picture, Is.Not.Null, "It does not lie as its picture.");
-            Assert.That(picture.GetComponent<Renderer>().sharedMaterial.color, Is.EqualTo(dropped.Item.Color), "Without an icon, its picture is not its colour, as in the inventory.");
+            Assert.That(picture.GetComponent<Renderer>().sharedMaterial.mainTexture, Is.SameAs(dropped.Item.Icon.texture), "Its picture is not its icon, as in the inventory.");
 
             game.SetInventoryOpen(false);
             yield return Wait(1f);

@@ -16,7 +16,7 @@ MonoBehaviour:
   nameKey: item.net
   descriptionKey: item.net.description
   sourceKey: 
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: ad9f5bedb84e3394881db5149d67d2ed, type: 3}
   color: {r: 0.82, g: 0.74, b: 0.52, a: 1}
   maxStackSize: 1
   heldPrefab: {fileID: 0}

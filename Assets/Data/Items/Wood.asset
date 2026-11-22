@@ -16,7 +16,7 @@ MonoBehaviour:
   nameKey: item.wood
   descriptionKey: 
   sourceKey: item.wood.source
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: ae4c44d06b4767143a3c00919b49c8d0, type: 3}
   color: {r: 0.5411765, g: 0.372549, b: 0.2588235, a: 1}
   maxStackSize: 16
   heldPrefab: {fileID: 0}

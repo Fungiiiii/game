@@ -33,6 +33,9 @@ namespace Fungiiiii.Items
         [SerializeField, Min(0f)]
         private float floatHeight = 0.35f;
 
+        private static readonly int AlphaClipId = Shader.PropertyToID("_AlphaClip");
+        private static readonly int CutoffId = Shader.PropertyToID("_Cutoff");
+
         private readonly List<DroppedItem> items = new List<DroppedItem>();
         private readonly List<Material> materials = new List<Material>();
         private InventoryScreen screen;
@@ -123,6 +126,12 @@ namespace Fungiiiii.Items
             if (item.Icon != null)
             {
                 material.mainTexture = item.Icon.texture;
+
+                // The icon's transparent corners are cut out, not drawn as a dark square.
+                material.SetFloat(AlphaClipId, 1f);
+                material.SetFloat(CutoffId, 0.5f);
+                material.EnableKeyword("_ALPHATEST_ON");
+                material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
             }
 
             materials.Add(material);

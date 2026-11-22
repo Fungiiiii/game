@@ -16,7 +16,7 @@ MonoBehaviour:
   nameKey: item.slingshot
   descriptionKey: item.slingshot.description
   sourceKey: 
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: dc90b4cc82a43034393422a0d5575d0d, type: 3}
   color: {r: 0.70980394, g: 0.43529412, b: 0.2627451, a: 1}
   maxStackSize: 1
   heldPrefab: {fileID: 0}

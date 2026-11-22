@@ -16,7 +16,7 @@ MonoBehaviour:
   nameKey: item.pebble
   descriptionKey: 
   sourceKey: item.pebble.source
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 32dceb05e31c24c4fbd1a259dc15214c, type: 3}
   color: {r: 0.49019608, g: 0.5137255, b: 0.54509807, a: 1}
   maxStackSize: 16
   heldPrefab: {fileID: 0}
