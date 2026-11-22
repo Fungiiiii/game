@@ -34,6 +34,9 @@ namespace Fungiiiii.Gathering
         [SerializeField]
         private GatherableDefinition sporeMushrooms;
 
+        [SerializeField]
+        private GatherableDefinition pebbles;
+
         [Header("Where they stand")]
         [Tooltip("Decor mushroom of the forest: the Terrain's instances of it become spore spots.")]
         [SerializeField]
@@ -79,10 +82,27 @@ namespace Fungiiiii.Gathering
         [SerializeField, Min(0f)]
         private float mushroomClearance = 1.2f;
 
+        [Tooltip("Pebbles are scattered over the playable area, this far apart, in metres.")]
+        [SerializeField, Min(1f)]
+        private float pebbleSpacing = 12f;
+
+        [Tooltip("No pebble on ground steeper than this, in degrees.")]
+        [SerializeField, Range(0f, 90f)]
+        private float pebbleMaxSlope = 30f;
+
+        [Tooltip("Size of a pebble, drawn between these two scales.")]
+        [SerializeField]
+        private Vector2 pebbleScale = new Vector2(0.8f, 1.2f);
+
+        [Tooltip("No pebble closer than this to a stick or a spore mushroom spot, nor to another pebble, in metres.")]
+        [SerializeField, Min(0f)]
+        private float pebbleClearance = 1.5f;
+
         private readonly List<Gatherable> gatherables = new List<Gatherable>();
         private readonly List<GatherableField> fields = new List<GatherableField>();
         private readonly List<GatherableSpot> mushroomSpots = new List<GatherableSpot>();
         private readonly List<GatherableSpot> stickSpots = new List<GatherableSpot>();
+        private readonly List<GatherableSpot> pebbleSpots = new List<GatherableSpot>();
 
         /// <summary>Raised for every stick or mushroom built, so that the interact control can use it.</summary>
         public event Action<Gatherable> GatherableCreated;
@@ -96,14 +116,18 @@ namespace Fungiiiii.Gathering
         /// <summary>Every place a stick may appear.</summary>
         public IReadOnlyList<GatherableSpot> StickSpots => stickSpots;
 
+        public IReadOnlyList<GatherableSpot> PebbleSpots => pebbleSpots;
+
         public GatherableDefinition Sticks => sticks;
 
         public GatherableDefinition SporeMushrooms => sporeMushrooms;
 
+        public GatherableDefinition Pebbles => pebbles;
+
         /// <summary>What is missing for the component to work, or null when it is sound.</summary>
         public string FindProblem()
         {
-            if (settings == null || sticks == null || sporeMushrooms == null || decorMushroomPrefab == null)
+            if (settings == null || sticks == null || sporeMushrooms == null || pebbles == null || decorMushroomPrefab == null)
             {
                 return $"{name} lacks its settings, a kind or the decor mushroom.";
             }
@@ -113,7 +137,7 @@ namespace Fungiiiii.Gathering
                 return $"{name} has no tree, or an empty one.";
             }
 
-            return sticks.FindProblem() ?? sporeMushrooms.FindProblem();
+            return sticks.FindProblem() ?? sporeMushrooms.FindProblem() ?? pebbles.FindProblem();
         }
 
         /// <summary>Finds every spot in the forest, then fills the bubble of each player.</summary>
@@ -136,11 +160,19 @@ namespace Fungiiiii.Gathering
                 new System.Random(random.Next()),
                 stickSpots);
 
-            AddMoreMushroomSpots(terrain, random);
+            var paths = new List<ExclusionCircle>();
+            foreach (var path in FindObjectsByType<ScatterExclusionPath>(FindObjectsSortMode.InstanceID))
+            {
+                paths.AddRange(path.ToCircles());
+            }
+
+            AddMoreMushroomSpots(terrain, paths, random);
             ForestResourceSpots.RemoveOverlaps(mushroomSpots, stickSpots, mushroomStickClearance, mushroomClearance, ForestResourceSpots.TouchesTrunkOrRock);
+            FindPebbleSpots(terrain, paths, random);
 
             AddField(sporeMushrooms, mushroomSpots, players, outlines, random);
             AddField(sticks, stickSpots, players, outlines, random);
+            AddField(pebbles, pebbleSpots, players, outlines, random);
         }
 
 
@@ -148,7 +180,7 @@ namespace Fungiiiii.Gathering
         /// Spore spots at the foot of the trees and scattered over the forest, out of its
         /// paths: with the decor mushrooms alone, some places had too few within reach.
         /// </summary>
-        private void AddMoreMushroomSpots(Terrain terrain, System.Random random)
+        private void AddMoreMushroomSpots(Terrain terrain, IReadOnlyList<ExclusionCircle> paths, System.Random random)
         {
             var pose = new MushroomPose(
                 Mathf.Min(mushroomScale.x, mushroomScale.y),
@@ -166,12 +198,6 @@ namespace Fungiiiii.Gathering
                 new System.Random(random.Next()),
                 mushroomSpots);
 
-            var paths = new List<ExclusionCircle>();
-            foreach (var path in FindObjectsByType<ScatterExclusionPath>(FindObjectsSortMode.InstanceID))
-            {
-                paths.AddRange(path.ToCircles());
-            }
-
             ForestResourceSpots.ScatterMushroomSpots(
                 terrain,
                 playableArea,
@@ -184,6 +210,28 @@ namespace Fungiiiii.Gathering
         }
 
 
+
+        /// <summary>
+        /// Pebbles lie on the ground out of the paths, away from trunks, rocks, sticks and
+        /// mushrooms. They have no fall height: they rise out of the ground when they appear.
+        /// </summary>
+        private void FindPebbleSpots(Terrain terrain, IReadOnlyList<ExclusionCircle> paths, System.Random random)
+        {
+            var pose = new MushroomPose(Mathf.Min(pebbleScale.x, pebbleScale.y), Mathf.Max(pebbleScale.x, pebbleScale.y), 0f);
+            ForestResourceSpots.ScatterMushroomSpots(
+                terrain,
+                playableArea,
+                pebbleSpacing,
+                pebbleMaxSlope,
+                paths,
+                pose,
+                new System.Random(random.Next()),
+                pebbleSpots);
+
+            var taken = new List<GatherableSpot>(stickSpots);
+            taken.AddRange(mushroomSpots);
+            ForestResourceSpots.RemoveOverlaps(pebbleSpots, taken, pebbleClearance, pebbleClearance, ForestResourceSpots.TouchesTrunkOrRock);
+        }
 
         private void AddField(GatherableDefinition kind, List<GatherableSpot> spots, IReadOnlyList<FieldPlayer> players, ItemOutlineFactory outlines, System.Random random)
         {

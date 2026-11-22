@@ -662,6 +662,7 @@ MonoBehaviour:
   settings: {fileID: 11400000, guid: de0456ff4ea042fd8eb0d08894845bdf, type: 2}
   sticks: {fileID: 11400000, guid: d628afe4252742f48468197ecf43906f, type: 2}
   sporeMushrooms: {fileID: 11400000, guid: ef5edbe654ec438ab545a8e52432abce, type: 2}
+  pebbles: {fileID: 11400000, guid: cc4733c150de4508a14f89b05c50aa59, type: 2}
   decorMushroomPrefab: {fileID: 8709750313228204993, guid: e27606cd8d7d8d0459eaae41bc1ef239, type: 3}
   treePrefabs:
   - {fileID: 3639511678845886649, guid: 65e03e28a12b3e248ae0862b5a2258aa, type: 3}
@@ -681,6 +682,10 @@ MonoBehaviour:
   mushroomScale: {x: 0.8, y: 1.7}
   mushroomStickClearance: 1.5
   mushroomClearance: 1.2
+  pebbleSpacing: 12
+  pebbleMaxSlope: 30
+  pebbleScale: {x: 0.8, y: 1.2}
+  pebbleClearance: 1.5
 --- !u!1 &1100000011
 GameObject:
   m_ObjectHideFlags: 0
