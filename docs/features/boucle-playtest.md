@@ -26,6 +26,11 @@
 - [ ] Planter, tirer et capturer demandent l'objet en main (case sélectionnée de la barre rapide). Déposer et fabriquer prennent les ressources n'importe où dans l'inventaire.
 - [ ] Ce qui porte un contour peut servir. Le texte au-dessus de la cible dit ce qui manque.
 
+**Intro : la graine qui tombe**
+
+- [ ] Au lancement d'une partie (Jouer), la caméra est devant l'arbre géant, côté départ, et regarde son feuillage. La graine en tombe en tournant, la caméra la suit et la vue se resserre sur elle. Une fois la graine au sol, la vue revient au joueur, au départ, qui prend la main. Environ 4 s.
+- [ ] Pendant l'intro, aucune interface (barre rapide, objectif, jauges, aides, touche) et aucune commande. N'importe quel bouton (clavier, souris, manette) la passe : la graine est alors posée au sol, le joueur a la main.
+
 **Graine et trous de taupe**
 
 - [ ] La graine est posée au pied de l'arbre géant, avec le contour de ce qui se ramasse. E la ramasse.
@@ -136,6 +141,7 @@ Chemins relatifs à `Assets/Scripts/`.
 
 Validées par Hugo le 22/11 :
 
+- **L'intro de la graine** (Hugo, 22/11 : « on voit un zoom sur la graine qui tombe de l'arbre géant ») : `SeedFallIntro`, dans `Game.unity`, emprunte la caméra du joueur (la scène garde une seule caméra) et coupe `FirstPersonCamera` et `PlayerControls` le temps du plan. La graine tombe avec `FallIn`, l'animation des bâtons, de `fallHeight` (18 m). La caméra se place à `cameraDistance` (7 m) de la graine, du côté du départ, l'arbre derrière. Durée : 0,6 s sur le feuillage, la chute (1,9 s), 1,2 s sur la graine au sol ; la vue passe de 60° à 30°. Les canvas de l'interface sont listés sur le composant et cachés pendant le plan. N'importe quel bouton passe l'intro (`InputSystem.onAnyButtonPress`). Les tests chargent la partie et passent l'intro (`game.Intro.Skip()`), sauf ceux de l'intro. `FirstPersonCamera` revient sur le joueur dès qu'elle est réactivée (`OnEnable`), pas une image plus tard : sinon, juste après l'intro passée, la vue est encore devant l'arbre.
 - **La graine se trouve au pied de l'arbre géant** et se plante dans un trou de taupe, pas n'importe où. Les autres trous serviront aux Champimaisons suivantes.
 - **Réveiller la graine coûte 1 Eau + 3 Spores**, le palier 2 coûte 5 Eaux + 5 Spores + 5 Bois. Le fil vient de la Champimaison réveillée : le filet arrive après le palier 1, la capture devient rentable au palier 2.
 - **Tuer un Spongeus ne donne de l'eau que s'il est mouillé** : le joueur observe avant de tirer.
@@ -222,17 +228,18 @@ Corrigé à ce moment-là, sans changer ce que les tests exigent :
 | `SlingshotPlayModeTests.TheFirstFernsMet_AreFull_EachWithASpongeus_AndNoSpongeusLivesAwayFromTheFerns` | PlayMode | Les 3 premières fougères croisées sont pleines, un Spongeus chacune ; des Spongeus sur une partie des fougères seulement ; aucun loin d'une fougère | ✅ |
 | `SlingshotPlayModeTests.AWildSpongeus_DrinksOnlyNearThePlayer_AndLookedAt` | PlayMode | Joueur loin : 6 s sans boire ; joueur à 8 m, dos tourné : 5 s sans boire ; joueur à 8 m qui le regarde : il boit, la fougère sèche | ✅ |
 | `KeyPromptPlayModeTests.AText_IsReadOnItsPanel_WhichGrowsAroundIt` | PlayMode | Le texte du petit panneau est actif et lu, le panneau grandit autour (échouait avant la correction : texte caché) | ✅ |
+| `SeedFallIntroPlayModeTests` | PlayMode | Au chargement : intro en cours, ni commandes ni objectif, caméra devant la graine qui regarde le feuillage ; puis la graine tombe, la caméra la suit, la vue se resserre ; à la fin, graine au sol, vue et commandes rendues au joueur, interface revenue. Un bouton passe l'intro, graine posée | ✅ |
 | `SlingshotAimPlayModeTests` | PlayMode | Vrai clic droit simulé : le lance-pierre vise et la vue se resserre, encore après l'inventaire (échouait avant la correction : la vue ne se resserrait pas) | ✅ |
 | `GameScenePlayModeTests.SticksMushroomsAndPebbles_AreAroundThePlayer` | PlayMode | 4 cailloux à moins de 50 m, comme les bâtons | ✅ |
 | `KeyPromptPlayModeTests` (4 tests ajoutés) | PlayMode | Triangle sans bord pour un appui ; bord vide puis rempli, sans triangle, pour un maintien ; les deux ensemble ; texte à la place de la touche | ✅ |
 | `ChampimaisonPlayModeTests.Aimed_TheChampimaison_ShowsItsKeysInItsPanel_NotOverIt` | PlayMode | Pas de touche flottante sur la Champimaison visée ; « Déposer » au pied du panneau ; pas de touche d'appui court inutile ; pied caché hors de portée | ✅ |
 
-**Tests existants dont l'exigence change :** dans `SlingshotPlayModeTests`, le Spongeus qu'on fait boire a le joueur à 8 m (il ne boit que sous ses yeux), et `AFelledWetSpongeus_LetsGoOfWater_ADryOneOfNothing` vide toutes les fougères avant d'abattre le Spongeus sec ; `FungalNetworkTests` (réécrit) ; dans `GameScenePlayModeTests`, le test de départ vérifie les mains vides et l'absence de Champimaison, `TheNet_StartsInTheFirstSlotOfTheQuickBar_InHand` devient `ThePlayer_StartsEmptyHanded_TheNetPutInTheQuickBarIsInHand`, les tests du filet reçoivent le filet (`LoadGameWithNet`), le test de l'objet jeté cherche le filet parmi les objets au sol (la graine y est aussi) ; `ItemNamesPlayModeTests` met le filet dans la case ; les tests de reset (`Reset_*`, `CloseAll_*`, `Clear_*`) sont retirés avec le reset ; le test de capture calme sa cible et reprend le filet lui-même ; `SpongeusCompanionPlayModeTests.Aimed_TheSpongeus_ShowsTheKey_WithoutRingUntilHeld_AndTheHoldHint` devient `Aimed_AnEmptySpongeus_ShowsTheKeyWithItsEmptyBorder_AndTheHoldHint` (le bord est visible avant l'appui, sans triangle) ; `GameScenePlayModeTests.TheKey_ShowsEAboveTheTarget_AndFollowsIt` vérifie en plus le triangle.
+**Tests existants dont l'exigence change :** chaque chargement de la partie dans les tests passe l'intro (`game.Intro.Skip()`) ; dans `SlingshotPlayModeTests`, le Spongeus qu'on fait boire a le joueur à 8 m (il ne boit que sous ses yeux), et `AFelledWetSpongeus_LetsGoOfWater_ADryOneOfNothing` vide toutes les fougères avant d'abattre le Spongeus sec ; `FungalNetworkTests` (réécrit) ; dans `GameScenePlayModeTests`, le test de départ vérifie les mains vides et l'absence de Champimaison, `TheNet_StartsInTheFirstSlotOfTheQuickBar_InHand` devient `ThePlayer_StartsEmptyHanded_TheNetPutInTheQuickBarIsInHand`, les tests du filet reçoivent le filet (`LoadGameWithNet`), le test de l'objet jeté cherche le filet parmi les objets au sol (la graine y est aussi) ; `ItemNamesPlayModeTests` met le filet dans la case ; les tests de reset (`Reset_*`, `CloseAll_*`, `Clear_*`) sont retirés avec le reset ; le test de capture calme sa cible et reprend le filet lui-même ; `SpongeusCompanionPlayModeTests.Aimed_TheSpongeus_ShowsTheKey_WithoutRingUntilHeld_AndTheHoldHint` devient `Aimed_AnEmptySpongeus_ShowsTheKeyWithItsEmptyBorder_AndTheHoldHint` (le bord est visible avant l'appui, sans triangle) ; `GameScenePlayModeTests.TheKey_ShowsEAboveTheTarget_AndFollowsIt` vérifie en plus le triangle.
 
 ### Manuels (dans Unity)
 | # | Étapes | Résultat attendu | OK |
 |---|---|---|---|
-| 1 | `Game.unity`, Play | Mains vides, barre rapide vide. Objectif « Découvre ce qui se passe sous le grand arbre » en haut à droite, sur une plaque sombre | ⬜ |
+| 1 | `Game.unity`, Play, sans toucher à rien | L'intro : la graine tombe du feuillage de l'arbre géant, la caméra la suit et zoome, puis la vue revient au départ. Ensuite : mains vides, barre rapide vide. Objectif « Découvre ce qui se passe sous le grand arbre » en haut à droite, sur une plaque sombre | ⬜ |
 | 2 | Aller à l'arbre géant | La graine, contourée, au pied de l'arbre, sous une lueur violet clair qui respire. E la ramasse, la lueur part avec elle | ⬜ |
 | 3 | Viser un trou de taupe, graine dans le sac | « Prends la graine en main » sur un petit panneau en bois | ⬜ |
 | 4 | Graine en main, viser le trou, puis E | Touche E avec le triangle sur son bord haut. Puis la Champimaison apparaît, panneau « Réveiller la graine 1/2 », « Eau 0/1 » et « Spores 0/3 » en corail. Les autres trous n'ont plus de contour | ⬜ |
@@ -254,6 +261,7 @@ Corrigé à ce moment-là, sans changer ce que les tests exigent :
 | 20 | Comparer les touches en jeu au canevas « Panneaux en bois » | Bois clair sans liseré, triangle à cheval sur le bord haut, bord collé à la touche ; touches des aides en bas de l'écran de la même couleur | ⬜ |
 | 21 | Depuis le départ, regarder autour, puis suivre le chemin vers l'arbre géant | Un trou de taupe contouré dans une petite clairière à droite du départ, un autre à gauche du chemin à mi-route, un derrière la clairière de l'arbre ; aucun sur un chemin | ⬜ |
 | 22 | Lance-pierre en main avec des cailloux : maintenir clic droit ; Tab, Tab ; maintenir clic droit | La vue se resserre et l'arc s'affiche les deux fois ; clic gauche tire pendant la visée | ⬜ |
+| 23 | Jouer, puis appuyer sur une touche pendant que la graine tombe ; recommencer avec un clic et à la manette | L'intro s'arrête aussitôt, la vue revient au joueur, la graine est au sol au pied de l'arbre | ⬜ |
 
 ## Limitations connues
 
