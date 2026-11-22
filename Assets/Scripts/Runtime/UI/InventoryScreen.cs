@@ -15,7 +15,8 @@ namespace Fungiiiii.UI
     /// and goes back to its slot when the screen closes. As in Minecraft, a click out of
     /// the panel drops what is held, the whole stack or one item, and the drop control
     /// drops one item of the slot under the pointer or the gamepad's focus. Items show as squares of their
-    /// colour until their icons are drawn.
+    /// colour until their icons are drawn. The crafting panel, when the screen has one,
+    /// stands to its right: the gamepad moves from the slots to the recipes and back.
     /// </summary>
     public sealed class InventoryScreen : MonoBehaviour, IGameScreen, IHintSource
     {
@@ -50,6 +51,10 @@ namespace Fungiiiii.UI
         [Tooltip("The name of the item in the slot in focus, by the slot.")]
         [SerializeField]
         private ItemNamePlate namePlate;
+
+        [Tooltip("Optional: the crafting panel next to the inventory.")]
+        [SerializeField]
+        private CraftingPanel crafting;
 
         private PlayerInventory inventory;
         private InventoryLayout layout = InventoryLayout.Standard;
@@ -172,6 +177,33 @@ namespace Fungiiiii.UI
         /// <summary>The screen's title, for tests.</summary>
         internal Text Title => title;
 
+        /// <summary>The crafting panel next to the inventory; null on a screen without one.</summary>
+        internal CraftingPanel Crafting => crafting;
+
+        /// <summary>The top slot of the bag's right column: where the stick goes left from the recipes.</summary>
+        internal Selectable RightmostSlot => SelectableOf(BagColumnCount - 1);
+
+        /// <summary>Right of the bag's right column and of the quick bar's last slot, the stick goes to <paramref name="target"/>.</summary>
+        internal void LinkRightTo(Selectable target)
+        {
+            for (var index = 0; index < layout.SlotCount; index++)
+            {
+                var isBag = !layout.IsInQuickBar(index);
+                var isRightmost = isBag
+                    ? index % BagColumnCount == BagColumnCount - 1 || index == layout.BagSlotCount - 1
+                    : index == layout.QuickBarSlot(layout.QuickBarSlotCount - 1);
+                if (!isRightmost)
+                {
+                    continue;
+                }
+
+                var selectable = SelectableOf(index);
+                var navigation = selectable.navigation;
+                navigation.selectOnRight = target;
+                selectable.navigation = navigation;
+            }
+        }
+
         private void Awake()
         {
             if (inventory == null)
@@ -202,8 +234,11 @@ namespace Fungiiiii.UI
         {
             if (focusedSlot == NoSlot)
             {
-                // Nothing to move from yet: the first push selects the first slot.
-                if (navigateAction != null && navigateAction.WasPerformedThisFrame() && navigateAction.ReadValue<Vector2>() != Vector2.zero)
+                // Nothing to move from yet, not even a recipe: the first push selects the first slot.
+                if (navigateAction != null
+                    && navigateAction.WasPerformedThisFrame()
+                    && navigateAction.ReadValue<Vector2>() != Vector2.zero
+                    && EventSystem.current.currentSelectedGameObject == null)
                 {
                     EventSystem.current.SetSelectedGameObject(slotViews[0].gameObject);
                 }

@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Inventory.ItemDefinition
   id: net
   nameKey: item.net
+  descriptionKey: item.net.description
+  sourceKey: 
   icon: {fileID: 0}
   color: {r: 0.82, g: 0.74, b: 0.52, a: 1}
   maxStackSize: 1

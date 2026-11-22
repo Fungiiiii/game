@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Inventory.ItemDefinition
   id: spore
   nameKey: item.spore
+  descriptionKey: 
+  sourceKey: item.spore.source
   icon: {fileID: 0}
   color: {r: 0.5568627, g: 0.4235294, b: 0.7215686, a: 1}
   maxStackSize: 16

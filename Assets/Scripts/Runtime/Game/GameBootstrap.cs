@@ -4,6 +4,7 @@ using Fungiiiii.Capture;
 using Fungiiiii.Champimaison;
 using Fungiiiii.Companions;
 using Fungiiiii.Controls;
+using Fungiiiii.Crafting;
 using Fungiiiii.Gathering;
 using Fungiiiii.Interaction;
 using Fungiiiii.Inventory;
@@ -106,6 +107,10 @@ namespace Fungiiiii.Game
         [SerializeField]
         private PickupFeed pickupFeed;
 
+        [Tooltip("Top right: the objective and the recipes tracked.")]
+        [SerializeField]
+        private ObjectiveHud objectiveHud;
+
         [Tooltip("What the Champimaison's next stage costs, over it.")]
         [SerializeField]
         private RequirementPanel requirementPanel;
@@ -144,6 +149,7 @@ namespace Fungiiiii.Game
         private PlayerHands hands;
         private NetTargetOutline targetOutline;
         private SessionTerrain sessionTerrain;
+        private GameObjectives objectives;
 
         /// <summary>True once the forest is loaded and the loop is built.</summary>
         public bool IsReady { get; private set; }
@@ -170,6 +176,15 @@ namespace Fungiiiii.Game
         public FungalHole Hole => moleHoles.Champimaison;
 
         public MoleHoles MoleHoles => moleHoles;
+
+        /// <summary>The recipes the player follows.</summary>
+        public RecipeTracker Tracker { get; } = new RecipeTracker();
+
+        public Objective CurrentObjective => objectives.Current;
+
+        public ObjectiveHud ObjectiveHud => objectiveHud;
+
+        public CraftingPanel Crafting => screens.Inventory.Crafting;
 
         public bool IsInventoryOpen => screens.IsInventoryOpen;
 
@@ -223,6 +238,12 @@ namespace Fungiiiii.Game
             }
 
             outlines?.Dispose();
+            if (objectives != null)
+            {
+                objectives.Changed -= objectiveHud.ShowObjective;
+                objectives.Dispose();
+            }
+
             sessionTerrain?.Dispose();
 
             if (gathering != null)
@@ -291,6 +312,10 @@ namespace Fungiiiii.Game
             SetUpHands();
             moleHoles.Populate(forest, GroundHeight, outlines, interactables, hotbar, Inventory, new System.Random(random.Next()));
             moleHoles.Planted += HandlePlanted;
+            screens.Inventory.Crafting.Bind(Inventory, Tracker, controls, screens.Inventory);
+            objectives = new GameObjectives(Inventory, moleHoles, netItem);
+            objectiveHud.Bind(() => ObjectiveRules.KeyFor(objectives.Current), Tracker, Inventory);
+            objectives.Changed += objectiveHud.ShowObjective;
 
             interactor = player.GetComponent<PlayerInteractor>();
             interactor.Initialize(firstPersonCamera, Inventory, interactables, keyPrompt, controls);
@@ -316,9 +341,14 @@ namespace Fungiiiii.Game
                 return "the player prefab lacks its hands, interact control, net, net target outline or stamina.";
             }
 
-            if (screens == null || hotbar == null || keyPrompt == null || vitalGauges == null || pickupFeed == null || droppedItems == null || requirementPanel == null)
+            if (screens == null || hotbar == null || keyPrompt == null || vitalGauges == null || pickupFeed == null || droppedItems == null || requirementPanel == null || objectiveHud == null)
             {
-                return "the screens, the quick bar, the key prompt, the vital gauges, the pickup feed, the dropped items or the requirement panel are missing.";
+                return "the screens, the quick bar, the key prompt, the vital gauges, the pickup feed, the dropped items, the requirement panel or the objective are missing.";
+            }
+
+            if (screens.Inventory == null || screens.Inventory.Crafting == null)
+            {
+                return "the inventory has no crafting panel.";
             }
 
             if (System.Array.IndexOf(startingQuickBar, null) >= 0)
@@ -337,6 +367,7 @@ namespace Fungiiiii.Game
             }
 
             return screens.FindProblem()
+                ?? screens.Inventory.Crafting.FindProblem()
                 ?? gathering.FindProblem()
                 ?? creatures.FindProblem()
                 ?? refillingPlants.FindProblem()

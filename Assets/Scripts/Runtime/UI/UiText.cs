@@ -53,5 +53,24 @@ namespace Fungiiiii.UI
         public const string PanelAwakenTitle = "panel.awaken_title";
         public const string PanelGrowTitle = "panel.grow_title";
         public const string PanelInBackpack = "panel.in_backpack";
+
+        // The crafting panel, next to the inventory.
+        public const string CraftTitle = "craft.title";
+        public const string CraftPossible = "craft.possible";
+        public const string CraftMissing = "craft.missing";
+        public const string CraftChoose = "craft.choose";
+        public const string CraftTracked = "craft.tracked";
+        public const string HintCraft = "hint.craft";
+        public const string HintTrack = "hint.track";
+        public const string HintUntrack = "hint.untrack";
+
+        // The objective, top right, and the recipes tracked under it.
+        public const string ObjectiveTitle = "objective.title";
+        public const string ObjectiveFindSeed = "objective.find_seed";
+        public const string ObjectivePlantSeed = "objective.plant_seed";
+        public const string ObjectiveAwakenSeed = "objective.awaken_seed";
+        public const string ObjectiveCraftNet = "objective.craft_net";
+        public const string ObjectiveGrow = "objective.grow";
+        public const string ObjectiveEnter = "objective.enter";
     }
 }

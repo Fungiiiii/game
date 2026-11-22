@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Inventory.ItemDefinition
   id: water
   nameKey: item.water
+  descriptionKey: 
+  sourceKey: item.water.source
   icon: {fileID: 0}
   color: {r: 0.2901961, g: 0.5647059, b: 0.78431374, a: 1}
   maxStackSize: 16

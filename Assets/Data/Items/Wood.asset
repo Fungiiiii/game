@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Inventory.ItemDefinition
   id: wood
   nameKey: item.wood
+  descriptionKey: 
+  sourceKey: item.wood.source
   icon: {fileID: 0}
   color: {r: 0.5411765, g: 0.372549, b: 0.2588235, a: 1}
   maxStackSize: 16

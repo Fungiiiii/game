@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9da2929de734f77a681be6e8c989863, type: 3}
+  m_Name: RecipeBook
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Crafting.RecipeBook
+  recipes:
+  - {fileID: 11400000, guid: 0f8076cee5c54898875f9ea814f7a111, type: 2}
+  - {fileID: 11400000, guid: a835ce9d5ded40819e940086f9f34eb0, type: 2}

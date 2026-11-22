@@ -19,6 +19,14 @@ namespace Fungiiiii.Inventory
         [SerializeField]
         private string nameKey;
 
+        [Tooltip("Key of a short description in the UI string table, shown by a recipe that makes the item. Empty: none.")]
+        [SerializeField]
+        private string descriptionKey;
+
+        [Tooltip("Key of where the item comes from in the UI string table, shown when a recipe lacks it. Empty: none.")]
+        [SerializeField]
+        private string sourceKey;
+
         [Tooltip("What the interface shows for the item. Empty, it shows a square of the colour below.")]
         [SerializeField]
         private Sprite icon;
@@ -37,6 +45,12 @@ namespace Fungiiiii.Inventory
         public string Id => id;
 
         public string NameKey => nameKey;
+
+        /// <summary>Null or empty when the item has no description.</summary>
+        public string DescriptionKey => descriptionKey;
+
+        /// <summary>Where the item comes from; null or empty when it says nothing.</summary>
+        public string SourceKey => sourceKey;
 
         /// <summary>Null until the item's icon is drawn: the interface shows a square of <see cref="Color"/> instead.</summary>
         public Sprite Icon => icon;
