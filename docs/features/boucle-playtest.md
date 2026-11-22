@@ -33,28 +33,28 @@
 
 **Intro : la graine qui tombe**
 
-- [ ] Au lancement d'une partie (Jouer), la caméra est devant l'arbre géant, côté départ, et regarde son feuillage. La graine en tombe en tournant, la caméra la suit et la vue se resserre sur elle. Une fois la graine au sol, la vue revient au joueur, au départ, qui prend la main. Environ 4 s.
+- [ ] Au lancement d'une partie (Jouer), la caméra est devant l'arbre géant, côté départ, et regarde son feuillage. La graine en tombe en tournant, la caméra la suit et la vue se resserre sur elle. Une fois la graine au sol, la vue recule de la graine jusqu'aux yeux du joueur en 1,6 s, en s'élargissant, la graine toujours en vue : le joueur la voit droit devant lui quand il prend la main. Environ 5,5 s.
 - [ ] Pendant l'intro, aucune interface (barre rapide, objectif, jauges, aides, touche) et aucune commande. Deux appuis la passent, comme dans les autres jeux, pour ne pas la perdre par erreur : au premier appui de n'importe quel bouton (clavier, souris, manette), « Appuie encore pour passer » s'affiche en bas à droite pendant 3 s ; un second appui pendant ce temps passe l'intro. La graine est alors posée au sol, le joueur a la main.
 
 **Graine et trous de taupe**
 
 - [ ] La graine est posée au pied de l'arbre géant, avec le contour de ce qui se ramasse. E la ramasse.
 - [ ] De petits trous de terre sont placés dans la forêt, sur les 9 emplacements de Champimaison : chacun dans une petite clairière, à 12–25 m d'un chemin, du départ (à 20 m, sur la droite) jusqu'aux pierres levées. Placeholder : des cubes de terre en rond, posés dans le sol, autour d'un petit trou de quelques centimètres qui s'enfonce. Tant qu'aucune graine n'est plantée, ils portent un contour crème fin.
-- [ ] Visé, un trou passe au contour cyan et affiche, sur un petit panneau en bois, « Nécessite une graine » sans graine ou « Prends la graine en main » si elle est dans le sac ; graine en main, la touche E avec le triangle de l'appui simple (« Planter » dans les aides en bas à droite).
+- [ ] Visé, un trou passe au contour cyan et affiche, sur un petit panneau en bois, « Nécessite une graine » sans graine ou « Prends la graine en main » si elle est dans le sac ; graine en main, la touche E avec le triangle de l'appui simple et « Planter » à sa droite.
 - [ ] Planter consomme la graine. Ce trou devient la Champimaison. Les autres trous restent, sans contour ni interaction.
 
 **Champimaison**
 
 - [ ] Au-dessus de la Champimaison, un panneau en bois avec sa pointe vers elle : le titre (« Faire germer la graine », « Améliorer la Champimaison ») et le palier à droite (« 1/2 ») ; une ligne pointillée ; une ligne par ressource : icône dans un creux sombre, nom, « N dans le sac » tant qu'elle n'est pas complète, « déposé/requis » en corail quand le sac n'en a pas, en or quand il en a, en vert avec une coche une fois complète.
-- [ ] Quand la Champimaison est visée, le pied du panneau montre ses touches, et aucune touche ne flotte au-dessus d'elle : E avec le triangle et « Récupérer le fil » ou « Entrer » pour l'appui court ; E avec son bord, « Maintenir » et « Déposer », « Réveiller » ou « Améliorer » pour l'appui long. Le bord se remplit pendant l'appui. Une touche qui ne ferait rien n'est pas montrée ; sans touche, le pied et sa ligne pointillée disparaissent.
+- [ ] Quand la Champimaison est visée, le pied du panneau montre ses touches, et aucune touche ne flotte au-dessus d'elle : E avec le triangle et « Entrer » pour l'appui court ; E avec son bord, « Maintenir » et « Déposer », « Faire germer » ou « Améliorer » pour l'appui long. Le bord se remplit pendant l'appui. Une touche qui ne ferait rien n'est pas montrée ; sans touche, le pied et sa ligne pointillée disparaissent.
 - [ ] Une fois le dernier palier atteint, le panneau ne garde que la touche « Entrer ».
 - [ ] E maintenu dépose ce que le joueur porte et qui manque encore, jamais plus. La Champimaison garde ce qui a été déposé. Le dernier dépôt déclenche le palier.
-- [ ] Palier 1 (1 Eau + 3 Spores) : la graine se réveille, le réseau fongique pousse. La Champimaison produit du fil de mycélium, qu'un appui court sur E récupère.
+- [ ] Palier 1 (1 Eau + 3 Spores) : la graine germe, le réseau fongique pousse. La Champimaison produit du fil de mycélium (un toutes les 20 s, 3 au plus), qu'un appui court sur E récupère. Tant que du fil attend et que le joueur est à moins de 12 m, une ligne à part, sous le panneau, montre E et « Récupérer le fil », et pulse doucement.
 - [ ] Palier 2 (5 Eaux + 5 Spores + 5 Bois) : la Champimaison devient une entrée. Appui court sur E « Entrer » : un intérieur simple, puis « Fin de la démo, merci d'avoir joué » et la planche **Accueil**.
 
 **Cailloux**
 
-- [ ] Des cailloux ramassables apparaissent autour du joueur, comme les bâtons : 4 à moins de 50 m au départ, aucun à moins de 8 m ; toutes les 5 s, s'il en manque, 1 au plus entre 20 et 50 m, plus souvent devant le joueur ; disparus au-delà de 75 m ; 30 au plus.
+- [ ] Des cailloux ramassables apparaissent autour du joueur, comme les bâtons (2 bâtons et 3 champignons à spores gardés autour du joueur, 15 et 20 au plus sur la carte) : 4 cailloux à moins de 50 m au départ, aucun à moins de 8 m ; toutes les 5 s, s'il en manque, 1 au plus entre 20 et 50 m, plus souvent devant le joueur ; disparus au-delà de 75 m ; 30 au plus.
 - [ ] Ils sortent du sol, hors des chemins, des troncs et des rochers, avec le contour de ce qui se ramasse. Placeholder : un cube gris. Les petits cailloux du décor restent.
 
 **Fabrication**
@@ -64,18 +64,22 @@
 - [ ] Cliquer une recette ouvre ses détails en bas du panneau ; à la manette, la recette sélectionnée s'ouvre : icône, nom, description, ingrédients « possédé / requis ». Un ingrédient qui manque est en corail, avec sa provenance ; un ingrédient en quantité suffisante est en vert, avec une coche.
 - [ ] En bas du panneau : **E Fabriquer** (absent tant qu'il manque un ingrédient) et **R Suivre** / **Ne plus suivre**.
 - [ ] Fabriquer utilise la même touche que déplacer un objet : deuxième clic sur la recette ouverte, ou E ; **A** à la manette. Suivre : R ; **Y** à la manette. Sur une case de l'inventaire, A, X et Y gardent leur rôle.
-- [ ] Fabriquer prend tous les ingrédients d'un coup. L'objet va d'abord dans la barre rapide et s'affiche dans le fil des objets ramassés. Si l'objet ne rentre pas, rien n'est pris.
+- [ ] Fabriquer prend 1 s, comme dans d'autres jeux : une barre se remplit sous l'image de la recette, puis l'objet arrive. Ouvrir une autre recette ou fermer l'inventaire arrête la fabrication, rien n'est pris. Un appui pendant la fabrication ne la relance pas.
+- [ ] Fabriquer prend tous les ingrédients d'un coup, à la fin. L'objet va d'abord dans la barre rapide et s'affiche dans le fil des objets ramassés. Si l'objet ne rentre pas, rien n'est pris.
 - [ ] Recettes : Lance-pierre = 2 Bois + 1 Caillou ; Filet = 3 Fils de mycélium + 2 Bois.
 
 **Haut à droite**
 
 - [ ] L'objectif en cours : « Découvre le secret du grand arbre », « Plante la graine », « Fais germer la graine », « Fabrique un filet », « Améliore la Champimaison », « Entre dans la Champimaison ».
+- [ ] Une fois la graine plantée, sous l'objectif, ce que le palier de la Champimaison demande : une ligne par ressource avec son icône, son nom, « possédé/requis » (déposé et porté comptent) et, tant qu'il en manque, d'où elle vient (« Sur des plantes, dans la brume »).
 - [ ] Sous l'objectif, les recettes suivies, avec leurs ingrédients mis à jour pendant le jeu. Une recette fabriquée n'est plus suivie.
 
 **Spongeus sauvages**
 
-- [ ] Plus aucun champignon dans la clairière du spawn. Les Spongeus vivent dans la brume, et seulement à côté des fougères à eau : un seul, à 2,5 m, sur environ 1 fougère sur 3. Les 3 fougères les plus proches de l'arbre géant (les premières qu'on croise en entrant dans la brume) ont toujours leur Spongeus et sont pleines au départ.
-- [ ] Calme et sec, un Spongeus va boire à une fougère mouillée proche, mais seulement quand le joueur est à moins de 15 m et le regarde (à moins de 40° du centre de la vue) : il boit sous ses yeux, jamais à l'autre bout de la forêt ni dans son dos. Parti boire, il continue tant que le joueur reste à moins de 15 m. Il s'imbibe en 3 s, son chapeau fonce et brille peu à peu. La fougère sèche.
+- [ ] Plus aucun champignon dans la clairière du spawn. Les Spongeus vivent dans la brume, et seulement à côté des fougères à eau : un seul, à 2,5 m, sur environ 1 fougère sur 6. Seuls les 6 plus proches du joueur, à moins de 50 m, sont présents ; au-delà de 60 m, un Spongeus disparaît, et revient à sa place quand le joueur revient. Les 3 fougères les plus proches de l'arbre géant (les premières qu'on croise en entrant dans la brume) ont toujours leur Spongeus et sont pleines au départ.
+- [ ] Calme et sec, un Spongeus va boire à une fougère mouillée proche, mais seulement quand le joueur est à moins de 15 m et le regarde (à moins de 40° du centre de la vue) : il boit sous ses yeux, jamais à l'autre bout de la forêt ni dans son dos. Parti boire, il continue tant que le joueur reste à moins de 15 m. Il s'imbibe en 3 s, l'éponge passe du jaune clair au jaune foncé et brille peu à peu ; plein, des gouttes en tombent, comme de la fougère pleine. La fougère sèche.
+- [ ] Visé, à moins de 15 m, un Spongeus (sauvage ou sorti) montre son nom au-dessus de lui, sur un petit panneau en bois. Rien à travers un tronc.
+- [ ] Le joueur s'accroupit en maintenant Ctrl (avant : C). Accroupi derrière un Spongeus calme, hors de ce qu'il voit (plus de 100° de l'avant), le joueur n'est pas remarqué. Si le Spongeus a bu, E « Presser » à moins de 1,8 m donne 1 Eau ; il fuit, sec. Debout, ou de face, il remarque le joueur à 3,5 m comme avant. Pas de capture sans filet.
 
 **Lance-pierre**
 
@@ -91,7 +95,22 @@ Le canevas Claude Design « Panneaux en bois » (https://claude.ai/artifact/6QKk
 - [ ] Une touche qui peut être maintenue porte un bord collé autour d'elle, aux coins coupés comme elle, visible dès que la cible est visée : piste crème transparente, remplie de cyan pendant l'appui, depuis le coin haut gauche et dans le sens des aiguilles d'une montre. Une touche qui fait les deux (Spongeus plein : presser ou reprendre) porte les deux.
 - [ ] Un panneau en bois a des coins coupés, une arête claire en haut, un dessous sombre, une facette plus sombre sur sa partie droite, et une pointe sous lui vers ce qu'il désigne.
 - [ ] Les textes qui remplacent la touche (« Nécessite une graine », « Nécessite un Spongeus ») sont sur un petit panneau en bois.
-- [ ] Les aides de touches en bas de l'écran ne portent ni triangle ni bord : elles listent, elles ne désignent pas une cible.
+- [ ] Les aides de touches en bas de l'écran ne portent ni triangle ni bord : elles listent, elles ne désignent pas une cible. Ce que fait E sur une cible n'y est plus : il est écrit à droite de la touche flottante, « Presser », « Ramasser »…, et dessous « Maintenir » et ce que fait l'appui long.
+
+**Boussole**
+
+- [ ] En haut au centre, une bande sombre où glissent N, E, S, O quand le joueur tourne, et un « ! » jaune là où est l'objectif : la graine au pied de l'arbre géant ; le trou de taupe le plus proche pour la planter ; tant qu'il manque de l'eau pour le palier, la fougère pleine la plus proche ; sinon la Champimaison ; avant le filet, la Champimaison tant que le fil manque. Objectif derrière : le « ! » reste collé au bord de la bande, du côté où tourner. Cachée pendant l'intro et les menus.
+
+**Inventaire et objets**
+
+- [ ] La case survolée montre, sous le nom de l'objet, à quoi il sert et, s'il se trouve quelque part, où (« Au pied du grand arbre »).
+- [ ] La graine s'appelle « Graine de Champimaison ».
+- [ ] La liste des objets ramassés est à gauche de la barre rapide, alignée sur son bas, et non plus en bas à gauche de l'écran : le nom de l'objet en main, au-dessus de la barre, reste libre.
+- [ ] Posé au sol, un objet montre son icône sans fond noir, aussi dans l'exécutable.
+
+**Fin de la démo**
+
+- [ ] Sous « Menu principal », une planche « Quitter le jeu ».
 
 **Plus de remise à zéro**
 
@@ -101,7 +120,8 @@ Le canevas Claude Design « Panneaux en bois » (https://claude.ai/artifact/6QKk
 
 - Plusieurs Champimaisons, la téléportation entre elles, les paliers au-delà du 2.
 - La Champoule.
-- Une IA des champignons au-delà de : se promener, fuir, boire.
+- Une IA des champignons au-delà de : se promener, fuir, boire, ne pas voir derrière soi.
+- Une carte (Hugo, 22/11 : la boussole pour l'instant) et un écran des commandes (à voir si c'est utile).
 - Le réseau, la faim, la toxicité, la mort du joueur, la sauvegarde.
 - Les modèles définitifs : graine, caillou, trou de taupe, lance-pierre, intérieur, icônes (faits par un humain, Charte IA). Placeholders en attendant.
 - Toute modification de la scène `MysticForest` et de ses données de Terrain, hormis les emplacements de Champimaison (Hugo, 22/11).
@@ -126,6 +146,7 @@ Chemins relatifs à `Assets/Scripts/`.
 | Textes | 42 entrées dans la table `UI` (fr/en), dont `pickup.line` |
 | Panneaux en bois et touches | `Runtime/UI/TriangleMarkGraphic.cs`, `DashedLineGraphic.cs`, `TickGraphic.cs`, `ActionLine.cs`, `Runtime/Interaction/IPanelledInteractable.cs` (nouveaux) ; `KeyCapGraphic.cs` (sans liseré, bois clair) ; `HoldRingGraphic.cs` renommé `HoldBorderGraphic.cs` (même GUID : bord en octogone autour de la touche) ; `KeyPrompt.cs` (triangle, bord, texte sur panneau, `SetMarks`) ; `PlayerInteractor.cs` (bord dès le ciblage, pas de touche sur un `IPanelledInteractable`, `HoldProgress` et `InteractGlyph` publics) ; `RequirementPanel.cs`, `RequirementRow.cs`, `IngredientRow.cs` (couleurs d'état, coche) ; `FungalHole.cs` (`IPanelledInteractable`, panneau plus bas) ; prefabs `Hints/HintKey`, `HintFace`, `HintPill`, `HintView` (face bois clair) ; entrée `panel.hold` |
 | Mise en place | `Editor/Playtest/PlaytestLoopSetup.cs`, à usage unique |
+| Retours du playtest du 22/11 (2) | `Runtime/Items/DroppedItems.cs` (matériau `DroppedIcon.mat`) ; `Runtime/UI/DemoEnd.cs` ; `RequirementPanel.prefab` (450 de large) ; action `Crouch` sur Ctrl ; `Runtime/Capture/CreaturePopulation.cs` (6 au plus, cachés au loin), `WildMushroom.cs` (`IsFree`, `IsSneakedUpOn`, `Squeeze`), `WildSqueeze.cs` (nouveau), `WildSoak.cs` (`Squeeze`), `CreatureDefinition.cs` (`wetDrip`, `seesWithinDegrees`, `squeezeReach`) ; `Runtime/Companions/WetLook.cs` (couleur du matériau, gouttes) ; `PF_WaterDrip.prefab` (copie des gouttes de la fougère) ; `SpongeusCap.mat` (jaune éponge) ; `Runtime/UI/KeyPrompt.cs` (textes à droite, pulsation), `PlayerInteractor.cs` (plus d'aides en bas pour E), `CreatureNameTag.cs`, `ThreadTag.cs`, `Compass.cs` (nouveaux), `ObjectiveHud.cs` (besoins du palier), `ObjectiveNeed.prefab`, `CraftingPanel.cs` (1 s), `ItemNamePlate.cs` (description, provenance) ; `Runtime/Game/ObjectiveTarget.cs` (nouveau), `SeedFallIntro.cs` (recul), `Runtime/Player/FirstPersonCamera.cs` (`ViewPose`, `LookAt`) ; `PickupFeed.prefab` ; données des bâtons et champignons ; textes dans la table `UI` |
 
 ### Mise en place (à faire une fois, dans l'Editor)
 
@@ -163,7 +184,7 @@ Validées par Hugo le 22/11 :
 - **Placeholders** : trou de taupe en cubes de terre autour d'un petit trou ; caillou en cube.
 - **L'interface est faite pour du 16:9, en 1920×1080 ou 1280×720, sur PC** (Hugo, 22/11) : pas de console ni de tablette. Tous les canevas suivent la hauteur de l'écran (`Match` = 1) : en 16:9 rien ne change, sur un écran plus large rien n'est coupé en bas, il y a seulement plus d'espace sur les côtés.
 - **L'inventaire ouvert cache les jauges et l'objectif**, et ses aides passent sur une ligne, centrée sous ses panneaux (Hugo, 22/11). Ses deux panneaux prennent la largeur d'un écran 16:9 : les jauges, l'objectif et les aides en bas à droite passaient dessous.
-- **Icônes provisoires des objets** (Hugo, 22/11 : « je t'autorise à faire des SVG juste pour ça ») : la Charte IA interdit l'IA pour ce qui se voit en jeu ; Hugo autorise ces placeholders, volontairement simples. Sources dans `tools/placeholder-icons/*.svg`, rendues en `Assets/Art/Textures/Icons/Icon_<Objet>.png` (sprites 256 px, sans mipmaps), branchées sur le champ `icon` de chaque `ItemDefinition`. Au sol, l'image d'un objet découpe ses coins transparents (`_ALPHATEST_ON` sur URP Unlit, déjà inclus dans les builds).
+- **Icônes provisoires des objets** (Hugo, 22/11 : « je t'autorise à faire des SVG juste pour ça ») : la Charte IA interdit l'IA pour ce qui se voit en jeu ; Hugo autorise ces placeholders, volontairement simples. Sources dans `tools/placeholder-icons/*.svg`, rendues en `Assets/Art/Textures/Icons/Icon_<Objet>.png` (sprites 256 px, sans mipmaps), branchées sur le champ `icon` de chaque `ItemDefinition`. Au sol, l'image d'un objet découpe ses coins transparents (`_ALPHATEST_ON` sur URP Unlit, par le matériau `DroppedIcon.mat` : voir les retours du 22/11 (2)).
 - **Relecture des textes en français** (Hugo, 22/11) : « Suivre / Suivie / Ne plus suivre » remplacent « Traquer » (calque de l'anglais *track*) ; « Menu principal » et « Quitter le jeu » en pause ; « Améliorer la Champimaison » partout, au lieu d'« Agrandir » dans le titre du panneau ; « dans l’inventaire » au lieu de « dans le sac », comme le reste du jeu ; « Champignon à spores », pour ne pas confondre la ressource avec les Spongeus ; « Reprendre » seul, puisque « Maintenir » est déjà affiché à côté ; espace insécable avant « ! ». Puis : « Diviser » pour le clic droit dans l'inventaire (il prend aussi un seul objet quand on en tient déjà, trop long à dire) ; « Poser » pour sortir un Spongeus, en paire avec « Reprendre » ; « Faire germer » au lieu de « Réveiller » pour la graine (touche, titre et objectif) ; « Prête » / « À compléter » sur les recettes (« Manque des ingrédients » ne tient pas dans l'étiquette) ; « Nécessite une graine » et « Nécessite un Spongeus » (Hugo : « Nécessite » sur les deux panneaux) ; « Aucun caillou » ; provenances qui disent où et comment ; premier objectif raccourci en « Découvre le secret du grand arbre ». Pendant la visée, l'aide reste « Viser » : « Relâcher : ne plus viser » n'apportait rien, l'entrée est retirée de la table. Le tutoiement reste pour les objectifs et les consignes, l'infinitif pour les actions des touches.
 - **Les touches de la fabrication ne bougent pas** (Hugo, 22/11) : E Fabriquer toujours à gauche, grisé quand la recette ne peut pas être faite ou qu'aucune n'est ouverte ; R Suivre toujours à droite, grisé quand aucune recette n'est ouverte. Chaque touche est centrée dans sa moitié de la ligne, à la taille des aides du jeu.
 - **Quatre tailles de texte** (Hugo, 22/11) : 60 titre d'écran, 36 titre de bloc, 26 texte courant, 22 petit texte, en 1080p (40, 24, 17, 15 dans le canevas de 720 de l'inventaire). Rien en dessous. La règle est dans `CLAUDE.md` (*UI text sizes*) et `UiTextSizeTests` la vérifie. L'objectif en jeu et le titre du panneau de la Champimaison sont en texte courant, pas en titre de bloc : « Entre dans la Champimaison » passerait sur deux lignes.
@@ -186,7 +207,7 @@ Architecture :
 - **Pas de système générique de description de panneau en données** : chaque objet remplit son panneau avec son script, à partir des mêmes prefabs. On généralisera au troisième usage.
 - **Le caillou du lance-pierre suit `NetTrajectory`** et teste le segment parcouru à chaque image (`SphereCast`), comme le filet : il ne traverse pas sa cible.
 - **Les trous de taupe se placent sur les `ChampimaisonSite` de `MysticForest`**, lus au lancement. Hugo (22/11) : les 4 emplacements d'origine sont remplacés par 9, hors des chemins, répartis dans la forêt pour qu'on en croise dès le départ. Seule modification de la forêt : les emplacements ont été déplacés puis le relief et les arbres regénérés avec les outils de la forêt (« Generate relief + forest »). Avant, on a vérifié que ces outils reproduisent le Terrain commité (écart de hauteur max 4 cm, 4 arbres sur 24 290 décalés d'un cheveu) : le changement se limite au sol autour des anciens et des nouveaux emplacements (24 290 → 24 254 arbres).
-- **Les Spongeus sauvages naissent à côté des fougères** (Hugo, 22/11 : sinon le joueur ne comprend jamais que le Spongeus se remplit). `CreaturePopulation` place, pour une espèce qui s'imbibe, un Spongeus à `distanceFromSource` (2,5 m) d'une part des plantes qu'elle boit (`shareOfSources`, 0,33), hors tronc et rocher, dans la zone de la brume. Les 6 points fixes sont retirés. Pas une fougère sur deux : le joueur apprend en voyant la règle deux ou trois fois au bon moment ; une fougère sans Spongeus garde de l'eau pour le compagnon, et l'eau des Spongeus abattus reste rare.
+- **Les Spongeus sauvages naissent à côté des fougères** (Hugo, 22/11 : sinon le joueur ne comprend jamais que le Spongeus se remplit). `CreaturePopulation` place, pour une espèce qui s'imbibe, un Spongeus à `distanceFromSource` (2,5 m) d'une part des plantes qu'elle boit (`shareOfSources`, 0,33, puis 0,17 après le playtest du 22/11 (2)), hors tronc et rocher, dans la zone de la brume. Les 6 points fixes sont retirés. Pas une fougère sur deux : le joueur apprend en voyant la règle deux ou trois fois au bon moment ; une fougère sans Spongeus garde de l'eau pour le compagnon, et l'eau des Spongeus abattus reste rare.
 - **Les premières fougères croisées sont garanties** : `RefillingPlants` choisit les `firstMetCount` (3) fougères les plus proches de `firstMetFrom` (l'arbre géant, d'où vient le joueur), les remplit au départ, et chacune a son Spongeus.
 - **Un Spongeus sauvage ne boit que sous les yeux du joueur** (`soaksWhenPlayerWithin`, 15 m, et `soaksWhenSeenWithinDegrees`, 40°, dans `Spongeus.asset` ; Hugo, 22/11, a demandé la condition du regard) : sans ça, il boit dans les premières secondes, bien avant l'arrivée du joueur, et celui-ci ne trouve que des Spongeus déjà mouillés. Au-delà de 3,5 m il reste calme : on peut le regarder boire. L'imbibition passe de 1,5 à 3 s pour qu'on ait le temps de voir le chapeau changer.
 - **Le zoom de visée est partagé** (`AimZoom`) : le filet ne le règle plus qu'au début et à la fin de sa visée. Avant, il le remettait à « pas de visée » à chaque image, même rangé, et le lance-pierre ne zoomait jamais. Le lance-pierre ne garde plus de verrou après un menu : les mains ne lui donnent pas les commandes sous un menu, il reprend la visée dès qu'elles reviennent (comme le filet).
@@ -196,8 +217,23 @@ Architecture :
 - **Ce que lâche un champignon abattu** passe par un rappel donné à `CreaturePopulation` : la capture ne dépend pas des objets au sol.
 - **Le caillou ignore le collider des champignons** quand il teste le décor : un champignon est touché par sa distance au trajet.
 - **Les textes « 1/3 » sont deux nombres** : ils ne passent pas par la table (marqués `i18n-exempt`). « 2 dans l’inventaire » est une entrée avec `{0}`.
-- **« +2 Bâton », en bas à gauche, est l'entrée `pickup.line`** (`+{0} {1}`) : chaque langue place le nombre et le nom à sa façon. Sans nom, seul « +2 » s'affiche.
+- **« +2 Bâton », à gauche de la barre rapide, est l'entrée `pickup.line`** (`+{0} {1}`) : chaque langue place le nombre et le nom à sa façon. Sans nom, seul « +2 » s'affiche.
 - **Une fabrication dont le résultat ne rentre pas ne bouge rien** : `Crafter` l'essaie d'abord sur une copie de l'inventaire (`PlayerInventory.Copy`). Avant, il rendait les ingrédients après coup, et ils pouvaient changer de case.
+- **Retours du playtest du 22/11 (2)** (Hugo, après une partie de test) :
+  - **Fond noir des objets au sol, seulement dans l'exécutable** : à la construction, Unity ne garde que les variantes de shader utilisées par un matériau du projet (log du build : « After built-in stripping: 4 » sur 32 pour URP Unlit, malgré la liste *Always Included*). Le matériau fait par code demandait `_ALPHATEST_ON`, que rien n'utilisait. `DroppedItems` copie maintenant un vrai matériau, `DroppedIcon.mat`, qui garde la variante dans le build.
+  - **« Champignon à spores » sur deux lignes** dans le panneau de la Champimaison : il demande 239 unités, la ligne en avait 227 ; le panneau passe à 450 de large.
+  - **Spongeus** : une fougère sur six, 6 au plus autour du joueur, qui disparaissent au-delà de 60 m (Hugo : « et faire disparaître si trop loin »). Ils ne sont pas détruits : cachés, ils gardent leur place et leur état, et la liste des champignons ne change jamais, ce qui garde les contours du filet valables. Couleur éponge, jaune clair puis jaune foncé (retour de playtest) : `SpongeusCap.mat` perd la texture de palette pour une couleur unie, `WetLook` part de la couleur du matériau au lieu du blanc. Plein, des gouttes tombent, avec les réglages des gouttes de la fougère (copiés dans `PF_WaterDrip`).
+  - **Ce que fait E est écrit à droite de la touche** (Hugo : « sur le texte des aides au bouton », plutôt qu'en bas à gauche), pour toutes les cibles avec une touche flottante, et l'interacteur n'ajoute plus rien aux aides en bas.
+  - **« Récupérer le fil » sort du panneau** et a sa ligne, sous lui, qui pulse (Hugo : « sur une autre ligne, pas sur le même panneau, et effet de clignotement »).
+  - **Le nom du Spongeus se lit de loin** (Hugo : pas besoin d'être collé), quand il est visé à moins de 15 m : un deuxième `KeyPrompt` en mode texte, pas de nouveau prefab.
+  - **La boussole plutôt qu'une carte** (Hugo : « boussole pour l'instant, avec un ! comme tous les jeux »). Pour l'eau, le « ! » montre une fougère pleine : Hugo voulait que ce soit clair, et le jaune seul ne disait pas où aller.
+  - **Presser par derrière, accroupi, sans capturer** (Hugo : « c'est de le presser, pas de capture en crouch sans filet ») : `WildSqueeze`, une cible de plus pour E, n'existe que sur les espèces qui s'imbibent. L'eau dit comment l'obtenir : « Un Spongeus plein en garde. Approche-le accroupi, par derrière. »
+  - **L'indice de l'eau reste mystérieux** (Hugo : « trop clair, un peu moins ? ») : « Sur des plantes, dans la brume ».
+  - **Fabriquer prend 1 s après l'appui** (Hugo : « on attend 1 s après le press simple de E »), pas un appui maintenu.
+  - **Objets ramassés à gauche de la barre**, comme dans Valheim, Subnautica ou Zelda, qui les empilent sur le côté, loin du nom de l'objet en main.
+  - **Plus de bâtons et de champignons divisés par deux** : 2 bâtons et 3 champignons autour du joueur (5 → 3, arrondi au-dessus pour les 8 spores de la boucle).
+  - **L'intro finit par un recul jusqu'au joueur**, qui regarde la graine (Hugo : pour que le joueur voie qu'elle est devant lui).
+  - **Fin de démo** : Échap ne faisait rien et le joueur voulait quitter ; la planche « Quitter le jeu » s'ajoute.
 - **Prefabs, câblage de `Game.unity` et données créés par un script d'Editor à usage unique** (CLAUDE.md, « Scenes, prefabs and data ») : la branche a été écrite sans Editor. Le script est lancé une fois, son résultat relu et commité, puis il est supprimé.
 
 ## Tests
@@ -222,7 +258,7 @@ Corrigé à ce moment-là, sans changer ce que les tests exigent :
 | `ThreadProductionTests` | EditMode | Rien avant le démarrage ; un fil par période ; stock plein en attente ; ce qui ne rentre pas reste | ✅ |
 | `PlantingRulesTests` | EditMode | Texte ou touche selon la graine | ✅ |
 | `CrafterTests` | EditMode | Tout ou rien ; ingrédients rendus si le résultat ne rentre pas, sans qu'aucune case ne bouge ; barre rapide d'abord, affiché comme ramassé | ✅ |
-| `ItemNamesPlayModeTests.WhatIsCollected_ShowsBottomLeft_NotAboveTheQuickBar` | PlayMode | En bas à gauche ; « +1 » suivi du nom, tiré de l'entrée `pickup.line` | ✅ |
+| `ItemNamesPlayModeTests.WhatIsCollected_ShowsLeftOfTheQuickBar_NotAboveIt` | PlayMode | À gauche de la barre rapide, sur son bas ; « +1 » suivi du nom, tiré de l'entrée `pickup.line` | ✅ |
 | `RecipeTrackerTests` | EditMode | Suivre, ne plus suivre, ordre, retirée après fabrication | ✅ |
 | `ObjectiveRulesTests` | EditMode | Ordre des objectifs ; un texte par objectif | ✅ |
 | `WildSoakTests` | EditMode | Source la plus proche ; sources sèches ou d'un autre objet ignorées ; imbibition ; source qui sèche en route ; interruption | ✅ |
@@ -237,7 +273,19 @@ Corrigé à ce moment-là, sans changer ce que les tests exigent :
 | `KeyPromptPlayModeTests.AText_IsReadOnItsPanel_WhichGrowsAroundIt` | PlayMode | Le texte du petit panneau est actif et lu, le panneau grandit autour (échouait avant la correction : texte caché) | ✅ |
 | `SeedFallIntroPlayModeTests` | PlayMode | Au chargement : intro en cours, ni commandes ni objectif, caméra devant la graine qui regarde le feuillage ; puis la graine tombe, la caméra la suit, la vue se resserre ; à la fin, graine au sol, vue et commandes rendues au joueur, interface revenue. Un premier appui affiche l'indice sans passer, un second passe l'intro, graine posée ; l'indice part après 3 s, un appui plus tard le réaffiche sans passer | ✅ |
 | `SlingshotAimPlayModeTests` | PlayMode | Vrai clic droit simulé : le lance-pierre vise et la vue se resserre, encore après l'inventaire (échouait avant la correction : la vue ne se resserrait pas) | ✅ |
-| `GameScenePlayModeTests.SticksMushroomsAndPebbles_AreAroundThePlayer` | PlayMode | 4 cailloux à moins de 50 m, comme les bâtons | ✅ |
+| `GameScenePlayModeTests.SticksMushroomsAndPebbles_AreAroundThePlayer` | PlayMode | 2 bâtons, 3 champignons, 4 cailloux à moins de 50 m | ✅ |
+| `ItemIconTests.TheDroppedIconMaterial_CutsOutTheTransparentCorners` | EditMode | Le matériau des objets au sol est un asset qui découpe la transparence | ✅ |
+| `ControlMapsTests.Crouching_IsHeldOnCtrl_NotOnC` | EditMode | Ctrl accroupit, C non | ✅ |
+| `ItemTextsTests` | EditMode | Chaque objet a une description dans la table, et sa provenance quand il en a une | ✅ |
+| `SpongeusPopulationPlayModeTests` | PlayMode | 1 à 6 Spongeus présents, tous près du joueur ; un Spongeus part quand le joueur est à 90 m, sans bouger, et revient à 20 m | ✅ |
+| `ChampimaisonPlayModeTests` (fin de démo, fil) | PlayMode | Planche « Quitter le jeu » ; ligne du fil à part, qui pulse, absente du panneau, partie une fois le fil récupéré | ✅ |
+| `ChampimaisonPlayModeTests.OncePlanted_TheObjective_ListsWhatTheSeedNeeds_WithWhereToFindIt` | PlayMode | Besoins du palier sous l'objectif, avec provenance ; porté compte ; palier suivant | ✅ |
+| `KeyPromptPlayModeTests` (2 tests ajoutés) | PlayMode | Textes à droite de la touche, vidés en cachant ; pulsation | ✅ |
+| `CreatureNameTagPlayModeTests` | PlayMode | Nom visé à 12 m, caché en se retournant ; rien à 25 m | ✅ |
+| `SpongeusSqueezePlayModeTests` | PlayMode | Accroupi derrière : non remarqué, « Presser », 1 Eau, il fuit sec ; debout ou de face : rien | ✅ |
+| `CompassPlayModeTests` | PlayMode | « ! » au milieu face à la graine, au bord dos à elle ; cachée avec l'inventaire ; après la plantation, une fougère pleine puis la Champimaison | ✅ |
+| `CraftingPanelPlayModeTests` (fabrication en 1 s) | PlayMode | L'objet arrive après la barre ; un clic pendant ne relance pas ; autre recette ou inventaire fermé : rien de pris | ✅ |
+| `SeedFallIntroPlayModeTests.TheShot_DrawsBackFromTheSeed_ToThePlayer_BeforeGivingTheControls` | PlayMode | Le recul jusqu'au joueur dure plusieurs images ; à la fin, la graine est devant lui | ✅ |
 | `KeyPromptPlayModeTests` (4 tests ajoutés) | PlayMode | Triangle sans bord pour un appui ; bord vide puis rempli, sans triangle, pour un maintien ; les deux ensemble ; texte à la place de la touche | ✅ |
 | `ChampimaisonPlayModeTests.Aimed_TheChampimaison_ShowsItsKeysInItsPanel_NotOverIt` | PlayMode | Pas de touche flottante sur la Champimaison visée ; « Déposer » au pied du panneau ; pas de touche d'appui court inutile ; pied caché hors de portée | ✅ |
 
@@ -270,6 +318,16 @@ Corrigé à ce moment-là, sans changer ce que les tests exigent :
 | 22 | Lance-pierre en main avec des cailloux : maintenir clic droit ; Tab, Tab ; maintenir clic droit | La vue se resserre et l'arc s'affiche les deux fois ; clic gauche tire pendant la visée | ⬜ |
 | 23 | Jouer, appuyer une fois sur une touche pendant que la graine tombe, puis une deuxième fois ; recommencer avec un clic et à la manette | Premier appui : « Appuie encore pour passer » en bas à droite, l'intro continue. Deuxième appui : l'intro s'arrête, la vue revient au joueur, la graine est au sol au pied de l'arbre | ⬜ |
 | 24 | Ramasser bâtons, cailloux, champignons, la graine ; Tab ; fabriquer le lance-pierre ; jeter un objet | Chaque case montre l'icône de son objet, la barre rapide aussi, et la fabrication. L'objet jeté au sol montre son icône sans carré noir autour | ⬜ |
+| 25 | Dans l'exécutable : la graine à l'arbre géant, un objet jeté | Icône sans fond noir | ⬜ |
+| 26 | Aller à la fin de la démo, cliquer « Quitter le jeu » | Le jeu se ferme | ⬜ |
+| 27 | Viser un Spongeus de 12 m, puis s'en approcher ; le regarder boire | Son nom au-dessus de lui ; il passe du jaune clair au jaune foncé ; plein, des gouttes tombent | ⬜ |
+| 28 | Maintenir Ctrl, contourner un Spongeus mouillé par derrière, E | Il ne fuit pas ; « Presser » à droite de E ; 1 Eau, il fuit. Debout ou de face : il fuit avant | ⬜ |
+| 29 | Tourner sur soi pendant chaque objectif | « ! » jaune vers la graine, puis un trou de taupe, une fougère pleine, la Champimaison ; collé au bord quand l'objectif est derrière | ⬜ |
+| 30 | Planter la graine | Sous l'objectif : Eau 0/1 et Champignon à spores 0/3, chacun avec où le trouver, sur une ligne | ⬜ |
+| 31 | Attendre 20 s près de la Champimaison germée | « Récupérer le fil » sur sa ligne, sous le panneau, qui pulse ; plus dans le panneau | ⬜ |
+| 32 | Tab, survoler chaque objet ; fabriquer le lance-pierre | Nom, description, provenance ; la barre se remplit en 1 s avant que l'objet arrive | ⬜ |
+| 33 | Ramasser quelque chose | « +1 … » à gauche de la barre rapide | ⬜ |
+| 34 | Jouer jusqu'à la fin de l'intro | La vue recule de la graine jusqu'au joueur, qui la voit devant lui | ⬜ |
 
 ## Limitations connues
 
@@ -278,7 +336,9 @@ Corrigé à ce moment-là, sans changer ce que les tests exigent :
 - **Au-dessus d'un trou de taupe, la touche flotte seule** : « Planter » est dans les aides en bas à droite, pas à côté de la touche comme sur le canevas. Les blocs Production et Débloque du canevas ne sont pas encore dans le panneau de la Champimaison.
 - **La graine posée à l'arbre géant** est dessinée comme un objet jeté (son icône), en attendant son modèle.
 - **Les icônes des objets sont provisoires** : des SVG simples tracés en code (`tools/placeholder-icons/`, rendus en PNG 256 px par `render.sh`, ImageMagick), à remplacer par des icônes faites par un humain (Charte IA).
-- **Nombre de Spongeus sauvages** : environ un tiers des fougères, 24 pour 77 au dernier lancement (`shareOfSources` dans `Game.unity`), à régler en jouant.
+- **Nombre de Spongeus sauvages** : environ une fougère sur six (`shareOfSources`, 0,17), 6 présents au plus (`maxShown`), à régler en jouant.
+- **Retours du 22/11 (2) testés en batchmode, pas encore joués** : écrits sans lancer Unity après un plantage du PC pendant les tests, puis lancés au go de Hugo, un Unity à la fois : les prefabs de la boussole et de la plaquette des objets par un script à usage unique (`TmpFeedback4`, supprimé), tous les EditMode (387/387) et les fixtures PlayMode de la boucle (113/113). Les autres fixtures PlayMode (forêt, vent, sons, saut, bancs d'essai) n'ont pas été relancées. La mise en page de la boussole, des textes à droite des touches et de la plaquette n'a pas été vue à l'écran.
+- **Couleur éponge du Spongeus** : issue d'un retour de playtest, à valider en jeu ; le modèle fait par un humain n'est pas touché, seule la couleur de son matériau change.
 - **Dans la brume dense, 15 m peut être trop loin pour bien voir le Spongeus boire** : à vérifier en jouant. Le regard est mesuré au centre du Spongeus, pas à ce qui le cache (un tronc entre les deux ne l'empêche pas de boire).
 - **Le texte des petits panneaux en bois était caché depuis leur ajout** (« Nécessite un Spongeus », « Nécessite une graine », « Prends la graine en main ») : l'objet `Text` du prefab `KeyPrompt` était désactivé, le panneau ne montrait que ses marges. Corrigé ; vérifié par la taille du panneau (227 px pour « Nécessite un Spongeus »), pas encore à l'écran.
 - **Signaler l'arbre géant et la graine**, le nombre et la place des trous de taupe : à régler pendant le dev.
