@@ -131,7 +131,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448962
-    m_Localized: Il faut un Spongeus
+    m_Localized: "Nécessite un Spongeus"
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448963
@@ -203,7 +203,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448980
-    m_Localized: Il faut une graine
+    m_Localized: "Nécessite une graine"
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448981
