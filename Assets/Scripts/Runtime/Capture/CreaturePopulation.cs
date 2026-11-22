@@ -15,7 +15,8 @@ namespace Fungiiiii.Capture
     /// <see cref="CreatureDefinition"/> and a line here, no code. A species that soaks
     /// something up can live beside the plants it soaks up instead of at set homes: one
     /// beside a share of them, and always beside the first ones the player meets, so the
-    /// player sees it by the fern it drinks at.
+    /// player sees it by the fern it drinks at. Only the few nearest the player are shown:
+    /// the others wait, hidden, until the player comes close.
     /// </summary>
     internal sealed class CreaturePopulation : MonoBehaviour
     {
@@ -39,6 +40,9 @@ namespace Fungiiiii.Capture
         /// <summary>Tries at finding a home beside a plant that is not in a trunk or a rock.</summary>
         private const int HomeTries = 8;
 
+        /// <summary>Seconds between two looks at which mushrooms to show.</summary>
+        private const float SecondsBetweenChecks = 0.5f;
+
         [SerializeField]
         private Spawn[] spawns = new Spawn[0];
 
@@ -46,13 +50,35 @@ namespace Fungiiiii.Capture
         [SerializeField]
         private Rect area = new Rect(-30f, -260f, 80f, 65f);
 
+        [Tooltip("Most mushrooms shown at once, the nearest the player first.")]
+        [SerializeField, Min(1)]
+        private int maxShown = 6;
+
+        [Tooltip("A hidden mushroom shows again once the player is this close, in metres.")]
+        [SerializeField, Min(1f)]
+        private float showWithin = 50f;
+
+        [Tooltip("A mushroom further than this from the player goes away, in metres: more than the distance it shows again from, so that one at the limit does not blink.")]
+        [SerializeField, Min(1f)]
+        private float hideBeyond = 60f;
+
         private readonly List<WildMushroom> mushrooms = new List<WildMushroom>();
         private readonly Dictionary<WildMushroom, CreatureDefinition> species = new Dictionary<WildMushroom, CreatureDefinition>();
+        private readonly List<WildMushroom> nearest = new List<WildMushroom>();
+        private Transform player;
+        private float checkLeft;
         private IReadOnlyList<IAbsorbable> sources;
         private Transform playerView;
         private Action<ItemDefinition, Vector3> loot;
 
+        /// <summary>All of them, the hidden ones too.</summary>
         public IReadOnlyList<WildMushroom> Mushrooms => mushrooms;
+
+        /// <summary>Most mushrooms shown at once.</summary>
+        public int MaxShown => maxShown;
+
+        /// <summary>Beyond this distance from the player, in metres, a mushroom goes away.</summary>
+        public float HideBeyond => hideBeyond;
 
         /// <summary>The inventory item a mushroom becomes once caught.</summary>
         public ItemDefinition ItemFor(WildMushroom mushroom) => species[mushroom].CaughtItem;
@@ -79,6 +105,11 @@ namespace Fungiiiii.Capture
                 }
             }
 
+            if (showWithin > hideBeyond)
+            {
+                return $"{name} shows its mushrooms again further than it hides them.";
+            }
+
             return null;
         }
 
@@ -97,6 +128,7 @@ namespace Fungiiiii.Capture
             IReadOnlyCollection<IAbsorbable> firstMet,
             Action<ItemDefinition, Vector3> dropLoot)
         {
+            player = threat != null ? threat : throw new ArgumentNullException(nameof(threat));
             sources = absorbable ?? throw new ArgumentNullException(nameof(absorbable));
             playerView = view != null ? view : throw new ArgumentNullException(nameof(view));
             loot = dropLoot ?? throw new ArgumentNullException(nameof(dropLoot));
@@ -122,6 +154,62 @@ namespace Fungiiiii.Capture
                     }
                 }
             }
+
+            ShowNearest();
+        }
+
+        private void Update()
+        {
+            if (player == null)
+            {
+                return;
+            }
+
+            checkLeft -= Time.deltaTime;
+            if (checkLeft > 0f)
+            {
+                return;
+            }
+
+            checkLeft = SecondsBetweenChecks;
+            ShowNearest();
+        }
+
+        /// <summary>
+        /// Shows the free mushrooms nearest the player, at most <see cref="maxShown"/> and
+        /// none beyond the distances; hides the others. Felled and caught ones are left alone.
+        /// </summary>
+        private void ShowNearest()
+        {
+            var from = player.position;
+            nearest.Clear();
+            foreach (var mushroom in mushrooms)
+            {
+                if (mushroom != null && mushroom.IsFree)
+                {
+                    nearest.Add(mushroom);
+                }
+            }
+
+            nearest.Sort((a, b) => FlatSqrDistance(a.transform.position, from).CompareTo(FlatSqrDistance(b.transform.position, from)));
+            for (var rank = 0; rank < nearest.Count; rank++)
+            {
+                var mushroom = nearest[rank];
+                var shown = mushroom.gameObject.activeSelf;
+                var limit = shown ? hideBeyond : showWithin;
+                var show = rank < maxShown && FlatSqrDistance(mushroom.transform.position, from) <= limit * limit;
+                if (show != shown)
+                {
+                    mushroom.gameObject.SetActive(show);
+                }
+            }
+        }
+
+        private static float FlatSqrDistance(Vector3 a, Vector3 b)
+        {
+            var offset = a - b;
+            offset.y = 0f;
+            return offset.sqrMagnitude;
         }
 
         /// <summary>A point at <paramref name="distance"/> from <paramref name="source"/>, inside the area, clear of trunks and rocks when one is found.</summary>

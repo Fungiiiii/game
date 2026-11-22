@@ -134,11 +134,14 @@ namespace Fungiiiii.Tests.PlayMode
             var dry = game.Mushrooms.First(mushroom => mushroom != wet && !mushroom.IsWet);
             var water = WaterItem(game);
 
+            // Only the Spongeus near the player are out: the player goes to each in turn.
+            yield return GoTo(dry);
             yield return Fell(game, dry);
             Assert.That(dry.IsWet, Is.False, "The dry Spongeus drank before it fell: run the test again.");
             Assert.That(dry.IsFelled, Is.True);
             Assert.That(game.Dropped.Items.Any(item => item.Item == water), Is.False, "A dry Spongeus let go of water.");
 
+            yield return GoTo(wet);
             yield return Fell(game, wet);
             Assert.That(wet.IsFelled, Is.True);
             var drop = game.Dropped.Items.SingleOrDefault(item => item.Item == water);
@@ -146,6 +149,14 @@ namespace Fungiiiii.Tests.PlayMode
             var flat = drop.transform.position - wet.transform.position;
             flat.y = 0f;
             Assert.That(flat.magnitude, Is.LessThan(1f), "The water is not where it fell.");
+        }
+
+        /// <summary>Stands near it, and waits for it to come out.</summary>
+        private static IEnumerator GoTo(WildMushroom mushroom)
+        {
+            StandBefore(mushroom.transform.position, 6f);
+            yield return Wait(0.6f);
+            Assert.That(mushroom.gameObject.activeSelf, Is.True, $"{mushroom.name} did not come out with the player beside it.");
         }
 
         /// <summary>Shoots straight down onto it until it falls.</summary>

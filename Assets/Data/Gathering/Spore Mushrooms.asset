@@ -18,6 +18,6 @@ MonoBehaviour:
   - {fileID: 8709750313228204993, guid: 0fca42dec6744ea89a6e0f70084bca41, type: 3}
   - {fileID: 8709750313228204993, guid: f635731d222b4d67927789ab5a8184a0, type: 3}
   - {fileID: 8709750313228204993, guid: ef073991fc1c4e5d99febbbb665630ab, type: 3}
-  nearPlayer: 5
-  maxAlive: 40
+  nearPlayer: 3
+  maxAlive: 20
   perTick: 1

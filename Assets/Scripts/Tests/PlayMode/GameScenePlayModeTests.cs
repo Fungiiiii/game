@@ -341,7 +341,8 @@ namespace Fungiiiii.Tests.PlayMode
             var terrain = Terrain.activeTerrain;
             var player = Object.FindFirstObjectByType<PlayerMotor>().transform.position;
 
-            foreach (var (itemId, expected) in new[] { (WoodId, 4), (SporeId, 5), (PebbleId, 4) })
+            // Since the playtest of 22/11, half as many sticks and mushrooms.
+            foreach (var (itemId, expected) in new[] { (WoodId, 2), (SporeId, 3), (PebbleId, 4) })
             {
                 var positions = game.Gatherables
                     .Where(gatherable => gatherable.IsAvailable && gatherable.Item.Id == itemId)
@@ -724,7 +725,10 @@ namespace Fungiiiii.Tests.PlayMode
             // The view stays level, as on arrival, so that the net lands out of the alert distance.
             PlaytestLoopGame.StandBefore(target.transform.position, 10f);
             Object.FindFirstObjectByType<FirstPersonCamera>().SetView(0f, 0f);
-            yield return null;
+
+            // Only the mushrooms near the player are out: it comes out once the player is there.
+            yield return PlaytestLoopGame.Wait(0.6f);
+            Assert.That(target.gameObject.activeSelf, Is.True, "The mushroom did not come out with the player beside it.");
 
             foreach (var mushroom in game.Mushrooms)
             {

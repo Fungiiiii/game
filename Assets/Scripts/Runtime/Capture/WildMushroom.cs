@@ -81,7 +81,10 @@ namespace Fungiiiii.Capture
         public MushroomCaptureState State => stateMachine.CurrentState;
 
         /// <summary>True while the net may target this mushroom: present and not captured.</summary>
-        public bool IsAvailable => !isCaught && !isFelled && stateMachine.CurrentState != MushroomCaptureState.Captured;
+        public bool IsAvailable => isActiveAndEnabled && !isCaught && !isFelled && stateMachine.CurrentState != MushroomCaptureState.Captured;
+
+        /// <summary>Neither felled, caught nor held in a net: it may be hidden while the player is far, and shown again.</summary>
+        public bool IsFree => !isCaught && !isFelled && !isHeld;
 
         /// <summary>It drank at a water fern: felled, it lets go of its water.</summary>
         public bool IsWet => soak != null && soak.IsWet;
