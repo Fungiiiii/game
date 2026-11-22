@@ -59,7 +59,7 @@
 
 **Haut à droite**
 
-- [ ] L'objectif en cours : « Trouve une graine », « Plante la graine », « Réveille la graine », « Fabrique un filet », « Améliore la Champimaison », « Entre dans la Champimaison ».
+- [ ] L'objectif en cours : « Découvre ce qui se passe sous le grand arbre », « Plante la graine », « Réveille la graine », « Fabrique un filet », « Améliore la Champimaison », « Entre dans la Champimaison ».
 - [ ] Sous l'objectif, les recettes traquées, avec leurs ingrédients mis à jour pendant le jeu. Une recette fabriquée n'est plus traquée.
 
 **Spongeus sauvages**
@@ -152,7 +152,13 @@ Validées par Hugo le 22/11 :
 - **Placeholders** : trou de taupe en cubes de terre autour d'un petit trou ; caillou en cube.
 - **L'interface est faite pour du 16:9, en 1920×1080 ou 1280×720, sur PC** (Hugo, 22/11) : pas de console ni de tablette. Tous les canevas suivent la hauteur de l'écran (`Match` = 1) : en 16:9 rien ne change, sur un écran plus large rien n'est coupé en bas, il y a seulement plus d'espace sur les côtés.
 - **L'inventaire ouvert cache les jauges et l'objectif**, et ses aides passent sur une ligne, centrée sous ses panneaux (Hugo, 22/11). Ses deux panneaux prennent la largeur d'un écran 16:9 : les jauges, l'objectif et les aides en bas à droite passaient dessous.
-- **Les touches de la fabrication ne bougent pas** (Hugo, 22/11) : E Fabriquer toujours à gauche, grisé quand la recette ne peut pas être faite ou qu'aucune n'est ouverte ; R Traquer toujours à droite, grisé quand aucune recette n'est ouverte. Chaque touche a sa moitié de la ligne.
+- **Les touches de la fabrication ne bougent pas** (Hugo, 22/11) : E Fabriquer toujours à gauche, grisé quand la recette ne peut pas être faite ou qu'aucune n'est ouverte ; R Traquer toujours à droite, grisé quand aucune recette n'est ouverte. Chaque touche est centrée dans sa moitié de la ligne, à la taille des aides du jeu.
+- **Quatre tailles de texte** (Hugo, 22/11) : 60 titre d'écran, 36 titre de bloc, 26 texte courant, 22 petit texte, en 1080p (40, 24, 17, 15 dans le canevas de 720 de l'inventaire). Rien en dessous. La règle est dans `CLAUDE.md` (*UI text sizes*) et `UiTextSizeTests` la vérifie. L'objectif en jeu et le titre du panneau de la Champimaison sont en texte courant, pas en titre de bloc : « Entre dans la Champimaison » passerait sur deux lignes.
+- **Une plaque sombre semi-transparente derrière l'objectif** (Hugo, 22/11), aux coins coupés comme les panneaux : lisible sur le feuillage clair sans peser comme un panneau en bois. Les aides en bas à droite restent sans fond.
+- **Le détail de la recette suit la liste**, sous une ligne pointillée, au lieu d'être collé en bas du panneau : plus de grand vide avec deux recettes. La provenance d'un ingrédient est en sable discret, seul le compteur manquant est en corail.
+- **Dans le panneau de la Champimaison, « 2 dans le sac » passe sous le nom** de la ressource : en petit texte, il ne tient plus à côté. Le panneau passe à 420 unités de large.
+- **Le premier objectif dit où aller** (Hugo, 22/11) : « Découvre ce qui se passe sous le grand arbre ».
+- **Une lueur violet clair qui respire sur la graine** (Hugo, 22/11), pour attirer l'œil : une lumière ponctuelle (`PF_SeedGlow`, `LightPulse`), posée sur la graine de l'arbre géant et partie avec elle. C'est un effet visuel fait par script : Hugo l'a décidé malgré la Charte IA.
 - **Les prefabs d'interface restent dans `Assets/Prefabs/UI/`** (Hugo, 22/11), nommés d'après leur composant, comme Unity les range. `scripts/check-art-assets.sh` ne leur applique plus le dossier de domaine ni le préfixe `PF_`, qui visent les prefabs de modèles (ADR-0005). Ceux-là gardent la règle : `Player` et `PlaytestPlayer` deviennent `PF_Player` et `PF_PlaytestPlayer`, même GUID.
 
 Architecture :
@@ -167,7 +173,7 @@ Architecture :
 - **Pas de système générique de description de panneau en données** : chaque objet remplit son panneau avec son script, à partir des mêmes prefabs. On généralisera au troisième usage.
 - **Le caillou du lance-pierre suit `NetTrajectory`** et teste le segment parcouru à chaque image (`SphereCast`), comme le filet : il ne traverse pas sa cible.
 - **La scène `MysticForest` n'est pas modifiée** : les trous de taupe se placent sur ses `ChampimaisonSite`, lus au lancement.
-- **L'objectif est calculé à partir de l'état du jeu** (`ObjectiveRules` : graine, plantation, palier, filet), pas de l'ordre des événements : perdre la graine avant de la planter ramène à « Trouve une graine ».
+- **L'objectif est calculé à partir de l'état du jeu** (`ObjectiveRules` : graine, plantation, palier, filet), pas de l'ordre des événements : perdre la graine avant de la planter ramène au premier objectif.
 - **Les recettes traquées** sont un `RecipeTracker` en C# pur tenu par `GameBootstrap`, partagé par le panneau de fabrication et l'objectif.
 - **Le lance-pierre est un composant de la variante `PlaytestPlayer`**, comme le filet sur le joueur : seul le jeu en a besoin.
 - **Ce que lâche un champignon abattu** passe par un rappel donné à `CreaturePopulation` : la capture ne dépend pas des objets au sol.
@@ -204,9 +210,10 @@ Corrigé à ce moment-là, sans changer ce que les tests exigent :
 | `ObjectiveRulesTests` | EditMode | Ordre des objectifs ; un texte par objectif | ✅ |
 | `WildSoakTests` | EditMode | Source la plus proche ; sources sèches ou d'un autre objet ignorées ; imbibition ; source qui sèche en route ; interruption | ✅ |
 | `CreatureHealthTests` | EditMode | Chute à zéro, une seule fois | ✅ |
-| `ChampimaisonPlayModeTests` | PlayMode | Graine à l'arbre géant ; plantation (sac, main) ; panneau et dépôt ; fil ; entrée et fin de démo | ✅ |
+| `ChampimaisonPlayModeTests` | PlayMode | Graine à l'arbre géant, avec sa lueur violette ; plantation (sac, main) ; panneau et dépôt ; fil ; entrée et fin de démo | ✅ |
 | `CraftingPanelPlayModeTests` | PlayMode | Ouverture sans recette ouverte, E et R grisés ; clic puis deuxième clic ; ingrédient manquant et provenance, E grisé à sa place ; recette traquée en haut à droite jusqu'à sa fabrication | ✅ |
 | `GameScenePlayModeTests.TheInventory_HidesTheVitalsAndTheObjective_AndKeepsItsHintsUnderItsPanels` | PlayMode | Jauges et objectif cachés pendant l'inventaire, revenus à sa fermeture ; ses aides sous ses panneaux | ✅ |
+| `UiTextSizeTests` | EditMode | Chaque texte des prefabs d'interface a l'une des quatre tailles | ✅ |
 | `SlingshotPlayModeTests` | PlayMode | Champignons dans la brume ; un Spongeus boit à une fougère pleine ; un caillou par tir, seulement en main ; eau lâchée seulement par un Spongeus mouillé | ✅ |
 | `GameScenePlayModeTests.SticksMushroomsAndPebbles_AreAroundThePlayer` | PlayMode | 4 cailloux à moins de 50 m, comme les bâtons | ✅ |
 | `KeyPromptPlayModeTests` (4 tests ajoutés) | PlayMode | Triangle sans bord pour un appui ; bord vide puis rempli, sans triangle, pour un maintien ; les deux ensemble ; texte à la place de la touche | ✅ |
@@ -217,8 +224,8 @@ Corrigé à ce moment-là, sans changer ce que les tests exigent :
 ### Manuels (dans Unity)
 | # | Étapes | Résultat attendu | OK |
 |---|---|---|---|
-| 1 | `Game.unity`, Play | Mains vides, barre rapide vide. Objectif « Trouve une graine » en haut à droite | ⬜ |
-| 2 | Aller à l'arbre géant | La graine, contourée, au pied de l'arbre. E la ramasse | ⬜ |
+| 1 | `Game.unity`, Play | Mains vides, barre rapide vide. Objectif « Découvre ce qui se passe sous le grand arbre » en haut à droite, sur une plaque sombre | ⬜ |
+| 2 | Aller à l'arbre géant | La graine, contourée, au pied de l'arbre, sous une lueur violet clair qui respire. E la ramasse, la lueur part avec elle | ⬜ |
 | 3 | Viser un trou de taupe, graine dans le sac | « Prends la graine en main » sur un petit panneau en bois | ⬜ |
 | 4 | Graine en main, viser le trou, puis E | Touche E avec le triangle sur son bord haut. Puis la Champimaison apparaît, panneau « Réveiller la graine 1/2 », « Eau 0/1 » et « Spores 0/3 » en corail. Les autres trous n'ont plus de contour | ⬜ |
 | 5 | Cueillir 3 champignons, viser la Champimaison, maintenir E | Aucune touche ne flotte ; au pied du panneau, E avec son bord, « Maintenir Déposer ». Le bord se remplit depuis le coin haut gauche. Spores 3/3 en vert avec sa coche, Eau 0/1 reste, et le pied disparaît | ⬜ |
