@@ -67,6 +67,8 @@ namespace Fungiiiii.Capture
         private float soakWatchedWithin;
         private float soakSeenWithinDegrees;
         private Transform watcher;
+        private Func<bool> playerCrouching;
+        private float seesWithinDegrees = 180f;
         private WetLook wetLook;
         private CreatureHealth health;
 
@@ -88,6 +90,27 @@ namespace Fungiiiii.Capture
 
         /// <summary>It drank at a water fern: felled, it lets go of its water.</summary>
         public bool IsWet => soak != null && soak.IsWet;
+
+        /// <summary>Soaked through, drops fall from it.</summary>
+        public bool IsDripping => wetLook != null && wetLook.IsDripping;
+
+        /// <summary>The player, crouched, is behind it, out of what it sees: it does not notice them.</summary>
+        public bool IsSneakedUpOn
+        {
+            get
+            {
+                if (playerCrouching == null || player == null || !playerCrouching())
+                {
+                    return false;
+                }
+
+                var toPlayer = player.position - transform.position;
+                toPlayer.y = 0f;
+                var facing = transform.forward;
+                facing.y = 0f;
+                return toPlayer.sqrMagnitude > 0.0001f && Vector3.Angle(facing, toPlayer) > seesWithinDegrees;
+            }
+        }
 
         public bool IsFelled => isFelled;
 
@@ -153,6 +176,27 @@ namespace Fungiiiii.Capture
         /// <param name="view">The player's view: it starts to soak up only when seen.</param>
         /// <param name="watchedWithin">It soaks up only while the player is this close, in metres: what nobody sees does not happen.</param>
         /// <param name="seenWithinDegrees">It starts to soak up only within this angle of the middle of the view.</param>
+        /// <summary>A crouched player behind it, out of what it sees, goes unnoticed.</summary>
+        /// <param name="crouching">Whether the player crouches.</param>
+        /// <param name="seesWithin">It notices the player within this angle of where it faces, in degrees.</param>
+        public void EnableSneaking(Func<bool> crouching, float seesWithin)
+        {
+            playerCrouching = crouching ?? throw new ArgumentNullException(nameof(crouching));
+            seesWithinDegrees = seesWithin;
+        }
+
+        /// <summary>Squeezed by hand: it gives up what it soaked up, and runs from <paramref name="by"/>. False when it was dry.</summary>
+        public bool Squeeze(Vector3 by)
+        {
+            if (soak == null || !soak.Squeeze())
+            {
+                return false;
+            }
+
+            Scare(by);
+            return true;
+        }
+
         public void EnableSoak(WildSoak soaking, IReadOnlyList<IAbsorbable> sources, float speed, WetLook look, Transform view, float watchedWithin, float seenWithinDegrees)
         {
             watcher = view != null ? view : throw new ArgumentNullException(nameof(view));
@@ -348,7 +392,8 @@ namespace Fungiiiii.Capture
         private Vector3 ClosestThreat(out float distance)
         {
             var threat = player.position;
-            distance = NetImpact.HorizontalDistance(transform.position, threat);
+            // A crouched player behind it is not noticed, however close.
+            distance = IsSneakedUpOn ? float.MaxValue : NetImpact.HorizontalDistance(transform.position, threat);
 
             if (threatPoint.HasValue)
             {

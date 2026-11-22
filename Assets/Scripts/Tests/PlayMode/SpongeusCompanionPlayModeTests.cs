@@ -194,7 +194,7 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(prompt.IsTextVisible, Is.True, "No text over the full fern.");
             Assert.That(prompt.TextKey, Is.EqualTo(NeedsSpongeus));
             Assert.That(prompt.IsKeyVisible, Is.False, "A key is shown over the fern.");
-            Assert.That(game.Interactor.Hints, Is.Empty, "The fern adds a key hint.");
+            Assert.That(prompt.PressActionKey, Is.Empty, "The fern says what a key does.");
             Assert.That(plant.Interact(game.Inventory), Is.False);
             Assert.That(game.Inventory.Count(WaterId), Is.Zero, "The player took water themselves.");
             Assert.That(plant.IsDripping, Is.True, "No drop falls from the full fern.");
@@ -271,8 +271,12 @@ namespace Fungiiiii.Tests.PlayMode
             yield return null;
 
             Assert.That(companion.ShownFullness, Is.EqualTo(1f));
+            // From the colour of its material to that colour times the tint: a sponge going dark.
             var cap = CapTint(companion);
-            Assert.That(cap.r, Is.EqualTo(companion.Definition.FullTint.r).Within(0.01f), "The cap is not darker.");
+            var dry = companion.Definition.FullPartMaterial.GetColor(BaseColorId);
+            Assert.That(cap.g, Is.EqualTo(dry.g * companion.Definition.FullTint.g).Within(0.01f), "The cap is not darker.");
+            Assert.That(cap.b, Is.EqualTo(dry.b * companion.Definition.FullTint.b).Within(0.01f), "The cap is not darker.");
+            Assert.That(companion.IsDripping, Is.True, "No drop falls from the full Spongeus.");
             Assert.That(companion.HintKey, Is.EqualTo(UiText.HintSqueeze));
 
             Assert.That(companion.Interact(game.Inventory), Is.True);
@@ -284,6 +288,8 @@ namespace Fungiiiii.Tests.PlayMode
 
             yield return Wait(1.3f);
             Assert.That(companion.ShownFullness, Is.Zero, "The cap did not go back to its colour.");
+            Assert.That(CapTint(companion), Is.EqualTo(dry).Using(UnityEngine.TestTools.Utils.ColorEqualityComparer.Instance), "Dry, the cap is not the colour of its material.");
+            Assert.That(companion.IsDripping, Is.False, "A squeezed Spongeus still drips.");
         }
 
         [UnityTest]
@@ -308,7 +314,9 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(prompt.IsHoldBorderVisible, Is.True, "No border round a key that can be held.");
             Assert.That(prompt.HoldProgress, Is.Zero, "The border fills before E is held.");
             Assert.That(prompt.IsPressMarkVisible, Is.False, "A triangle over a key that a short press does nothing with.");
-            Assert.That(game.Interactor.Hints.Select(hint => hint.LabelKey), Is.EqualTo(new[] { UiText.HintTakeBack }));
+            // Since the playtest of 22/11, what the key does is written right of it, not in a corner.
+            Assert.That(prompt.PressActionKey, Is.Empty, "An empty Spongeus says a press squeezes it.");
+            Assert.That(prompt.HoldActionKey, Is.EqualTo(UiText.HintTakeBack));
         }
 
         [UnityTest]

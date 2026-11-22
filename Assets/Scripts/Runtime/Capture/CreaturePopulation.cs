@@ -4,6 +4,7 @@ using System.Linq;
 using Fungiiiii.Combat;
 using Fungiiiii.Companions;
 using Fungiiiii.Gathering;
+using Fungiiiii.Interaction;
 using Fungiiiii.Inventory;
 using UnityEngine;
 
@@ -69,6 +70,8 @@ namespace Fungiiiii.Capture
         private float checkLeft;
         private IReadOnlyList<IAbsorbable> sources;
         private Transform playerView;
+        private Func<bool> playerCrouching;
+        private ICollection<IInteractable> interactables;
         private Action<ItemDefinition, Vector3> loot;
 
         /// <summary>All of them, the hidden ones too.</summary>
@@ -119,6 +122,8 @@ namespace Fungiiiii.Capture
         /// <param name="absorbable">What a creature that soaks something up may soak up: the water ferns.</param>
         /// <param name="firstMet">The plants the player meets first: one lives beside each of them, whatever the share.</param>
         /// <param name="dropLoot">Puts on the ground, at a point, what a felled creature lets go of.</param>
+        /// <param name="crouching">Whether the player crouches: crouched behind a creature, they go unnoticed.</param>
+        /// <param name="usable">What the interact control can act on: a creature that soaks something up joins it, to be squeezed by hand.</param>
         public void Populate(
             Transform threat,
             Transform view,
@@ -126,8 +131,12 @@ namespace Fungiiiii.Capture
             System.Random random,
             IReadOnlyList<IAbsorbable> absorbable,
             IReadOnlyCollection<IAbsorbable> firstMet,
-            Action<ItemDefinition, Vector3> dropLoot)
+            Action<ItemDefinition, Vector3> dropLoot,
+            Func<bool> crouching,
+            ICollection<IInteractable> usable)
         {
+            playerCrouching = crouching ?? throw new ArgumentNullException(nameof(crouching));
+            interactables = usable ?? throw new ArgumentNullException(nameof(usable));
             player = threat != null ? threat : throw new ArgumentNullException(nameof(threat));
             sources = absorbable ?? throw new ArgumentNullException(nameof(absorbable));
             playerView = view != null ? view : throw new ArgumentNullException(nameof(view));
@@ -276,10 +285,12 @@ namespace Fungiiiii.Capture
             if (creature.SoaksUp != null)
             {
                 var look = new WetLook(
+                    mushroom.Model.transform,
                     mushroom.Model.GetComponentsInChildren<Renderer>(),
                     creature.WetPartMaterial,
                     creature.WetTint,
-                    creature.WetSmoothness);
+                    creature.WetSmoothness,
+                    creature.WetDrip);
                 mushroom.EnableSoak(
                     new WildSoak(creature.SoakReach, creature.SoakSeconds, creature.SoakArrivalDistance, creature.SoaksUp),
                     sources,
@@ -288,7 +299,14 @@ namespace Fungiiiii.Capture
                     playerView,
                     creature.SoaksWhenPlayerWithin,
                     creature.SoaksWhenSeenWithinDegrees);
+
+                // Crouched behind it, the player squeezes it by hand.
+                var squeeze = mushroomObject.AddComponent<WildSqueeze>();
+                squeeze.Initialize(mushroom, creature.SoaksUp, threat, creature.SqueezeReach);
+                interactables.Add(squeeze);
             }
+
+            mushroom.EnableSneaking(playerCrouching, creature.SeesWithinDegrees);
 
             mushrooms.Add(mushroom);
             species.Add(mushroom, creature);

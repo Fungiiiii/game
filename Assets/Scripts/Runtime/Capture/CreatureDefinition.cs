@@ -67,6 +67,14 @@ namespace Fungiiiii.Capture
         [SerializeField, Range(1f, 90f)]
         private float soaksWhenSeenWithinDegrees = 40f;
 
+        [Tooltip("It notices the player within this angle of where it faces, in degrees; a crouched player outside it, behind it, goes unnoticed.")]
+        [SerializeField, Range(10f, 180f)]
+        private float seesWithinDegrees = 100f;
+
+        [Tooltip("Furthest ground distance a crouched player squeezes it from, by hand, once it soaked something up, in metres.")]
+        [SerializeField, Min(0.1f)]
+        private float squeezeReach = 1.8f;
+
         [Tooltip("The material of the model's part that looks wet: the Spongeus's cap.")]
         [SerializeField]
         private Material wetPartMaterial;
@@ -78,6 +86,10 @@ namespace Fungiiiii.Capture
         [Tooltip("Sheen of the wet part, from 0 (matt) to 1.")]
         [SerializeField, Range(0f, 1f)]
         private float wetSmoothness = 0.4f;
+
+        [Tooltip("What drips from it while it is soaked through, as from a full fern. Empty: nothing drips.")]
+        [SerializeField]
+        private ParticleSystem wetDrip;
 
         public GameObject Model => model;
 
@@ -111,11 +123,18 @@ namespace Fungiiiii.Capture
 
         public float SoaksWhenSeenWithinDegrees => soaksWhenSeenWithinDegrees;
 
+        public float SeesWithinDegrees => seesWithinDegrees;
+
+        public float SqueezeReach => squeezeReach;
+
         public Material WetPartMaterial => wetPartMaterial;
 
         public Color WetTint => wetTint;
 
         public float WetSmoothness => wetSmoothness;
+
+        /// <summary>Null when nothing drips from it.</summary>
+        public ParticleSystem WetDrip => wetDrip;
 
         /// <summary>What is missing for it to be used, or null when it is sound.</summary>
         public string FindProblem()

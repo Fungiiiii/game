@@ -91,6 +91,10 @@ namespace Fungiiiii.Tests.PlayMode
 
             Assert.That(mushroom.IsWet, Is.True, "The Spongeus did not drink.");
             Assert.That(fern.IsFull, Is.False, "The fern did not dry.");
+
+            // Soaked through, it drips as the fern did.
+            yield return WaitUntil(() => mushroom.IsDripping, 6f);
+            Assert.That(mushroom.IsDripping, Is.True, "No drop falls from the soaked Spongeus.");
         }
 
         [UnityTest]

@@ -94,6 +94,19 @@ namespace Fungiiiii.Capture
             return position;
         }
 
+        /// <summary>Squeezed by hand: what it soaked up comes out, and it is dry again. False when it was dry.</summary>
+        public bool Squeeze()
+        {
+            if (!IsWet)
+            {
+                return false;
+            }
+
+            IsWet = false;
+            Interrupt();
+            return true;
+        }
+
         /// <summary>It flees: what it was heading for is forgotten.</summary>
         public void Interrupt()
         {

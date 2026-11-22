@@ -47,6 +47,9 @@ namespace Fungiiiii.Companions
         /// <summary>How dark its full part is drawn, from 0 (its colour) to 1 (full).</summary>
         public float ShownFullness => wetLook.Shown;
 
+        /// <summary>Full, drops fall from it.</summary>
+        public bool IsDripping => wetLook.IsDripping;
+
         public InteractionCandidate Candidate =>
             new InteractionCandidate(transform.position + Vector3.up * AimHeight, definition.Reach, true, ModelBounds());
 
@@ -88,7 +91,7 @@ namespace Fungiiiii.Companions
             sources = absorbable;
             outline = itemOutline;
             renderers = GetComponentsInChildren<Renderer>(true);
-            wetLook = new WetLook(renderers, companion.FullPartMaterial, companion.FullTint, companion.FullSmoothness);
+            wetLook = new WetLook(body, renderers, companion.FullPartMaterial, companion.FullTint, companion.FullSmoothness, companion.Creature.WetDrip);
             if (!wetLook.HasParts)
             {
                 Debug.LogWarning($"No part of {name} uses {(companion.FullPartMaterial != null ? companion.FullPartMaterial.name : "its full part's material")}: it will not look full.", this);
