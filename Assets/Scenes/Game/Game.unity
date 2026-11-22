@@ -326,6 +326,7 @@ MonoBehaviour:
   moleHoles: {fileID: 1200000003}
   seedSpot: {fileID: 1200000012}
   seedGlow: {fileID: 707941052509529682, guid: 462f9ae127353ca468fdc363d0adb21b, type: 3}
+  intro: {fileID: 1045891408}
   interiorScenePath: Assets/Scenes/Game/ChampimaisonInterior.unity
   randomSeed: 0
 --- !u!4 &167378463
@@ -665,6 +666,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20117db2599948ea9fd2e6b0e291a7d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.ObjectiveHud
+--- !u!223 &340570195 stripped
+Canvas:
+  m_CorrespondingSourceObject: {fileID: 7340732782458925339, guid: 895f9b39412c6dc4f8d4f7b41a8c52a4, type: 3}
+  m_PrefabInstance: {fileID: 340570193}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &371452095
 GameObject:
   m_ObjectHideFlags: 0
@@ -783,6 +789,63 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 480836274}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1045891407
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1045891409}
+  - component: {fileID: 1045891408}
+  m_Layer: 0
+  m_Name: Seed Fall Intro
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1045891408
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1045891407}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d30f433fbb2e1ab489ce583427850b3a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Game.SeedFallIntro
+  fallHeight: 18
+  cameraDistance: 7
+  cameraHeight: 1.6
+  secondsBeforeFall: 0.6
+  secondsAfterLanding: 1.2
+  endFieldOfView: 30
+  hud:
+  - {fileID: 1110914251}
+  - {fileID: 340570195}
+  - {fileID: 1335842182}
+  - {fileID: 2105432306}
+  - {fileID: 2107753913}
+  - {fileID: 1574012221}
+--- !u!4 &1045891409
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1045891407}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -1075,6 +1138,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c1cf4f10b9b200c48806ad5c7cd0a714, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.Hotbar
+--- !u!223 &1110914251 stripped
+Canvas:
+  m_CorrespondingSourceObject: {fileID: 5969881310517282689, guid: 9045441828fbecd48988b8baacd060a5, type: 3}
+  m_PrefabInstance: {fileID: 1110914249}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1200000001
 GameObject:
   m_ObjectHideFlags: 0
@@ -1262,6 +1330,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a192fed0b6a4a28921f24e2a18e5d02, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.VitalGauges
+--- !u!223 &1335842182 stripped
+Canvas:
+  m_CorrespondingSourceObject: {fileID: 4288387591542740171, guid: aff23d054d7be6643be86261501cbcc9, type: 3}
+  m_PrefabInstance: {fileID: 1335842180}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1574012219
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1370,6 +1443,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53862930f724be543bb3f33176558db4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.KeyPrompt
+--- !u!223 &1574012221 stripped
+Canvas:
+  m_CorrespondingSourceObject: {fileID: 763601743561135835, guid: 256163947171a4447a990e1f5a87466b, type: 3}
+  m_PrefabInstance: {fileID: 1574012219}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1926559555
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1586,6 +1664,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e2a227dc499487c9aecf3884682bb25, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.ControlHintsPanel
+--- !u!223 &2105432306 stripped
+Canvas:
+  m_CorrespondingSourceObject: {fileID: 8893056227626488193, guid: f783a841693f1ef48a9e416d3eeac5d8, type: 3}
+  m_PrefabInstance: {fileID: 2105432304}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2107753911
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1694,6 +1777,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6c093eca83743dc838ed11ae970a972, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.PickupFeed
+--- !u!223 &2107753913 stripped
+Canvas:
+  m_CorrespondingSourceObject: {fileID: 707299282768723642, guid: d3fd3ae93f1a96041a6a73025c4dd09e, type: 3}
+  m_PrefabInstance: {fileID: 2107753911}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1718,3 +1806,4 @@ SceneRoots:
   - {fileID: 1200000012}
   - {fileID: 26264738}
   - {fileID: 340570193}
+  - {fileID: 1045891409}

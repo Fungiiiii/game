@@ -46,6 +46,7 @@ namespace Fungiiiii.Tests.PlayMode
             yield return WaitFor(GameTimeoutSeconds, () => (game = Object.FindFirstObjectByType<GameBootstrap>()) != null && game.IsReady);
             Assert.That(game, Is.Not.Null, "Play did not load the game.");
             Assert.That(game.IsReady, Is.True, "The game was not ready in time.");
+            game.Intro.Skip();
 
             // Since the playtest of 20/11, 4 sticks and 5 mushrooms are kept around the player;
             // since the playtest loop, 4 pebbles too.

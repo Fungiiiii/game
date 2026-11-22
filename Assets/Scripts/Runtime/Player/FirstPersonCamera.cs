@@ -77,6 +77,10 @@ namespace Fungiiiii.Runtime.Player
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+
+            // Turned back on after something else moved the camera (the opening shot): it is
+            // with the player at once, not one frame later.
+            Follow();
         }
 
         private void OnDisable()

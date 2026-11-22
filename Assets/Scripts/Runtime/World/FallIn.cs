@@ -35,6 +35,19 @@ namespace Fungiiiii.Runtime.World
             Apply();
         }
 
+        /// <summary>Ends the fall at once, on the pose it falls onto. Nothing happens when it is not falling.</summary>
+        public void Finish()
+        {
+            if (!enabled)
+            {
+                return;
+            }
+
+            elapsed = duration;
+            Apply();
+            enabled = false;
+        }
+
         private void Awake()
         {
             enabled = false;

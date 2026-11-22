@@ -142,6 +142,10 @@ namespace Fungiiiii.Game
         [SerializeField]
         private GameObject seedGlow;
 
+        [Tooltip("The opening shot: the seed falling from the giant tree.")]
+        [SerializeField]
+        private SeedFallIntro intro;
+
         [Tooltip("Inside the Champimaison: the end of the demo. Loaded by path, so it must be in the build settings.")]
         [SerializeField]
         private string interiorScenePath = "Assets/Scenes/Game/ChampimaisonInterior.unity";
@@ -217,6 +221,9 @@ namespace Fungiiiii.Game
 
         /// <summary>The player's controls: whether a menu has them, the device in use.</summary>
         public PlayerControls Controls => controls;
+
+        /// <summary>The opening shot, played once the game is ready.</summary>
+        public SeedFallIntro Intro => intro;
 
         /// <summary>The screens open over the game: Escape closes the top one, or pauses.</summary>
         public ScreenStack Screens => screens.Stack;
@@ -330,6 +337,7 @@ namespace Fungiiiii.Game
                 interactables,
                 new System.Random(random.Next()));
             var seed = droppedItems.Place(moleHoles.Seed, 1, seedSpot.position);
+            var playerStart = player.transform.position;
             Instantiate(seedGlow, seed.transform, false);
             // The ferns first: the wild Spongeus go and drink at them.
             refillingPlants.Populate(forest, sessionTerrain, outlines, interactables, new System.Random(random.Next()));
@@ -349,6 +357,7 @@ namespace Fungiiiii.Game
 
             screens.Bind(controls, interactor, hands);
             IsReady = true;
+            intro.Play(firstPersonCamera.Camera, firstPersonCamera, controls, seed.transform, playerStart, GroundHeight);
         }
 
         /// <summary>What is missing for the game to start, or null when nothing is.</summary>
@@ -389,9 +398,9 @@ namespace Fungiiiii.Game
                 return "the outline settings or their shader are missing.";
             }
 
-            if (gathering == null || creatures == null || refillingPlants == null || companions == null || moleHoles == null || seedSpot == null || seedGlow == null)
+            if (gathering == null || creatures == null || refillingPlants == null || companions == null || moleHoles == null || seedSpot == null || seedGlow == null || intro == null)
             {
-                return "the forest's gathering, its creatures, its refilling plants, the companions, the mole holes, the seed spot or its glow are missing.";
+                return "the forest's gathering, its creatures, its refilling plants, the companions, the mole holes, the seed spot, its glow or the opening shot are missing.";
             }
 
             return screens.FindProblem()
@@ -399,6 +408,7 @@ namespace Fungiiiii.Game
                 ?? gathering.FindProblem()
                 ?? creatures.FindProblem()
                 ?? refillingPlants.FindProblem()
+                ?? intro.FindProblem()
                 ?? companions.FindProblem()
                 ?? moleHoles.FindProblem();
         }

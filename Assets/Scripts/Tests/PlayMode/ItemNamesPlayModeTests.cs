@@ -36,6 +36,7 @@ namespace Fungiiiii.Tests.PlayMode
             }
 
             Assert.That(game != null && game.IsReady, Is.True, "The game was not ready in time.");
+            game.Intro.Skip();
         }
 
         private static IEnumerator Wait(float seconds)

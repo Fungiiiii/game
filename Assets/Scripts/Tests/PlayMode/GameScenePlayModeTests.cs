@@ -65,6 +65,7 @@ namespace Fungiiiii.Tests.PlayMode
 
             Assert.That(game, Is.Not.Null, "The scene has no GameBootstrap.");
             Assert.That(game.IsReady, Is.True, "The game was not ready in time.");
+            game.Intro.Skip();
         }
 
         /// <summary>

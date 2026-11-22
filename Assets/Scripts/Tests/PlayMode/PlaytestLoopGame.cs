@@ -25,7 +25,8 @@ namespace Fungiiiii.Tests.PlayMode
 
         public static GameBootstrap Bootstrap => Object.FindFirstObjectByType<GameBootstrap>();
 
-        public static IEnumerator Load()
+        /// <param name="skipIntro">False to see the opening shot play, as a player does.</param>
+        public static IEnumerator Load(bool skipIntro = true)
         {
 #if UNITY_EDITOR
             yield return EditorSceneManager.LoadSceneAsyncInPlayMode(ScenePath, new LoadSceneParameters(LoadSceneMode.Single));
@@ -40,6 +41,11 @@ namespace Fungiiiii.Tests.PlayMode
             }
 
             Assert.That(game != null && game.IsReady, Is.True, "The game was not ready in time.");
+            // The opening shot has its own tests (SeedFallIntroPlayModeTests).
+            if (skipIntro)
+            {
+                game.Intro.Skip();
+            }
         }
 
         public static IEnumerator Wait(float seconds)

@@ -128,6 +128,7 @@ namespace Fungiiiii.Tests.PlayMode
 
             Assert.That(game, Is.Not.Null, "Play did not load the game.");
             Assert.That(game.IsReady, Is.True, "The game was not ready in time.");
+            game.Intro.Skip();
             Assert.That(Object.FindFirstObjectByType<MainMenu>(), Is.Null, "The home screen is still there.");
         }
 
