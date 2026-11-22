@@ -193,6 +193,9 @@ namespace Fungiiiii.Tests.PlayMode
             var end = Object.FindFirstObjectByType<DemoEnd>();
             Assert.That(end, Is.Not.Null, "No end of the demo inside.");
             Assert.That(Cursor.lockState, Is.EqualTo(CursorLockMode.None), "The mouse is not free at the end.");
+            Assert.That(end.QuitButton, Is.Not.Null, "The end of the demo has no way out of the game.");
+            Assert.That(end.QuitButton.gameObject.activeInHierarchy, Is.True);
+            Assert.That(end.QuitButton, Is.Not.SameAs(end.HomeButton));
         }
     }
 }
