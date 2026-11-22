@@ -349,3 +349,4 @@ Aucun de ces tests n'a encore été joué par un humain : à dérouler par Hugo,
 ## Modifié par
 
 - [playtest-retours](./playtest-retours.md) — retours du playtest du 20/11 : bâtons et champignons gardés autour du joueur (5 et 4 dans 50 m, jamais en vue) au lieu de toute la carte ; contour visé cyan avec la touche au-dessus ; inventaire refait ; arc du filet seulement en visant.
+- [boucle-playtest](./boucle-playtest.md) — inventaire de départ vide : le filet se fabrique ; le trou de la Champimaison revient, planté par le joueur dans un trou de taupe.

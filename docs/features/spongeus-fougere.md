@@ -189,3 +189,5 @@ Lancés en batch sur le PC de Hugo (Unity 6000.3.21f1), le 21/11.
 - Rien n'a été testé dans un exécutable.
 
 ## Modifié par
+
+- [boucle-playtest](./boucle-playtest.md) — Spongeus sauvages dans la brume, qui vont boire aux fougères mouillées ; aspect mouillé partagé avec le compagnon (`WetLook`).

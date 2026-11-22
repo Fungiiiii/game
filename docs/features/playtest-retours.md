@@ -283,3 +283,4 @@ Lancés en batch sur le PC de Hugo (Unity 6000.3.21f1) à chaque étape.
 ## Modifié par
 
 - [spongeus-fougere](./spongeus-fougere.md) — E peut aussi être maintenu (cercle autour de la touche, appui court décidé au relâchement) sur ce qui le demande ; la touche peut laisser place à un court texte ; trois aides de touches. Le contrôle « tronc ou rocher » des champignons passe dans `ForestResourceSpots.TouchesTrunkOrRock`, partagé avec les fougères à eau.
+- [boucle-playtest](./boucle-playtest.md) — panneau « Fabrication » à côté de l'inventaire ; cailloux autour du joueur comme les bâtons ; objectif et recettes traquées en haut à droite.
