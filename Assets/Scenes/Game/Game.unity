@@ -543,6 +543,7 @@ MonoBehaviour:
   reach: 2
   pictureSize: 0.4
   floatHeight: 0.35
+  iconMaterial: {fileID: 2100000, guid: d8af750cf3dd1934e94c2c968bbe8f4a, type: 2}
 --- !u!4 &332564109
 Transform:
   m_ObjectHideFlags: 0
@@ -1130,7 +1131,7 @@ MonoBehaviour:
   spawns:
   - creature: {fileID: 11400000, guid: bf402ca1399e42a197ecead4d6f4bd22, type: 2}
     homes: []
-    shareOfSources: 0.33
+    shareOfSources: 0.17
     distanceFromSource: 2.5
   area:
     serializedVersion: 2
@@ -1138,6 +1139,9 @@ MonoBehaviour:
     y: -60
     width: 580
     height: 180
+  maxShown: 6
+  showWithin: 50
+  hideBeyond: 60
 --- !u!1001 &1110914249
 PrefabInstance:
   m_ObjectHideFlags: 0

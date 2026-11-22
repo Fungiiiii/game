@@ -409,6 +409,7 @@ namespace Fungiiiii.Game
                 ?? creatures.FindProblem()
                 ?? refillingPlants.FindProblem()
                 ?? intro.FindProblem()
+                ?? droppedItems.FindProblem()
                 ?? companions.FindProblem()
                 ?? moleHoles.FindProblem();
         }

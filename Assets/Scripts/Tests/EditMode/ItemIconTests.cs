@@ -35,6 +35,18 @@ namespace Fungiiiii.Tests.EditMode
         }
 
         [Test]
+        public void TheDroppedIconMaterial_CutsOutTheTransparentCorners()
+        {
+            // An asset, so that the build keeps the cut-out variant: a material made by code alone lost it, and the corners showed black.
+            var material = AssetDatabase.LoadAssetAtPath<Material>("Assets/Art/Materials/DroppedIcon.mat");
+
+            Assert.That(material, Is.Not.Null);
+            Assert.That(material.IsKeywordEnabled("_ALPHATEST_ON"), Is.True);
+            Assert.That(material.GetFloat("_AlphaClip"), Is.EqualTo(1f));
+            Assert.That(material.renderQueue, Is.EqualTo((int)UnityEngine.Rendering.RenderQueue.AlphaTest));
+        }
+
+        [Test]
         public void AnItemWithoutIcon_IsTheSquareOfItsColour()
         {
             var wood = Item("wood", new Color(0.54f, 0.37f, 0.26f));

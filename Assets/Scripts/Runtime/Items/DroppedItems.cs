@@ -33,8 +33,9 @@ namespace Fungiiiii.Items
         [SerializeField, Min(0f)]
         private float floatHeight = 0.35f;
 
-        private static readonly int AlphaClipId = Shader.PropertyToID("_AlphaClip");
-        private static readonly int CutoffId = Shader.PropertyToID("_Cutoff");
+        [Tooltip("Copied for each picture that has an icon: it cuts out the icon's transparent corners. Being an asset, it keeps that shader variant in the build, which a material made by code alone would not.")]
+        [SerializeField]
+        private Material iconMaterial;
 
         private readonly List<DroppedItem> items = new List<DroppedItem>();
         private readonly List<Material> materials = new List<Material>();
@@ -44,6 +45,12 @@ namespace Fungiiiii.Items
         private ItemOutlineFactory outlines;
         private ICollection<IInteractable> interactables;
         private System.Random random;
+
+        /// <summary>What is missing for the pictures, or null when nothing is.</summary>
+        public string FindProblem()
+        {
+            return iconMaterial == null ? $"{name} lacks the material that cuts out the icons." : null;
+        }
 
         /// <summary>The stacks lying on the ground.</summary>
         public IReadOnlyList<DroppedItem> Items => items;
@@ -122,16 +129,14 @@ namespace Fungiiiii.Items
             picture.transform.localScale = Vector3.one * pictureSize;
             picture.transform.localPosition = Vector3.up * floatHeight;
 
-            var material = Primitives.CreateUnlitMaterial($"Dropped {item.name}", item.Icon != null ? Color.white : item.Color);
+            Material material;
             if (item.Icon != null)
             {
-                material.mainTexture = item.Icon.texture;
-
-                // The icon's transparent corners are cut out, not drawn as a dark square.
-                material.SetFloat(AlphaClipId, 1f);
-                material.SetFloat(CutoffId, 0.5f);
-                material.EnableKeyword("_ALPHATEST_ON");
-                material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
+                material = new Material(iconMaterial) { name = $"Dropped {item.name}", mainTexture = item.Icon.texture };
+            }
+            else
+            {
+                material = Primitives.CreateUnlitMaterial($"Dropped {item.name}", item.Color);
             }
 
             materials.Add(material);
