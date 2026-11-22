@@ -14,6 +14,8 @@ namespace Fungiiiii.Editor.Playtest
     /// </summary>
     internal static class PlaytestSetup
     {
+        internal const string MainMenuScenePath = "Assets/Scenes/Menu/MainMenu.unity";
+
         internal const string GameScenePath = "Assets/Scenes/Game/Game.unity";
 
         /// <summary>Inside the Champimaison: the end of the demo.</summary>
@@ -33,7 +35,7 @@ namespace Fungiiiii.Editor.Playtest
         /// <summary>The home screen comes first: it is the scene a build starts on.</summary>
         private static readonly string[] BuildScenePaths =
         {
-            MainMenuSceneBuilder.ScenePath,
+            MainMenuScenePath,
             GameScenePath,
             ForestScenePath,
             InteriorScenePath,
@@ -107,7 +109,6 @@ namespace Fungiiiii.Editor.Playtest
         [MenuItem("Fungiiiii/Playtest/Set Up Everything")]
         internal static void SetUpEverything()
         {
-            MainMenuSceneBuilder.Build();
             SetBuildScenes();
             IncludePlaceholderShader();
         }
