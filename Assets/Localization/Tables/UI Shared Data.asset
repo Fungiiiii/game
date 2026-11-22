@@ -59,10 +59,6 @@ MonoBehaviour:
     m_Key: hint.throw
     m_Metadata:
       m_Items: []
-  - m_Id: 315545659367425
-    m_Key: hint.stop_aiming
-    m_Metadata:
-      m_Items: []
   - m_Id: 315545659367426
     m_Key: hint.switch_item
     m_Metadata:

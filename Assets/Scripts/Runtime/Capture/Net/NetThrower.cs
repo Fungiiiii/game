@@ -150,7 +150,7 @@ namespace Fungiiiii.Capture
         public string PrimaryHintKey => IsReadyInHand ? (IsAiming ? UiText.HintThrow : UiText.HintThrowNet) : null;
 
         /// <summary>Aiming, while the net is in hand: releasing stops it.</summary>
-        public string SecondaryHintKey => IsReadyInHand ? (IsAiming ? UiText.HintStopAiming : UiText.HintAim) : null;
+        public string SecondaryHintKey => IsReadyInHand ? UiText.HintAim : null;
 
         private bool IsReadyInHand => isEquipped && Cycle != null && Cycle.Phase == NetPhase.Ready;
 

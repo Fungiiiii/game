@@ -67,7 +67,7 @@ namespace Fungiiiii.Combat
 
         public string PrimaryHintKey => !equipped ? null : HasAmmo ? UiText.HintShoot : UiText.HintNoPebble;
 
-        public string SecondaryHintKey => !equipped ? null : aiming ? UiText.HintStopAiming : UiText.HintAim;
+        public string SecondaryHintKey => !equipped ? null : UiText.HintAim;
 
         private bool HasAmmo => inventory.Count(ammo.Id) > 0;
 

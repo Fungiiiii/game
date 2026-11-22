@@ -506,7 +506,7 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator WhileAiming_TheHints_SayThrow_AndReleaseToStop()
+        public IEnumerator WhileAiming_TheHints_SayThrow_AndStillAim()
         {
             yield return LoadGameWithNet();
             var game = Object.FindFirstObjectByType<GameBootstrap>();
@@ -514,7 +514,7 @@ namespace Fungiiiii.Tests.PlayMode
             yield return null;
             yield return null;
 
-            Assert.That(HintLabels(game).Take(2), Is.EqualTo(new[] { UiText.HintThrow, UiText.HintStopAiming }));
+            Assert.That(HintLabels(game).Take(2), Is.EqualTo(new[] { UiText.HintThrow, UiText.HintAim }));
         }
 
         [UnityTest]

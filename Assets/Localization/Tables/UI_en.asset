@@ -62,10 +62,6 @@ MonoBehaviour:
     m_Localized: Throw
     m_Metadata:
       m_Items: []
-  - m_Id: 315545659367425
-    m_Localized: 'Release: stop aiming'
-    m_Metadata:
-      m_Items: []
   - m_Id: 315545659367426
     m_Localized: Switch item
     m_Metadata:
@@ -87,7 +83,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 315545659367431
-    m_Localized: Half, or just one
+    m_Localized: Split
     m_Metadata:
       m_Items: []
   - m_Id: 315545659367432
@@ -123,7 +119,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391184999505920
-    m_Localized: Take out
+    m_Localized: Put down
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448960
@@ -171,11 +167,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448971
-    m_Localized: Mushrooms to pick
+    m_Localized: "In the forest, to pick"
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448972
-    m_Localized: A Spongeus that drank at the ferns of the mist
+    m_Localized: Squeeze a Spongeus that drank at the ferns
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448973
@@ -187,7 +183,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448975
-    m_Localized: Wake up
+    m_Localized: Sprout
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448976
@@ -215,7 +211,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448982
-    m_Localized: Wake the seed up
+    m_Localized: Sprout the seed
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448983
@@ -235,7 +231,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448987
-    m_Localized: Missing
+    m_Localized: Incomplete
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448988
@@ -263,7 +259,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448994
-    m_Localized: "Find out what lies under the giant tree"
+    m_Localized: Uncover the giant tree's secret
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448995
@@ -271,7 +267,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448996
-    m_Localized: Wake the seed up
+    m_Localized: Sprout the seed
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448997
@@ -291,7 +287,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041449001
-    m_Localized: No pebble
+    m_Localized: No pebbles
     m_Metadata:
       m_Items: []
   - m_Id: 391185041449002

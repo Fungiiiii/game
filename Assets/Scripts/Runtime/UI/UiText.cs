@@ -22,7 +22,6 @@ namespace Fungiiiii.UI
         public const string HintThrowNet = "hint.throw_net";
         public const string HintAim = "hint.aim";
         public const string HintThrow = "hint.throw";
-        public const string HintStopAiming = "hint.stop_aiming";
         public const string HintSwitchItem = "hint.switch_item";
         public const string HintInventory = "hint.inventory";
         public const string HintGather = "hint.gather";

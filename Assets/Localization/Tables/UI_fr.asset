@@ -62,10 +62,6 @@ MonoBehaviour:
     m_Localized: Lancer
     m_Metadata:
       m_Items: []
-  - m_Id: 315545659367425
-    m_Localized: "Rel\xE2cher : ne plus viser"
-    m_Metadata:
-      m_Items: []
   - m_Id: 315545659367426
     m_Localized: "Changer d\u2019objet"
     m_Metadata:
@@ -87,7 +83,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 315545659367431
-    m_Localized: "La moiti\xE9, ou un seul"
+    m_Localized: Diviser
     m_Metadata:
       m_Items: []
   - m_Id: 315545659367432
@@ -123,7 +119,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391184999505920
-    m_Localized: Sortir
+    m_Localized: Poser
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448960
@@ -171,11 +167,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448971
-    m_Localized: "Champignons \xE0 cueillir"
+    m_Localized: "Dans la forêt, à cueillir"
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448972
-    m_Localized: "Un Spongeus qui a bu aux foug\xE8res de la brume"
+    m_Localized: "Presse un Spongeus qui a bu aux fougères"
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448973
@@ -187,7 +183,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448975
-    m_Localized: "R\xE9veiller"
+    m_Localized: Faire germer
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448976
@@ -207,7 +203,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448980
-    m_Localized: "N\xE9cessite une graine"
+    m_Localized: Il faut une graine
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448981
@@ -215,7 +211,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448982
-    m_Localized: "R\xE9veiller la graine"
+    m_Localized: Faire germer la graine
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448983
@@ -231,11 +227,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448986
-    m_Localized: Possible
+    m_Localized: "Prête"
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448987
-    m_Localized: Il manque
+    m_Localized: "À compléter"
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448988
@@ -263,7 +259,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448994
-    m_Localized: "Découvre ce qui se passe sous le grand arbre"
+    m_Localized: Découvre le secret du grand arbre
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448995
@@ -271,7 +267,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448996
-    m_Localized: "R\xE9veille la graine"
+    m_Localized: Fais germer la graine
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448997
@@ -291,7 +287,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041449001
-    m_Localized: Pas de caillou
+    m_Localized: Aucun caillou
     m_Metadata:
       m_Items: []
   - m_Id: 391185041449002
