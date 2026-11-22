@@ -50,7 +50,6 @@ namespace Fungiiiii.Combat
         private Transform visualsRoot;
         private bool equipped;
         private bool aiming;
-        private bool controlsTaken;
         private float cooldown;
         private string shownPrimary;
         private string shownSecondary;
@@ -109,26 +108,21 @@ namespace Fungiiiii.Combat
 
         public void UsePrimary()
         {
-            controlsTaken = false;
             if (view != null)
             {
                 TryShoot(view.transform.TransformPoint(ShotOriginOffset), view.transform.forward);
             }
         }
 
+        /// <summary>Called every frame the hands give the controls; not under a menu.</summary>
         public void HoldSecondary(bool held)
         {
-            if (controlsTaken)
-            {
-                return;
-            }
-
             SetAiming(held && equipped);
         }
 
+        /// <summary>A menu took the controls: the aim drops until the hands give them back.</summary>
         public void Cancel()
         {
-            controlsTaken = true;
             SetAiming(false);
         }
 

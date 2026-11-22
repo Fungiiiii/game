@@ -279,8 +279,14 @@ namespace Fungiiiii.Capture
                 return;
             }
 
-            IsAiming = isEquipped && !controlsTaken && (HoldAim || secondaryHeld);
-            zoom.SetAiming(IsAiming, AimFieldOfView);
+            // The zoom is shared with the other items that aim: it is told only when the
+            // net starts or stops aiming, so the net put away leaves it to them.
+            var aiming = isEquipped && !controlsTaken && (HoldAim || secondaryHeld);
+            if (aiming != IsAiming)
+            {
+                IsAiming = aiming;
+                zoom.SetAiming(aiming, AimFieldOfView);
+            }
 
             Cycle.Tick(Time.deltaTime);
             PreviewTarget = null;
