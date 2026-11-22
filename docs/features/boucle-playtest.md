@@ -65,7 +65,7 @@
 **Spongeus sauvages**
 
 - [ ] Plus aucun champignon dans la clairière du spawn. Les Spongeus vivent dans la brume, et seulement à côté des fougères à eau : un seul, à 2,5 m, sur environ 1 fougère sur 3. Les 3 fougères les plus proches de l'arbre géant (les premières qu'on croise en entrant dans la brume) ont toujours leur Spongeus et sont pleines au départ.
-- [ ] Calme et sec, un Spongeus va boire à une fougère mouillée proche, mais seulement quand le joueur est à moins de 15 m : il boit sous ses yeux, jamais à l'autre bout de la forêt. Il s'imbibe en 3 s, son chapeau fonce et brille peu à peu. La fougère sèche.
+- [ ] Calme et sec, un Spongeus va boire à une fougère mouillée proche, mais seulement quand le joueur est à moins de 15 m et le regarde (à moins de 40° du centre de la vue) : il boit sous ses yeux, jamais à l'autre bout de la forêt ni dans son dos. Parti boire, il continue tant que le joueur reste à moins de 15 m. Il s'imbibe en 3 s, son chapeau fonce et brille peu à peu. La fougère sèche.
 
 **Lance-pierre**
 
@@ -175,7 +175,7 @@ Architecture :
 - **Les trous de taupe se placent sur les `ChampimaisonSite` de `MysticForest`**, lus au lancement. Hugo (22/11) : les 4 emplacements d'origine sont remplacés par 9, hors des chemins, répartis dans la forêt pour qu'on en croise dès le départ. Seule modification de la forêt : les emplacements ont été déplacés puis le relief et les arbres regénérés avec les outils de la forêt (« Generate relief + forest »). Avant, on a vérifié que ces outils reproduisent le Terrain commité (écart de hauteur max 4 cm, 4 arbres sur 24 290 décalés d'un cheveu) : le changement se limite au sol autour des anciens et des nouveaux emplacements (24 290 → 24 254 arbres).
 - **Les Spongeus sauvages naissent à côté des fougères** (Hugo, 22/11 : sinon le joueur ne comprend jamais que le Spongeus se remplit). `CreaturePopulation` place, pour une espèce qui s'imbibe, un Spongeus à `distanceFromSource` (2,5 m) d'une part des plantes qu'elle boit (`shareOfSources`, 0,33), hors tronc et rocher, dans la zone de la brume. Les 6 points fixes sont retirés. Pas une fougère sur deux : le joueur apprend en voyant la règle deux ou trois fois au bon moment ; une fougère sans Spongeus garde de l'eau pour le compagnon, et l'eau des Spongeus abattus reste rare.
 - **Les premières fougères croisées sont garanties** : `RefillingPlants` choisit les `firstMetCount` (3) fougères les plus proches de `firstMetFrom` (l'arbre géant, d'où vient le joueur), les remplit au départ, et chacune a son Spongeus.
-- **Un Spongeus sauvage ne boit que sous les yeux du joueur** (`soaksWhenPlayerWithin`, 15 m, dans `Spongeus.asset`) : sans ça, il boit dans les premières secondes, bien avant l'arrivée du joueur, et celui-ci ne trouve que des Spongeus déjà mouillés. Au-delà de 3,5 m il reste calme : on peut le regarder boire. L'imbibition passe de 1,5 à 3 s pour qu'on ait le temps de voir le chapeau changer.
+- **Un Spongeus sauvage ne boit que sous les yeux du joueur** (`soaksWhenPlayerWithin`, 15 m, et `soaksWhenSeenWithinDegrees`, 40°, dans `Spongeus.asset` ; Hugo, 22/11, a demandé la condition du regard) : sans ça, il boit dans les premières secondes, bien avant l'arrivée du joueur, et celui-ci ne trouve que des Spongeus déjà mouillés. Au-delà de 3,5 m il reste calme : on peut le regarder boire. L'imbibition passe de 1,5 à 3 s pour qu'on ait le temps de voir le chapeau changer.
 - **Le zoom de visée est partagé** (`AimZoom`) : le filet ne le règle plus qu'au début et à la fin de sa visée. Avant, il le remettait à « pas de visée » à chaque image, même rangé, et le lance-pierre ne zoomait jamais. Le lance-pierre ne garde plus de verrou après un menu : les mains ne lui donnent pas les commandes sous un menu, il reprend la visée dès qu'elles reviennent (comme le filet).
 - **L'objectif est calculé à partir de l'état du jeu** (`ObjectiveRules` : graine, plantation, palier, filet), pas de l'ordre des événements : perdre la graine avant de la planter ramène au premier objectif.
 - **Les recettes traquées** sont un `RecipeTracker` en C# pur tenu par `GameBootstrap`, partagé par le panneau de fabrication et l'objectif.
@@ -220,7 +220,8 @@ Corrigé à ce moment-là, sans changer ce que les tests exigent :
 | `UiTextSizeTests` | EditMode | Chaque texte des prefabs d'interface a l'une des quatre tailles | ✅ |
 | `SlingshotPlayModeTests` | PlayMode | Champignons dans la brume ; un Spongeus boit à une fougère pleine ; un caillou par tir, seulement en main ; eau lâchée seulement par un Spongeus mouillé | ✅ |
 | `SlingshotPlayModeTests.TheFirstFernsMet_AreFull_EachWithASpongeus_AndNoSpongeusLivesAwayFromTheFerns` | PlayMode | Les 3 premières fougères croisées sont pleines, un Spongeus chacune ; des Spongeus sur une partie des fougères seulement ; aucun loin d'une fougère | ✅ |
-| `SlingshotPlayModeTests.AWildSpongeus_DrinksOnlyUnderThePlayersEyes` | PlayMode | Joueur loin : 6 s sans boire, fougère pleine ; joueur à 8 m : il boit, la fougère sèche | ✅ |
+| `SlingshotPlayModeTests.AWildSpongeus_DrinksOnlyNearThePlayer_AndLookedAt` | PlayMode | Joueur loin : 6 s sans boire ; joueur à 8 m, dos tourné : 5 s sans boire ; joueur à 8 m qui le regarde : il boit, la fougère sèche | ✅ |
+| `KeyPromptPlayModeTests.AText_IsReadOnItsPanel_WhichGrowsAroundIt` | PlayMode | Le texte du petit panneau est actif et lu, le panneau grandit autour (échouait avant la correction : texte caché) | ✅ |
 | `SlingshotAimPlayModeTests` | PlayMode | Vrai clic droit simulé : le lance-pierre vise et la vue se resserre, encore après l'inventaire (échouait avant la correction : la vue ne se resserrait pas) | ✅ |
 | `GameScenePlayModeTests.SticksMushroomsAndPebbles_AreAroundThePlayer` | PlayMode | 4 cailloux à moins de 50 m, comme les bâtons | ✅ |
 | `KeyPromptPlayModeTests` (4 tests ajoutés) | PlayMode | Triangle sans bord pour un appui ; bord vide puis rempli, sans triangle, pour un maintien ; les deux ensemble ; texte à la place de la touche | ✅ |
@@ -239,7 +240,7 @@ Corrigé à ce moment-là, sans changer ce que les tests exigent :
 | 6 | Ramasser des bâtons et des cailloux, Tab, en 1920×1080 puis en 1280×720 | Panneau « Fabrication » à droite, aucune recette ouverte, E et R grisés. Ni jauges ni objectif ; les aides sur une ligne sous les panneaux, rien ne se recouvre | ⬜ |
 | 7 | Cliquer « Filet », R | Détails en bas, « Fil de mycélium 0/3 » en rouge avec sa provenance. Le filet apparaît en haut à droite | ⬜ |
 | 8 | Cliquer deux fois « Lance-pierre » | Lance-pierre dans la barre rapide, « +1 Lance-pierre », bâtons et caillou retirés. Compteurs du filet traqué à jour | ⬜ |
-| 9 | Depuis l'arbre géant, entrer dans la brume et s'approcher de la première fougère à eau, en s'arrêtant à 5–10 m | Elle est pleine, un Spongeus à côté. Il va y boire sous vos yeux, son chapeau fonce peu à peu, la fougère sèche | ⬜ |
+| 9 | Depuis l'arbre géant, entrer dans la brume et s'approcher de la première fougère à eau, en s'arrêtant à 5–10 m dos à elle, puis se retourner | Elle est pleine, un Spongeus à côté. Dos tourné, rien. Face à lui, il va y boire, son chapeau fonce peu à peu, la fougère sèche. Visée de près, la fougère affiche « Il faut un Spongeus » en entier sur son panneau | ⬜ |
 | 10 | Tirer sur un Spongeus sec jusqu'à l'abattre | Il disparaît, rien au sol | ⬜ |
 | 11 | Tirer sur un Spongeus mouillé jusqu'à l'abattre | 1 Eau au sol, E la ramasse | ⬜ |
 | 12 | Maintenir E sur la Champimaison | Texte « Réveiller ». Le réseau pousse, objectif « Fabrique un filet » | ⬜ |
@@ -261,7 +262,8 @@ Corrigé à ce moment-là, sans changer ce que les tests exigent :
 - **Au-dessus d'un trou de taupe, la touche flotte seule** : « Planter » est dans les aides en bas à droite, pas à côté de la touche comme sur le canevas. Les blocs Production et Débloque du canevas ne sont pas encore dans le panneau de la Champimaison.
 - **La graine posée à l'arbre géant** est dessinée comme un objet jeté (image de l'objet), en attendant son modèle.
 - **Nombre de Spongeus sauvages** : environ un tiers des fougères, 24 pour 77 au dernier lancement (`shareOfSources` dans `Game.unity`), à régler en jouant.
-- **Le joueur doit regarder vers la fougère** : le Spongeus boit dès que le joueur est à moins de 15 m, même s'il regarde ailleurs. Dans la brume dense, 15 m peut aussi être trop loin pour bien voir : à vérifier en jouant.
+- **Dans la brume dense, 15 m peut être trop loin pour bien voir le Spongeus boire** : à vérifier en jouant. Le regard est mesuré au centre du Spongeus, pas à ce qui le cache (un tronc entre les deux ne l'empêche pas de boire).
+- **Le texte des petits panneaux en bois était caché depuis leur ajout** (« Il faut un Spongeus », « Nécessite une graine », « Prends la graine en main ») : l'objet `Text` du prefab `KeyPrompt` était désactivé, le panneau ne montrait que ses marges. Corrigé ; vérifié par la taille du panneau (227 px pour « Il faut un Spongeus »), pas encore à l'écran.
 - **Signaler l'arbre géant et la graine**, le nombre et la place des trous de taupe : à régler pendant le dev.
 - **`scripts/check-art-assets.sh` refuse les prefabs de `Assets/Prefabs/UI/`** (domaine et préfixe `PF_`), y compris ceux qui existaient déjà : les nouveaux prefabs d'interface suivent la convention existante du dossier `UI`.
 - Placeholders pour tous les nouveaux modèles et icônes.
