@@ -150,6 +150,9 @@ Validées par Hugo le 22/11 :
 - **La Champoule est mise de côté** pour cette boucle.
 - **Plus de remise à zéro (R)** : recommencer passe par l'accueil.
 - **Placeholders** : trou de taupe en cubes de terre autour d'un petit trou ; caillou en cube.
+- **L'interface est faite pour du 16:9, en 1920×1080 ou 1280×720, sur PC** (Hugo, 22/11) : pas de console ni de tablette. Tous les canevas suivent la hauteur de l'écran (`Match` = 1) : en 16:9 rien ne change, sur un écran plus large rien n'est coupé en bas, il y a seulement plus d'espace sur les côtés.
+- **L'inventaire ouvert cache les jauges et l'objectif**, et ses aides passent sur une ligne, centrée sous ses panneaux (Hugo, 22/11). Ses deux panneaux prennent la largeur d'un écran 16:9 : les jauges, l'objectif et les aides en bas à droite passaient dessous.
+- **Les touches de la fabrication ne bougent pas** (Hugo, 22/11) : E Fabriquer toujours à gauche, grisé quand la recette ne peut pas être faite ou qu'aucune n'est ouverte ; R Traquer toujours à droite, grisé quand aucune recette n'est ouverte. Chaque touche a sa moitié de la ligne.
 - **Les prefabs d'interface restent dans `Assets/Prefabs/UI/`** (Hugo, 22/11), nommés d'après leur composant, comme Unity les range. `scripts/check-art-assets.sh` ne leur applique plus le dossier de domaine ni le préfixe `PF_`, qui visent les prefabs de modèles (ADR-0005). Ceux-là gardent la règle : `Player` et `PlaytestPlayer` deviennent `PF_Player` et `PF_PlaytestPlayer`, même GUID.
 
 Architecture :
@@ -202,7 +205,8 @@ Corrigé à ce moment-là, sans changer ce que les tests exigent :
 | `WildSoakTests` | EditMode | Source la plus proche ; sources sèches ou d'un autre objet ignorées ; imbibition ; source qui sèche en route ; interruption | ✅ |
 | `CreatureHealthTests` | EditMode | Chute à zéro, une seule fois | ✅ |
 | `ChampimaisonPlayModeTests` | PlayMode | Graine à l'arbre géant ; plantation (sac, main) ; panneau et dépôt ; fil ; entrée et fin de démo | ✅ |
-| `CraftingPanelPlayModeTests` | PlayMode | Ouverture sans recette ouverte ; clic puis deuxième clic ; ingrédient manquant et provenance ; recette traquée en haut à droite jusqu'à sa fabrication | ✅ |
+| `CraftingPanelPlayModeTests` | PlayMode | Ouverture sans recette ouverte, E et R grisés ; clic puis deuxième clic ; ingrédient manquant et provenance, E grisé à sa place ; recette traquée en haut à droite jusqu'à sa fabrication | ✅ |
+| `GameScenePlayModeTests.TheInventory_HidesTheVitalsAndTheObjective_AndKeepsItsHintsUnderItsPanels` | PlayMode | Jauges et objectif cachés pendant l'inventaire, revenus à sa fermeture ; ses aides sous ses panneaux | ✅ |
 | `SlingshotPlayModeTests` | PlayMode | Champignons dans la brume ; un Spongeus boit à une fougère pleine ; un caillou par tir, seulement en main ; eau lâchée seulement par un Spongeus mouillé | ✅ |
 | `GameScenePlayModeTests.SticksMushroomsAndPebbles_AreAroundThePlayer` | PlayMode | 4 cailloux à moins de 50 m, comme les bâtons | ✅ |
 | `KeyPromptPlayModeTests` (4 tests ajoutés) | PlayMode | Triangle sans bord pour un appui ; bord vide puis rempli, sans triangle, pour un maintien ; les deux ensemble ; texte à la place de la touche | ✅ |
@@ -218,7 +222,7 @@ Corrigé à ce moment-là, sans changer ce que les tests exigent :
 | 3 | Viser un trou de taupe, graine dans le sac | « Prends la graine en main » sur un petit panneau en bois | ⬜ |
 | 4 | Graine en main, viser le trou, puis E | Touche E avec le triangle sur son bord haut. Puis la Champimaison apparaît, panneau « Réveiller la graine 1/2 », « Eau 0/1 » et « Spores 0/3 » en corail. Les autres trous n'ont plus de contour | ⬜ |
 | 5 | Cueillir 3 champignons, viser la Champimaison, maintenir E | Aucune touche ne flotte ; au pied du panneau, E avec son bord, « Maintenir Déposer ». Le bord se remplit depuis le coin haut gauche. Spores 3/3 en vert avec sa coche, Eau 0/1 reste, et le pied disparaît | ⬜ |
-| 6 | Ramasser des bâtons et des cailloux, Tab | Panneau « Fabrication » à droite, aucune recette ouverte | ⬜ |
+| 6 | Ramasser des bâtons et des cailloux, Tab, en 1920×1080 puis en 1280×720 | Panneau « Fabrication » à droite, aucune recette ouverte, E et R grisés. Ni jauges ni objectif ; les aides sur une ligne sous les panneaux, rien ne se recouvre | ⬜ |
 | 7 | Cliquer « Filet », R | Détails en bas, « Fil de mycélium 0/3 » en rouge avec sa provenance. Le filet apparaît en haut à droite | ⬜ |
 | 8 | Cliquer deux fois « Lance-pierre » | Lance-pierre dans la barre rapide, « +1 Lance-pierre », bâtons et caillou retirés. Compteurs du filet traqué à jour | ⬜ |
 | 9 | Dans la brume, observer un Spongeus | Il va boire à une fougère mouillée, son chapeau devient sombre et brillant | ⬜ |
@@ -238,7 +242,6 @@ Corrigé à ce moment-là, sans changer ce que les tests exigent :
 
 - **Compilé et testé en batchmode le 22/11/2026, pas encore joué** : aucune partie n'a été faite, aucun test manuel n'a été vérifié.
 - **Mise en page des prefabs d'interface** écrite par code, jamais vue : tailles et placements à régler dans l'Inspector.
-- **E Fabriquer est absent plutôt que grisé** quand une recette ne peut pas être faite : le panneau d'aides de touches ne sait pas griser une ligne.
 - **Au-dessus d'un trou de taupe, la touche flotte seule** : « Planter » est dans les aides en bas à droite, pas à côté de la touche comme sur le canevas. Les blocs Production et Débloque du canevas ne sont pas encore dans le panneau de la Champimaison.
 - **La graine posée à l'arbre géant** est dessinée comme un objet jeté (image de l'objet), en attendant son modèle.
 - **Placement des Spongeus sauvages** : 6 points fixes dans la brume, à régler en jouant. Un Spongeus sec peut boire pendant un test de chute : le test le signale.
