@@ -33,6 +33,27 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator EveryFern_HasASpongeusBesideIt_AndNoSpongeusLivesAwayFromTheFerns()
+        {
+            yield return Load();
+            var game = Bootstrap;
+            var ferns = game.RefillingPlants.Plants;
+            var spongeus = game.Mushrooms.Where(mushroom => mushroom.Soak != null).ToList();
+            Assert.That(ferns.Count, Is.GreaterThan(0));
+            Debug.Log($"{ferns.Count} ferns, {spongeus.Count} wild Spongeus.");
+
+            foreach (var fern in ferns)
+            {
+                Assert.That(spongeus.Any(each => Flat(each.transform.position, fern.Position) < 5f), Is.True, $"No Spongeus beside the fern at {fern.Position}.");
+            }
+
+            foreach (var each in spongeus)
+            {
+                Assert.That(ferns.Min(fern => Flat(each.transform.position, fern.Position)), Is.LessThan(5f), $"{each.name} lives away from the ferns.");
+            }
+        }
+
+        [UnityTest]
         public IEnumerator AWildSpongeus_DrinksAtAFullFern_AndLooksWet()
         {
             yield return Load();
@@ -77,6 +98,12 @@ namespace Fungiiiii.Tests.PlayMode
             var (wet, _) = SpongeusBesideAFullFern(game);
             yield return WaitUntil(() => wet.IsWet, 10f);
             Assert.That(wet.IsWet, Is.True);
+            // Every Spongeus lives beside a fern: the others are emptied so the dry one stays dry.
+            foreach (var fern in game.RefillingPlants.Plants)
+            {
+                fern.Restart(0f);
+            }
+
             var dry = game.Mushrooms.First(mushroom => mushroom != wet && !mushroom.IsWet);
             var water = WaterItem(game);
 
@@ -117,6 +144,13 @@ namespace Fungiiiii.Tests.PlayMode
             fern.Restart(1f);
             mushroom.transform.position = fern.Position + Vector3.right * 2f;
             return (mushroom, fern);
+        }
+
+        private static float Flat(Vector3 a, Vector3 b)
+        {
+            var offset = a - b;
+            offset.y = 0f;
+            return offset.magnitude;
         }
 
         private static Fungiiiii.Inventory.ItemDefinition WaterItem(Fungiiiii.Game.GameBootstrap game)

@@ -956,13 +956,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Capture.CreaturePopulation
   spawns:
   - creature: {fileID: 11400000, guid: bf402ca1399e42a197ecead4d6f4bd22, type: 2}
-    homes:
-    - {x: -200, y: -20}
-    - {x: -120, y: 60}
-    - {x: -40, y: 10}
-    - {x: 40, y: 80}
-    - {x: 120, y: -30}
-    - {x: 200, y: 40}
+    homes: []
+    besideEachSource: {x: 1, y: 2}
+    distanceFromSource: 2.5
   area:
     serializedVersion: 2
     x: -290
