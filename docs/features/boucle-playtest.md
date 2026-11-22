@@ -29,7 +29,7 @@
 **Graine et trous de taupe**
 
 - [ ] La graine est posée au pied de l'arbre géant, avec le contour de ce qui se ramasse. E la ramasse.
-- [ ] De petits trous de terre sont placés dans la forêt (au départ : sur les 4 emplacements de Champimaison). Placeholder : des cubes de terre en rond, posés dans le sol, autour d'un petit trou de quelques centimètres qui s'enfonce. Tant qu'aucune graine n'est plantée, ils portent un contour crème fin.
+- [ ] De petits trous de terre sont placés dans la forêt, sur les 9 emplacements de Champimaison : chacun dans une petite clairière, à 12–25 m d'un chemin, du départ (à 20 m, sur la droite) jusqu'aux pierres levées. Placeholder : des cubes de terre en rond, posés dans le sol, autour d'un petit trou de quelques centimètres qui s'enfonce. Tant qu'aucune graine n'est plantée, ils portent un contour crème fin.
 - [ ] Visé, un trou passe au contour cyan et affiche, sur un petit panneau en bois, « Nécessite une graine » sans graine ou « Prends la graine en main » si elle est dans le sac ; graine en main, la touche E avec le triangle de l'appui simple (« Planter » dans les aides en bas à droite).
 - [ ] Planter consomme la graine. Ce trou devient la Champimaison. Les autres trous restent, sans contour ni interaction.
 
@@ -64,12 +64,12 @@
 
 **Spongeus sauvages**
 
-- [ ] Plus aucun champignon dans la clairière du spawn. Les Spongeus vivent dans la brume.
+- [ ] Plus aucun champignon dans la clairière du spawn. Les Spongeus vivent dans la brume, et seulement à côté des fougères à eau : 1 ou 2 à 2,5 m de chaque fougère. Qui voit une fougère voit des Spongeus à côté.
 - [ ] Calme et sec, un Spongeus va boire à une fougère mouillée proche, s'imbibe, et prend l'aspect mouillé (chapeau sombre et brillant). La fougère sèche.
 
 **Lance-pierre**
 
-- [ ] Lance-pierre en main : clic droit maintenu (gâchette gauche) pour viser, avec l'arc et le zoom du filet ; clic gauche (gâchette droite) pour tirer un caillou. Chaque tir consomme un caillou ; sans caillou, rien ne part.
+- [ ] Lance-pierre en main : clic droit maintenu (gâchette gauche) pour viser, avec l'arc et le zoom du filet, y compris après avoir ouvert l'inventaire ou la pause ; clic gauche (gâchette droite) pour tirer un caillou. Chaque tir consomme un caillou ; sans caillou, rien ne part.
 - [ ] Un champignon touché perd des points de vie et fuit. Abattu, il disparaît ; un Spongeus mouillé lâche 1 Eau au sol, un Spongeus sec ne lâche rien. E ramasse ce qui est au sol.
 
 **Panneaux en bois et touches (design system)**
@@ -94,7 +94,7 @@ Le canevas Claude Design « Panneaux en bois » (https://claude.ai/artifact/6QKk
 - Une IA des champignons au-delà de : se promener, fuir, boire.
 - Le réseau, la faim, la toxicité, la mort du joueur, la sauvegarde.
 - Les modèles définitifs : graine, caillou, trou de taupe, lance-pierre, intérieur, icônes (faits par un humain, Charte IA). Placeholders en attendant.
-- Toute modification de la scène `MysticForest` et de ses données de Terrain.
+- Toute modification de la scène `MysticForest` et de ses données de Terrain, hormis les emplacements de Champimaison (Hugo, 22/11).
 
 ## Implémentation
 
@@ -108,7 +108,7 @@ Chemins relatifs à `Assets/Scripts/`.
 | Cailloux | `Runtime/Gathering/ForestGathering.cs` ; `Assets/Data/Items/Pebble.asset`, `Assets/Data/Gathering/Pebbles.asset` |
 | Fabrication | `Runtime/Crafting/CraftingRecipe.cs`, `RecipeBook.cs`, `Crafter.cs`, `RecipeTracker.cs` ; `Runtime/UI/CraftingPanel.cs`, `RecipeRow.cs`, `IngredientRow.cs` ; `Runtime/UI/InventoryScreen.cs` (panneau à droite, navigation manette) ; `Runtime/Core/ItemDefinition.cs` (`descriptionKey`, `sourceKey`) ; `Assets/Data/Crafting/` (recettes, livre) ; `Assets/Data/Items/MyceliumThread.asset`, `Slingshot.asset` |
 | Haut à droite | `Runtime/Game/ObjectiveRules.cs`, `GameObjectives.cs` ; `Runtime/UI/ObjectiveHud.cs`, `TrackedRecipeView.cs` |
-| Spongeus sauvages | `Runtime/Capture/WildSoak.cs`, `Runtime/Companions/WetLook.cs` (nouveaux) ; `WildMushroom.cs` (imbibition, `Hit`, `Felled`), `CreatureDefinition.cs` (santé, butin, imbibition), `CreaturePopulation.cs`, `Companion.cs` (utilise `WetLook`) ; `Assets/Data/Creatures/Spongeus.asset` ; `Game.unity` (6 Spongeus dans la brume, Champoule retirée) |
+| Spongeus sauvages | `Runtime/Capture/WildSoak.cs`, `Runtime/Companions/WetLook.cs` (nouveaux) ; `WildMushroom.cs` (imbibition, `Hit`, `Felled`), `CreatureDefinition.cs` (santé, butin, imbibition), `CreaturePopulation.cs`, `Companion.cs` (utilise `WetLook`) ; `Assets/Data/Creatures/Spongeus.asset` ; `Game.unity` (Spongeus à côté de chaque fougère, Champoule retirée) |
 | Lance-pierre | `Runtime/Combat/CreatureHealth.cs`, `Slingshot.cs`, `SlingshotSettings.cs` ; `Assets/Data/Settings/SlingshotSettings.asset` |
 | Fin de démo | `Runtime/UI/DemoEnd.cs` ; `GameBootstrap` charge `ChampimaisonInterior.unity` ; `Editor/Playtest/PlaytestSetup.cs` (scène ajoutée au build) |
 | Reset retiré | action `ResetGame` retirée de `InputSystem_Actions.inputactions` et `GameControls.cs` ; `GameBootstrap.ResetGame` et les méthodes de reset sans autre appelant retirées |
@@ -172,7 +172,9 @@ Architecture :
 - **Le bord de l'appui long est visible dès que la cible est visée**, vide, au lieu d'apparaître une fois l'appui commencé : il dit à l'avance que la touche se maintient. Change le comportement de `spongeus-fougere`.
 - **Pas de système générique de description de panneau en données** : chaque objet remplit son panneau avec son script, à partir des mêmes prefabs. On généralisera au troisième usage.
 - **Le caillou du lance-pierre suit `NetTrajectory`** et teste le segment parcouru à chaque image (`SphereCast`), comme le filet : il ne traverse pas sa cible.
-- **La scène `MysticForest` n'est pas modifiée** : les trous de taupe se placent sur ses `ChampimaisonSite`, lus au lancement.
+- **Les trous de taupe se placent sur les `ChampimaisonSite` de `MysticForest`**, lus au lancement. Hugo (22/11) : les 4 emplacements d'origine sont remplacés par 9, hors des chemins, répartis dans la forêt pour qu'on en croise dès le départ. Seule modification de la forêt : les emplacements ont été déplacés puis le relief et les arbres regénérés avec les outils de la forêt (« Generate relief + forest »). Avant, on a vérifié que ces outils reproduisent le Terrain commité (écart de hauteur max 4 cm, 4 arbres sur 24 290 décalés d'un cheveu) : le changement se limite au sol autour des anciens et des nouveaux emplacements (24 290 → 24 254 arbres).
+- **Les Spongeus sauvages naissent à côté des fougères** (Hugo, 22/11 : sinon le joueur ne comprend jamais que le Spongeus se remplit) : `CreaturePopulation` place, pour une espèce qui s'imbibe, `besideEachSource` (1 à 2) Spongeus à `distanceFromSource` (2,5 m) de chaque plante qu'elle boit, hors tronc et rocher, dans la zone de la brume. Les 6 points fixes sont retirés.
+- **Le zoom de visée est partagé** (`AimZoom`) : le filet ne le règle plus qu'au début et à la fin de sa visée. Avant, il le remettait à « pas de visée » à chaque image, même rangé, et le lance-pierre ne zoomait jamais. Le lance-pierre ne garde plus de verrou après un menu : les mains ne lui donnent pas les commandes sous un menu, il reprend la visée dès qu'elles reviennent (comme le filet).
 - **L'objectif est calculé à partir de l'état du jeu** (`ObjectiveRules` : graine, plantation, palier, filet), pas de l'ordre des événements : perdre la graine avant de la planter ramène au premier objectif.
 - **Les recettes traquées** sont un `RecipeTracker` en C# pur tenu par `GameBootstrap`, partagé par le panneau de fabrication et l'objectif.
 - **Le lance-pierre est un composant de la variante `PlaytestPlayer`**, comme le filet sur le joueur : seul le jeu en a besoin.
@@ -215,11 +217,13 @@ Corrigé à ce moment-là, sans changer ce que les tests exigent :
 | `GameScenePlayModeTests.TheInventory_HidesTheVitalsAndTheObjective_AndKeepsItsHintsUnderItsPanels` | PlayMode | Jauges et objectif cachés pendant l'inventaire, revenus à sa fermeture ; ses aides sous ses panneaux | ✅ |
 | `UiTextSizeTests` | EditMode | Chaque texte des prefabs d'interface a l'une des quatre tailles | ✅ |
 | `SlingshotPlayModeTests` | PlayMode | Champignons dans la brume ; un Spongeus boit à une fougère pleine ; un caillou par tir, seulement en main ; eau lâchée seulement par un Spongeus mouillé | ✅ |
+| `SlingshotPlayModeTests.EveryFern_HasASpongeusBesideIt_AndNoSpongeusLivesAwayFromTheFerns` | PlayMode | Au départ, chaque fougère a un Spongeus à moins de 5 m, et aucun Spongeus n'est à plus de 5 m d'une fougère (75 fougères, 110 Spongeus au dernier lancement) | ✅ |
+| `SlingshotAimPlayModeTests` | PlayMode | Vrai clic droit simulé : le lance-pierre vise et la vue se resserre, encore après l'inventaire (échouait avant la correction : la vue ne se resserrait pas) | ✅ |
 | `GameScenePlayModeTests.SticksMushroomsAndPebbles_AreAroundThePlayer` | PlayMode | 4 cailloux à moins de 50 m, comme les bâtons | ✅ |
 | `KeyPromptPlayModeTests` (4 tests ajoutés) | PlayMode | Triangle sans bord pour un appui ; bord vide puis rempli, sans triangle, pour un maintien ; les deux ensemble ; texte à la place de la touche | ✅ |
 | `ChampimaisonPlayModeTests.Aimed_TheChampimaison_ShowsItsKeysInItsPanel_NotOverIt` | PlayMode | Pas de touche flottante sur la Champimaison visée ; « Déposer » au pied du panneau ; pas de touche d'appui court inutile ; pied caché hors de portée | ✅ |
 
-**Tests existants dont l'exigence change :** `FungalNetworkTests` (réécrit) ; dans `GameScenePlayModeTests`, le test de départ vérifie les mains vides et l'absence de Champimaison, `TheNet_StartsInTheFirstSlotOfTheQuickBar_InHand` devient `ThePlayer_StartsEmptyHanded_TheNetPutInTheQuickBarIsInHand`, les tests du filet reçoivent le filet (`LoadGameWithNet`), le test de l'objet jeté cherche le filet parmi les objets au sol (la graine y est aussi) ; `ItemNamesPlayModeTests` met le filet dans la case ; les tests de reset (`Reset_*`, `CloseAll_*`, `Clear_*`) sont retirés avec le reset ; le test de capture calme sa cible et reprend le filet lui-même ; `SpongeusCompanionPlayModeTests.Aimed_TheSpongeus_ShowsTheKey_WithoutRingUntilHeld_AndTheHoldHint` devient `Aimed_AnEmptySpongeus_ShowsTheKeyWithItsEmptyBorder_AndTheHoldHint` (le bord est visible avant l'appui, sans triangle) ; `GameScenePlayModeTests.TheKey_ShowsEAboveTheTarget_AndFollowsIt` vérifie en plus le triangle.
+**Tests existants dont l'exigence change :** `SlingshotPlayModeTests.AFelledWetSpongeus_LetsGoOfWater_ADryOneOfNothing` vide toutes les fougères avant d'abattre le Spongeus sec, puisque chaque Spongeus vit maintenant à côté d'une fougère ; `FungalNetworkTests` (réécrit) ; dans `GameScenePlayModeTests`, le test de départ vérifie les mains vides et l'absence de Champimaison, `TheNet_StartsInTheFirstSlotOfTheQuickBar_InHand` devient `ThePlayer_StartsEmptyHanded_TheNetPutInTheQuickBarIsInHand`, les tests du filet reçoivent le filet (`LoadGameWithNet`), le test de l'objet jeté cherche le filet parmi les objets au sol (la graine y est aussi) ; `ItemNamesPlayModeTests` met le filet dans la case ; les tests de reset (`Reset_*`, `CloseAll_*`, `Clear_*`) sont retirés avec le reset ; le test de capture calme sa cible et reprend le filet lui-même ; `SpongeusCompanionPlayModeTests.Aimed_TheSpongeus_ShowsTheKey_WithoutRingUntilHeld_AndTheHoldHint` devient `Aimed_AnEmptySpongeus_ShowsTheKeyWithItsEmptyBorder_AndTheHoldHint` (le bord est visible avant l'appui, sans triangle) ; `GameScenePlayModeTests.TheKey_ShowsEAboveTheTarget_AndFollowsIt` vérifie en plus le triangle.
 
 ### Manuels (dans Unity)
 | # | Étapes | Résultat attendu | OK |
@@ -232,7 +236,7 @@ Corrigé à ce moment-là, sans changer ce que les tests exigent :
 | 6 | Ramasser des bâtons et des cailloux, Tab, en 1920×1080 puis en 1280×720 | Panneau « Fabrication » à droite, aucune recette ouverte, E et R grisés. Ni jauges ni objectif ; les aides sur une ligne sous les panneaux, rien ne se recouvre | ⬜ |
 | 7 | Cliquer « Filet », R | Détails en bas, « Fil de mycélium 0/3 » en rouge avec sa provenance. Le filet apparaît en haut à droite | ⬜ |
 | 8 | Cliquer deux fois « Lance-pierre » | Lance-pierre dans la barre rapide, « +1 Lance-pierre », bâtons et caillou retirés. Compteurs du filet traqué à jour | ⬜ |
-| 9 | Dans la brume, observer un Spongeus | Il va boire à une fougère mouillée, son chapeau devient sombre et brillant | ⬜ |
+| 9 | Dans la brume, s'approcher d'une fougère à eau | 1 ou 2 Spongeus à côté. Si elle est mouillée, l'un va y boire, son chapeau devient sombre et brillant | ⬜ |
 | 10 | Tirer sur un Spongeus sec jusqu'à l'abattre | Il disparaît, rien au sol | ⬜ |
 | 11 | Tirer sur un Spongeus mouillé jusqu'à l'abattre | 1 Eau au sol, E la ramasse | ⬜ |
 | 12 | Maintenir E sur la Champimaison | Texte « Réveiller ». Le réseau pousse, objectif « Fabrique un filet » | ⬜ |
@@ -244,6 +248,8 @@ Corrigé à ce moment-là, sans changer ce que les tests exigent :
 | 18 | Exécutable Windows, partie complète par quelqu'un qui ne connaît pas le jeu | Fin atteinte en 20 min au plus | ⬜ |
 | 19 | Viser un bâton, puis un Spongeus vide sorti, puis un Spongeus plein | Bâton : triangle, pas de bord. Spongeus vide : bord vide, pas de triangle. Plein : les deux. Maintenir E : le bord se remplit | ⬜ |
 | 20 | Comparer les touches en jeu au canevas « Panneaux en bois » | Bois clair sans liseré, triangle à cheval sur le bord haut, bord collé à la touche ; touches des aides en bas de l'écran de la même couleur | ⬜ |
+| 21 | Depuis le départ, regarder autour, puis suivre le chemin vers l'arbre géant | Un trou de taupe contouré dans une petite clairière à droite du départ, un autre à gauche du chemin à mi-route, un derrière la clairière de l'arbre ; aucun sur un chemin | ⬜ |
+| 22 | Lance-pierre en main avec des cailloux : maintenir clic droit ; Tab, Tab ; maintenir clic droit | La vue se resserre et l'arc s'affiche les deux fois ; clic gauche tire pendant la visée | ⬜ |
 
 ## Limitations connues
 
@@ -251,7 +257,7 @@ Corrigé à ce moment-là, sans changer ce que les tests exigent :
 - **Mise en page des prefabs d'interface** écrite par code, jamais vue : tailles et placements à régler dans l'Inspector.
 - **Au-dessus d'un trou de taupe, la touche flotte seule** : « Planter » est dans les aides en bas à droite, pas à côté de la touche comme sur le canevas. Les blocs Production et Débloque du canevas ne sont pas encore dans le panneau de la Champimaison.
 - **La graine posée à l'arbre géant** est dessinée comme un objet jeté (image de l'objet), en attendant son modèle.
-- **Placement des Spongeus sauvages** : 6 points fixes dans la brume, à régler en jouant. Un Spongeus sec peut boire pendant un test de chute : le test le signale.
+- **Nombre de Spongeus sauvages** : 1 à 2 par fougère, soit environ 110 dans la brume pour 75 fougères (6 avant). À régler en jouant (`besideEachSource` dans `Game.unity`) si c'est trop ou si les FPS baissent.
 - **Signaler l'arbre géant et la graine**, le nombre et la place des trous de taupe : à régler pendant le dev.
 - **`scripts/check-art-assets.sh` refuse les prefabs de `Assets/Prefabs/UI/`** (domaine et préfixe `PF_`), y compris ceux qui existaient déjà : les nouveaux prefabs d'interface suivent la convention existante du dossier `UI`.
 - Placeholders pour tous les nouveaux modèles et icônes.
