@@ -24,7 +24,7 @@ namespace Fungiiiii.Tests.PlayMode
         public IEnumerator TheSeed_LiesAtTheFootOfTheGiantTree_AndIsPickedUp()
         {
             yield return Load();
-            var game = Game;
+            var game = Bootstrap;
             var seed = game.Dropped.Items.SingleOrDefault(item => item.Item == Seed(game));
             Assert.That(seed, Is.Not.Null, "The seed is not on the ground.");
 
@@ -47,7 +47,7 @@ namespace Fungiiiii.Tests.PlayMode
         public IEnumerator AMoleHole_AsksForTheSeed_InHand_ThenPlantsIt_AndTheOthersStop()
         {
             yield return Load();
-            var game = Game;
+            var game = Bootstrap;
             var hole = game.MoleHoles.Holes[0];
 
             Assert.That(game.MoleHoles.Holes.All(each => each.IsOutlined), Is.True, "A mole hole is not outlined.");
@@ -81,7 +81,7 @@ namespace Fungiiiii.Tests.PlayMode
         public IEnumerator ThePanel_ListsTheCost_AndHoldingTheKey_DropsWhatIsMissing()
         {
             yield return Load();
-            var game = Game;
+            var game = Bootstrap;
             var champimaison = Plant(game);
             StandBefore(champimaison.transform.position, 3f);
             var water = champimaison.Network.Progress.Required(0).Item;
@@ -119,7 +119,7 @@ namespace Fungiiiii.Tests.PlayMode
         public IEnumerator Aimed_TheChampimaison_ShowsItsKeysInItsPanel_NotOverIt()
         {
             yield return Load();
-            var game = Game;
+            var game = Bootstrap;
             var champimaison = Plant(game);
             game.Inventory.Add(champimaison.Network.Progress.Required(1).Item, 2);
             StandBefore(champimaison.transform.position, 2f);
@@ -144,7 +144,7 @@ namespace Fungiiiii.Tests.PlayMode
         public IEnumerator AnAwakeChampimaison_ProducesThread_ThatAShortPressCollects()
         {
             yield return Load();
-            var game = Game;
+            var game = Bootstrap;
             var champimaison = Plant(game);
             var progress = champimaison.Network.Progress;
             game.Inventory.Add(progress.Required(0).Item, progress.Required(0).Amount);
@@ -165,7 +165,7 @@ namespace Fungiiiii.Tests.PlayMode
         public IEnumerator TheLastStage_OpensTheChampimaison_AndEnteringIt_EndsTheDemo()
         {
             yield return Load();
-            var game = Game;
+            var game = Bootstrap;
             var champimaison = Plant(game);
             foreach (var _ in Enumerable.Range(0, champimaison.Network.StageCount))
             {

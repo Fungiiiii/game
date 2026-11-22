@@ -22,7 +22,7 @@ namespace Fungiiiii.Tests.PlayMode
         public IEnumerator TheMushrooms_LiveInTheMist_NotInTheSpawnClearing()
         {
             yield return Load();
-            var game = Game;
+            var game = Bootstrap;
 
             Assert.That(game.Mushrooms.Count, Is.GreaterThan(0));
             foreach (var mushroom in game.Mushrooms)
@@ -36,7 +36,7 @@ namespace Fungiiiii.Tests.PlayMode
         public IEnumerator AWildSpongeus_DrinksAtAFullFern_AndLooksWet()
         {
             yield return Load();
-            var game = Game;
+            var game = Bootstrap;
             var (mushroom, fern) = SpongeusBesideAFullFern(game);
 
             yield return WaitUntil(() => mushroom.IsWet, 10f);
@@ -49,7 +49,7 @@ namespace Fungiiiii.Tests.PlayMode
         public IEnumerator TheSlingshot_ShootsAPebbleFromTheInventory_OnlyInHand()
         {
             yield return Load();
-            var game = Game;
+            var game = Bootstrap;
             game.Inventory.AddToSlot(0, Pebble(game), 2);
             PutInHand(game, Slingshot(game));
             yield return null;
@@ -73,7 +73,7 @@ namespace Fungiiiii.Tests.PlayMode
         public IEnumerator AFelledWetSpongeus_LetsGoOfWater_ADryOneOfNothing()
         {
             yield return Load();
-            var game = Game;
+            var game = Bootstrap;
             var (wet, _) = SpongeusBesideAFullFern(game);
             yield return WaitUntil(() => wet.IsWet, 10f);
             Assert.That(wet.IsWet, Is.True);

@@ -23,7 +23,7 @@ namespace Fungiiiii.Tests.PlayMode
         public const string InteriorScenePath = "Assets/Scenes/Game/ChampimaisonInterior.unity";
         private const float LoadTimeoutSeconds = 60f;
 
-        public static GameBootstrap Game => Object.FindFirstObjectByType<GameBootstrap>();
+        public static GameBootstrap Bootstrap => Object.FindFirstObjectByType<GameBootstrap>();
 
         public static IEnumerator Load()
         {

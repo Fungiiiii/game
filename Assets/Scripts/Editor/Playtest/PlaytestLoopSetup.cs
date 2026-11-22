@@ -39,6 +39,9 @@ namespace Fungiiiii.Editor.Playtest
         private const string StoneMaterialPath = "Assets/Art/Materials/PlaceholderStone.mat";
         private const string InventoryPath = UiFolder + "/Inventory.prefab";
         private const string KeyPromptPath = UiFolder + "/KeyPrompt.prefab";
+        private const string RequirementPanelPath = UiFolder + "/RequirementPanel.prefab";
+        private const string ObjectiveHudPath = UiFolder + "/ObjectiveHud.prefab";
+        private const string DemoEndPath = UiFolder + "/DemoEnd.prefab";
         private const string ControlHintsPath = UiFolder + "/ControlHints.prefab";
         private const string PlankButtonPath = UiFolder + "/PlankButton.prefab";
         private const string PlayerPath = "Assets/Prefabs/Characters/PlaytestPlayer.prefab";
@@ -67,22 +70,26 @@ namespace Fungiiiii.Editor.Playtest
                 return;
             }
 
-            font = AssetDatabase.LoadAssetAtPath<Font>(FontPath) ?? throw new InvalidOperationException($"No font at {FontPath}.");
+            font = Required(AssetDatabase.LoadAssetAtPath<Font>(FontPath), $"No font at {FontPath}.");
             EnsureFolder("Assets/Prefabs", "Props");
 
-            var moleHole = BuildMoleHole();
+            BuildMoleHole();
             var pebble = BuildPebble();
             SetArray(AssetDatabase.LoadAssetAtPath<GatherableDefinition>(PebblesPath), "variants", pebble);
 
             var key = RestyleKeyPrompt();
-            var requirementPanel = BuildRequirementPanel(key);
-            var objectiveHud = BuildObjectiveHud();
-            var demoEnd = BuildDemoEnd();
+            BuildRequirementPanel(key);
+            BuildObjectiveHud();
+            BuildDemoEnd();
             AddCraftingPanel();
             AddSlingshotToPlayer();
 
-            WireGameScene(moleHole, requirementPanel, objectiveHud);
-            BuildInterior(demoEnd);
+            // Opening a scene unloads the assets nothing in it uses: the prefabs built above are
+            // loaded again by path once the scene is open, never held across it. What is dirty
+            // is saved first, so that the unloading cannot drop it.
+            AssetDatabase.SaveAssets();
+            WireGameScene();
+            BuildInterior();
             PlaytestSetup.SetBuildScenes();
 
             AssetDatabase.SaveAssets();
@@ -164,9 +171,12 @@ namespace Fungiiiii.Editor.Playtest
             try
             {
                 var prompt = root.GetComponent<KeyPrompt>();
-                var key = FindDeep(root.transform, "Key") ?? throw new InvalidOperationException("The KeyPrompt prefab has no Key.");
-                var border = FindDeep(root.transform, "HoldRing") ?? FindDeep(root.transform, "HoldBorder")
-                    ?? throw new InvalidOperationException("The KeyPrompt prefab has no HoldRing.");
+                var key = Required(FindDeep(root.transform, "Key"), "The KeyPrompt prefab has no Key.");
+                var border = FindDeep(root.transform, "HoldRing");
+                if (border == null)
+                {
+                    border = Required(FindDeep(root.transform, "HoldBorder"), "The KeyPrompt prefab has no HoldRing.");
+                }
                 border.name = "HoldBorder";
                 var borderGraphic = border.GetComponent<HoldBorderGraphic>();
                 var borderRect = (RectTransform)border;
@@ -196,9 +206,14 @@ namespace Fungiiiii.Editor.Playtest
                 markGraphic.raycastTarget = false;
                 mark.transform.SetAsLastSibling();
 
-                var text = FindDeep(root.transform, "Text") ?? throw new InvalidOperationException("The KeyPrompt prefab has no Text.");
-                var textPanel = FindDeep(root.transform, "TextPanel")?.gameObject;
-                if (textPanel == null)
+                var text = Required(FindDeep(root.transform, "Text"), "The KeyPrompt prefab has no Text.");
+                var existingPanel = FindDeep(root.transform, "TextPanel");
+                GameObject textPanel;
+                if (existingPanel != null)
+                {
+                    textPanel = existingPanel.gameObject;
+                }
+                else
                 {
                     textPanel = UiObject("TextPanel", root.transform);
                     textPanel.transform.SetSiblingIndex(text.GetSiblingIndex());
@@ -304,7 +319,7 @@ namespace Fungiiiii.Editor.Playtest
             SetArray(view, "footerParts", footerLine, footer);
             SetRef(view, "pressLine", pressLine);
             SetRef(view, "holdLine", holdLine);
-            return SavePrefab(root, UiFolder + "/RequirementPanel.prefab").GetComponent<RequirementPanel>();
+            return SavePrefab(root, RequirementPanelPath).GetComponent<RequirementPanel>();
         }
 
         /// <summary>
@@ -480,8 +495,7 @@ namespace Fungiiiii.Editor.Playtest
             try
             {
                 var screen = root.GetComponent<InventoryScreen>();
-                var inventoryPanel = (RectTransform)FindDeep(root.transform, "InventoryPanel")
-                    ?? throw new InvalidOperationException("The Inventory prefab has no InventoryPanel.");
+                var inventoryPanel = (RectTransform)Required(FindDeep(root.transform, "InventoryPanel"), "The Inventory prefab has no InventoryPanel.");
                 var existing = FindDeep(root.transform, "CraftingPanel");
                 if (existing != null)
                 {
@@ -625,7 +639,7 @@ namespace Fungiiiii.Editor.Playtest
             SetRef(hud, "objective", objective);
             SetRef(hud, "trackedPrefab", trackedPrefab);
             SetRef(hud, "tracked", list.transform);
-            return SavePrefab(root, UiFolder + "/ObjectiveHud.prefab").GetComponent<ObjectiveHud>();
+            return SavePrefab(root, ObjectiveHudPath).GetComponent<ObjectiveHud>();
         }
 
         // ---------------------------------------------------------------- end of the demo
@@ -660,13 +674,14 @@ namespace Fungiiiii.Editor.Playtest
 
             var end = root.AddComponent<DemoEnd>();
             SetRef(end, "homeButton", plank);
-            return SavePrefab(root, UiFolder + "/DemoEnd.prefab").GetComponent<DemoEnd>();
+            return SavePrefab(root, DemoEndPath).GetComponent<DemoEnd>();
         }
 
         /// <summary>A small room of mycelium in warm light, and the end of the demo over it.</summary>
-        private static void BuildInterior(DemoEnd demoEnd)
+        private static void BuildInterior()
         {
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            var demoEnd = Required(AssetDatabase.LoadAssetAtPath<GameObject>(DemoEndPath), $"No prefab at {DemoEndPath}.");
             var earth = AssetDatabase.LoadAssetAtPath<Material>(EarthMaterialPath);
             var mycelium = PlaceholderMaterial("Assets/Art/Materials/PlaceholderMycelium.mat", Cream, 0.3f);
 
@@ -703,7 +718,7 @@ namespace Fungiiiii.Editor.Playtest
             cap.transform.localScale = new Vector3(8f, 1.2f, 8f);
 
             new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
-            PrefabUtility.InstantiatePrefab(demoEnd.gameObject, scene);
+            PrefabUtility.InstantiatePrefab(demoEnd, scene);
             EditorSceneManager.SaveScene(scene, PlaytestSetup.InteriorScenePath);
         }
 
@@ -727,15 +742,18 @@ namespace Fungiiiii.Editor.Playtest
             }
         }
 
-        private static void WireGameScene(GameObject moleHole, RequirementPanel requirementPanel, ObjectiveHud objectiveHud)
+        private static void WireGameScene()
         {
             var scene = EditorSceneManager.OpenScene(PlaytestSetup.GameScenePath, OpenSceneMode.Single);
-            var game = Object.FindFirstObjectByType<GameBootstrap>() ?? throw new InvalidOperationException("No GameBootstrap in the Game scene.");
-            var holes = Object.FindFirstObjectByType<MoleHoles>() ?? throw new InvalidOperationException("No MoleHoles in the Game scene.");
+            var moleHole = Required(AssetDatabase.LoadAssetAtPath<GameObject>(MoleHolePath), $"No prefab at {MoleHolePath}.");
+            var requirementPanel = Required(AssetDatabase.LoadAssetAtPath<GameObject>(RequirementPanelPath), $"No prefab at {RequirementPanelPath}.");
+            var objectiveHud = Required(AssetDatabase.LoadAssetAtPath<GameObject>(ObjectiveHudPath), $"No prefab at {ObjectiveHudPath}.");
+            var game = Required(Object.FindFirstObjectByType<GameBootstrap>(), "No GameBootstrap in the Game scene.");
+            var holes = Required(Object.FindFirstObjectByType<MoleHoles>(), "No MoleHoles in the Game scene.");
             SetRef(holes, "model", moleHole);
 
-            var panel = (GameObject)PrefabUtility.InstantiatePrefab(requirementPanel.gameObject, scene);
-            var hud = (GameObject)PrefabUtility.InstantiatePrefab(objectiveHud.gameObject, scene);
+            var panel = (GameObject)PrefabUtility.InstantiatePrefab(requirementPanel, scene);
+            var hud = (GameObject)PrefabUtility.InstantiatePrefab(objectiveHud, scene);
             SetRef(game, "requirementPanel", panel.GetComponent<RequirementPanel>());
             SetRef(game, "objectiveHud", hud.GetComponent<ObjectiveHud>());
             EditorSceneManager.MarkSceneDirty(scene);
@@ -786,7 +804,10 @@ namespace Fungiiiii.Editor.Playtest
             var rect = (RectTransform)go.transform;
             rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0.5f, 0.5f);
             rect.sizeDelta = new Vector2(size, size);
-            var element = go.GetComponent<LayoutElement>() ?? go.AddComponent<LayoutElement>();
+            if (!go.TryGetComponent<LayoutElement>(out var element))
+            {
+                element = go.AddComponent<LayoutElement>();
+            }
             element.ignoreLayout = true;
         }
 
@@ -936,6 +957,17 @@ namespace Fungiiiii.Editor.Playtest
             }
 
             return null;
+        }
+
+        /// <summary>Unity objects compare to null through their own operator, which <c>??</c> skips: checked here instead.</summary>
+        private static T Required<T>(T value, string missing) where T : Object
+        {
+            if (value == null)
+            {
+                throw new InvalidOperationException(missing);
+            }
+
+            return value;
         }
 
         private static void EnsureFolder(string parent, string name)

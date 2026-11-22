@@ -21,7 +21,7 @@ namespace Fungiiiii.Tests.PlayMode
         public IEnumerator ThePanel_OpensWithTheInventory_EveryRecipeListed_NoneOpen()
         {
             yield return Load();
-            var game = Game;
+            var game = Bootstrap;
 
             game.SetInventoryOpen(true);
             yield return null;
@@ -38,7 +38,7 @@ namespace Fungiiiii.Tests.PlayMode
         public IEnumerator AClick_OpensARecipe_ASecondClickCraftsIt_IntoTheQuickBar()
         {
             yield return Load();
-            var game = Game;
+            var game = Bootstrap;
             game.Inventory.AddToSlot(0, Wood(game), 3);
             game.Inventory.AddToSlot(1, Pebble(game), 1);
             game.SetInventoryOpen(true);
@@ -66,7 +66,7 @@ namespace Fungiiiii.Tests.PlayMode
         public IEnumerator AMissingIngredient_ShowsWhereItComesFrom_AndTheCraftKeyIsGone()
         {
             yield return Load();
-            var game = Game;
+            var game = Bootstrap;
             game.SetInventoryOpen(true);
             yield return null;
             var panel = game.Crafting;
@@ -87,7 +87,7 @@ namespace Fungiiiii.Tests.PlayMode
         public IEnumerator ATrackedRecipe_ShowsTopRight_UntilItIsCrafted()
         {
             yield return Load();
-            var game = Game;
+            var game = Bootstrap;
             var netRecipe = game.Crafting.Book.Recipes.First(recipe => recipe.Result.Id == "net");
 
             game.Tracker.Toggle(netRecipe);
