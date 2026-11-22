@@ -13,7 +13,9 @@ namespace Fungiiiii.Game
     /// The opening shot, when a game starts: the player's camera stands before the giant
     /// tree, looks up at its leaves, and follows the seed falling from them to the ground
     /// while the view narrows on it. Then the view goes back to the player, who takes the
-    /// controls. Any button skips it. The interface stays hidden meanwhile.
+    /// controls. Two presses of any button skip it: the first one only says so, so that a
+    /// player who pressed by mistake does not lose the shot. The interface stays hidden
+    /// meanwhile.
     /// </summary>
     internal sealed class SeedFallIntro : MonoBehaviour
     {
@@ -45,6 +47,14 @@ namespace Fungiiiii.Game
         [SerializeField]
         private Canvas[] hud = new Canvas[0];
 
+        [Tooltip("Shown after a first press: a second one skips the shot.")]
+        [SerializeField]
+        private GameObject skipHint;
+
+        [Tooltip("Seconds the second press has to come, after the first one.")]
+        [SerializeField, Min(0.5f)]
+        private float secondsToPressAgain = 3f;
+
         private bool[] hudShown;
         private Camera view;
         private FirstPersonCamera look;
@@ -53,9 +63,13 @@ namespace Fungiiiii.Game
         private float baseFieldOfView;
         private IDisposable skipListener;
         private Coroutine shot;
+        private float hintLeft;
 
         /// <summary>Whether the shot is on: the player has no control.</summary>
         public bool IsPlaying { get; private set; }
+
+        /// <summary>Whether a first press asked to skip: a second one does.</summary>
+        public bool IsAskingToSkip => skipHint.activeSelf;
 
         /// <summary>Raised once the view is back with the player, the shot played or skipped.</summary>
         public event Action Finished;
@@ -63,6 +77,11 @@ namespace Fungiiiii.Game
         /// <summary>What is missing for the shot, or null when nothing is.</summary>
         public string FindProblem()
         {
+            if (skipHint == null)
+            {
+                return $"{name} lacks the hint shown after a first press.";
+            }
+
             foreach (var canvas in hud)
             {
                 if (canvas == null)
@@ -106,11 +125,12 @@ namespace Fungiiiii.Game
             view.transform.position = standing;
 
             fall = seed.gameObject.AddComponent<FallIn>();
-            skipListener = InputSystem.onAnyButtonPress.CallOnce(_ => Skip());
+            skipHint.SetActive(false);
+            skipListener = InputSystem.onAnyButtonPress.Call(_ => OnButtonPressed());
             shot = StartCoroutine(Shoot(seed, landing));
         }
 
-        /// <summary>Ends the shot at once: the seed lies on the ground, the player has the view and the controls.</summary>
+        /// <summary>Ends the shot at once: the seed lies on the ground, the player has the view and the controls. A second press calls it; so do the tests.</summary>
         public void Skip()
         {
             if (!IsPlaying)
@@ -125,6 +145,38 @@ namespace Fungiiiii.Game
 
             fall.Finish();
             End();
+        }
+
+        /// <summary>A first press shows the hint; a second one while it shows skips the shot.</summary>
+        private void OnButtonPressed()
+        {
+            if (!IsPlaying)
+            {
+                return;
+            }
+
+            if (skipHint.activeSelf)
+            {
+                Skip();
+                return;
+            }
+
+            skipHint.SetActive(true);
+            hintLeft = secondsToPressAgain;
+        }
+
+        private void Update()
+        {
+            if (!skipHint.activeSelf)
+            {
+                return;
+            }
+
+            hintLeft -= Time.unscaledDeltaTime;
+            if (hintLeft <= 0f)
+            {
+                skipHint.SetActive(false);
+            }
         }
 
         private void OnDestroy()
@@ -162,6 +214,7 @@ namespace Fungiiiii.Game
             shot = null;
             skipListener?.Dispose();
             skipListener = null;
+            skipHint.SetActive(false);
             view.fieldOfView = baseFieldOfView;
             look.enabled = true;
             controls.enabled = true;

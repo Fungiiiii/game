@@ -310,6 +310,10 @@ MonoBehaviour:
     m_Localized: '+{0} {1}'
     m_Metadata:
       m_Items: []
+  - m_Id: 391185041449006
+    m_Localized: Press again to skip
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

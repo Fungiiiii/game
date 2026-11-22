@@ -56,6 +56,9 @@ namespace Fungiiiii.UI
         public const string PanelHold = "panel.hold";
         public const string PickupLine = "pickup.line";
 
+        /// <summary>Shown after a first press during the opening shot: a second one skips it.</summary>
+        public const string IntroSkipAgain = "intro.skip_again";
+
         // The crafting panel, next to the inventory.
         public const string CraftTitle = "craft.title";
         public const string CraftPossible = "craft.possible";

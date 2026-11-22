@@ -51,24 +51,52 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator AnyButton_SkipsTheShot_AndTheSeedLiesOnTheGround()
+        public IEnumerator AFirstPress_OnlyAsksForASecond_WhichSkipsTheShot_AndTheSeedLiesOnTheGround()
         {
             var keyboard = InputSystem.AddDevice<Keyboard>();
             yield return Load(skipIntro: false);
             var game = Bootstrap;
             var seed = SeedOnTheGround(game);
-            yield return Wait(1f);
-            Assert.That(game.Intro.IsPlaying, Is.True);
+            yield return Wait(0.8f);
+            Assert.That(game.Intro.IsAskingToSkip, Is.False, "The hint shows before any press.");
 
-            Press(keyboard.spaceKey);
-            yield return null;
-            Release(keyboard.spaceKey);
+            yield return Tap(keyboard.spaceKey);
+            Assert.That(game.Intro.IsPlaying, Is.True, "A single press skipped the shot.");
+            Assert.That(game.Intro.IsAskingToSkip, Is.True, "A first press does not say a second one skips.");
 
-            Assert.That(game.Intro.IsPlaying, Is.False, "A button did not skip the shot.");
+            yield return Tap(keyboard.spaceKey);
+            Assert.That(game.Intro.IsPlaying, Is.False, "A second press did not skip the shot.");
+            Assert.That(game.Intro.IsAskingToSkip, Is.False, "The hint stays after the shot.");
             Assert.That(Vector3.Distance(game.ViewCamera.transform.position, game.Interactor.transform.position), Is.LessThan(2f), "The view is not back with the player at once.");
             Assert.That(seed.transform.position.y - Ground(seed.transform.position), Is.LessThan(0.1f), "The seed is left in the air.");
             Assert.That(game.Controls.enabled, Is.True);
             Assert.That(game.ObjectiveHud.IsVisible, Is.True);
+        }
+
+        [UnityTest]
+        public IEnumerator TheHint_GoesAfterThreeSeconds_AndAPressThenAsksAgain()
+        {
+            var keyboard = InputSystem.AddDevice<Keyboard>();
+            yield return Load(skipIntro: false);
+            var game = Bootstrap;
+
+            yield return Tap(keyboard.spaceKey);
+            Assert.That(game.Intro.IsAskingToSkip, Is.True);
+            yield return Wait(3.2f);
+            Assert.That(game.Intro.IsAskingToSkip, Is.False, "The hint did not go.");
+            Assert.That(game.Intro.IsPlaying, Is.True);
+
+            yield return Tap(keyboard.spaceKey);
+            Assert.That(game.Intro.IsPlaying, Is.True, "A press long after the first skipped the shot.");
+            Assert.That(game.Intro.IsAskingToSkip, Is.True);
+        }
+
+        private IEnumerator Tap(UnityEngine.InputSystem.Controls.KeyControl key)
+        {
+            Press(key);
+            yield return null;
+            Release(key);
+            yield return null;
         }
 
         private static Fungiiiii.Items.DroppedItem SeedOnTheGround(GameBootstrap game)

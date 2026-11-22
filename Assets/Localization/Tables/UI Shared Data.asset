@@ -307,6 +307,10 @@ MonoBehaviour:
     m_Key: pickup.line
     m_Metadata:
       m_Items: []
+  - m_Id: 391185041449006
+    m_Key: intro.skip_again
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
