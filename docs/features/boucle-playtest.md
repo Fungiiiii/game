@@ -4,7 +4,7 @@
 - **Note de design validée :** aucune sous-tâche de validation. La note a été validée par Hugo le 22/11, en conversation ; son contenu est dans « Ce que fait la feature » et « Décisions ». Maquette : [`Fabrication.html`](../playtest-retours/maquettes/Fabrication.html).
 - **Branche :** `feat/playtest-base`
 - **Auteur :** Hugo Bernier
-- **Statut :** Planifié. Pas encore codé.
+- **Statut :** En cours. Codé sans Editor Unity : rien n'a encore été compilé ni lancé. Le script de mise en place à usage unique reste à lancer (voir « Mise en place »).
 
 ## Docs précédents
 
@@ -49,8 +49,8 @@
 
 - [ ] Tab ouvre l'inventaire et, à sa droite, le panneau « Fabrication ».
 - [ ] En haut du panneau, sur toute la largeur : toutes les recettes, même impossibles, avec « Possible » ou « Il manque ». Aucune n'est ouverte à l'ouverture.
-- [ ] Cliquer une recette ouvre ses détails en bas du panneau : icône, nom, description, ingrédients « possédé / requis ». Un ingrédient qui manque est en rouge, avec sa provenance.
-- [ ] En bas du panneau : **E Fabriquer** (grisé s'il manque un ingrédient) et **R Traquer** / **Ne plus traquer**.
+- [ ] Cliquer une recette ouvre ses détails en bas du panneau ; à la manette, la recette sélectionnée s'ouvre : icône, nom, description, ingrédients « possédé / requis ». Un ingrédient qui manque est en rouge, avec sa provenance.
+- [ ] En bas du panneau : **E Fabriquer** (absent tant qu'il manque un ingrédient) et **R Traquer** / **Ne plus traquer**.
 - [ ] Fabriquer utilise la même touche que déplacer un objet : deuxième clic sur la recette ouverte, ou E ; **A** à la manette. Traquer : R ; **Y** à la manette. Sur une case de l'inventaire, A, X et Y gardent leur rôle.
 - [ ] Fabriquer prend tous les ingrédients d'un coup. L'objet va d'abord dans la barre rapide et s'affiche dans le fil des objets ramassés. Si l'objet ne rentre pas, rien n'est pris.
 - [ ] Recettes : Lance-pierre = 2 Bois + 1 Caillou ; Filet = 3 Fils de mycélium + 2 Bois.
@@ -85,21 +85,35 @@
 
 ## Implémentation
 
-Prévue, étape par étape (chemins relatifs à `Assets/Scripts/`). Ce tableau sera mis à jour au fil du code.
+Chemins relatifs à `Assets/Scripts/`.
 
-| Étape | Fichiers principaux |
+| Domaine | Fichiers |
 |---|---|
-| Dépôt progressif | `Runtime/Core/ItemAmount.cs`, `Runtime/Champimaison/RequirementProgress.cs`, `ChampimaisonDefinition.cs` (nouveaux) ; `FungalNetwork.cs`, `FungalHoleSpawner.cs` (modifiés) ; `Assets/Data/Champimaison/Champimaison.asset` |
-| Graine et trous de taupe | `Runtime/Champimaison/MoleHole.cs`, `MoleHoles.cs`, `PlantingRules.cs` (nouveaux) ; `Runtime/Items/DroppedItems.cs` (`Place`) ; `Runtime/Game/GameBootstrap.cs` ; `Assets/Data/Items/Seed.asset` ; `Game.unity` |
-| Panneau et palier 1 | `Runtime/Champimaison/FungalHole.cs` (`IHoldInteractable`) ; `Runtime/UI/RequirementPanel.cs`, `RequirementRow.cs` + prefabs |
+| Dépôt progressif | `Runtime/Core/ItemAmount.cs`, `Runtime/Champimaison/RequirementProgress.cs`, `ChampimaisonDefinition.cs`, `ThreadProduction.cs` (nouveaux) ; `FungalNetwork.cs` (coût en liste, `Deposit`), `FungalHoleSpawner.cs` (définition, position donnée), `FungalHole.cs` (appui long = dépôt, appui court = fil ou entrée) ; `Assets/Data/Champimaison/Champimaison.asset` |
+| Graine et trous de taupe | `Runtime/Champimaison/MoleHole.cs`, `MoleHoles.cs`, `PlantingRules.cs` (nouveaux) ; `Runtime/Items/DroppedItems.cs` (`Place`) ; `Runtime/Outlines/ItemOutline.cs` (`IsVisible`) ; `Assets/Data/Items/Seed.asset` ; `Game.unity` (`Mole Holes`, `Seed Spot`, spawner actif) |
+| Panneau de la Champimaison | `Runtime/UI/RequirementPanel.cs`, `RequirementRow.cs` ; `Runtime/UI/LocalizedLabel.cs` (valeurs pour les entrées à trous `{0}`) |
 | Cailloux | `Runtime/Gathering/ForestGathering.cs` ; `Assets/Data/Items/Pebble.asset`, `Assets/Data/Gathering/Pebbles.asset` |
-| Fabrication | `Runtime/Crafting/CraftingRecipe.cs`, `RecipeBook.cs`, `Crafter.cs`, `RecipeTracker.cs` ; `Runtime/UI/CraftingPanel.cs`, `RecipeRow.cs`, `IngredientRow.cs` + prefabs dans `Inventory.prefab` ; `Runtime/UI/InventoryScreen.cs` ; `Runtime/Core/ItemDefinition.cs` (description, provenance) ; actions `Craft` et `Track` dans `InputSystem_Actions.inputactions` |
-| Haut à droite | `Runtime/Game/ObjectiveChain.cs`, `Runtime/UI/ObjectiveHud.cs` + prefab |
-| Spongeus sauvages | `Runtime/Capture/WildSoak.cs`, `Runtime/Companions/WetLook.cs` (nouveaux) ; `WildMushroom.cs`, `CreatureDefinition.cs`, `CreaturePopulation.cs`, `Companion.cs` ; `Spongeus.asset` ; `Game.unity` |
-| Lance-pierre | `Runtime/Combat/CreatureHealth.cs`, `Slingshot.cs`, `SlingshotShot.cs`, `SlingshotSettings.cs` ; prefab `Player` ; `Assets/Data/Items/Slingshot.asset` |
-| Fil, palier 2, fin | `Runtime/Champimaison/ThreadProduction.cs` ; `Runtime/UI/DemoEnd.cs` + prefab ; `Assets/Scenes/Game/ChampimaisonInterior.unity` ; `Editor/Playtest/PlaytestSetup.cs` (Build Settings) |
+| Fabrication | `Runtime/Crafting/CraftingRecipe.cs`, `RecipeBook.cs`, `Crafter.cs`, `RecipeTracker.cs` ; `Runtime/UI/CraftingPanel.cs`, `RecipeRow.cs`, `IngredientRow.cs` ; `Runtime/UI/InventoryScreen.cs` (panneau à droite, navigation manette) ; `Runtime/Core/ItemDefinition.cs` (`descriptionKey`, `sourceKey`) ; `Assets/Data/Crafting/` (recettes, livre) ; `Assets/Data/Items/MyceliumThread.asset`, `Slingshot.asset` |
+| Haut à droite | `Runtime/Game/ObjectiveRules.cs`, `GameObjectives.cs` ; `Runtime/UI/ObjectiveHud.cs`, `TrackedRecipeView.cs` |
+| Spongeus sauvages | `Runtime/Capture/WildSoak.cs`, `Runtime/Companions/WetLook.cs` (nouveaux) ; `WildMushroom.cs` (imbibition, `Hit`, `Felled`), `CreatureDefinition.cs` (santé, butin, imbibition), `CreaturePopulation.cs`, `Companion.cs` (utilise `WetLook`) ; `Assets/Data/Creatures/Spongeus.asset` ; `Game.unity` (6 Spongeus dans la brume, Champoule retirée) |
+| Lance-pierre | `Runtime/Combat/CreatureHealth.cs`, `Slingshot.cs`, `SlingshotSettings.cs` ; `Assets/Data/Settings/SlingshotSettings.asset` |
+| Fin de démo | `Runtime/UI/DemoEnd.cs` ; `GameBootstrap` charge `ChampimaisonInterior.unity` ; `Editor/Playtest/PlaytestSetup.cs` (scène ajoutée au build) |
+| Reset retiré | action `ResetGame` retirée de `InputSystem_Actions.inputactions` et `GameControls.cs` ; `GameBootstrap.ResetGame` et les méthodes de reset sans autre appelant retirées |
+| Entrées | actions `UI/Craft` (E) et `UI/Track` (R, Y) |
+| Textes | 40 entrées dans la table `UI` (fr/en) |
+| Mise en place | `Editor/Playtest/PlaytestLoopSetup.cs`, à usage unique |
 
-Textes : table `UI` (fr/en), clés `item.*`, `label.needs_seed`, `label.hold_seed`, `hint.plant`, `hint.awaken`, `hint.upgrade`, `panel.in_bag`, `craft.*`, `hint.craft`, `hint.track`, `hint.untrack`, `objective.*`, `hint.shoot`, `hint.no_pebble`, `hint.collect_thread`, `hint.enter`, `demo_end.*`.
+### Mise en place (à faire une fois, dans l'Editor)
+
+1. Ouvrir le projet, attendre la compilation, lire la Console.
+2. Menu **Fungiiiii > Playtest > One-off: Set Up the Playtest Loop**. Il écrit :
+   - `Assets/Prefabs/Environment/PF_MoleHole.prefab` et `Assets/Prefabs/Props/PF_Pebble.prefab` (placeholders), leurs matériaux `Assets/Art/Materials/Placeholder*.mat` ;
+   - les prefabs d'interface `RequirementPanel`, `RequirementRow`, `RecipeRow`, `IngredientRow`, `TrackedIngredientRow`, `TrackedRecipe`, `ObjectiveHud`, `DemoEnd` dans `Assets/Prefabs/UI/` ;
+   - le panneau « Fabrication » dans `Inventory.prefab` (l'inventaire se décale à gauche) ;
+   - le composant `Slingshot` sur `PlaytestPlayer.prefab` ;
+   - dans `Game.unity` : le modèle des trous de taupe, le panneau et l'objectif ;
+   - la scène `Assets/Scenes/Game/ChampimaisonInterior.unity` et les scènes du build.
+3. Relire le diff (prefabs, scène, `EditorBuildSettings.asset`), régler la mise en page dans l'Inspector si besoin, commiter, puis **supprimer `PlaytestLoopSetup.cs`**.
 
 ## Décisions
 
@@ -126,35 +140,39 @@ Architecture :
 - **Le panneau de la Champimaison suit un point du monde en espace écran**, comme `KeyPrompt`.
 - **Le caillou du lance-pierre suit `NetTrajectory`** et teste le segment parcouru à chaque image (`SphereCast`), comme le filet : il ne traverse pas sa cible.
 - **La scène `MysticForest` n'est pas modifiée** : les trous de taupe se placent sur ses `ChampimaisonSite`, lus au lancement.
+- **L'objectif est calculé à partir de l'état du jeu** (`ObjectiveRules` : graine, plantation, palier, filet), pas de l'ordre des événements : perdre la graine avant de la planter ramène à « Trouve une graine ».
+- **Les recettes traquées** sont un `RecipeTracker` en C# pur tenu par `GameBootstrap`, partagé par le panneau de fabrication et l'objectif.
+- **Le lance-pierre est un composant de la variante `PlaytestPlayer`**, comme le filet sur le joueur : seul le jeu en a besoin.
+- **Ce que lâche un champignon abattu** passe par un rappel donné à `CreaturePopulation` : la capture ne dépend pas des objets au sol.
+- **Le caillou ignore le collider des champignons** quand il teste le décor : un champignon est touché par sa distance au trajet.
+- **Les textes « 1/3 » sont deux nombres** : ils ne passent pas par la table (marqués `i18n-exempt`). « 2 dans le sac » est une entrée avec `{0}`.
 - **Prefabs, câblage de `Game.unity` et données créés par un script d'Editor à usage unique** (CLAUDE.md, « Scenes, prefabs and data ») : la branche a été écrite sans Editor. Le script est lancé une fois, son résultat relu et commité, puis il est supprimé.
 
 ## Tests
 
 ### Automatisés (Unity Test Runner)
 
-Pas encore écrits ni lancés.
+Écrits sans Editor : **ni compilés ni lancés**. Une vérification de syntaxe (analyseur C#) passe sur tous les fichiers modifiés.
 
 | Test | Mode | Couvre | Résultat |
 |---|---|---|---|
-| `RequirementProgressTests` | EditMode | Jamais plus que ce qui manque ; dépôt partiel gardé ; complet au dernier dépôt ; rien ne bouge sans ressources | ⬜ |
-| `FungalNetworkTests` (réécrit) | EditMode | Paliers par liste ; `Grew` au dernier dépôt ; remise à zéro | ⬜ |
-| `PlantingRulesTests` | EditMode | Texte ou touche selon la graine (en main, dans le sac, aucune, déjà plantée) | ⬜ |
-| `CrafterTests` | EditMode | Tout ou rien ; ingrédients rendus si le résultat ne rentre pas ; résultat dans la barre rapide d'abord | ⬜ |
-| `RecipeTrackerTests` | EditMode | Traquer, ne plus traquer ; retirée après fabrication | ⬜ |
-| `ObjectiveChainTests` | EditMode | Ordre des objectifs et événements qui les font avancer | ⬜ |
-| `WildSoakTests` | EditMode | Va à la source la plus proche ; s'imbibe ; mouillé ; la fuite interrompt | ⬜ |
-| `CreatureHealthTests` | EditMode | Dégâts, mort | ⬜ |
-| `ThreadProductionTests` | EditMode | Un fil toutes les N secondes, stock maximum | ⬜ |
-| `GameScenePlayModeTests` (ajouts) | PlayMode | Inventaire vide ; graine au pied de l'arbre ; plantation ; cailloux autour du joueur ; Spongeus sauvage qui boit | ⬜ |
-| `ChampimaisonPlayModeTests` | PlayMode | Panneau à jour ; E maintenu dépose ; palier 1 | ⬜ |
-| `CraftingPanelPlayModeTests` | PlayMode | Liste, détails, E, deuxième clic, R, manette (A, Y) | ⬜ |
-| `SlingshotPlayModeTests` | PlayMode | Caillou consommé ; pas de tir sans caillou ; Spongeus mouillé → 1 Eau ; sec → rien | ⬜ |
-| `PlaytestLoopPlayModeTests` (ajout) | PlayMode | Parcours complet jusqu'à la fin de la démo | ⬜ |
+| `RequirementProgressTests` | EditMode | Jamais plus que ce qui manque ; dépôt partiel gardé ; ligne complète intouchée ; rien de ce qui n'est pas demandé ; `Changed` ; `WouldComplete` | ⬜ |
+| `FungalNetworkTests` (réécrit) | EditMode | Graine endormie au départ ; dépôt partiel sans pousse ; le dernier dépôt fait pousser et le reste passe au palier suivant ; entrée au dernier palier | ⬜ |
+| `ThreadProductionTests` | EditMode | Rien avant le démarrage ; un fil par période ; stock plein en attente ; ce qui ne rentre pas reste | ⬜ |
+| `PlantingRulesTests` | EditMode | Texte ou touche selon la graine | ⬜ |
+| `CrafterTests` | EditMode | Tout ou rien ; ingrédients rendus si le résultat ne rentre pas ; barre rapide d'abord, affiché comme ramassé | ⬜ |
+| `RecipeTrackerTests` | EditMode | Traquer, ne plus traquer, ordre, retirée après fabrication | ⬜ |
+| `ObjectiveRulesTests` | EditMode | Ordre des objectifs ; un texte par objectif | ⬜ |
+| `WildSoakTests` | EditMode | Source la plus proche ; sources sèches ou d'un autre objet ignorées ; imbibition ; source qui sèche en route ; interruption | ⬜ |
+| `CreatureHealthTests` | EditMode | Chute à zéro, une seule fois | ⬜ |
+| `ChampimaisonPlayModeTests` | PlayMode | Graine à l'arbre géant ; plantation (sac, main) ; panneau et dépôt ; fil ; entrée et fin de démo | ⬜ |
+| `CraftingPanelPlayModeTests` | PlayMode | Ouverture sans recette ouverte ; clic puis deuxième clic ; ingrédient manquant et provenance ; recette traquée en haut à droite jusqu'à sa fabrication | ⬜ |
+| `SlingshotPlayModeTests` | PlayMode | Champignons dans la brume ; un Spongeus boit à une fougère pleine ; un caillou par tir, seulement en main ; eau lâchée seulement par un Spongeus mouillé | ⬜ |
+| `GameScenePlayModeTests.SticksMushroomsAndPebbles_AreAroundThePlayer` | PlayMode | 4 cailloux à moins de 50 m, comme les bâtons | ⬜ |
 
-**Tests existants dont l'exigence change :** `FungalNetworkTests` (coût en liste, dépôt progressif) ; les tests de `GameScenePlayModeTests` qui supposent le filet dans la première case au départ.
+**Tests existants dont l'exigence change :** `FungalNetworkTests` (réécrit) ; dans `GameScenePlayModeTests`, le test de départ vérifie les mains vides et l'absence de Champimaison, `TheNet_StartsInTheFirstSlotOfTheQuickBar_InHand` devient `ThePlayer_StartsEmptyHanded_TheNetPutInTheQuickBarIsInHand`, les tests du filet reçoivent le filet (`LoadGameWithNet`), le test de l'objet jeté cherche le filet parmi les objets au sol (la graine y est aussi) ; `ItemNamesPlayModeTests` met le filet dans la case ; les tests de reset (`Reset_*`, `CloseAll_*`, `Clear_*`) sont retirés avec le reset ; le test de capture calme sa cible et reprend le filet lui-même.
 
 ### Manuels (dans Unity)
-
 | # | Étapes | Résultat attendu | OK |
 |---|---|---|---|
 | 1 | `Game.unity`, Play | Mains vides, barre rapide vide. Objectif « Trouve une graine » en haut à droite | ⬜ |
@@ -178,7 +196,15 @@ Pas encore écrits ni lancés.
 
 ## Limitations connues
 
-- Signaler l'arbre géant et la graine, le nombre et la place des trous de taupe, le nombre de Spongeus sauvages et leur fréquence de boisson : à régler pendant le dev.
+- **Rien n'a été compilé ni lancé** : la branche a été écrite dans un conteneur sans Unity. Compilation, tests et partie restent à faire sur la machine de Hugo.
+- **Le jeu ne démarre pas avant le script de mise en place** : `GameBootstrap` signale dans la Console ce qui manque (modèles, prefabs, `Slingshot` sur le joueur).
+- **Mise en page des prefabs d'interface** écrite par code, jamais vue : tailles et placements à régler dans l'Inspector.
+- **E Fabriquer est absent plutôt que grisé** quand une recette ne peut pas être faite : le panneau d'aides de touches ne sait pas griser une ligne.
+- **Le texte de l'appui long** (« Déposer », « Réveiller », « Améliorer ») est la dernière ligne du panneau, au-dessus de la touche, et apparaît aussi en bas à droite.
+- **La graine posée à l'arbre géant** est dessinée comme un objet jeté (image de l'objet), en attendant son modèle.
+- **Placement des Spongeus sauvages** : 6 points fixes dans la brume, à régler en jouant. Un Spongeus sec peut boire pendant un test de chute : le test le signale.
+- **Signaler l'arbre géant et la graine**, le nombre et la place des trous de taupe : à régler pendant le dev.
+- **`scripts/check-art-assets.sh` refuse les prefabs de `Assets/Prefabs/UI/`** (domaine et préfixe `PF_`), y compris ceux qui existaient déjà : les nouveaux prefabs d'interface suivent la convention existante du dossier `UI`.
 - Placeholders pour tous les nouveaux modèles et icônes.
 
 ## Modifié par
