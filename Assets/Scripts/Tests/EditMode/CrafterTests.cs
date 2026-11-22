@@ -66,6 +66,25 @@ namespace Fungiiiii.Tests.EditMode
         }
 
         [Test]
+        public void AResultThatCannotFit_LeavesEverySlotAsItWas()
+        {
+            // Wood in two stacks: taking from the last one and giving back to the first would move it.
+            var moss = ItemDefinition.Create("moss", Color.green, 16);
+            var inventory = new PlayerInventory(4);
+            inventory.AddToSlot(0, Wood, 10);
+            inventory.AddToSlot(1, Wood, 10);
+            inventory.AddToSlot(2, Pebble, 5);
+            inventory.AddToSlot(3, moss, 16);
+
+            Assert.That(Crafter.TryCraft(inventory, SlingshotRecipe()), Is.False);
+
+            Assert.That(inventory.GetSlot(0).Quantity, Is.EqualTo(10));
+            Assert.That(inventory.GetSlot(1).Quantity, Is.EqualTo(10));
+            Assert.That(inventory.GetSlot(2).Quantity, Is.EqualTo(5));
+            Assert.That(inventory.GetSlot(3).Quantity, Is.EqualTo(16));
+        }
+
+        [Test]
         public void TheResult_GoesToTheQuickBarFirst_AndIsShownAsCollected()
         {
             var inventory = StandardInventory();

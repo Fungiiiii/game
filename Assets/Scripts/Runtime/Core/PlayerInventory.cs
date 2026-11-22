@@ -68,6 +68,14 @@ namespace Fungiiiii.Inventory
 
         public int SlotCount => slots.Length;
 
+        /// <summary>A copy of the slots and of the fill order, without listeners: to try a change before making it.</summary>
+        public PlayerInventory Copy()
+        {
+            var copy = new PlayerInventory(slots.Length, fillOrder);
+            Array.Copy(slots, copy.slots, slots.Length);
+            return copy;
+        }
+
         public InventorySlot GetSlot(int index)
         {
             ValidateIndex(index);
