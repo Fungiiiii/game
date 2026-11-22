@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Pebbles
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Gathering.GatherableDefinition
   item: {fileID: 11400000, guid: 0da1fb3a79d342c182319cc92a4aaa84, type: 2}
-  variants: []
+  variants:
+  - {fileID: 4282912327441505546, guid: cfe4dfe9940a12642aa594a3888c9a61, type: 3}
   nearPlayer: 4
   maxAlive: 30
   perTick: 1

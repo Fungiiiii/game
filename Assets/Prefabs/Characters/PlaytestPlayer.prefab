@@ -71,6 +71,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3378215888684738756, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
       insertIndex: -1
       addedObject: {fileID: 5244969544342862084}
+    - targetCorrespondingSourceObject: {fileID: 3378215888684738756, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3164112285261546788}
   m_SourcePrefab: {fileID: 100100000, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
 --- !u!1 &115626252226540898 stripped
 GameObject:
@@ -114,6 +117,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Interaction.PlayerInteractor
   maxAimAngleDegrees: 25
+  tapMaxSeconds: 0.3
+  holdSeconds: 0.8
 --- !u!114 &381707460519700226
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -138,3 +143,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b26c15c5d826784e88752ffe1499d34, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Capture.NetTargetOutline
+--- !u!114 &3164112285261546788
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115626252226540898}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfbcdf202d7f410fb252686e4a3fc1f2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Combat.Slingshot
