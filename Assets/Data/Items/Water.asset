@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Inventory.ItemDefinition
   id: water
   nameKey: item.water
-  descriptionKey: 
+  descriptionKey: item.water.description
   sourceKey: item.water.source
   icon: {fileID: 21300000, guid: f62a073eb443e1946ad6e95ded189920, type: 3}
   color: {r: 0.2901961, g: 0.5647059, b: 0.78431374, a: 1}

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Inventory.ItemDefinition
   id: champoule
   nameKey: item.champoule
-  descriptionKey: 
+  descriptionKey: item.champoule.description
   sourceKey: 
   icon: {fileID: 21300000, guid: 91c845f02af25644a82a93946572f416, type: 3}
   color: {r: 1, g: 0.9137255, b: 0.6392157, a: 1}

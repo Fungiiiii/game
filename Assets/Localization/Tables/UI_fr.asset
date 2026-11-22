@@ -139,7 +139,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448964
-    m_Localized: Graine
+    m_Localized: Graine de Champimaison
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448965
@@ -171,7 +171,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448972
-    m_Localized: "Presse un Spongeus qui a bu aux fougères"
+    m_Localized: Sur des plantes, dans la brume
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448973
@@ -179,7 +179,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448974
-    m_Localized: "Produit par la Champimaison r\xE9veill\xE9e"
+    m_Localized: "Tissé par la Champimaison"
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448975
@@ -308,6 +308,66 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 391185041449006
     m_Localized: Appuie encore pour passer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449007
+    m_Localized: Du bois sec, pour fabriquer.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449008
+    m_Localized: Ses spores nourrissent la Champimaison.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449009
+    m_Localized: Se tire au lance-pierre.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449010
+    m_Localized: Un Spongeus plein en garde. Approche-le accroupi, par derrière.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449011
+    m_Localized: Un fil solide, pour fabriquer un filet.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449012
+    m_Localized: "Plante-la dans un trou de terre : elle deviendra ta maison."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449013
+    m_Localized: Au pied du grand arbre
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449014
+    m_Localized: "Pose-le : il boit aux fougères, puis presse-le."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449015
+    m_Localized: Près des fougères, dans la brume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449016
+    m_Localized: Un champignon rare et farouche.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449017
+    m_Localized: "N"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449018
+    m_Localized: "E"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449019
+    m_Localized: "S"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449020
+    m_Localized: "O"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449021
+    m_Localized: "!"
     m_Metadata:
       m_Items: []
   references:

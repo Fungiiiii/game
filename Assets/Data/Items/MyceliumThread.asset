@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Inventory.ItemDefinition
   id: mycelium_thread
   nameKey: item.mycelium_thread
-  descriptionKey: 
+  descriptionKey: item.mycelium_thread.description
   sourceKey: item.mycelium_thread.source
   icon: {fileID: 21300000, guid: 6c6e7584ef2515e4b8c5499fc2e1df73, type: 3}
   color: {r: 0.9490196, g: 0.9019608, b: 0.8, a: 1}

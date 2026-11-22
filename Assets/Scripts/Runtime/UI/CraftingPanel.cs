@@ -17,7 +17,10 @@ namespace Fungiiiii.UI
     /// always both and always in that order: craft on the left, greyed while it cannot be
     /// done, track on the right, greyed while no recipe is open.
     /// Crafting uses the control that moves items: a second click on the open recipe, A on
-    /// a gamepad, or the craft key. It opens and closes with the inventory, nothing open.
+    /// a gamepad, or the craft key. As in other crafting games, the item takes a moment to
+    /// make: a bar fills under its picture, and it comes once the bar is full. Opening another
+    /// recipe or closing the inventory stops it, and nothing is taken. It opens and closes
+    /// with the inventory, nothing open.
     /// </summary>
     internal sealed class CraftingPanel : MonoBehaviour, IHintSource
     {
@@ -59,6 +62,18 @@ namespace Fungiiiii.UI
         [SerializeField]
         private ControlHintsPanel actions;
 
+        [Tooltip("Seconds an item takes to make, once asked for.")]
+        [SerializeField, Min(0f)]
+        private float craftSeconds = 1f;
+
+        [Tooltip("Under the open recipe's picture while it is being made: shown only then.")]
+        [SerializeField]
+        private GameObject craftBar;
+
+        [Tooltip("Fills the bar from the left as the item is made.")]
+        [SerializeField]
+        private RectTransform craftFill;
+
         private readonly List<RecipeRow> rows = new List<RecipeRow>();
         private readonly List<IngredientRow> ingredientRows = new List<IngredientRow>();
         private readonly List<ControlHint> hints = new List<ControlHint>();
@@ -69,6 +84,8 @@ namespace Fungiiiii.UI
         private InputAction trackAction;
         private int open = None;
         private int focused = None;
+        private int making = None;
+        private float madeFor;
 
         public event Action HintsChanged;
 
@@ -85,8 +102,19 @@ namespace Fungiiiii.UI
 
         public IReadOnlyList<IngredientRow> IngredientRows => ingredientRows;
 
+        /// <summary>Whether an item is being made.</summary>
+        public bool IsMaking => making != None;
+
+        /// <summary>How far the item being made is, from 0 to 1; 0 when none is.</summary>
+        public float MakingProgress => making == None || craftSeconds <= 0f ? 0f : Mathf.Clamp01(madeFor / craftSeconds);
+
         public string FindProblem()
         {
+            if (craftBar == null || craftFill == null)
+            {
+                return $"{name} lacks the bar that fills while an item is made.";
+            }
+
             return book == null ? $"{name} has no recipe book." : book.FindProblem();
         }
 
@@ -181,6 +209,7 @@ namespace Fungiiiii.UI
 
             focused = None;
             open = None;
+            StopMaking();
             if (inventory != null)
             {
                 Refresh();
@@ -192,6 +221,20 @@ namespace Fungiiiii.UI
             if (craftAction != null && craftAction.WasPressedThisFrame() && open != None)
             {
                 Craft(open);
+            }
+
+            if (making != None)
+            {
+                // Unscaled: the item is made at the same speed whatever the game's.
+                madeFor += Time.unscaledDeltaTime;
+                if (madeFor >= craftSeconds)
+                {
+                    Finish();
+                }
+                else
+                {
+                    ShowMaking();
+                }
             }
 
             if (trackAction != null && trackAction.WasPressedThisFrame())
@@ -214,16 +257,55 @@ namespace Fungiiiii.UI
             }
 
             open = index;
+            // Another recipe opened: the item being made is not made.
+            StopMaking();
             Refresh();
         }
 
+        /// <summary>Starts making the recipe's item, if it can be made and nothing else is being made.</summary>
         private void Craft(int index)
         {
-            var recipe = rows[index].Recipe;
+            if (making != None || !Crafter.CanCraft(inventory, rows[index].Recipe))
+            {
+                return;
+            }
+
+            making = index;
+            madeFor = 0f;
+            if (craftSeconds <= 0f)
+            {
+                Finish();
+                return;
+            }
+
+            ShowMaking();
+        }
+
+        private void Finish()
+        {
+            var recipe = rows[making].Recipe;
+            StopMaking();
             if (Crafter.TryCraft(inventory, recipe))
             {
                 tracker.Crafted(recipe);
             }
+        }
+
+        private void StopMaking()
+        {
+            making = None;
+            madeFor = 0f;
+            ShowMaking();
+        }
+
+        private void ShowMaking()
+        {
+            if (craftBar.activeSelf != IsMaking)
+            {
+                craftBar.SetActive(IsMaking);
+            }
+
+            craftFill.anchorMax = new Vector2(MakingProgress, 1f);
         }
 
         private void Refresh()

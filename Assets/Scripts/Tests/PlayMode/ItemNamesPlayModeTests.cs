@@ -100,6 +100,9 @@ namespace Fungiiiii.Tests.PlayMode
             yield return null;
             Assert.That(screen.NamePlate.IsVisible, Is.True, "No name by the slot in focus.");
             Assert.That(screen.NamePlate.NameKey, Is.EqualTo(game.Inventory.GetSlot(netSlot).Item.NameKey));
+            // Since the playtest of 22/11, what the item is for, under its name.
+            Assert.That(screen.NamePlate.DescriptionKey, Is.EqualTo(game.NetItem.DescriptionKey), "No description under the name.");
+            Assert.That(screen.NamePlate.SourceKey, Is.Empty, "A crafted item says where it is found.");
 
             screen.Focus(netSlot, false);
             screen.Focus(emptySlot, true);

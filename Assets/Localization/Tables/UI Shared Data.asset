@@ -307,6 +307,66 @@ MonoBehaviour:
     m_Key: intro.skip_again
     m_Metadata:
       m_Items: []
+  - m_Id: 391185041449007
+    m_Key: item.wood.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449008
+    m_Key: item.spore.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449009
+    m_Key: item.pebble.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449010
+    m_Key: item.water.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449011
+    m_Key: item.mycelium_thread.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449012
+    m_Key: item.seed.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449013
+    m_Key: item.seed.source
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449014
+    m_Key: item.spongeus.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449015
+    m_Key: item.spongeus.source
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449016
+    m_Key: item.champoule.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449017
+    m_Key: compass.north
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449018
+    m_Key: compass.east
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449019
+    m_Key: compass.south
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449020
+    m_Key: compass.west
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449021
+    m_Key: compass.objective
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

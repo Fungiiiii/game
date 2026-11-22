@@ -5,8 +5,9 @@ namespace Fungiiiii.UI
 {
     /// <summary>
     /// A small wooden plate with an item's name, just below and right of the inventory
-    /// slot in focus: under the mouse, or selected with the gamepad. Its owner tells it
-    /// what to show and where.
+    /// slot in focus: under the mouse, or selected with the gamepad. Under the name, what the
+    /// item is for and where to find it, when the item says so. Its owner tells it what to
+    /// show and where.
     /// </summary>
     internal sealed class ItemNamePlate : MonoBehaviour
     {
@@ -16,6 +17,14 @@ namespace Fungiiiii.UI
 
         [SerializeField]
         private LocalizedLabel label;
+
+        [Tooltip("Under the name: what the item is for. Hidden for an item without description.")]
+        [SerializeField]
+        private LocalizedLabel description;
+
+        [Tooltip("Under the description: where to find the item. Hidden for an item without source.")]
+        [SerializeField]
+        private LocalizedLabel source;
 
         [Tooltip("Where the plate's top left corner goes from the slot's centre, in canvas units.")]
         [SerializeField]
@@ -27,6 +36,12 @@ namespace Fungiiiii.UI
 
         /// <summary>The key of the name shown, in the UI string table; empty while hidden.</summary>
         public string NameKey => IsVisible ? label.EntryKey : string.Empty;
+
+        /// <summary>The key of the description shown; empty when none is.</summary>
+        public string DescriptionKey => IsVisible && description.gameObject.activeSelf ? description.EntryKey : string.Empty;
+
+        /// <summary>The key of where the item is found, shown; empty when none is.</summary>
+        public string SourceKey => IsVisible && source.gameObject.activeSelf ? source.EntryKey : string.Empty;
 
         private void Awake()
         {
@@ -45,6 +60,8 @@ namespace Fungiiiii.UI
 
             plate.gameObject.SetActive(true);
             label.Show(item.NameKey);
+            ShowLine(description, item.DescriptionKey);
+            ShowLine(source, item.SourceKey);
             var scale = canvas != null ? canvas.scaleFactor : 1f;
             plate.position = slotCentre + offset * scale;
             transform.SetAsLastSibling();
@@ -53,6 +70,16 @@ namespace Fungiiiii.UI
         public void Hide()
         {
             plate.gameObject.SetActive(false);
+        }
+
+        private static void ShowLine(LocalizedLabel line, string entryKey)
+        {
+            var shown = !string.IsNullOrEmpty(entryKey);
+            line.gameObject.SetActive(shown);
+            if (shown)
+            {
+                line.Show(entryKey);
+            }
         }
     }
 }

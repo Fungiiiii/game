@@ -139,7 +139,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448964
-    m_Localized: Seed
+    m_Localized: Champimaison seed
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448965
@@ -171,7 +171,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448972
-    m_Localized: Squeeze a Spongeus that drank at the ferns
+    m_Localized: On plants, in the mist
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448973
@@ -179,7 +179,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448974
-    m_Localized: Made by the awakened Champimaison
+    m_Localized: Woven by the Champimaison
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448975
@@ -308,6 +308,66 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 391185041449006
     m_Localized: Press again to skip
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449007
+    m_Localized: Dry wood, for crafting.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449008
+    m_Localized: Its spores feed the Champimaison.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449009
+    m_Localized: Shot with the slingshot.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449010
+    m_Localized: A full Spongeus holds some. Sneak up behind it, crouched.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449011
+    m_Localized: A strong thread, to make a net.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449012
+    m_Localized: "Plant it in a hole in the ground: it will become your home."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449013
+    m_Localized: At the foot of the giant tree
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449014
+    m_Localized: "Put it down: it drinks at the ferns, then squeeze it."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449015
+    m_Localized: By the ferns, in the mist
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449016
+    m_Localized: A rare, shy mushroom.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449017
+    m_Localized: "N"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449018
+    m_Localized: "E"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449019
+    m_Localized: "S"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449020
+    m_Localized: "W"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449021
+    m_Localized: "!"
     m_Metadata:
       m_Items: []
   references:
