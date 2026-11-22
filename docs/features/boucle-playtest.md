@@ -113,7 +113,7 @@ Chemins relatifs à `Assets/Scripts/`.
 | Fin de démo | `Runtime/UI/DemoEnd.cs` ; `GameBootstrap` charge `ChampimaisonInterior.unity` ; `Editor/Playtest/PlaytestSetup.cs` (scène ajoutée au build) |
 | Reset retiré | action `ResetGame` retirée de `InputSystem_Actions.inputactions` et `GameControls.cs` ; `GameBootstrap.ResetGame` et les méthodes de reset sans autre appelant retirées |
 | Entrées | actions `UI/Craft` (E) et `UI/Track` (R, Y) |
-| Textes | 41 entrées dans la table `UI` (fr/en) |
+| Textes | 42 entrées dans la table `UI` (fr/en), dont `pickup.line` |
 | Panneaux en bois et touches | `Runtime/UI/TriangleMarkGraphic.cs`, `DashedLineGraphic.cs`, `TickGraphic.cs`, `ActionLine.cs`, `Runtime/Interaction/IPanelledInteractable.cs` (nouveaux) ; `KeyCapGraphic.cs` (sans liseré, bois clair) ; `HoldRingGraphic.cs` renommé `HoldBorderGraphic.cs` (même GUID : bord en octogone autour de la touche) ; `KeyPrompt.cs` (triangle, bord, texte sur panneau, `SetMarks`) ; `PlayerInteractor.cs` (bord dès le ciblage, pas de touche sur un `IPanelledInteractable`, `HoldProgress` et `InteractGlyph` publics) ; `RequirementPanel.cs`, `RequirementRow.cs`, `IngredientRow.cs` (couleurs d'état, coche) ; `FungalHole.cs` (`IPanelledInteractable`, panneau plus bas) ; prefabs `Hints/HintKey`, `HintFace`, `HintPill`, `HintView` (face bois clair) ; entrée `panel.hold` |
 | Mise en place | `Editor/Playtest/PlaytestLoopSetup.cs`, à usage unique |
 
@@ -125,7 +125,7 @@ Chemins relatifs à `Assets/Scripts/`.
    - `KeyPrompt.prefab` au style des panneaux en bois : `PressMark` (triangle) sur la touche, `HoldRing` renommé `HoldBorder` et ramené autour de la touche, le texte dans un `TextPanel` en bois avec sa pointe ;
    - les prefabs d'interface `RequirementPanel`, `RequirementRow`, `RecipeRow`, `IngredientRow`, `TrackedIngredientRow`, `TrackedRecipe`, `ObjectiveHud`, `DemoEnd` dans `Assets/Prefabs/UI/` ;
    - le panneau « Fabrication » dans `Inventory.prefab` (l'inventaire se décale à gauche) ;
-   - le composant `Slingshot` sur `PlaytestPlayer.prefab` ;
+   - le composant `Slingshot` sur `PlaytestPlayer.prefab` (renommé `PF_PlaytestPlayer.prefab` le 22/11) ;
    - dans `Game.unity` : le modèle des trous de taupe, le panneau et l'objectif ;
    - la scène `Assets/Scenes/Game/ChampimaisonInterior.unity` et les scènes du build.
 3. Relire le diff (prefabs, scène, `EditorBuildSettings.asset`), régler la mise en page dans l'Inspector si besoin, commiter, puis **supprimer `PlaytestLoopSetup.cs`**.
@@ -150,6 +150,7 @@ Validées par Hugo le 22/11 :
 - **La Champoule est mise de côté** pour cette boucle.
 - **Plus de remise à zéro (R)** : recommencer passe par l'accueil.
 - **Placeholders** : trou de taupe en cubes de terre autour d'un petit trou ; caillou en cube.
+- **Les prefabs d'interface restent dans `Assets/Prefabs/UI/`** (Hugo, 22/11), nommés d'après leur composant, comme Unity les range. `scripts/check-art-assets.sh` ne leur applique plus le dossier de domaine ni le préfixe `PF_`, qui visent les prefabs de modèles (ADR-0005). Ceux-là gardent la règle : `Player` et `PlaytestPlayer` deviennent `PF_Player` et `PF_PlaytestPlayer`, même GUID.
 
 Architecture :
 
@@ -169,6 +170,8 @@ Architecture :
 - **Ce que lâche un champignon abattu** passe par un rappel donné à `CreaturePopulation` : la capture ne dépend pas des objets au sol.
 - **Le caillou ignore le collider des champignons** quand il teste le décor : un champignon est touché par sa distance au trajet.
 - **Les textes « 1/3 » sont deux nombres** : ils ne passent pas par la table (marqués `i18n-exempt`). « 2 dans le sac » est une entrée avec `{0}`.
+- **« +2 Bâton », en bas à gauche, est l'entrée `pickup.line`** (`+{0} {1}`) : chaque langue place le nombre et le nom à sa façon. Sans nom, seul « +2 » s'affiche.
+- **Une fabrication dont le résultat ne rentre pas ne bouge rien** : `Crafter` l'essaie d'abord sur une copie de l'inventaire (`PlayerInventory.Copy`). Avant, il rendait les ingrédients après coup, et ils pouvaient changer de case.
 - **Prefabs, câblage de `Game.unity` et données créés par un script d'Editor à usage unique** (CLAUDE.md, « Scenes, prefabs and data ») : la branche a été écrite sans Editor. Le script est lancé une fois, son résultat relu et commité, puis il est supprimé.
 
 ## Tests
@@ -192,7 +195,8 @@ Corrigé à ce moment-là, sans changer ce que les tests exigent :
 | `FungalNetworkTests` (réécrit) | EditMode | Graine endormie au départ ; dépôt partiel sans pousse ; le dernier dépôt fait pousser et le reste passe au palier suivant ; entrée au dernier palier | ✅ |
 | `ThreadProductionTests` | EditMode | Rien avant le démarrage ; un fil par période ; stock plein en attente ; ce qui ne rentre pas reste | ✅ |
 | `PlantingRulesTests` | EditMode | Texte ou touche selon la graine | ✅ |
-| `CrafterTests` | EditMode | Tout ou rien ; ingrédients rendus si le résultat ne rentre pas ; barre rapide d'abord, affiché comme ramassé | ✅ |
+| `CrafterTests` | EditMode | Tout ou rien ; ingrédients rendus si le résultat ne rentre pas, sans qu'aucune case ne bouge ; barre rapide d'abord, affiché comme ramassé | ✅ |
+| `ItemNamesPlayModeTests.WhatIsCollected_ShowsBottomLeft_NotAboveTheQuickBar` | PlayMode | En bas à gauche ; « +1 » suivi du nom, tiré de l'entrée `pickup.line` | ✅ |
 | `RecipeTrackerTests` | EditMode | Traquer, ne plus traquer, ordre, retirée après fabrication | ✅ |
 | `ObjectiveRulesTests` | EditMode | Ordre des objectifs ; un texte par objectif | ✅ |
 | `WildSoakTests` | EditMode | Source la plus proche ; sources sèches ou d'un autre objet ignorées ; imbibition ; source qui sèche en route ; interruption | ✅ |

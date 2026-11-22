@@ -123,6 +123,7 @@ Trois couches, comme le reste du projet : la logique en C# pur, testée en EditM
 
 ## Décisions
 
+- **Le modèle de la fougère à eau (`WaterFern.fbx`) et le matériau du chapeau (`SpongeusCap.mat`) sont faits par script** : c'est Hugo qui l'a décidé (22/11), malgré la Charte IA qui réserve les visuels aux humains.
 - **L'eau est la ressource propre au Spongeus** (Hugo, 21/11) : elle servira aux crafts et à faire monter la Champimaison. Ça applique RG_CA_03.
 - **Seul le Spongeus récolte l'eau** (Hugo, 21/11) : si le joueur pouvait la prendre lui-même, le Spongeus ne servirait à rien.
 - **Un seul Spongeus sorti à la fois** (Hugo, 21/11).

@@ -107,8 +107,8 @@ Les trois sont dans les Build Settings, dans cet ordre. `SampleScene` n'y est pl
 
 | Fichier | Rôle |
 |---|---|
-| `PlaytestSetup.cs` | Écrit les Build Settings, ajoute le shader des placeholders aux shaders toujours inclus, lance le build Windows. **Set Up Everything** rejoue tout sauf le build. |
-| `MainMenuSceneBuilder.cs` | Génère `MainMenu` : relief (pente + collines douces, `ValueNoise`), sol peint, calques d'arbres puis `TerrainForestGenerator`, caméra. Le ciel, le brouillard, la lumière, le post-traitement et les spores sont copiés depuis `MysticForest`. |
+| `PlaytestSetup.cs` | Écrit les Build Settings, ajoute le shader des placeholders aux shaders toujours inclus, lance le build Windows. **Set Up Everything** rejoue les Build Settings et le shader. |
+| `MainMenuSceneBuilder.cs` | Retiré le 22/11 : `MainMenu.unity` est commité, la scène fait foi. Il générait `MainMenu` : relief (pente + collines douces, `ValueNoise`), sol peint, calques d'arbres puis `TerrainForestGenerator`, caméra. Le ciel, le brouillard, la lumière, le post-traitement et les spores sont copiés depuis `MysticForest`. |
 | `PlaytestLocalization.cs` | Créait les réglages de localisation, les langues `fr` et `en`, la table `UI` et ses entrées. Retiré le 21/11 : les textes ne vivent que dans les tables (voir « Nettoyage » dans [playtest-retours](./playtest-retours.md)). |
 
 **Interface** (`Assets/Scripts/Runtime/UI/`)
