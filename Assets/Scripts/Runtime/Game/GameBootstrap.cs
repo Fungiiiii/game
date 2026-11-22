@@ -533,6 +533,7 @@ namespace Fungiiiii.Game
         {
             creatures.Populate(
                 player.transform,
+                firstPersonCamera.transform,
                 GroundHeight,
                 new System.Random(random.Next()),
                 refillingPlants.Absorbable,

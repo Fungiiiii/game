@@ -26,6 +26,7 @@ MonoBehaviour:
   soakSeconds: 3
   soakArrivalDistance: 0.6
   soaksWhenPlayerWithin: 15
+  soaksWhenSeenWithinDegrees: 40
   wetPartMaterial: {fileID: 2100000, guid: 5a832d89a2094b06ac6dd3781fcf6d21, type: 2}
   wetTint: {r: 0.65, g: 0.65, b: 0.7, a: 1}
   wetSmoothness: 0.4

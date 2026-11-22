@@ -49,6 +49,7 @@ namespace Fungiiiii.Capture
         private readonly List<WildMushroom> mushrooms = new List<WildMushroom>();
         private readonly Dictionary<WildMushroom, CreatureDefinition> species = new Dictionary<WildMushroom, CreatureDefinition>();
         private IReadOnlyList<IAbsorbable> sources;
+        private Transform playerView;
         private Action<ItemDefinition, Vector3> loot;
 
         public IReadOnlyList<WildMushroom> Mushrooms => mushrooms;
@@ -82,12 +83,14 @@ namespace Fungiiiii.Capture
         }
 
         /// <param name="threat">What the mushrooms watch and run from: the player.</param>
+        /// <param name="view">The player's view: a creature soaks something up only when seen.</param>
         /// <param name="groundHeight">Height of the ground under a point.</param>
         /// <param name="absorbable">What a creature that soaks something up may soak up: the water ferns.</param>
         /// <param name="firstMet">The plants the player meets first: one lives beside each of them, whatever the share.</param>
         /// <param name="dropLoot">Puts on the ground, at a point, what a felled creature lets go of.</param>
         public void Populate(
             Transform threat,
+            Transform view,
             Func<Vector3, float> groundHeight,
             System.Random random,
             IReadOnlyList<IAbsorbable> absorbable,
@@ -95,6 +98,7 @@ namespace Fungiiiii.Capture
             Action<ItemDefinition, Vector3> dropLoot)
         {
             sources = absorbable ?? throw new ArgumentNullException(nameof(absorbable));
+            playerView = view != null ? view : throw new ArgumentNullException(nameof(view));
             loot = dropLoot ?? throw new ArgumentNullException(nameof(dropLoot));
             foreach (var spawn in spawns)
             {
@@ -193,7 +197,9 @@ namespace Fungiiiii.Capture
                     sources,
                     creature.WanderSpeed,
                     look,
-                    creature.SoaksWhenPlayerWithin);
+                    playerView,
+                    creature.SoaksWhenPlayerWithin,
+                    creature.SoaksWhenSeenWithinDegrees);
             }
 
             mushrooms.Add(mushroom);

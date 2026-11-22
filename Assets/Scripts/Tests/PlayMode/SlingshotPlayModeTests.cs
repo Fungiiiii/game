@@ -56,7 +56,7 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator AWildSpongeus_DrinksOnlyUnderThePlayersEyes()
+        public IEnumerator AWildSpongeus_DrinksOnlyNearThePlayer_AndLookedAt()
         {
             yield return Load();
             var game = Bootstrap;
@@ -68,8 +68,15 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(fern.IsFull, Is.True);
 
             StandBefore(fern.Position, 8f);
+            var look = game.ViewCamera.GetComponent<Fungiiiii.Runtime.Player.FirstPersonCamera>();
+            look.SetView(180f, 0f);
+            yield return Wait(5f);
+            Assert.That(spongeus.IsWet, Is.False, "The Spongeus drank behind the player's back.");
+            Assert.That(fern.IsFull, Is.True);
+
+            look.SetView(0f, 20f);
             yield return WaitUntil(() => spongeus.IsWet, 15f);
-            Assert.That(spongeus.IsWet, Is.True, "The Spongeus did not drink with the player 8 m away.");
+            Assert.That(spongeus.IsWet, Is.True, "The Spongeus did not drink, looked at from 8 m.");
             Assert.That(fern.IsFull, Is.False, "The fern did not dry.");
         }
 

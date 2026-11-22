@@ -32,6 +32,9 @@ namespace Fungiiiii.Capture
         /// <summary>How far the colours move towards white while the net holds the mushroom.</summary>
         private const float HighlightWhiteness = 0.55f;
 
+        /// <summary>Height of its middle above its feet, where the player looks at it, in metres.</summary>
+        private const float SeenHeight = 0.3f;
+
         /// <summary>A model is brightened, not whitened: its colours come from a palette texture.</summary>
         private static readonly Color ModelHighlightTint = new Color(1.6f, 1.6f, 1.6f, 1f);
 
@@ -62,6 +65,8 @@ namespace Fungiiiii.Capture
         private IReadOnlyList<IAbsorbable> soakSources;
         private float soakSpeed;
         private float soakWatchedWithin;
+        private float soakSeenWithinDegrees;
+        private Transform watcher;
         private WetLook wetLook;
         private CreatureHealth health;
 
@@ -142,9 +147,13 @@ namespace Fungiiiii.Capture
         /// <param name="sources">What it may soak up.</param>
         /// <param name="speed">How fast it walks to a source, in metres per second.</param>
         /// <param name="look">The part of its model that shows it wet; null when it shows nothing.</param>
+        /// <param name="view">The player's view: it starts to soak up only when seen.</param>
         /// <param name="watchedWithin">It soaks up only while the player is this close, in metres: what nobody sees does not happen.</param>
-        public void EnableSoak(WildSoak soaking, IReadOnlyList<IAbsorbable> sources, float speed, WetLook look, float watchedWithin)
+        /// <param name="seenWithinDegrees">It starts to soak up only within this angle of the middle of the view.</param>
+        public void EnableSoak(WildSoak soaking, IReadOnlyList<IAbsorbable> sources, float speed, WetLook look, Transform view, float watchedWithin, float seenWithinDegrees)
         {
+            watcher = view != null ? view : throw new ArgumentNullException(nameof(view));
+            soakSeenWithinDegrees = seenWithinDegrees;
             soak = soaking ?? throw new ArgumentNullException(nameof(soaking));
             soakSources = sources ?? throw new ArgumentNullException(nameof(sources));
             soakSpeed = speed;
@@ -300,14 +309,16 @@ namespace Fungiiiii.Capture
                 threatPoint = null;
 
                 // It drinks under the player's eyes, not at the other end of the forest: the
-                // player learns that a Spongeus fills up by seeing one do it.
-                var watched = NetImpact.HorizontalDistance(transform.position, player.position) <= soakWatchedWithin;
-                if (!watched)
+                // player learns that a Spongeus fills up by seeing one do it. It sets off only
+                // while looked at, then carries on while the player stays close.
+                var near = NetImpact.HorizontalDistance(transform.position, player.position) <= soakWatchedWithin;
+                if (!near)
                 {
                     soak?.Interrupt();
                 }
 
-                var soakStep = watched ? soak?.Step(transform.position, soakSources, soakSpeed, Time.deltaTime) : null;
+                var drinks = soak != null && near && (soak.IsBusy || IsSeen());
+                var soakStep = drinks ? soak.Step(transform.position, soakSources, soakSpeed, Time.deltaTime) : null;
                 if (soakStep.HasValue)
                 {
                     MoveTo(soakStep.Value);
@@ -322,6 +333,13 @@ namespace Fungiiiii.Capture
             {
                 wetLook?.Show(soak.Wetness);
             }
+        }
+
+        /// <summary>Whether it stands near the middle of the player's view.</summary>
+        private bool IsSeen()
+        {
+            var toModel = transform.position + Vector3.up * SeenHeight - watcher.position;
+            return Vector3.Angle(watcher.forward, toModel) <= soakSeenWithinDegrees;
         }
 
         private Vector3 ClosestThreat(out float distance)
