@@ -110,6 +110,18 @@ namespace Fungiiiii.Game
         [SerializeField]
         private KeyPrompt keyPrompt;
 
+        [Tooltip("The name of the creature the player looks at, above it.")]
+        [SerializeField]
+        private CreatureNameTag nameTag;
+
+        [Tooltip("The thread waiting in the Champimaison, on a line of its own under its panel.")]
+        [SerializeField]
+        private ThreadTag threadTag;
+
+        [Tooltip("Top centre: the cardinal points and a yellow mark where the objective lies.")]
+        [SerializeField]
+        private Fungiiiii.UI.Compass compass;
+
         [Tooltip("Health and stamina, top left.")]
         [SerializeField]
         private VitalGauges vitalGauges;
@@ -173,6 +185,7 @@ namespace Fungiiiii.Game
         private NetTargetOutline targetOutline;
         private SessionTerrain sessionTerrain;
         private GameObjectives objectives;
+        private ObjectiveTarget objectiveTarget;
 
         /// <summary>True once the forest is loaded and the loop is built.</summary>
         public bool IsReady { get; private set; }
@@ -257,6 +270,15 @@ namespace Fungiiiii.Game
 
         /// <summary>The companion out of the inventory, following the player.</summary>
         public CompanionKeeper Companions => companions;
+
+        public CreatureNameTag NameTag => nameTag;
+
+        public ThreadTag ThreadTag => threadTag;
+
+        public Fungiiiii.UI.Compass Compass => compass;
+
+        /// <summary>Where the compass's mark points now, or null.</summary>
+        public Vector3? ObjectiveTargetPoint => objectiveTarget?.Current();
 
         /// <summary>The inventory item a mushroom becomes once caught.</summary>
         public ItemDefinition ItemFor(WildMushroom mushroom) => creatures.ItemFor(mushroom);
@@ -350,12 +372,16 @@ namespace Fungiiiii.Game
             screens.Inventory.Crafting.Bind(Inventory, Tracker, controls, screens.Inventory);
             objectives = new GameObjectives(Inventory, moleHoles, netItem);
             objectiveHud.Bind(() => ObjectiveRules.KeyFor(objectives.Current), Tracker, Inventory);
+            var netRecipe = System.Linq.Enumerable.First(screens.Inventory.Crafting.Book.Recipes, recipe => recipe.Result == netItem);
+            objectiveTarget = new ObjectiveTarget(objectives, player.transform, seed.transform, moleHoles, refillingPlants.Plants, Inventory, netRecipe);
+            compass.Bind(firstPersonCamera, objectiveTarget.Current);
             objectives.Changed += objectiveHud.ShowObjective;
 
             interactor = player.GetComponent<PlayerInteractor>();
             interactor.Initialize(firstPersonCamera, Inventory, interactables, keyPrompt, controls);
 
-            screens.Bind(controls, interactor, hands);
+            nameTag.Bind(firstPersonCamera, creatures.Mushrooms, creatures.ItemFor, companions);
+            screens.Bind(controls, hands);
             IsReady = true;
             intro.Play(firstPersonCamera.Camera, firstPersonCamera, controls, seed.transform, playerStart, GroundHeight);
         }
@@ -381,6 +407,11 @@ namespace Fungiiiii.Game
             if (screens == null || hotbar == null || keyPrompt == null || vitalGauges == null || pickupFeed == null || droppedItems == null || requirementPanel == null || objectiveHud == null)
             {
                 return "the screens, the quick bar, the key prompt, the vital gauges, the pickup feed, the dropped items, the requirement panel or the objective are missing.";
+            }
+
+            if (nameTag == null || threadTag == null || compass == null)
+            {
+                return "the creature name tag, the thread tag or the compass is missing.";
             }
 
             if (screens.Inventory == null || screens.Inventory.Crafting == null)
@@ -410,6 +441,9 @@ namespace Fungiiiii.Game
                 ?? refillingPlants.FindProblem()
                 ?? intro.FindProblem()
                 ?? droppedItems.FindProblem()
+                ?? nameTag.FindProblem()
+                ?? threadTag.FindProblem()
+                ?? compass.FindProblem()
                 ?? companions.FindProblem()
                 ?? moleHoles.FindProblem();
         }
@@ -542,6 +576,7 @@ namespace Fungiiiii.Game
 
         private void SpawnMushrooms()
         {
+            var motor = player.GetComponent<PlayerMotor>();
             creatures.Populate(
                 player.transform,
                 firstPersonCamera.transform,
@@ -549,7 +584,9 @@ namespace Fungiiiii.Game
                 new System.Random(random.Next()),
                 refillingPlants.Absorbable,
                 refillingPlants.FirstMet,
-                (item, point) => droppedItems.Place(item, 1, point, LootFallHeight));
+                (item, point) => droppedItems.Place(item, 1, point, LootFallHeight),
+                () => motor.IsCrouching,
+                interactables);
         }
 
         private void SetUpThrower()
@@ -582,6 +619,8 @@ namespace Fungiiiii.Game
         private void HandlePlanted(FungalHole champimaison)
         {
             requirementPanel.Bind(champimaison, Inventory, firstPersonCamera.Camera, controls, interactor);
+            threadTag.Bind(champimaison, firstPersonCamera, interactor);
+            objectiveHud.ShowNeedsOf(champimaison.Network);
             champimaison.Entered += EnterChampimaison;
         }
 
