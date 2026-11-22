@@ -48,6 +48,33 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(game.Controls.enabled, Is.True, "The player did not get the controls back.");
             Assert.That(game.ObjectiveHud.IsVisible, Is.True, "The interface did not come back.");
             Assert.That(Vector3.Distance(view.transform.position, player.position), Is.LessThan(2f), "The view is not back with the player.");
+            var toSeedAtEnd = seed.transform.position - view.transform.position;
+            Assert.That(Vector3.Angle(view.transform.forward, toSeedAtEnd), Is.LessThan(10f), "The seed is not right before the player when the shot ends.");
+        }
+
+        [UnityTest]
+        public IEnumerator TheShot_DrawsBackFromTheSeed_ToThePlayer_BeforeGivingTheControls()
+        {
+            InputSystem.AddDevice<Keyboard>();
+            yield return Load(skipIntro: false);
+            var game = Bootstrap;
+            var view = game.ViewCamera;
+            var player = game.Interactor.transform;
+            var seed = SeedOnTheGround(game);
+            yield return WaitUntil(() => seed.transform.position.y - Ground(seed.transform.position) < 0.05f, 8f);
+
+            var distances = new System.Collections.Generic.List<float>();
+            while (game.Intro.IsPlaying)
+            {
+                distances.Add(Vector3.Distance(view.transform.position, player.position));
+                yield return null;
+            }
+
+            // Not a cut: the view comes closer to the player over several frames.
+            Assert.That(distances.Count, Is.GreaterThan(10));
+            var farthest = distances.Max();
+            Assert.That(farthest, Is.GreaterThan(1.5f), "The view was never away from the player.");
+            Assert.That(distances.Count(distance => distance > 0.3f && distance < farthest - 0.3f), Is.GreaterThan(3), "The view jumps back to the player.");
         }
 
         [UnityTest]
@@ -89,6 +116,9 @@ namespace Fungiiiii.Tests.PlayMode
             yield return Tap(keyboard.spaceKey);
             Assert.That(game.Intro.IsPlaying, Is.True, "A press long after the first skipped the shot.");
             Assert.That(game.Intro.IsAskingToSkip, Is.True);
+
+            // The shot lets go of its button listener before the fixture resets the input system.
+            game.Intro.Skip();
         }
 
         private IEnumerator Tap(UnityEngine.InputSystem.Controls.KeyControl key)

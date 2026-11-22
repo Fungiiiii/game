@@ -12,8 +12,9 @@ namespace Fungiiiii.Game
     /// <summary>
     /// The opening shot, when a game starts: the player's camera stands before the giant
     /// tree, looks up at its leaves, and follows the seed falling from them to the ground
-    /// while the view narrows on it. Then the view goes back to the player, who takes the
-    /// controls. Two presses of any button skip it: the first one only says so, so that a
+    /// while the view narrows on it. Then the view draws back from the seed to the player's
+    /// eyes, still looking at it, so that the player sees it lies right before them, and
+    /// they take the controls. Two presses of any button skip it: the first one only says so, so that a
     /// player who pressed by mistake does not lose the shot. The interface stays hidden
     /// meanwhile.
     /// </summary>
@@ -38,6 +39,10 @@ namespace Fungiiiii.Game
         [Tooltip("Seconds on the seed once it lies on the ground.")]
         [SerializeField, Min(0f)]
         private float secondsAfterLanding = 1.2f;
+
+        [Tooltip("Seconds for the view to draw back from the seed to the player's eyes.")]
+        [SerializeField, Min(0f)]
+        private float secondsBackToPlayer = 1.6f;
 
         [Tooltip("Field of view at the end of the shot, narrowed on the seed, in degrees.")]
         [SerializeField, Range(10f, 60f)]
@@ -124,6 +129,9 @@ namespace Fungiiiii.Game
             standing.y = groundHeight(standing) + cameraHeight;
             view.transform.position = standing;
 
+            // The player will look at the seed when the view comes back to them.
+            look.LookAt(landing);
+
             fall = seed.gameObject.AddComponent<FallIn>();
             skipHint.SetActive(false);
             skipListener = InputSystem.onAnyButtonPress.Call(_ => OnButtonPressed());
@@ -205,7 +213,28 @@ namespace Fungiiiii.Game
                 yield return null;
             }
 
+            yield return BackToPlayer();
             End();
+        }
+
+        /// <summary>From the seed to the player's eyes, the view widening back, the seed in sight.</summary>
+        private IEnumerator BackToPlayer()
+        {
+            var fromPosition = view.transform.position;
+            var fromRotation = view.transform.rotation;
+            var fromFieldOfView = view.fieldOfView;
+            var elapsed = 0f;
+            while (elapsed < secondsBackToPlayer)
+            {
+                var progress = Mathf.SmoothStep(0f, 1f, elapsed / secondsBackToPlayer);
+                var to = look.ViewPose;
+                view.transform.SetPositionAndRotation(
+                    Vector3.Lerp(fromPosition, to.position, progress),
+                    Quaternion.Slerp(fromRotation, to.rotation, progress));
+                view.fieldOfView = Mathf.Lerp(fromFieldOfView, baseFieldOfView, progress);
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
         }
 
         private void End()

@@ -60,6 +60,30 @@ namespace Fungiiiii.Runtime.Player
             Follow();
         }
 
+        /// <summary>Where the view stands and looks from, with the player: where it is put every frame.</summary>
+        public Pose ViewPose
+        {
+            get
+            {
+                var eyeHeight = 0f;
+                if (characterController != null)
+                {
+                    // The capsule shrinks with its feet planted while crouching: the eyes follow its top.
+                    eyeHeight = characterController.center.y + characterController.height * 0.5f - EyeDepthBelowTop;
+                }
+
+                return new Pose(motor.transform.position + Vector3.up * eyeHeight, Quaternion.Euler(pitch, yaw, 0f));
+            }
+        }
+
+        /// <summary>Turns the view to a point, from the player's eyes.</summary>
+        public void LookAt(Vector3 point)
+        {
+            var toPoint = point - ViewPose.position;
+            var flat = new Vector2(toPoint.x, toPoint.z).magnitude;
+            SetView(Mathf.Atan2(toPoint.x, toPoint.z) * Mathf.Rad2Deg, -Mathf.Atan2(toPoint.y, flat) * Mathf.Rad2Deg);
+        }
+
         /// <summary>Points the view, for a reset.</summary>
         public void SetView(float yawDegrees, float pitchDegrees)
         {
@@ -141,18 +165,8 @@ namespace Fungiiiii.Runtime.Player
                 return;
             }
 
-            var playerTransform = motor.transform;
-            var eyeHeight = 0f;
-
-            if (characterController != null)
-            {
-                // The capsule shrinks with its feet planted while crouching: the eyes follow its top.
-                eyeHeight = characterController.center.y + characterController.height * 0.5f - EyeDepthBelowTop;
-            }
-
-            transform.SetPositionAndRotation(
-                playerTransform.position + Vector3.up * eyeHeight,
-                Quaternion.Euler(pitch, yaw, 0f));
+            var pose = ViewPose;
+            transform.SetPositionAndRotation(pose.position, pose.rotation);
             Moved?.Invoke();
         }
     }
