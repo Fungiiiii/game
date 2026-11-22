@@ -325,6 +325,7 @@ MonoBehaviour:
   droppedItems: {fileID: 332564108}
   moleHoles: {fileID: 1200000003}
   seedSpot: {fileID: 1200000012}
+  seedGlow: {fileID: 707941052509529682, guid: 462f9ae127353ca468fdc363d0adb21b, type: 3}
   interiorScenePath: Assets/Scenes/Game/ChampimaisonInterior.unity
   randomSeed: 0
 --- !u!4 &167378463

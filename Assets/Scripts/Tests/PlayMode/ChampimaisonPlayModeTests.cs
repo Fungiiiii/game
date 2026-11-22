@@ -33,6 +33,9 @@ namespace Fungiiiii.Tests.PlayMode
             flat.y = 0f;
             Assert.That(flat.magnitude, Is.LessThan(12f), "The seed is not at the foot of the giant tree.");
             Assert.That(game.CurrentObjective, Is.EqualTo(Objective.FindSeed));
+            var glow = seed.GetComponentInChildren<Light>();
+            Assert.That(glow != null && glow.enabled, Is.True, "The seed does not glow.");
+            Assert.That(glow.color.b, Is.GreaterThan(glow.color.g), "The seed's glow is not violet.");
 
             yield return Wait(1f);
             Assert.That(seed.Interact(game.Inventory), Is.True);

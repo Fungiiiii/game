@@ -138,6 +138,10 @@ namespace Fungiiiii.Game
         [SerializeField]
         private Transform seedSpot;
 
+        [Tooltip("The light violet glow that draws the eye to the seed waiting at the giant tree; it goes with the seed.")]
+        [SerializeField]
+        private GameObject seedGlow;
+
         [Tooltip("Inside the Champimaison: the end of the demo. Loaded by path, so it must be in the build settings.")]
         [SerializeField]
         private string interiorScenePath = "Assets/Scenes/Game/ChampimaisonInterior.unity";
@@ -325,7 +329,8 @@ namespace Fungiiiii.Game
                 outlines,
                 interactables,
                 new System.Random(random.Next()));
-            droppedItems.Place(moleHoles.Seed, 1, seedSpot.position);
+            var seed = droppedItems.Place(moleHoles.Seed, 1, seedSpot.position);
+            Instantiate(seedGlow, seed.transform, false);
             // The ferns first: the wild Spongeus go and drink at them.
             refillingPlants.Populate(forest, sessionTerrain, outlines, interactables, new System.Random(random.Next()));
             SpawnMushrooms();
@@ -384,9 +389,9 @@ namespace Fungiiiii.Game
                 return "the outline settings or their shader are missing.";
             }
 
-            if (gathering == null || creatures == null || refillingPlants == null || companions == null || moleHoles == null || seedSpot == null)
+            if (gathering == null || creatures == null || refillingPlants == null || companions == null || moleHoles == null || seedSpot == null || seedGlow == null)
             {
-                return "the forest's gathering, its creatures, its refilling plants, the companions, the mole holes or the seed spot are missing.";
+                return "the forest's gathering, its creatures, its refilling plants, the companions, the mole holes, the seed spot or its glow are missing.";
             }
 
             return screens.FindProblem()
