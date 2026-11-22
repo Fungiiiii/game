@@ -341,8 +341,8 @@ namespace Fungiiiii.Tests.PlayMode
             var terrain = Terrain.activeTerrain;
             var player = Object.FindFirstObjectByType<PlayerMotor>().transform.position;
 
-            // Since the playtest of 22/11, half as many sticks and mushrooms.
-            foreach (var (itemId, expected) in new[] { (WoodId, 2), (SporeId, 3), (PebbleId, 4) })
+            // Since the playtest of 22/11, fewer mushrooms, and as many sticks.
+            foreach (var (itemId, expected) in new[] { (WoodId, 3), (SporeId, 3), (PebbleId, 4) })
             {
                 var positions = game.Gatherables
                     .Where(gatherable => gatherable.IsAvailable && gatherable.Item.Id == itemId)

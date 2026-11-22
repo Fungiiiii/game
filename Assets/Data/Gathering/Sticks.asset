@@ -15,6 +15,6 @@ MonoBehaviour:
   item: {fileID: 11400000, guid: cd08cd5bc26849d190e539182b03ae62, type: 2}
   variants:
   - {fileID: 1302624085802783701, guid: 26dded4661f59f24eb889a78d80cc478, type: 3}
-  nearPlayer: 2
-  maxAlive: 15
+  nearPlayer: 3
+  maxAlive: 20
   perTick: 1
