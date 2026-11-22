@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Fungiiiii.Companions;
 using Fungiiiii.Gathering;
 using Fungiiiii.Interaction;
@@ -35,7 +36,16 @@ namespace Fungiiiii.Gathering
         [SerializeField]
         private Growth[] growths = new Growth[0];
 
+        [Tooltip("Where the player comes from (x, z): the plants nearest to it are the first met, full at the start.")]
+        [SerializeField]
+        private Vector2 firstMetFrom = new Vector2(25f, -105f);
+
+        [Tooltip("How many plants are the first met, full at the start.")]
+        [SerializeField, Min(0)]
+        private int firstMetCount = 3;
+
         private readonly List<RefillingPlant> plants = new List<RefillingPlant>();
+        private readonly List<RefillingPlant> firstMet = new List<RefillingPlant>();
         private readonly List<IAbsorbable> absorbable = new List<IAbsorbable>();
 
         /// <summary>Every plant of the level.</summary>
@@ -43,6 +53,9 @@ namespace Fungiiiii.Gathering
 
         /// <summary>The same plants, as what companions can soak up.</summary>
         public IReadOnlyList<IAbsorbable> Absorbable => absorbable;
+
+        /// <summary>The plants nearest to where the player comes from: full at the start, so a creature is seen drinking at them.</summary>
+        public IReadOnlyList<RefillingPlant> FirstMet => firstMet;
 
         /// <summary>What is missing for the component to work, or null when it is sound.</summary>
         public string FindProblem()
@@ -121,6 +134,20 @@ namespace Fungiiiii.Gathering
                 {
                     Debug.LogWarning($"{name} found no spot for {plant.name}: none will grow.", this);
                 }
+            }
+
+            PickFirstMet();
+        }
+
+        private void PickFirstMet()
+        {
+            var from = new Vector3(firstMetFrom.x, 0f, firstMetFrom.y);
+            firstMet.AddRange(plants
+                .OrderBy(plant => Vector3.ProjectOnPlane(plant.Position - from, Vector3.up).sqrMagnitude)
+                .Take(firstMetCount));
+            foreach (var plant in firstMet)
+            {
+                plant.Restart(1f);
             }
         }
 

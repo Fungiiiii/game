@@ -380,6 +380,8 @@ MonoBehaviour:
       y: -60
       width: 580
       height: 180
+  firstMetFrom: {x: 25, y: -105}
+  firstMetCount: 3
 --- !u!4 &228711579
 Transform:
   m_ObjectHideFlags: 0
@@ -957,7 +959,7 @@ MonoBehaviour:
   spawns:
   - creature: {fileID: 11400000, guid: bf402ca1399e42a197ecead4d6f4bd22, type: 2}
     homes: []
-    besideEachSource: {x: 1, y: 2}
+    shareOfSources: 0.33
     distanceFromSource: 2.5
   area:
     serializedVersion: 2

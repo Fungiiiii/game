@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Fungiiiii.Combat;
 using Fungiiiii.Companions;
 using Fungiiiii.Gathering;
@@ -12,7 +13,8 @@ namespace Fungiiiii.Capture
     /// The mushrooms to catch in a level: which species live where, set in the Inspector.
     /// Each one wanders around its home and runs from the net; a new species is a
     /// <see cref="CreatureDefinition"/> and a line here, no code. A species that soaks
-    /// something up can live beside each plant it soaks up instead of at set homes, so the
+    /// something up can live beside the plants it soaks up instead of at set homes: one
+    /// beside a share of them, and always beside the first ones the player meets, so the
     /// player sees it by the fern it drinks at.
     /// </summary>
     internal sealed class CreaturePopulation : MonoBehaviour
@@ -25,10 +27,11 @@ namespace Fungiiiii.Capture
             [Tooltip("Homes, in world coordinates on the ground (x, z): one mushroom wanders around each.")]
             public Vector2[] homes;
 
-            [Tooltip("How many live beside each plant they soak up, from x to y; 0 to 0 for none.")]
-            public Vector2Int besideEachSource;
+            [Tooltip("Share of the plants it soaks up that have one living beside them, 0 to 1; 0 for none. The first plants the player meets always have one.")]
+            [Range(0f, 1f)]
+            public float shareOfSources;
 
-            [Tooltip("How far from that plant their home is, in metres.")]
+            [Tooltip("How far from that plant its home is, in metres.")]
             [Min(0f)]
             public float distanceFromSource;
         }
@@ -69,10 +72,9 @@ namespace Fungiiiii.Capture
                     return problem;
                 }
 
-                var beside = spawn.besideEachSource;
-                if (beside.x < 0 || beside.x > beside.y || (beside.y > 0 && spawn.creature.SoaksUp == null))
+                if (spawn.shareOfSources > 0f && spawn.creature.SoaksUp == null)
                 {
-                    return $"{name}: '{spawn.creature.name}' lives beside the plants it soaks up, but soaks up nothing or has a wrong count.";
+                    return $"{name}: '{spawn.creature.name}' lives beside the plants it soaks up, but soaks up nothing.";
                 }
             }
 
@@ -82,12 +84,14 @@ namespace Fungiiiii.Capture
         /// <param name="threat">What the mushrooms watch and run from: the player.</param>
         /// <param name="groundHeight">Height of the ground under a point.</param>
         /// <param name="absorbable">What a creature that soaks something up may soak up: the water ferns.</param>
+        /// <param name="firstMet">The plants the player meets first: one lives beside each of them, whatever the share.</param>
         /// <param name="dropLoot">Puts on the ground, at a point, what a felled creature lets go of.</param>
         public void Populate(
             Transform threat,
             Func<Vector3, float> groundHeight,
             System.Random random,
             IReadOnlyList<IAbsorbable> absorbable,
+            IReadOnlyCollection<IAbsorbable> firstMet,
             Action<ItemDefinition, Vector3> dropLoot)
         {
             sources = absorbable ?? throw new ArgumentNullException(nameof(absorbable));
@@ -99,20 +103,16 @@ namespace Fungiiiii.Capture
                     SpawnOne(spawn.creature, home, threat, groundHeight, random);
                 }
 
-                if (spawn.besideEachSource.y <= 0)
+                if (spawn.shareOfSources <= 0f)
                 {
                     continue;
                 }
 
                 foreach (var source in sources)
                 {
-                    if (source.Yield != spawn.creature.SoaksUp)
-                    {
-                        continue;
-                    }
-
-                    var count = random.Next(spawn.besideEachSource.x, spawn.besideEachSource.y + 1);
-                    for (var index = 0; index < count; index++)
+                    // Always drawn, so the first plants met do not change which others have one.
+                    var drawn = random.NextDouble() < spawn.shareOfSources;
+                    if (source.Yield == spawn.creature.SoaksUp && (drawn || firstMet.Contains(source)))
                     {
                         SpawnOne(spawn.creature, HomeBeside(source.Position, spawn.distanceFromSource, random), threat, groundHeight, random);
                     }
@@ -192,7 +192,8 @@ namespace Fungiiiii.Capture
                     new WildSoak(creature.SoakReach, creature.SoakSeconds, creature.SoakArrivalDistance, creature.SoaksUp),
                     sources,
                     creature.WanderSpeed,
-                    look);
+                    look,
+                    creature.SoaksWhenPlayerWithin);
             }
 
             mushrooms.Add(mushroom);

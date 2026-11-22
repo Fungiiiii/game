@@ -33,24 +33,44 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator EveryFern_HasASpongeusBesideIt_AndNoSpongeusLivesAwayFromTheFerns()
+        public IEnumerator TheFirstFernsMet_AreFull_EachWithASpongeus_AndNoSpongeusLivesAwayFromTheFerns()
         {
             yield return Load();
             var game = Bootstrap;
             var ferns = game.RefillingPlants.Plants;
-            var spongeus = game.Mushrooms.Where(mushroom => mushroom.Soak != null).ToList();
-            Assert.That(ferns.Count, Is.GreaterThan(0));
+            var spongeus = WildSpongeus(game);
             Debug.Log($"{ferns.Count} ferns, {spongeus.Count} wild Spongeus.");
 
-            foreach (var fern in ferns)
+            Assert.That(game.RefillingPlants.FirstMet.Count, Is.EqualTo(3));
+            foreach (var fern in game.RefillingPlants.FirstMet)
             {
-                Assert.That(spongeus.Any(each => Flat(each.transform.position, fern.Position) < 5f), Is.True, $"No Spongeus beside the fern at {fern.Position}.");
+                Assert.That(fern.IsFull, Is.True, $"The fern met first at {fern.Position} is not full.");
+                Assert.That(spongeus.Count(each => Flat(each.transform.position, fern.Position) < 5f), Is.EqualTo(1), $"Not one Spongeus beside the fern met first at {fern.Position}.");
             }
 
+            Assert.That(spongeus.Count, Is.InRange(3, ferns.Count / 2), "Not one Spongeus beside some of the ferns only.");
             foreach (var each in spongeus)
             {
                 Assert.That(ferns.Min(fern => Flat(each.transform.position, fern.Position)), Is.LessThan(5f), $"{each.name} lives away from the ferns.");
             }
+        }
+
+        [UnityTest]
+        public IEnumerator AWildSpongeus_DrinksOnlyUnderThePlayersEyes()
+        {
+            yield return Load();
+            var game = Bootstrap;
+            var fern = game.RefillingPlants.FirstMet[0];
+            var spongeus = WildSpongeus(game).OrderBy(each => Flat(each.transform.position, fern.Position)).First();
+
+            yield return Wait(6f);
+            Assert.That(spongeus.IsWet, Is.False, "The Spongeus drank with the player far away.");
+            Assert.That(fern.IsFull, Is.True);
+
+            StandBefore(fern.Position, 8f);
+            yield return WaitUntil(() => spongeus.IsWet, 15f);
+            Assert.That(spongeus.IsWet, Is.True, "The Spongeus did not drink with the player 8 m away.");
+            Assert.That(fern.IsFull, Is.False, "The fern did not dry.");
         }
 
         [UnityTest]
@@ -136,14 +156,21 @@ namespace Fungiiiii.Tests.PlayMode
             game.Inventory.TakeFromSlot(Fungiiiii.Inventory.InventoryLayout.Standard.QuickBarFirstSlot, 1, out _);
         }
 
-        /// <summary>A wild Spongeus put next to a fern made full: calm, it goes and drinks.</summary>
+        /// <summary>A wild Spongeus put next to a fern made full, the player 8 m away: calm, it goes and drinks.</summary>
         private static (WildMushroom, RefillingPlant) SpongeusBesideAFullFern(Fungiiiii.Game.GameBootstrap game)
         {
             var mushroom = game.Mushrooms.First(each => each.Soak != null);
             var fern = game.RefillingPlants.Plants.OrderBy(plant => Vector3.Distance(plant.Position, mushroom.transform.position)).First();
             fern.Restart(1f);
             mushroom.transform.position = fern.Position + Vector3.right * 2f;
+            // It drinks only under the player's eyes.
+            StandBefore(fern.Position, 8f);
             return (mushroom, fern);
+        }
+
+        private static System.Collections.Generic.List<WildMushroom> WildSpongeus(Fungiiiii.Game.GameBootstrap game)
+        {
+            return game.Mushrooms.Where(mushroom => mushroom.Soak != null).ToList();
         }
 
         private static float Flat(Vector3 a, Vector3 b)

@@ -536,6 +536,7 @@ namespace Fungiiiii.Game
                 GroundHeight,
                 new System.Random(random.Next()),
                 refillingPlants.Absorbable,
+                refillingPlants.FirstMet,
                 (item, point) => droppedItems.Place(item, 1, point, LootFallHeight));
         }
 

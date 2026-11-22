@@ -61,6 +61,7 @@ namespace Fungiiiii.Capture
         private WildSoak soak;
         private IReadOnlyList<IAbsorbable> soakSources;
         private float soakSpeed;
+        private float soakWatchedWithin;
         private WetLook wetLook;
         private CreatureHealth health;
 
@@ -141,11 +142,13 @@ namespace Fungiiiii.Capture
         /// <param name="sources">What it may soak up.</param>
         /// <param name="speed">How fast it walks to a source, in metres per second.</param>
         /// <param name="look">The part of its model that shows it wet; null when it shows nothing.</param>
-        public void EnableSoak(WildSoak soaking, IReadOnlyList<IAbsorbable> sources, float speed, WetLook look)
+        /// <param name="watchedWithin">It soaks up only while the player is this close, in metres: what nobody sees does not happen.</param>
+        public void EnableSoak(WildSoak soaking, IReadOnlyList<IAbsorbable> sources, float speed, WetLook look, float watchedWithin)
         {
             soak = soaking ?? throw new ArgumentNullException(nameof(soaking));
             soakSources = sources ?? throw new ArgumentNullException(nameof(sources));
             soakSpeed = speed;
+            soakWatchedWithin = watchedWithin;
             wetLook = look;
             wetLook?.Show(0f);
         }
@@ -296,7 +299,15 @@ namespace Fungiiiii.Capture
                 // Calmed down: the net it fled from is forgotten.
                 threatPoint = null;
 
-                var soakStep = soak?.Step(transform.position, soakSources, soakSpeed, Time.deltaTime);
+                // It drinks under the player's eyes, not at the other end of the forest: the
+                // player learns that a Spongeus fills up by seeing one do it.
+                var watched = NetImpact.HorizontalDistance(transform.position, player.position) <= soakWatchedWithin;
+                if (!watched)
+                {
+                    soak?.Interrupt();
+                }
+
+                var soakStep = watched ? soak?.Step(transform.position, soakSources, soakSpeed, Time.deltaTime) : null;
                 if (soakStep.HasValue)
                 {
                     MoveTo(soakStep.Value);

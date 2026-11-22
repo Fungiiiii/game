@@ -59,6 +59,10 @@ namespace Fungiiiii.Capture
         [SerializeField, Min(0.1f)]
         private float soakArrivalDistance = 0.6f;
 
+        [Tooltip("It soaks up only while the player is this close, so that the player sees it, in metres.")]
+        [SerializeField, Min(0.1f)]
+        private float soaksWhenPlayerWithin = 15f;
+
         [Tooltip("The material of the model's part that looks wet: the Spongeus's cap.")]
         [SerializeField]
         private Material wetPartMaterial;
@@ -98,6 +102,8 @@ namespace Fungiiiii.Capture
         public float SoakSeconds => soakSeconds;
 
         public float SoakArrivalDistance => soakArrivalDistance;
+
+        public float SoaksWhenPlayerWithin => soaksWhenPlayerWithin;
 
         public Material WetPartMaterial => wetPartMaterial;
 

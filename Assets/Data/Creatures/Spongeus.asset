@@ -23,8 +23,9 @@ MonoBehaviour:
   wetDrop: {fileID: 11400000, guid: ea8aab103615bc74d905d1dd1190e5eb, type: 2}
   soaksUp: {fileID: 11400000, guid: ea8aab103615bc74d905d1dd1190e5eb, type: 2}
   soakReach: 12
-  soakSeconds: 1.5
+  soakSeconds: 3
   soakArrivalDistance: 0.6
+  soaksWhenPlayerWithin: 15
   wetPartMaterial: {fileID: 2100000, guid: 5a832d89a2094b06ac6dd3781fcf6d21, type: 2}
   wetTint: {r: 0.65, g: 0.65, b: 0.7, a: 1}
   wetSmoothness: 0.4
