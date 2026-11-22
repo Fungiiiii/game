@@ -28,6 +28,7 @@ namespace Fungiiiii.Tests.PlayMode
         private const string NetId = "net";
         private const string WoodId = "wood";
         private const string SporeId = "spore";
+        private const string PebbleId = "pebble";
         private const string ForestScenePath = "Assets/Scenes/Biomes/MysticForest.unity";
 
         /// <summary>The forest is large: loading it additively takes a few seconds in batch mode.</summary>
@@ -66,6 +67,19 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(game.IsReady, Is.True, "The game was not ready in time.");
         }
 
+        /// <summary>
+        /// Loads the game and puts the net in the first slot of the quick bar, selected: the
+        /// player now crafts it, and these tests are about the net, not about crafting it.
+        /// </summary>
+        private static IEnumerator LoadGameWithNet()
+        {
+            yield return LoadGame();
+            var game = Object.FindFirstObjectByType<GameBootstrap>();
+            game.Inventory.AddToSlot(InventoryLayout.Standard.QuickBarFirstSlot, game.NetItem, 1);
+            game.Hotbar.Select(0);
+            yield return null;
+        }
+
         [UnityTest]
         public IEnumerator SceneLoad_LoadsTheForest_WithOnePlayerAndOneCamera()
         {
@@ -93,15 +107,13 @@ namespace Fungiiiii.Tests.PlayMode
 
             Assert.That(game.Mushrooms.Count, Is.GreaterThan(0));
             Assert.That(game.Gatherables.Count, Is.GreaterThan(0));
-            Assert.That(game.Hole, Is.Null, "The Champimaison hole is left out of the playtest.");
+            Assert.That(game.Hole, Is.Null, "The Champimaison exists before the seed is planted.");
+            Assert.That(game.MoleHoles.Holes.Count, Is.GreaterThan(0), "No mole hole to plant the seed in.");
             Assert.That(game.IsInventoryOpen, Is.False);
 
             for (var index = 0; index < game.Inventory.SlotCount; index++)
             {
-                if (index != InventoryLayout.Standard.QuickBarFirstSlot)
-                {
-                    Assert.That(game.Inventory.GetSlot(index).IsEmpty, Is.True, "The inventory must start with the net only.");
-                }
+                Assert.That(game.Inventory.GetSlot(index).IsEmpty, Is.True, "The player must start empty-handed.");
             }
         }
 
@@ -118,19 +130,20 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator TheNet_StartsInTheFirstSlotOfTheQuickBar_InHand()
+        public IEnumerator ThePlayer_StartsEmptyHanded_TheNetPutInTheQuickBarIsInHand()
         {
             yield return LoadGame();
             var game = Object.FindFirstObjectByType<GameBootstrap>();
 
-            var first = game.Inventory.GetSlot(InventoryLayout.Standard.QuickBarFirstSlot);
-            Assert.That(first.ItemId, Is.EqualTo(NetId));
-            Assert.That(first.Quantity, Is.EqualTo(1));
-            Assert.That(game.Inventory.Count(NetId), Is.EqualTo(1), "There must be one net.");
-
+            Assert.That(game.Inventory.Count(NetId), Is.Zero, "The net is given at the start.");
             Assert.That(game.Hotbar.IsVisible, Is.True, "The quick bar is not on screen.");
             Assert.That(game.Hotbar.SlotCount, Is.EqualTo(3));
             Assert.That(game.Hotbar.Selected, Is.EqualTo(0));
+            Assert.That(game.Thrower.IsEquipped, Is.False, "Something is in hand.");
+
+            game.Inventory.AddToSlot(InventoryLayout.Standard.QuickBarFirstSlot, game.NetItem, 1);
+            yield return null;
+
             Assert.That(game.Thrower.IsEquipped, Is.True);
             Assert.That(game.Thrower.IsNetInHandShown, Is.True, "The net is not in hand.");
         }
@@ -138,7 +151,7 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator SelectingAnotherSlot_PutsTheNetAway_AndSelectingItAgainGivesItBack()
         {
-            yield return LoadGame();
+            yield return LoadGameWithNet();
             var game = Object.FindFirstObjectByType<GameBootstrap>();
             var origin = game.Mushrooms[0].transform.position + Vector3.up * 3f;
 
@@ -160,7 +173,7 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator ANetThrown_ComesBack_EvenWhenAnotherSlotIsSelected()
         {
-            yield return LoadGame();
+            yield return LoadGameWithNet();
             var game = Object.FindFirstObjectByType<GameBootstrap>();
             var origin = Object.FindFirstObjectByType<PlayerMotor>().transform.position + Vector3.forward * 2f;
 
@@ -181,7 +194,7 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator MovingTheNetOutOfTheSelectedSlot_PutsItAway()
         {
-            yield return LoadGame();
+            yield return LoadGameWithNet();
             var game = Object.FindFirstObjectByType<GameBootstrap>();
 
             Assert.That(game.Inventory.MoveOrSwap(InventoryLayout.Standard.QuickBarFirstSlot, InventoryLayout.Standard.QuickBarFirstSlot + 1), Is.True);
@@ -237,7 +250,7 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator AnItemDroppedFromTheInventory_LiesInFront_ThenCanBePickedUpAgain()
         {
-            yield return LoadGame();
+            yield return LoadGameWithNet();
             var game = Object.FindFirstObjectByType<GameBootstrap>();
             var netSlot = InventoryLayout.Standard.QuickBarFirstSlot;
             game.SetInventoryOpen(true);
@@ -247,9 +260,7 @@ namespace Fungiiiii.Tests.PlayMode
             game.InventoryView.DropFromFocusedSlot();
 
             Assert.That(game.Inventory.GetSlot(netSlot).IsEmpty, Is.True, "The net is still in its slot.");
-            Assert.That(game.Dropped.Items.Count, Is.EqualTo(1));
-            var dropped = game.Dropped.Items[0];
-            Assert.That(dropped.Item.Id, Is.EqualTo(NetId));
+            var dropped = game.Dropped.Items.Single(item => item.Item.Id == NetId);
             var player = Object.FindFirstObjectByType<PlayerMotor>().transform.position;
             Assert.That(Vector3.Distance(Flat(dropped.transform.position), Flat(player)), Is.LessThan(2.5f), "It is not in front of the player.");
             var picture = dropped.GetComponentInChildren<FacesCamera>();
@@ -262,7 +273,7 @@ namespace Fungiiiii.Tests.PlayMode
             yield return null;
 
             Assert.That(game.Inventory.Count(NetId), Is.EqualTo(1), "The net did not come back.");
-            Assert.That(game.Dropped.Items, Is.Empty);
+            Assert.That(game.Dropped.Items.Any(item => item.Item.Id == NetId), Is.False);
             Assert.That(game.Pickups.Lines.Count, Is.EqualTo(1), "Picking it up was not shown.");
         }
 
@@ -322,14 +333,14 @@ namespace Fungiiiii.Tests.PlayMode
         /// 20/11 they are kept around the player instead of over the whole map.
         /// </summary>
         [UnityTest]
-        public IEnumerator SticksAndMushrooms_AreAroundThePlayer()
+        public IEnumerator SticksMushroomsAndPebbles_AreAroundThePlayer()
         {
             yield return LoadGame();
             var game = Object.FindFirstObjectByType<GameBootstrap>();
             var terrain = Terrain.activeTerrain;
             var player = Object.FindFirstObjectByType<PlayerMotor>().transform.position;
 
-            foreach (var (itemId, expected) in new[] { (WoodId, 4), (SporeId, 5) })
+            foreach (var (itemId, expected) in new[] { (WoodId, 4), (SporeId, 5), (PebbleId, 4) })
             {
                 var positions = game.Gatherables
                     .Where(gatherable => gatherable.IsAvailable && gatherable.Item.Id == itemId)
@@ -481,7 +492,7 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator InGame_TheHints_TellWhatTheNetDoes_ThenSwitchingAndTheInventory()
         {
-            yield return LoadGame();
+            yield return LoadGameWithNet();
             var game = Object.FindFirstObjectByType<GameBootstrap>();
             yield return null;
 
@@ -494,7 +505,7 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator WhileAiming_TheHints_SayThrow_AndReleaseToStop()
         {
-            yield return LoadGame();
+            yield return LoadGameWithNet();
             var game = Object.FindFirstObjectByType<GameBootstrap>();
             game.Thrower.HoldAim = true;
             yield return null;
@@ -506,7 +517,7 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator WithATarget_GatherComesFirst_AndSwitchingIsLeftOut()
         {
-            yield return LoadGame();
+            yield return LoadGameWithNet();
             var game = Object.FindFirstObjectByType<GameBootstrap>();
 
             PlaceInView(game, TwoAvailable(game)[0], 0f, 1.5f);
@@ -520,7 +531,7 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator TheInventory_ShowsItsOwnHints_AndThePause_None()
         {
-            yield return LoadGame();
+            yield return LoadGameWithNet();
             var game = Object.FindFirstObjectByType<GameBootstrap>();
 
             game.SetInventoryOpen(true);
@@ -582,7 +593,7 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator TheArc_ShowsOnlyWhileAiming()
         {
-            yield return LoadGame();
+            yield return LoadGameWithNet();
             var thrower = Object.FindFirstObjectByType<GameBootstrap>().Thrower;
 
             yield return null;
@@ -606,7 +617,7 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator Aiming_NarrowsTheViewTo45_AndReleasingWidensItBackTo60()
         {
-            yield return LoadGame();
+            yield return LoadGameWithNet();
             var game = Object.FindFirstObjectByType<GameBootstrap>();
             var camera = game.ViewCamera;
             Assert.That(camera.fieldOfView, Is.EqualTo(60f).Within(0.01f));
@@ -625,7 +636,7 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator ThePauseAndTheInventory_DropTheAim_AndWidenTheViewAsWhenReleased()
         {
-            yield return LoadGame();
+            yield return LoadGameWithNet();
             var game = Object.FindFirstObjectByType<GameBootstrap>();
             var camera = game.ViewCamera;
             game.Thrower.HoldAim = true;
@@ -654,7 +665,7 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator TheNet_IsThrownWhileAiming_AsWithoutAiming()
         {
-            yield return LoadGame();
+            yield return LoadGameWithNet();
             var game = Object.FindFirstObjectByType<GameBootstrap>();
             var origin = Object.FindFirstObjectByType<PlayerMotor>().transform.position + Vector3.forward * 2f;
 
@@ -668,7 +679,7 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator OnlyTheMushroomAimedAt_IsOutlined_InTheColourOfItsChance()
         {
-            yield return LoadGame();
+            yield return LoadGameWithNet();
             var game = Object.FindFirstObjectByType<GameBootstrap>();
             var thrower = game.Thrower;
             var target = game.Mushrooms[0];
@@ -958,7 +969,7 @@ namespace Fungiiiii.Tests.PlayMode
         [UnityTest]
         public IEnumerator ACapture_PutsTheMushroomInTheInventory()
         {
-            yield return LoadGame();
+            yield return LoadGameWithNet();
             var game = Object.FindFirstObjectByType<GameBootstrap>();
             var target = game.Mushrooms.First(mushroom => mushroom.Profile == NetTargetProfile.Common);
             var item = game.ItemFor(target);

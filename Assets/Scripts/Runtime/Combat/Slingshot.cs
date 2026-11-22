@@ -266,7 +266,9 @@ namespace Fungiiiii.Combat
             for (var index = 0; index < count; index++)
             {
                 var hit = castHits[index];
-                if (hit.collider == ownCollider || hit.distance >= closest)
+
+                // A mushroom is not decor: it is hit by its distance to the flight, not by its collider.
+                if (hit.collider == ownCollider || hit.distance >= closest || hit.collider.GetComponentInParent<WildMushroom>() != null)
                 {
                     continue;
                 }

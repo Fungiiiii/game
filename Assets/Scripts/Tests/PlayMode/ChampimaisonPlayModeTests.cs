@@ -1,0 +1,170 @@
+using System.Collections;
+using System.Linq;
+using Fungiiiii.Champimaison;
+using Fungiiiii.Game;
+using Fungiiiii.UI;
+using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.TestTools;
+using static Fungiiiii.Tests.PlayMode.PlaytestLoopGame;
+
+namespace Fungiiiii.Tests.PlayMode
+{
+    /// <summary>The seed, the mole holes and the Champimaison of the playtest loop.</summary>
+    public sealed class ChampimaisonPlayModeTests
+    {
+        [TearDown]
+        public void RestoreTime()
+        {
+            Time.timeScale = 1f;
+        }
+
+        [UnityTest]
+        public IEnumerator TheSeed_LiesAtTheFootOfTheGiantTree_AndIsPickedUp()
+        {
+            yield return Load();
+            var game = Game;
+            var seed = game.Dropped.Items.SingleOrDefault(item => item.Item == Seed(game));
+            Assert.That(seed, Is.Not.Null, "The seed is not on the ground.");
+
+            var giantTree = new Vector3(25f, 0f, -105f);
+            var flat = seed.transform.position - giantTree;
+            flat.y = 0f;
+            Assert.That(flat.magnitude, Is.LessThan(12f), "The seed is not at the foot of the giant tree.");
+            Assert.That(game.CurrentObjective, Is.EqualTo(Objective.FindSeed));
+
+            yield return Wait(1f);
+            Assert.That(seed.Interact(game.Inventory), Is.True);
+            yield return null;
+
+            Assert.That(game.Inventory.Count(Seed(game).Id), Is.EqualTo(1));
+            Assert.That(game.CurrentObjective, Is.EqualTo(Objective.PlantSeed));
+            Assert.That(game.ObjectiveHud.ObjectiveKey, Is.EqualTo(UiText.ObjectivePlantSeed));
+        }
+
+        [UnityTest]
+        public IEnumerator AMoleHole_AsksForTheSeed_InHand_ThenPlantsIt_AndTheOthersStop()
+        {
+            yield return Load();
+            var game = Game;
+            var hole = game.MoleHoles.Holes[0];
+
+            Assert.That(game.MoleHoles.Holes.All(each => each.IsOutlined), Is.True, "A mole hole is not outlined.");
+            Assert.That(hole.Prompt, Is.EqualTo(PlantingPrompt.NeedsSeed));
+            Assert.That(hole.LabelKey, Is.EqualTo(UiText.LabelNeedsSeed));
+
+            game.Inventory.AddToSlot(0, Seed(game), 1);
+            Assert.That(hole.Prompt, Is.EqualTo(PlantingPrompt.HoldSeed));
+            Assert.That(hole.LabelKey, Is.EqualTo(UiText.LabelHoldSeed));
+            Assert.That(hole.Interact(game.Inventory), Is.False, "The seed was planted from the backpack.");
+
+            game.Inventory.TakeFromSlot(0, 1, out _);
+            PutInHand(game, Seed(game));
+            Assert.That(hole.Prompt, Is.EqualTo(PlantingPrompt.Plant));
+            Assert.That(hole.HintKey, Is.EqualTo(UiText.HintPlant));
+            Assert.That(hole.Interact(game.Inventory), Is.True);
+            yield return null;
+
+            Assert.That(game.Hole, Is.Not.Null, "No Champimaison grew.");
+            Assert.That(game.Inventory.Count(Seed(game).Id), Is.Zero, "The seed was not used.");
+            foreach (var other in game.MoleHoles.Holes.Where(each => each != hole))
+            {
+                Assert.That(other.IsOutlined, Is.False, "Another mole hole is still outlined.");
+                Assert.That(other.Prompt, Is.EqualTo(PlantingPrompt.None));
+            }
+
+            Assert.That(game.CurrentObjective, Is.EqualTo(Objective.AwakenSeed));
+        }
+
+        [UnityTest]
+        public IEnumerator ThePanel_ListsTheCost_AndHoldingTheKey_DropsWhatIsMissing()
+        {
+            yield return Load();
+            var game = Game;
+            var champimaison = Plant(game);
+            StandBefore(champimaison.transform.position, 3f);
+            var water = champimaison.Network.Progress.Required(0).Item;
+            var spore = champimaison.Network.Progress.Required(1).Item;
+            game.Inventory.Add(spore, 5);
+            yield return null;
+            yield return null;
+
+            var panel = Object.FindFirstObjectByType<RequirementPanel>();
+            Assert.That(panel.IsVisible, Is.True, "The panel is not shown near the Champimaison.");
+            Assert.That(panel.TitleKey, Is.EqualTo(UiText.PanelAwakenTitle));
+            Assert.That(panel.Rows.Count(row => row.isActiveAndEnabled), Is.EqualTo(2));
+            Assert.That(panel.Rows[1].ShownCarried, Is.EqualTo(5));
+            Assert.That(champimaison.HoldHintKey, Is.EqualTo(UiText.HintDeposit));
+
+            Assert.That(champimaison.InteractHold(game.Inventory), Is.True);
+            yield return null;
+            Assert.That(game.Inventory.Count(spore.Id), Is.EqualTo(2), "More spores were taken than missing.");
+            Assert.That(panel.Rows[1].CountText, Is.EqualTo("3/3"));
+            Assert.That(panel.Rows[1].IsComplete, Is.True);
+            Assert.That(champimaison.HoldHintKey, Is.Null, "Nothing left to drop, yet the key says it drops.");
+
+            game.Inventory.Add(water, 1);
+            yield return null;
+            Assert.That(champimaison.HoldHintKey, Is.EqualTo(UiText.HintAwaken));
+            Assert.That(champimaison.InteractHold(game.Inventory), Is.True);
+            yield return null;
+
+            Assert.That(champimaison.Network.Stage, Is.EqualTo(1), "The seed did not wake up.");
+            Assert.That(panel.TitleKey, Is.EqualTo(UiText.PanelGrowTitle));
+            Assert.That(game.CurrentObjective, Is.EqualTo(Objective.CraftNet));
+        }
+
+        [UnityTest]
+        public IEnumerator AnAwakeChampimaison_ProducesThread_ThatAShortPressCollects()
+        {
+            yield return Load();
+            var game = Game;
+            var champimaison = Plant(game);
+            var progress = champimaison.Network.Progress;
+            game.Inventory.Add(progress.Required(0).Item, progress.Required(0).Amount);
+            game.Inventory.Add(progress.Required(1).Item, progress.Required(1).Amount);
+            champimaison.InteractHold(game.Inventory);
+
+            Assert.That(champimaison.Thread.IsRunning, Is.True, "The thread is not produced once awake.");
+            champimaison.Thread.Tick(1000f);
+            Assert.That(champimaison.HintKey, Is.EqualTo(UiText.HintCollectThread));
+            var stored = champimaison.Thread.Stored;
+
+            Assert.That(champimaison.Interact(game.Inventory), Is.True);
+            Assert.That(game.Inventory.Count(Thread(game).Id), Is.EqualTo(stored));
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator TheLastStage_OpensTheChampimaison_AndEnteringIt_EndsTheDemo()
+        {
+            yield return Load();
+            var game = Game;
+            var champimaison = Plant(game);
+            foreach (var _ in Enumerable.Range(0, champimaison.Network.StageCount))
+            {
+                var progress = champimaison.Network.Progress;
+                for (var line = 0; line < progress.LineCount; line++)
+                {
+                    game.Inventory.Add(progress.Required(line).Item, progress.Required(line).Amount);
+                }
+
+                champimaison.InteractHold(game.Inventory);
+            }
+
+            Assert.That(champimaison.Network.IsComplete, Is.True);
+            Assert.That(champimaison.CanBeEntered, Is.True);
+            Assert.That(champimaison.HintKey, Is.EqualTo(UiText.HintEnter));
+            Assert.That(game.CurrentObjective, Is.EqualTo(Objective.EnterChampimaison));
+
+            Assert.That(champimaison.Interact(game.Inventory), Is.True);
+            yield return WaitUntil(() => SceneManager.GetSceneByPath(InteriorScenePath).isLoaded, 20f);
+
+            Assert.That(SceneManager.GetSceneByPath(InteriorScenePath).isLoaded, Is.True, "The interior was not loaded.");
+            var end = Object.FindFirstObjectByType<DemoEnd>();
+            Assert.That(end, Is.Not.Null, "No end of the demo inside.");
+            Assert.That(Cursor.lockState, Is.EqualTo(CursorLockMode.None), "The mouse is not free at the end.");
+        }
+    }
+}

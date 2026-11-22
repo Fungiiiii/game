@@ -85,6 +85,8 @@ namespace Fungiiiii.Tests.PlayMode
         {
             yield return LoadGame();
             var netSlot = Layout.QuickBarFirstSlot;
+            // The player starts empty-handed: the net is put in the slot for the test.
+            game.Inventory.AddToSlot(netSlot, game.NetItem, 1);
             var emptySlot = 0;
             var screen = game.InventoryView;
             game.SetInventoryOpen(true);

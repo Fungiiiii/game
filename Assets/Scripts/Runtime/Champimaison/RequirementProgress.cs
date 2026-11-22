@@ -11,7 +11,7 @@ namespace Fungiiiii.Champimaison
     /// </summary>
     public sealed class RequirementProgress
     {
-        private readonly ItemAmount[] required;
+        private readonly ItemAmount[] lines;
         private readonly int[] deposited;
 
         public RequirementProgress(IReadOnlyList<ItemAmount> requirements)
@@ -21,7 +21,7 @@ namespace Fungiiiii.Champimaison
                 throw new ArgumentException("A requirement needs at least one line.", nameof(requirements));
             }
 
-            required = new ItemAmount[requirements.Count];
+            lines = new ItemAmount[requirements.Count];
             var ids = new HashSet<string>();
             for (var line = 0; line < requirements.Count; line++)
             {
@@ -36,22 +36,22 @@ namespace Fungiiiii.Champimaison
                     throw new ArgumentException($"The item '{requirement.Item.Id}' is required twice.", nameof(requirements));
                 }
 
-                required[line] = requirement;
+                lines[line] = requirement;
             }
 
-            deposited = new int[required.Length];
+            deposited = new int[lines.Length];
         }
 
         /// <summary>Raised after a deposit took something.</summary>
         public event Action Changed;
 
-        public int LineCount => required.Length;
+        public int LineCount => lines.Length;
 
         public bool IsComplete
         {
             get
             {
-                for (var line = 0; line < required.Length; line++)
+                for (var line = 0; line < lines.Length; line++)
                 {
                     if (Missing(line) > 0)
                     {
@@ -63,19 +63,19 @@ namespace Fungiiiii.Champimaison
             }
         }
 
-        public ItemAmount Required(int line) => required[line];
+        public ItemAmount Required(int line) => lines[line];
 
         public int Deposited(int line) => deposited[line];
 
-        public int Missing(int line) => required[line].Amount - deposited[line];
+        public int Missing(int line) => lines[line].Amount - deposited[line];
 
         /// <summary>Whether a deposit from this inventory would take something.</summary>
         public bool CanTakeFrom(PlayerInventory inventory)
         {
             ValidateInventory(inventory);
-            for (var line = 0; line < required.Length; line++)
+            for (var line = 0; line < lines.Length; line++)
             {
-                if (Missing(line) > 0 && inventory.Count(required[line].Item.Id) > 0)
+                if (Missing(line) > 0 && inventory.Count(lines[line].Item.Id) > 0)
                 {
                     return true;
                 }
@@ -88,9 +88,9 @@ namespace Fungiiiii.Champimaison
         public bool WouldComplete(PlayerInventory inventory)
         {
             ValidateInventory(inventory);
-            for (var line = 0; line < required.Length; line++)
+            for (var line = 0; line < lines.Length; line++)
             {
-                if (inventory.Count(required[line].Item.Id) < Missing(line))
+                if (inventory.Count(lines[line].Item.Id) < Missing(line))
                 {
                     return false;
                 }
@@ -108,9 +108,9 @@ namespace Fungiiiii.Champimaison
         {
             ValidateInventory(inventory);
             var total = 0;
-            for (var line = 0; line < required.Length; line++)
+            for (var line = 0; line < lines.Length; line++)
             {
-                var id = required[line].Item.Id;
+                var id = lines[line].Item.Id;
                 var take = Math.Min(Missing(line), inventory.Count(id));
                 if (take <= 0)
                 {

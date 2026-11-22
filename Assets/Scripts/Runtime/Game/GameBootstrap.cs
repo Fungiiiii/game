@@ -176,6 +176,9 @@ namespace Fungiiiii.Game
 
         public NetThrower Thrower { get; private set; }
 
+        /// <summary>The item whose behaviour in hand is the net.</summary>
+        public ItemDefinition NetItem => netItem;
+
         public Slingshot Slingshot { get; private set; }
 
         public IReadOnlyList<WildMushroom> Mushrooms => creatures.Mushrooms;
