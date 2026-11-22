@@ -43,7 +43,7 @@ namespace Fungiiiii.UI
                 itemName.Show(item.NameKey);
             }
 
-            count.text = $"{done}/{required}";
+            count.text = $"{done}/{required}"; // i18n-exempt: two numbers, no words
             var complete = done >= required;
             tick.SetActive(complete);
 

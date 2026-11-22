@@ -49,7 +49,7 @@ namespace Fungiiiii.UI
             }
 
             IsMissing = owned < needed;
-            count.text = $"{owned}/{needed}";
+            count.text = $"{owned}/{needed}"; // i18n-exempt: two numbers, no words
             count.color = IsMissing ? missingColor : enoughColor;
 
             if (source == null)

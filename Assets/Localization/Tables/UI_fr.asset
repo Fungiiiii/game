@@ -142,6 +142,166 @@ MonoBehaviour:
     m_Localized: Eau
     m_Metadata:
       m_Items: []
+  - m_Id: 391185041448964
+    m_Localized: Graine
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448965
+    m_Localized: Caillou
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448966
+    m_Localized: "Fil de myc\xE9lium"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448967
+    m_Localized: "Lance-pierre"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448968
+    m_Localized: Capture un champignon vivant.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448969
+    m_Localized: Tire des cailloux sur les champignons.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448970
+    m_Localized: Au pied des arbres
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448971
+    m_Localized: "Champignons \xE0 cueillir"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448972
+    m_Localized: "Un Spongeus qui a bu aux foug\xE8res de la brume"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448973
+    m_Localized: "Au sol, dans la for\xEAt"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448974
+    m_Localized: "Produit par la Champimaison r\xE9veill\xE9e"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448975
+    m_Localized: "R\xE9veiller"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448976
+    m_Localized: "Am\xE9liorer"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448977
+    m_Localized: "R\xE9cup\xE9rer le fil"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448978
+    m_Localized: Entrer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448979
+    m_Localized: Planter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448980
+    m_Localized: "N\xE9cessite une graine"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448981
+    m_Localized: Prends la graine en main
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448982
+    m_Localized: "R\xE9veiller la graine"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448983
+    m_Localized: Agrandir la Champimaison
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448984
+    m_Localized: "{0} dans le sac"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448985
+    m_Localized: Fabrication
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448986
+    m_Localized: Possible
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448987
+    m_Localized: Il manque
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448988
+    m_Localized: Choisis une recette
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448989
+    m_Localized: "Traqu\xE9"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448990
+    m_Localized: Fabriquer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448991
+    m_Localized: Traquer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448992
+    m_Localized: Ne plus traquer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448993
+    m_Localized: Objectif
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448994
+    m_Localized: Trouve une graine
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448995
+    m_Localized: Plante la graine
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448996
+    m_Localized: "R\xE9veille la graine"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448997
+    m_Localized: Fabrique un filet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448998
+    m_Localized: "Am\xE9liore la Champimaison"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448999
+    m_Localized: Entre dans la Champimaison
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449000
+    m_Localized: Tirer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449001
+    m_Localized: Pas de caillou
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449002
+    m_Localized: "Fin de la d\xE9mo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449003
+    m_Localized: "Merci d\u2019avoir jou\xE9 !"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

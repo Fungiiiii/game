@@ -139,6 +139,166 @@ MonoBehaviour:
     m_Key: item.water
     m_Metadata:
       m_Items: []
+  - m_Id: 391185041448964
+    m_Key: item.seed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448965
+    m_Key: item.pebble
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448966
+    m_Key: item.mycelium_thread
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448967
+    m_Key: item.slingshot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448968
+    m_Key: item.net.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448969
+    m_Key: item.slingshot.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448970
+    m_Key: item.wood.source
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448971
+    m_Key: item.spore.source
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448972
+    m_Key: item.water.source
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448973
+    m_Key: item.pebble.source
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448974
+    m_Key: item.mycelium_thread.source
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448975
+    m_Key: hint.awaken
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448976
+    m_Key: hint.upgrade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448977
+    m_Key: hint.collect_thread
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448978
+    m_Key: hint.enter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448979
+    m_Key: hint.plant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448980
+    m_Key: label.needs_seed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448981
+    m_Key: label.hold_seed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448982
+    m_Key: panel.awaken_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448983
+    m_Key: panel.grow_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448984
+    m_Key: panel.in_backpack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448985
+    m_Key: craft.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448986
+    m_Key: craft.possible
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448987
+    m_Key: craft.missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448988
+    m_Key: craft.choose
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448989
+    m_Key: craft.tracked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448990
+    m_Key: hint.craft
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448991
+    m_Key: hint.track
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448992
+    m_Key: hint.untrack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448993
+    m_Key: objective.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448994
+    m_Key: objective.find_seed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448995
+    m_Key: objective.plant_seed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448996
+    m_Key: objective.awaken_seed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448997
+    m_Key: objective.craft_net
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448998
+    m_Key: objective.grow
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448999
+    m_Key: objective.enter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449000
+    m_Key: hint.shoot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449001
+    m_Key: hint.no_pebble
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449002
+    m_Key: demo_end.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449003
+    m_Key: demo_end.thanks
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

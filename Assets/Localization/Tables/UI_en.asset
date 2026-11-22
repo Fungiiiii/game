@@ -142,6 +142,166 @@ MonoBehaviour:
     m_Localized: Water
     m_Metadata:
       m_Items: []
+  - m_Id: 391185041448964
+    m_Localized: Seed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448965
+    m_Localized: Pebble
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448966
+    m_Localized: Mycelium thread
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448967
+    m_Localized: Slingshot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448968
+    m_Localized: Catches a living mushroom.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448969
+    m_Localized: Shoots pebbles at mushrooms.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448970
+    m_Localized: At the foot of the trees
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448971
+    m_Localized: Mushrooms to pick
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448972
+    m_Localized: A Spongeus that drank at the ferns of the mist
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448973
+    m_Localized: "On the ground, in the forest"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448974
+    m_Localized: Made by the awakened Champimaison
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448975
+    m_Localized: Wake up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448976
+    m_Localized: Upgrade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448977
+    m_Localized: Collect the thread
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448978
+    m_Localized: Enter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448979
+    m_Localized: Plant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448980
+    m_Localized: Needs a seed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448981
+    m_Localized: Hold the seed in hand
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448982
+    m_Localized: Wake the seed up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448983
+    m_Localized: Grow the Champimaison
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448984
+    m_Localized: "{0} in the backpack"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448985
+    m_Localized: Crafting
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448986
+    m_Localized: Ready
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448987
+    m_Localized: Missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448988
+    m_Localized: Choose a recipe
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448989
+    m_Localized: Tracked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448990
+    m_Localized: Craft
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448991
+    m_Localized: Track
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448992
+    m_Localized: Stop tracking
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448993
+    m_Localized: Objective
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448994
+    m_Localized: Find a seed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448995
+    m_Localized: Plant the seed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448996
+    m_Localized: Wake the seed up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448997
+    m_Localized: Craft a net
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448998
+    m_Localized: Upgrade the Champimaison
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448999
+    m_Localized: Enter the Champimaison
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449000
+    m_Localized: Shoot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449001
+    m_Localized: No pebble
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449002
+    m_Localized: End of the demo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449003
+    m_Localized: "Thanks for playing!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
