@@ -9,13 +9,18 @@ namespace Fungiiiii.UI
     /// (<see cref="Glyph"/>): a name, a PlayStation shape, a mouse. A cyan triangle laid over
     /// its top edge says a short press does something; a border around it says the key can
     /// be held, and fills while it is held. Where nothing can be done, a short text on a
-    /// small wooden panel takes the key's place instead (<c>label.needs_spongeus</c>). It pops
-    /// in when it appears. Where it goes and what it shows is told by its owner.
+    /// small wooden panel takes the key's place instead (<c>label.needs_spongeus</c>). Right of
+    /// the key, what a press does (<c>Presser</c>) and, under it, "Hold" and what holding does,
+    /// so that the player reads them where they look rather than in a corner. It pops in when
+    /// it appears, and can pulse to be noticed. Where it goes and what it shows is told by
+    /// its owner.
     /// </summary>
     internal sealed class KeyPrompt : MonoBehaviour
     {
         private const float PopStartScale = 0.85f;
         private const float PopSeconds = 0.1f;
+        private const float PulseAmplitude = 0.07f;
+        private const float PulsesPerSecond = 1.2f;
 
         [SerializeField]
         private RectTransform key;
@@ -39,6 +44,18 @@ namespace Fungiiiii.UI
         [Tooltip("The short text shown instead of the key.")]
         [SerializeField]
         private LocalizedLabel text;
+
+        [Tooltip("Right of the key: what a short press does.")]
+        [SerializeField]
+        private LocalizedLabel pressAction;
+
+        [Tooltip("Right of the key, under what a press does: \"Hold\" and what holding does.")]
+        [SerializeField]
+        private GameObject holdLine;
+
+        [Tooltip("What holding does, on the hold line.")]
+        [SerializeField]
+        private LocalizedLabel holdAction;
 
         private Glyph shown;
         private float popElapsed = PopSeconds;
@@ -74,6 +91,15 @@ namespace Fungiiiii.UI
 
         /// <summary>Scale of what is shown: below 1 while it pops in.</summary>
         public float Scale => Root.localScale.x;
+
+        /// <summary>What a press does, shown right of the key; empty when nothing is.</summary>
+        public string PressActionKey => IsKeyVisible && pressAction.gameObject.activeSelf ? pressAction.EntryKey : string.Empty;
+
+        /// <summary>What holding does, shown right of the key; empty when nothing is.</summary>
+        public string HoldActionKey => IsKeyVisible && holdLine.activeSelf ? holdAction.EntryKey : string.Empty;
+
+        /// <summary>Whether the key gently grows and shrinks, to be noticed.</summary>
+        public bool Pulses { get; set; }
 
         private RectTransform Root => IsTextVisible ? textPanel : key;
 
@@ -143,6 +169,16 @@ namespace Fungiiiii.UI
             holdBorder.Progress = canHold ? holdProgress : 0f;
         }
 
+        /// <summary>
+        /// Writes right of the key what a press does and what holding does, entries of the UI
+        /// string table; null hides a line.
+        /// </summary>
+        public void SetActions(string pressKey, string holdKey)
+        {
+            ShowLine(pressAction.gameObject, pressAction, pressKey);
+            ShowLine(holdLine, holdAction, holdKey);
+        }
+
         /// <summary>Plays the pop again, for a key that moves to another target.</summary>
         public void PopIn()
         {
@@ -158,12 +194,27 @@ namespace Fungiiiii.UI
             key.gameObject.SetActive(false);
             textPanel.gameObject.SetActive(false);
             SetMarks(false, false, 0f);
+            SetActions(null, null);
             shown = default;
+        }
+
+        private static void ShowLine(GameObject line, LocalizedLabel label, string entryKey)
+        {
+            var shownLine = entryKey != null;
+            if (line.activeSelf != shownLine)
+            {
+                line.SetActive(shownLine);
+            }
+
+            if (shownLine && label.EntryKey != entryKey)
+            {
+                label.Show(entryKey);
+            }
         }
 
         private void Update()
         {
-            if (!IsVisible || popElapsed >= PopSeconds)
+            if (!IsVisible || (popElapsed >= PopSeconds && !Pulses))
             {
                 return;
             }
@@ -176,7 +227,8 @@ namespace Fungiiiii.UI
         private void ApplyPop()
         {
             var progress = Mathf.Clamp01(popElapsed / PopSeconds);
-            Root.localScale = Vector3.one * Mathf.Lerp(PopStartScale, 1f, progress);
+            var pulse = Pulses ? 1f + PulseAmplitude * Mathf.Sin(Time.unscaledTime * PulsesPerSecond * 2f * Mathf.PI) : 1f;
+            Root.localScale = Vector3.one * (Mathf.Lerp(PopStartScale, 1f, progress) * pulse);
         }
     }
 }

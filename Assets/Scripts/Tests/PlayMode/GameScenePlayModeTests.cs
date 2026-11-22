@@ -519,7 +519,7 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator WithATarget_GatherComesFirst_AndSwitchingIsLeftOut()
+        public IEnumerator WithATarget_GatherIsWrittenRightOfItsKey_NotInTheCorner()
         {
             yield return LoadGameWithNet();
             var game = Object.FindFirstObjectByType<GameBootstrap>();
@@ -528,8 +528,9 @@ namespace Fungiiiii.Tests.PlayMode
             yield return null;
             yield return null;
 
-            Assert.That(HintLabels(game), Is.EqualTo(new[] { UiText.HintGather, UiText.HintThrowNet, UiText.HintAim, UiText.HintInventory }));
-            Assert.That(game.Hints.ShownGlyphs[0], Is.EqualTo(new Glyph(GlyphKind.Key, "E")));
+            // Since the playtest of 22/11, what E does is read next to its key, over the target.
+            Assert.That(game.Interactor.Prompt.PressActionKey, Is.EqualTo(UiText.HintGather));
+            Assert.That(HintLabels(game), Is.EqualTo(new[] { UiText.HintThrowNet, UiText.HintAim, UiText.HintSwitchItem, UiText.HintInventory }));
         }
 
         [UnityTest]

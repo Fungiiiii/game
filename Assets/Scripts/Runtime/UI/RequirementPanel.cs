@@ -193,7 +193,8 @@ namespace Fungiiiii.UI
         private void RefreshFooter()
         {
             var aimed = ReferenceEquals(interactor.Targeted, hole);
-            var pressKey = aimed ? hole.HintKey : null;
+            // Collecting the thread has a line of its own, under the panel (ThreadTag).
+            var pressKey = aimed && hole.CanBeEntered ? hole.HintKey : null;
             var holdKey = aimed ? hole.HoldHintKey : null;
             SetActive(footerParts, pressKey != null || holdKey != null);
             ShowLine(pressLine, pressKey, false);

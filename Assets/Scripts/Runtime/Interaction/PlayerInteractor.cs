@@ -22,11 +22,11 @@ namespace Fungiiiii.Interaction
     /// decided on the release (<see cref="TapOrHold"/>). A target that shows a text
     /// (<see cref="ILabelledInteractable"/>) gets the text instead of the key, and one that
     /// shows its keys in its own panel (<see cref="IPanelledInteractable"/>) no key at all.
+    /// What a press and a hold do are written right of the key, not in the corner's hints.
     /// </summary>
-    internal sealed class PlayerInteractor : MonoBehaviour, IHintSource
+    internal sealed class PlayerInteractor : MonoBehaviour
     {
         private readonly List<InteractionCandidate> candidates = new List<InteractionCandidate>();
-        private readonly List<ControlHint> hints = new List<ControlHint>();
 
         [Tooltip("How far from the centre of the view a target can be aimed at, in degrees.")]
         [SerializeField, Range(1f, 90f)]
@@ -48,8 +48,6 @@ namespace Fungiiiii.Interaction
         private IInteractable targeted;
         private KeyPrompt prompt;
         private TapOrHold press;
-        private string shownHintKey;
-        private string shownHoldHintKey;
         private readonly List<string> keyPaths = new List<string>();
         private InputDevice glyphDevice;
         private Glyph? keyGlyph;
@@ -65,12 +63,6 @@ namespace Fungiiiii.Interaction
 
         /// <summary>The interact control as the key hints draw it, on the device used last.</summary>
         public Glyph InteractGlyph => KeyGlyph();
-
-        /// <summary>Raised when the target changes, and with it the hint.</summary>
-        public event System.Action HintsChanged;
-
-        /// <summary>What the interact control does with the target; nothing without one.</summary>
-        public IReadOnlyList<ControlHint> Hints => hints;
 
         public void Initialize(
             FirstPersonCamera firstPersonCamera,
@@ -141,9 +133,6 @@ namespace Fungiiiii.Interaction
                 return;
             }
 
-            // What the target does may change while it is aimed at: a Spongeus soaks up water.
-            RefreshHints();
-
             var interact = controls.Player.Interact;
             if (targeted is IHoldInteractable holdable)
             {
@@ -197,7 +186,6 @@ namespace Fungiiiii.Interaction
 
             // A press started on another target does nothing on this one.
             press?.Cancel();
-            RefreshHints(force: true);
 
             // From one target straight to another, the key pops in again over the new one.
             if (previous != null && next != null && prompt != null)
@@ -206,35 +194,6 @@ namespace Fungiiiii.Interaction
             }
 
             ShowPrompt();
-        }
-
-        private void RefreshHints(bool force = false)
-        {
-            var hintKey = targeted?.HintKey;
-            var holdHintKey = (targeted as IHoldInteractable)?.HoldHintKey;
-            if (!force && hintKey == shownHintKey && holdHintKey == shownHoldHintKey)
-            {
-                return;
-            }
-
-            shownHintKey = hintKey;
-            shownHoldHintKey = holdHintKey;
-            hints.Clear();
-            if (controls != null)
-            {
-                AddHint(hintKey);
-                AddHint(holdHintKey);
-            }
-
-            HintsChanged?.Invoke();
-        }
-
-        private void AddHint(string labelKey)
-        {
-            if (labelKey != null)
-            {
-                hints.Add(new ControlHint(labelKey, HintInput.Of(controls.Player.Interact)));
-            }
         }
 
         private void ShowPrompt()
@@ -266,10 +225,12 @@ namespace Fungiiiii.Interaction
             }
 
             prompt.Show(screenPoint, KeyGlyph());
-            var canHold = (targeted as IHoldInteractable)?.HoldHintKey != null;
+            var holdKey = (targeted as IHoldInteractable)?.HoldHintKey;
+            var canHold = holdKey != null;
             // A key that does nothing when held is always a key to press.
             var canPress = targeted.HintKey != null || !canHold;
             prompt.SetMarks(canPress, canHold, canHold ? press.HoldProgress : 0f);
+            prompt.SetActions(targeted.HintKey, holdKey);
         }
 
         /// <summary>The interact control as the key hints draw it, on the device used last; worked out again only when that device changes.</summary>

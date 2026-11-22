@@ -144,6 +144,39 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator OncePlanted_TheObjective_ListsWhatTheSeedNeeds_WithWhereToFindIt()
+        {
+            yield return Load();
+            var game = Bootstrap;
+            var hud = game.ObjectiveHud;
+            Assert.That(hud.ShownNeeds, Is.Zero, "Needs show before the seed is planted.");
+
+            var champimaison = Plant(game);
+            yield return null;
+            var progress = champimaison.Network.Progress;
+            Assert.That(hud.ShownNeeds, Is.EqualTo(progress.LineCount), "The objective does not list what the seed needs.");
+            for (var line = 0; line < progress.LineCount; line++)
+            {
+                var row = hud.NeedRows[line];
+                Assert.That(row.CountText, Is.EqualTo($"0/{progress.Required(line).Amount}"));
+                Assert.That(row.ShowsSource, Is.True, $"No hint where to find {progress.Required(line).Item.name}.");
+            }
+
+            // Carried counts too; enough, the hint goes.
+            game.Inventory.Add(progress.Required(0).Item, progress.Required(0).Amount);
+            yield return null;
+            Assert.That(hud.NeedRows[0].CountText, Is.EqualTo($"{progress.Required(0).Amount}/{progress.Required(0).Amount}"));
+            Assert.That(hud.NeedRows[0].ShowsSource, Is.False);
+
+            // Awake, the next stage's needs show.
+            game.Inventory.Add(progress.Required(1).Item, progress.Required(1).Amount);
+            champimaison.InteractHold(game.Inventory);
+            yield return null;
+            Assert.That(hud.ShownNeeds, Is.EqualTo(champimaison.Network.Progress.LineCount));
+            Assert.That(hud.NeedRows[0].CountText, Does.StartWith("0/"), "The needs did not move on to the next stage.");
+        }
+
+        [UnityTest]
         public IEnumerator AnAwakeChampimaison_ProducesThread_ThatAShortPressCollects()
         {
             yield return Load();
@@ -159,9 +192,19 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(champimaison.HintKey, Is.EqualTo(UiText.HintCollectThread));
             var stored = champimaison.Thread.Stored;
 
+            // Since the playtest of 22/11, on a line of its own under the panel, pulsing.
+            StandBefore(champimaison.transform.position, 5f);
+            yield return null;
+            yield return null;
+            Assert.That(game.ThreadTag.IsShown, Is.True, "Nothing says thread waits.");
+            Assert.That(game.ThreadTag.ActionKey, Is.EqualTo(UiText.HintCollectThread));
+            Assert.That(game.ThreadTag.IsPulsing, Is.True, "The thread's line does not pulse.");
+            Assert.That(Object.FindFirstObjectByType<RequirementPanel>().PressKey, Is.Not.EqualTo(UiText.HintCollectThread), "Collecting the thread is still in the panel.");
+
             Assert.That(champimaison.Interact(game.Inventory), Is.True);
             Assert.That(game.Inventory.Count(Thread(game).Id), Is.EqualTo(stored));
             yield return null;
+            Assert.That(game.ThreadTag.IsShown, Is.False, "The thread's line stays once collected.");
         }
 
         [UnityTest]

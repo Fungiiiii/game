@@ -38,6 +38,53 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [Test]
+        public void WhatAPressAndAHoldDo_AreWrittenRightOfTheKey()
+        {
+            prompt.Show(new Vector2(300f, 300f), KeyE);
+            prompt.SetActions(UiText.HintSqueeze, UiText.HintTakeBack);
+            Canvas.ForceUpdateCanvases();
+
+            Assert.That(prompt.PressActionKey, Is.EqualTo(UiText.HintSqueeze));
+            Assert.That(prompt.HoldActionKey, Is.EqualTo(UiText.HintTakeBack));
+            foreach (var label in prompt.GetComponentsInChildren<LocalizedLabel>())
+            {
+                if (label.EntryKey == UiText.HintSqueeze || label.EntryKey == UiText.HintTakeBack)
+                {
+                    var corners = new Vector3[4];
+                    ((RectTransform)label.transform).GetWorldCorners(corners);
+                    Assert.That(corners[0].x, Is.GreaterThan(prompt.ScreenPoint.x), $"{label.EntryKey} is not right of the key.");
+                }
+            }
+
+            prompt.SetActions(UiText.HintGather, null);
+            Assert.That(prompt.PressActionKey, Is.EqualTo(UiText.HintGather));
+            Assert.That(prompt.HoldActionKey, Is.Empty, "A key that cannot be held says what holding does.");
+
+            prompt.Hide();
+            prompt.Show(new Vector2(300f, 300f), KeyE);
+            Assert.That(prompt.PressActionKey, Is.Empty, "A hidden key kept its line.");
+        }
+
+        [UnityTest]
+        public IEnumerator APulsingKey_GrowsAndShrinks_ToBeNoticed()
+        {
+            prompt.Pulses = true;
+            prompt.Show(new Vector2(300f, 300f), KeyE);
+            var smallest = float.MaxValue;
+            var largest = float.MinValue;
+            var start = Time.unscaledTime;
+            while (Time.unscaledTime - start < 1.2f)
+            {
+                yield return null;
+                smallest = Mathf.Min(smallest, prompt.Scale);
+                largest = Mathf.Max(largest, prompt.Scale);
+            }
+
+            Assert.That(largest, Is.GreaterThan(1.03f));
+            Assert.That(smallest, Is.LessThan(0.97f));
+        }
+
+        [Test]
         public void APlayStationButton_IsDrawn_NotWritten()
         {
             prompt.Show(new Vector2(100f, 100f), new Glyph(GlyphKind.Face, null, FaceShape.Triangle));

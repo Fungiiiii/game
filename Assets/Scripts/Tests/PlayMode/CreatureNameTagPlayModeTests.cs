@@ -1,0 +1,69 @@
+using System.Collections;
+using Fungiiiii.Runtime.Player;
+using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
+using static Fungiiiii.Tests.PlayMode.PlaytestLoopGame;
+
+namespace Fungiiiii.Tests.PlayMode
+{
+    /// <summary>The name of the creature the player looks at, readable from afar.</summary>
+    public sealed class CreatureNameTagPlayModeTests
+    {
+        [UnityTest]
+        public IEnumerator LookingAtASpongeus_FromTwelveMetres_ShowsItsName_LookingAway_HidesIt()
+        {
+            yield return Load();
+            var game = Bootstrap;
+            var spongeus = game.Mushrooms[0];
+            StandBefore(spongeus.transform.position, 12f);
+            yield return Wait(0.6f);
+            Assert.That(spongeus.gameObject.activeSelf, Is.True);
+
+            // Held still where it stands, so that the view stays on it.
+            spongeus.transform.position = Ground(spongeus.transform.position);
+            var look = game.ViewCamera.GetComponent<FirstPersonCamera>();
+            LookAt(game, look, spongeus.transform.position + Vector3.up * 0.3f);
+            yield return null;
+            yield return null;
+
+            Assert.That(game.NameTag.IsShown, Is.True, "No name over the Spongeus looked at from 12 m.");
+            Assert.That(game.NameTag.ShownKey, Is.EqualTo(game.ItemFor(spongeus).NameKey));
+
+            look.SetView(180f, 0f);
+            yield return null;
+            yield return null;
+            Assert.That(game.NameTag.IsShown, Is.False, "The name stays with the Spongeus behind the player.");
+        }
+
+        [UnityTest]
+        public IEnumerator ASpongeusTooFar_ShowsNoName()
+        {
+            yield return Load();
+            var game = Bootstrap;
+            var spongeus = game.Mushrooms[0];
+            StandBefore(spongeus.transform.position, 25f);
+            yield return Wait(0.6f);
+            var look = game.ViewCamera.GetComponent<FirstPersonCamera>();
+            LookAt(game, look, spongeus.transform.position + Vector3.up * 0.3f);
+            yield return null;
+            yield return null;
+
+            Assert.That(game.NameTag.IsShown, Is.False, "A name shows from 25 m.");
+        }
+
+        private static Vector3 Ground(Vector3 point)
+        {
+            point.y = Terrain.activeTerrain.SampleHeight(point) + Terrain.activeTerrain.GetPosition().y;
+            return point;
+        }
+
+        private static void LookAt(Fungiiiii.Game.GameBootstrap game, FirstPersonCamera look, Vector3 point)
+        {
+            var toPoint = point - game.ViewCamera.transform.position;
+            var yaw = Mathf.Atan2(toPoint.x, toPoint.z) * Mathf.Rad2Deg;
+            var pitch = -Mathf.Atan2(toPoint.y, new Vector2(toPoint.x, toPoint.z).magnitude) * Mathf.Rad2Deg;
+            look.SetView(yaw, pitch);
+        }
+    }
+}
