@@ -35,11 +35,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 946855936
-    m_Localized: Home
+    m_Localized: Main menu
     m_Metadata:
       m_Items: []
   - m_Id: 946855937
-    m_Localized: Quit
+    m_Localized: Quit game
     m_Metadata:
       m_Items: []
   - m_Id: 141727196241920
@@ -107,7 +107,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 372971083390977
-    m_Localized: Mushroom
+    m_Localized: Spore mushroom
     m_Metadata:
       m_Items: []
   - m_Id: 372971083390978
@@ -131,7 +131,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448961
-    m_Localized: 'Hold: take back'
+    m_Localized: Take back
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448962
@@ -219,11 +219,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448983
-    m_Localized: Grow the Champimaison
+    m_Localized: Upgrade the Champimaison
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448984
-    m_Localized: "{0} in the backpack"
+    m_Localized: "{0} in the inventory"
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448985

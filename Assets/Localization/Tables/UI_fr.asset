@@ -35,11 +35,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 946855936
-    m_Localized: Accueil
+    m_Localized: Menu principal
     m_Metadata:
       m_Items: []
   - m_Id: 946855937
-    m_Localized: Quitter
+    m_Localized: Quitter le jeu
     m_Metadata:
       m_Items: []
   - m_Id: 141727196241920
@@ -107,7 +107,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 372971083390977
-    m_Localized: Champignon
+    m_Localized: "Champignon à spores"
     m_Metadata:
       m_Items: []
   - m_Id: 372971083390978
@@ -131,7 +131,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448961
-    m_Localized: 'Maintenir : reprendre'
+    m_Localized: Reprendre
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448962
@@ -219,11 +219,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448983
-    m_Localized: Agrandir la Champimaison
+    m_Localized: "Améliorer la Champimaison"
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448984
-    m_Localized: "{0} dans le sac"
+    m_Localized: "{0} dans l’inventaire"
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448985
@@ -243,7 +243,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448989
-    m_Localized: "Traqu\xE9"
+    m_Localized: Suivie
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448990
@@ -251,11 +251,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448991
-    m_Localized: Traquer
+    m_Localized: Suivre
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448992
-    m_Localized: Ne plus traquer
+    m_Localized: Ne plus suivre
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448993
@@ -299,7 +299,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041449003
-    m_Localized: "Merci d\u2019avoir jou\xE9 !"
+    m_Localized: "Merci d’avoir joué !"
     m_Metadata:
       m_Items: []
   - m_Id: 391185041449004
