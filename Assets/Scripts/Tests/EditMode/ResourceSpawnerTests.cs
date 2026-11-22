@@ -337,22 +337,6 @@ namespace Fungiiiii.Tests.EditMode
         }
 
         [Test]
-        public void Clear_EmptiesTheMap_AndRestartsTheClock()
-        {
-            var spawner = Spawner(Field);
-            var viewers = One(Vector3.zero);
-            spawner.Fill(viewers, new List<int>());
-            spawner.Tick(TickSeconds - 1f, viewers, new List<int>(), new List<int>());
-
-            spawner.Clear();
-
-            Assert.That(spawner.AliveCount, Is.Zero);
-            var afterClear = new List<int>();
-            spawner.Tick(2f, viewers, afterClear, new List<int>());
-            Assert.That(afterClear, Is.Empty, "The clock kept the time elapsed before the clear.");
-        }
-
-        [Test]
         public void SettingsThatContradictEachOther_AreRejected()
         {
             Assert.Throws<ArgumentOutOfRangeException>(

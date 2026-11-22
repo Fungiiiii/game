@@ -26,7 +26,7 @@ namespace Fungiiiii.Gathering
         [SerializeField, Min(0f)]
         private float minPlayerDistance = 20f;
 
-        [Tooltip("At the start and after a reset, while the screen is black, the bubble fills from this distance, in metres.")]
+        [Tooltip("At the start, while the screen is black, the bubble fills from this distance, in metres.")]
         [SerializeField, Min(0f)]
         private float startMinPlayerDistance = 8f;
 

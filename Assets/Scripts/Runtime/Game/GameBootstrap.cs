@@ -15,7 +15,6 @@ using Fungiiiii.Runtime.World;
 using Fungiiiii.Survival;
 using Fungiiiii.UI;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 #if UNITY_EDITOR
@@ -121,7 +120,6 @@ namespace Fungiiiii.Game
         private readonly List<IInteractable> interactables = new List<IInteractable>();
 
         private PlayerControls controls;
-        private InputAction resetAction;
         private System.Random random;
         private Terrain terrain;
         private Vector3 spawnPosition;
@@ -209,11 +207,6 @@ namespace Fungiiiii.Game
 
         private void OnDestroy()
         {
-            if (resetAction != null)
-            {
-                resetAction.performed -= OnResetPerformed;
-            }
-
             if (Thrower != null)
             {
                 Thrower.CatchReturned -= HandleCatchReturned;
@@ -291,10 +284,6 @@ namespace Fungiiiii.Game
             interactor.Initialize(firstPersonCamera, Inventory, interactables, keyPrompt, controls);
 
             screens.Bind(controls, interactor, hands);
-            // Development shortcut, not a player-facing control.
-            resetAction = controls.Player.ResetGame;
-            resetAction.performed += OnResetPerformed;
-
             IsReady = true;
         }
 
@@ -500,62 +489,6 @@ namespace Fungiiiii.Game
         public void SetInventoryOpen(bool open)
         {
             screens.SetInventoryOpen(open);
-        }
-
-        private void OnResetPerformed(InputAction.CallbackContext _)
-        {
-            if (IsReady && !screens.Stack.IsAnyOpen)
-            {
-                ResetGame();
-            }
-        }
-
-        /// <summary>Everything back to the start: player, gauges, inventory with only the net, resources, mushrooms, no companion out.</summary>
-        public void ResetGame()
-        {
-            screens.Stack.CloseAll();
-            Thrower.ResetNet();
-
-            creatures.ResetAll();
-
-            // The player goes back first: the fields fill their bubble around where they stand.
-            // A CharacterController keeps its own cached position and would snap back to
-            // it on the next Move, so it has to be off while the transform is teleported.
-            playerController.enabled = false;
-            player.transform.SetPositionAndRotation(spawnPosition, Quaternion.Euler(0f, spawnYaw, 0f));
-            playerController.enabled = true;
-            firstPersonCamera.SetView(spawnYaw, 0f);
-
-            gathering.ResetFields();
-            refillingPlants.RestartAll();
-            companions.Clear();
-            droppedItems.Clear();
-            pickupFeed.Clear();
-
-            if (hole != null)
-            {
-                hole.ResetNetwork();
-            }
-
-            EmptyInventory();
-            PutStartingItems();
-            hotbar.Select(0);
-            vitals.Reset();
-            stamina.Reset();
-        }
-
-        private void EmptyInventory()
-        {
-            screens.Inventory.Hand.Clear();
-            var inventory = Inventory;
-            for (var index = 0; index < inventory.SlotCount; index++)
-            {
-                var slot = inventory.GetSlot(index);
-                if (!slot.IsEmpty)
-                {
-                    inventory.TakeFromSlot(index, slot.Quantity, out _);
-                }
-            }
         }
 
         private float GroundHeight(Vector3 point)

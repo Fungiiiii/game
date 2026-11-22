@@ -121,15 +121,6 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
-                },
-                {
-                    "name": "ResetGame",
-                    "type": "Button",
-                    "id": "0b6a4cfa-40f7-40ee-90a1-b3642fa131ff",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -484,17 +475,6 @@
                     "action": "HotbarSlot3",
                     "isComposite": false,
                     "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "477b58a7-65f8-4b91-8f65-de3f53ec3405",
-                    "path": "<Keyboard>/r",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Keyboard&Mouse",
-                    "action": "ResetGame",
-                    "isComposite": false,
-                    "isPartOfComposite": false
                 }
             ]
         },
@@ -684,6 +664,24 @@
                     "name": "Drop",
                     "type": "Button",
                     "id": "bc30b164-a911-4c3e-ba95-1cdd3ce26622",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Craft",
+                    "type": "Button",
+                    "id": "306b059c-f39d-4c96-92d8-33f8e6700246",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Track",
+                    "type": "Button",
+                    "id": "f6659e76-15ec-43f7-87fc-1bdb4bd105e5",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -1150,6 +1148,39 @@
                     "processors": "",
                     "groups": "Gamepad",
                     "action": "Drop",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "98bf778c-a7c7-45b8-aa23-4295310a2f0e",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Craft",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2172a88d-2e32-48de-b7fb-0a21dc17033d",
+                    "path": "<Keyboard>/r",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard&Mouse",
+                    "action": "Track",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e83f2aeb-4676-4319-b4e8-0ae82fbbefd9",
+                    "path": "<Gamepad>/buttonNorth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "Track",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

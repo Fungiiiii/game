@@ -223,16 +223,6 @@ namespace Fungiiiii.Controls
                     ""interactions"": """",
                     ""initialStateCheck"": false,
                     ""priority"": 0
-                },
-                {
-                    ""name"": ""ResetGame"",
-                    ""type"": ""Button"",
-                    ""id"": ""0b6a4cfa-40f7-40ee-90a1-b3642fa131ff"",
-                    ""expectedControlType"": ""Button"",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": false,
-                    ""priority"": 0
                 }
             ],
             ""bindings"": [
@@ -587,17 +577,6 @@ namespace Fungiiiii.Controls
                     ""action"": ""HotbarSlot3"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""477b58a7-65f8-4b91-8f65-de3f53ec3405"",
-                    ""path"": ""<Keyboard>/r"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Keyboard&Mouse"",
-                    ""action"": ""ResetGame"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
                 }
             ]
         },
@@ -801,6 +780,26 @@ namespace Fungiiiii.Controls
                     ""name"": ""Drop"",
                     ""type"": ""Button"",
                     ""id"": ""bc30b164-a911-4c3e-ba95-1cdd3ce26622"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""Craft"",
+                    ""type"": ""Button"",
+                    ""id"": ""306b059c-f39d-4c96-92d8-33f8e6700246"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""Track"",
+                    ""type"": ""Button"",
+                    ""id"": ""f6659e76-15ec-43f7-87fc-1bdb4bd105e5"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -1270,6 +1269,39 @@ namespace Fungiiiii.Controls
                     ""action"": ""Drop"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""98bf778c-a7c7-45b8-aa23-4295310a2f0e"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""Craft"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""2172a88d-2e32-48de-b7fb-0a21dc17033d"",
+                    ""path"": ""<Keyboard>/r"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Keyboard&Mouse"",
+                    ""action"": ""Track"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e83f2aeb-4676-4319-b4e8-0ae82fbbefd9"",
+                    ""path"": ""<Gamepad>/buttonNorth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Gamepad"",
+                    ""action"": ""Track"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -1352,7 +1384,6 @@ namespace Fungiiiii.Controls
             m_Player_HotbarSlot1 = m_Player.FindAction("HotbarSlot1", throwIfNotFound: true);
             m_Player_HotbarSlot2 = m_Player.FindAction("HotbarSlot2", throwIfNotFound: true);
             m_Player_HotbarSlot3 = m_Player.FindAction("HotbarSlot3", throwIfNotFound: true);
-            m_Player_ResetGame = m_Player.FindAction("ResetGame", throwIfNotFound: true);
             // Screens
             m_Screens = asset.FindActionMap("Screens", throwIfNotFound: true);
             m_Screens_Inventory = m_Screens.FindAction("Inventory", throwIfNotFound: true);
@@ -1372,6 +1403,8 @@ namespace Fungiiiii.Controls
             m_UI_TakeHalf = m_UI.FindAction("TakeHalf", throwIfNotFound: true);
             m_UI_GatherAll = m_UI.FindAction("GatherAll", throwIfNotFound: true);
             m_UI_Drop = m_UI.FindAction("Drop", throwIfNotFound: true);
+            m_UI_Craft = m_UI.FindAction("Craft", throwIfNotFound: true);
+            m_UI_Track = m_UI.FindAction("Track", throwIfNotFound: true);
         }
 
         ~@GameControls()
@@ -1467,7 +1500,6 @@ namespace Fungiiiii.Controls
         private readonly InputAction m_Player_HotbarSlot1;
         private readonly InputAction m_Player_HotbarSlot2;
         private readonly InputAction m_Player_HotbarSlot3;
-        private readonly InputAction m_Player_ResetGame;
         /// <summary>
         /// Provides access to input actions defined in input action map "Player".
         /// </summary>
@@ -1531,10 +1563,6 @@ namespace Fungiiiii.Controls
             /// Provides access to the underlying input action "Player/HotbarSlot3".
             /// </summary>
             public InputAction @HotbarSlot3 => m_Wrapper.m_Player_HotbarSlot3;
-            /// <summary>
-            /// Provides access to the underlying input action "Player/ResetGame".
-            /// </summary>
-            public InputAction @ResetGame => m_Wrapper.m_Player_ResetGame;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -1600,9 +1628,6 @@ namespace Fungiiiii.Controls
                 @HotbarSlot3.started += instance.OnHotbarSlot3;
                 @HotbarSlot3.performed += instance.OnHotbarSlot3;
                 @HotbarSlot3.canceled += instance.OnHotbarSlot3;
-                @ResetGame.started += instance.OnResetGame;
-                @ResetGame.performed += instance.OnResetGame;
-                @ResetGame.canceled += instance.OnResetGame;
             }
 
             /// <summary>
@@ -1653,9 +1678,6 @@ namespace Fungiiiii.Controls
                 @HotbarSlot3.started -= instance.OnHotbarSlot3;
                 @HotbarSlot3.performed -= instance.OnHotbarSlot3;
                 @HotbarSlot3.canceled -= instance.OnHotbarSlot3;
-                @ResetGame.started -= instance.OnResetGame;
-                @ResetGame.performed -= instance.OnResetGame;
-                @ResetGame.canceled -= instance.OnResetGame;
             }
 
             /// <summary>
@@ -1813,6 +1835,8 @@ namespace Fungiiiii.Controls
         private readonly InputAction m_UI_TakeHalf;
         private readonly InputAction m_UI_GatherAll;
         private readonly InputAction m_UI_Drop;
+        private readonly InputAction m_UI_Craft;
+        private readonly InputAction m_UI_Track;
         /// <summary>
         /// Provides access to input actions defined in input action map "UI".
         /// </summary>
@@ -1876,6 +1900,14 @@ namespace Fungiiiii.Controls
             /// Provides access to the underlying input action "UI/Drop".
             /// </summary>
             public InputAction @Drop => m_Wrapper.m_UI_Drop;
+            /// <summary>
+            /// Provides access to the underlying input action "UI/Craft".
+            /// </summary>
+            public InputAction @Craft => m_Wrapper.m_UI_Craft;
+            /// <summary>
+            /// Provides access to the underlying input action "UI/Track".
+            /// </summary>
+            public InputAction @Track => m_Wrapper.m_UI_Track;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -1941,6 +1973,12 @@ namespace Fungiiiii.Controls
                 @Drop.started += instance.OnDrop;
                 @Drop.performed += instance.OnDrop;
                 @Drop.canceled += instance.OnDrop;
+                @Craft.started += instance.OnCraft;
+                @Craft.performed += instance.OnCraft;
+                @Craft.canceled += instance.OnCraft;
+                @Track.started += instance.OnTrack;
+                @Track.performed += instance.OnTrack;
+                @Track.canceled += instance.OnTrack;
             }
 
             /// <summary>
@@ -1991,6 +2029,12 @@ namespace Fungiiiii.Controls
                 @Drop.started -= instance.OnDrop;
                 @Drop.performed -= instance.OnDrop;
                 @Drop.canceled -= instance.OnDrop;
+                @Craft.started -= instance.OnCraft;
+                @Craft.performed -= instance.OnCraft;
+                @Craft.canceled -= instance.OnCraft;
+                @Track.started -= instance.OnTrack;
+                @Track.performed -= instance.OnTrack;
+                @Track.canceled -= instance.OnTrack;
             }
 
             /// <summary>
@@ -2187,13 +2231,6 @@ namespace Fungiiiii.Controls
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnHotbarSlot3(InputAction.CallbackContext context);
-            /// <summary>
-            /// Method invoked when associated input action "ResetGame" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
-            /// </summary>
-            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
-            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
-            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-            void OnResetGame(InputAction.CallbackContext context);
         }
         /// <summary>
         /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "Screens" which allows adding and removing callbacks.
@@ -2315,6 +2352,20 @@ namespace Fungiiiii.Controls
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnDrop(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "Craft" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnCraft(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "Track" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnTrack(InputAction.CallbackContext context);
         }
     }
 }

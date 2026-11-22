@@ -109,18 +109,6 @@ namespace Fungiiiii.Gathering
             alive.Remove(spot);
         }
 
-        /// <summary>Empties the map and restarts the clock.</summary>
-        public void Clear()
-        {
-            foreach (var spot in alive)
-            {
-                occupied[spot] = false;
-            }
-
-            alive.Clear();
-            sinceTick = 0f;
-        }
-
         private void DespawnForgotten(IReadOnlyList<ResourceViewer> viewers, List<int> despawned)
         {
             var despawnSquared = settings.DespawnDistance * settings.DespawnDistance;

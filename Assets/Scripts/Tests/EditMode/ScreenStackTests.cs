@@ -145,19 +145,6 @@ namespace Fungiiiii.Tests.EditMode
         }
 
         [Test]
-        public void CloseAll_ClosesEveryScreen()
-        {
-            screens.Open(craft);
-            screens.Open(inventory);
-
-            screens.CloseAll();
-
-            Assert.That(craft.IsOpen, Is.False);
-            Assert.That(inventory.IsOpen, Is.False);
-            Assert.That(screens.IsAnyOpen, Is.False);
-        }
-
-        [Test]
         public void IsOpen_TellsWhetherAScreenIsInTheStack()
         {
             screens.Open(craft);

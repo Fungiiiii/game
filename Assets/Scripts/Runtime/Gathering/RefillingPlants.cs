@@ -124,15 +124,6 @@ namespace Fungiiiii.Gathering
             }
         }
 
-        /// <summary>Every plant starts over, full by chance, for a reset.</summary>
-        public void RestartAll()
-        {
-            foreach (var plant in plants)
-            {
-                plant.Restart(plant.Definition.FullAtStart);
-            }
-        }
-
         private void Update()
         {
             var deltaTime = Time.deltaTime;

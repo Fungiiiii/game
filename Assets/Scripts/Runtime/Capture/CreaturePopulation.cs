@@ -69,15 +69,6 @@ namespace Fungiiiii.Capture
             }
         }
 
-        /// <summary>Every mushroom back home, free, for a reset.</summary>
-        public void ResetAll()
-        {
-            foreach (var mushroom in mushrooms)
-            {
-                mushroom.ResetToSpawn();
-            }
-        }
-
         private void SpawnOne(CreatureDefinition creature, Vector2 home, Transform threat, Func<Vector3, float> groundHeight, System.Random random)
         {
             var mushroomObject = new GameObject($"Mushroom ({creature.name})");

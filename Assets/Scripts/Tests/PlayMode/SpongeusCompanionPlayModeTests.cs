@@ -325,19 +325,6 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(game.Inventory.Count(WaterId), Is.EqualTo(1), "Its water was lost.");
         }
 
-        [UnityTest]
-        public IEnumerator Reset_RemovesTheSpongeusOut()
-        {
-            yield return LoadGame();
-            yield return TakeOut();
-
-            game.ResetGame();
-            yield return null;
-
-            Assert.That(game.Companions.Active, Is.Null);
-            Assert.That(Object.FindObjectsByType<Companion>(FindObjectsSortMode.None), Is.Empty);
-        }
-
         private static MaterialPropertyBlock ModelBlock(RefillingPlant plant)
         {
             var block = new MaterialPropertyBlock();

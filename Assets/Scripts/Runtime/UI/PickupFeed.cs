@@ -41,17 +41,6 @@ namespace Fungiiiii.UI
             inventory.Collected += Show;
         }
 
-        /// <summary>Removes every line at once, for a reset.</summary>
-        public void Clear()
-        {
-            foreach (var line in shown)
-            {
-                Destroy(line.gameObject);
-            }
-
-            shown.Clear();
-        }
-
         private void Show(ItemDefinition item, int quantity)
         {
             var line = shown.Find(candidate => candidate.Item == item);

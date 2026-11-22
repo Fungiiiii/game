@@ -79,11 +79,10 @@ namespace Fungiiiii.Gathering
             Disappear();
         }
 
-        /// <summary>Shows it on a spot.</summary>
         /// <summary>Puts it on a spot, posed as the spot says, at once.</summary>
         public void Appear(int spot, GatherableSpot pose)
         {
-            // Taken back from a reset mid-arrival, it must not carry on from its last spot.
+            // Taken back from the pool mid-arrival, it must not carry on from its last spot.
             growIn.enabled = false;
             fallIn.enabled = false;
             Spot = spot;
@@ -110,7 +109,7 @@ namespace Fungiiiii.Gathering
             }
         }
 
-        /// <summary>Hides it without giving anything, for a reset.</summary>
+        /// <summary>Hides it, without giving anything.</summary>
         public void Disappear()
         {
             IsAvailable = false;

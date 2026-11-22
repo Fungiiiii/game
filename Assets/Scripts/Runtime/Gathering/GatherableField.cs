@@ -124,21 +124,6 @@ namespace Fungiiiii.Gathering
             Fill();
         }
 
-        /// <summary>
-        /// Everything gone, then the bubbles filled again around the players, for a
-        /// reset: the players must already stand where they start.
-        /// </summary>
-        public void ResetField()
-        {
-            foreach (var spot in new List<int>(shown.Keys))
-            {
-                Hide(spot);
-            }
-
-            spawner.Clear();
-            Fill();
-        }
-
         private void Update()
         {
             if (spawner == null)

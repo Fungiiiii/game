@@ -86,15 +86,6 @@ namespace Fungiiiii.UI
             }
         }
 
-        /// <summary>Closes every screen, the top first, for a reset.</summary>
-        public void CloseAll()
-        {
-            while (IsAnyOpen)
-            {
-                Close(Top);
-            }
-        }
-
         /// <summary>Escape: closes the screen on top, or opens the pause when none is open.</summary>
         public void Back()
         {

@@ -213,23 +213,6 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator Reset_PutsTheNetBackInTheFirstSlot_InHand()
-        {
-            yield return LoadGame();
-            var game = Object.FindFirstObjectByType<GameBootstrap>();
-
-            game.Inventory.MoveOrSwap(InventoryLayout.Standard.QuickBarFirstSlot, 0);
-            game.Hotbar.Select(2);
-            game.ResetGame();
-            yield return null;
-
-            Assert.That(game.Inventory.GetSlot(InventoryLayout.Standard.QuickBarFirstSlot).ItemId, Is.EqualTo(NetId));
-            Assert.That(game.Inventory.Count(NetId), Is.EqualTo(1), "Reset made a second net.");
-            Assert.That(game.Hotbar.Selected, Is.EqualTo(0));
-            Assert.That(game.Thrower.IsEquipped, Is.True);
-        }
-
-        [UnityTest]
         public IEnumerator Gathering_ShowsWhatWasCollected_OneLinePerItem()
         {
             yield return LoadGame();
@@ -982,7 +965,9 @@ namespace Fungiiiii.Tests.PlayMode
 
             for (var attempt = 0; attempt < MaxCaptureAttempts && game.Inventory.Count(item.Id) == 0; attempt++)
             {
-                game.ResetGame();
+                // A failed try leaves the mushroom running and the net out: both back, calm and in hand.
+                target.ResetToSpawn();
+                game.Thrower.ResetNet();
                 yield return null;
 
                 // Dropped from above, so the landing does not depend on the aim of a long throw.

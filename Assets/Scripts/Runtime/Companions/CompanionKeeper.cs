@@ -115,15 +115,6 @@ namespace Fungiiiii.Companions
             return true;
         }
 
-        /// <summary>Removes the companion out without giving it back, for a reset that empties the inventory.</summary>
-        public void Clear()
-        {
-            if (Active != null)
-            {
-                Remove(Active);
-            }
-        }
-
         private Companion Spawn(CompanionDefinition companion)
         {
             var forward = Vector3.ProjectOnPlane(view.forward, Vector3.up);

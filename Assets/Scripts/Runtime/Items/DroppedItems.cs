@@ -90,15 +90,6 @@ namespace Fungiiiii.Items
             Drop(item, quantity);
         }
 
-        /// <summary>Removes every dropped stack, for a reset.</summary>
-        public void Clear()
-        {
-            for (var index = items.Count - 1; index >= 0; index--)
-            {
-                Remove(items[index]);
-            }
-        }
-
         /// <summary>As in the inventory: the item's icon, or a square of its colour until it has one.</summary>
         private GameObject CreatePicture(ItemDefinition item, Transform parent)
         {

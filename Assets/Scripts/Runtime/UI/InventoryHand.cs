@@ -157,14 +157,6 @@ namespace Fungiiiii.UI
             return dropped;
         }
 
-        /// <summary>Drops what is held without putting it anywhere, for a reset.</summary>
-        public void Clear()
-        {
-            lastLeftSlot = NoSlot;
-            Quantity = 0;
-            AfterChange();
-        }
-
         private void Take(int slot, int quantity)
         {
             if (quantity <= 0)

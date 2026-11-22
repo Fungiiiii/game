@@ -143,15 +143,6 @@ namespace Fungiiiii.Gathering
             AddField(sticks, stickSpots, players, outlines, random);
         }
 
-        /// <summary>Everything gone, then the bubbles filled again around the players, who must already stand where they start.</summary>
-        public void ResetFields()
-        {
-            foreach (var field in fields)
-            {
-                field.ResetField();
-            }
-        }
-
 
         /// <summary>
         /// Spore spots at the foot of the trees and scattered over the forest, out of its
