@@ -29,11 +29,15 @@ namespace Fungiiiii.Tests.PlayMode
 
             Assert.That(game.NameTag.IsShown, Is.True, "No name over the Spongeus looked at from 12 m.");
             Assert.That(game.NameTag.ShownKey, Is.EqualTo(game.ItemFor(spongeus).NameKey));
+            yield return Wait(0.3f);
+            Assert.That(game.NameTag.Opacity, Is.EqualTo(1f), "The name did not fade in.");
 
             look.SetView(180f, 0f);
             yield return null;
             yield return null;
             Assert.That(game.NameTag.IsShown, Is.False, "The name stays with the Spongeus behind the player.");
+            yield return Wait(0.3f);
+            Assert.That(game.NameTag.Opacity, Is.Zero, "The name did not fade out.");
         }
 
         [UnityTest]

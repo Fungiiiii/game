@@ -9,16 +9,28 @@ using UnityEngine;
 namespace Fungiiiii.UI
 {
     /// <summary>
-    /// The name of the creature the player looks at, on a small wooden panel above it,
-    /// readable from afar and not only up close: the player learns what a Spongeus is before
-    /// reaching it. Nothing shows through a trunk, nor while a menu or the opening shot
-    /// takes the view.
+    /// The name of the creature the player looks at, in small text over its head, readable
+    /// from afar and not only up close: the player learns what a Spongeus is before reaching
+    /// it. Just the name, without a panel, so that it never covers the creature; it fades in
+    /// and out. Nothing shows through a trunk, nor while a menu or the opening shot takes
+    /// the view.
     /// </summary>
     internal sealed class CreatureNameTag : MonoBehaviour
     {
-        [Tooltip("The small wooden panel the name is written on.")]
+        [Tooltip("The name; its pivot, at the bottom middle, goes over the creature's head.")]
         [SerializeField]
-        private KeyPrompt tag;
+        private RectTransform tag;
+
+        [SerializeField]
+        private LocalizedLabel label;
+
+        [Tooltip("Fades the name in and out.")]
+        [SerializeField]
+        private CanvasGroup fade;
+
+        [Tooltip("Seconds the name takes to fade in or out.")]
+        [SerializeField, Min(0.01f)]
+        private float fadeSeconds = 0.15f;
 
         [Tooltip("Furthest from the player's eyes a name is read, in metres.")]
         [SerializeField, Min(1f)]
@@ -42,17 +54,23 @@ namespace Fungiiiii.UI
         private IReadOnlyList<WildMushroom> wild;
         private Func<WildMushroom, ItemDefinition> caughtItem;
         private CompanionKeeper companions;
+        private Transform shown;
+        private Transform followed;
+        private float extraHeight;
 
-        /// <summary>Whether a name is shown.</summary>
-        public bool IsShown => tag.IsTextVisible;
+        /// <summary>Whether a creature's name is shown, or fading in.</summary>
+        public bool IsShown => shown != null;
 
         /// <summary>The name shown, an entry of the UI string table; empty when none is.</summary>
-        public string ShownKey => tag.TextKey;
+        public string ShownKey => shown != null ? label.EntryKey : string.Empty;
+
+        /// <summary>How opaque the name is drawn, from 0 to 1.</summary>
+        public float Opacity => fade.alpha;
 
         /// <summary>What is missing for it to work, or null when nothing is.</summary>
         public string FindProblem()
         {
-            return tag == null ? $"{name} has no panel to write the name on." : null;
+            return tag == null || label == null || fade == null ? $"{name} lacks its name, its label or its fade." : null;
         }
 
         /// <param name="playerLook">The player's view: no name while it is taken by a menu or the opening shot.</param>
@@ -68,55 +86,75 @@ namespace Fungiiiii.UI
             companions = keeper;
         }
 
+        private void Awake()
+        {
+            fade.alpha = 0f;
+        }
+
         private void LateUpdate()
         {
-            if (look == null || !look.isActiveAndEnabled)
+            shown = null;
+            if (look != null && look.isActiveAndEnabled)
             {
-                tag.Hide();
+                ChooseLookedAt();
+            }
+
+            if (shown != null)
+            {
+                followed = shown;
+            }
+
+            // Unscaled: it fades the same at any game speed.
+            fade.alpha = Mathf.MoveTowards(fade.alpha, shown != null ? 1f : 0f, Time.unscaledDeltaTime / fadeSeconds);
+            if (followed == null || fade.alpha <= 0f)
+            {
+                fade.alpha = 0f;
                 return;
             }
 
-            Transform best = null;
+            // Fading out, it stays over the creature it named.
+            var screenPoint = view.WorldToScreenPoint(TagPoint(followed));
+            if (screenPoint.z <= 0f)
+            {
+                fade.alpha = 0f;
+                return;
+            }
+
+            tag.position = screenPoint;
+        }
+
+        private void ChooseLookedAt()
+        {
             string bestName = null;
             var bestAngle = lookedAtWithinDegrees;
             foreach (var mushroom in wild)
             {
                 if (mushroom != null && mushroom.isActiveAndEnabled && mushroom.IsFree)
                 {
-                    Consider(mushroom.transform, caughtItem(mushroom).NameKey, ref best, ref bestName, ref bestAngle);
+                    Consider(mushroom.transform, caughtItem(mushroom).NameKey, ref bestName, ref bestAngle);
                 }
             }
 
             var companion = companions != null ? companions.Active : null;
             if (companion != null)
             {
-                Consider(companion.transform, companion.Definition.Creature.CaughtItem.NameKey, ref best, ref bestName, ref bestAngle);
+                Consider(companion.transform, companion.Definition.Creature.CaughtItem.NameKey, ref bestName, ref bestAngle);
             }
 
-            if (best == null)
+            if (shown == null)
             {
-                tag.Hide();
                 return;
             }
 
-            var point = TagPoint(best);
-            if (companion != null && best == companion.transform)
+            // The companion's key shows just above it: its name goes over the key.
+            extraHeight = companion != null && shown == companion.transform ? aboveCompanionKey : 0f;
+            if (label.EntryKey != bestName)
             {
-                // The companion's key shows just above it: its name goes over the key.
-                point += Vector3.up * aboveCompanionKey;
+                label.Show(bestName);
             }
-
-            var screenPoint = view.WorldToScreenPoint(point);
-            if (screenPoint.z <= 0f)
-            {
-                tag.Hide();
-                return;
-            }
-
-            tag.ShowText(screenPoint, bestName);
         }
 
-        private void Consider(Transform creature, string nameKey, ref Transform best, ref string bestName, ref float bestAngle)
+        private void Consider(Transform creature, string nameKey, ref string bestName, ref float bestAngle)
         {
             if (string.IsNullOrEmpty(nameKey))
             {
@@ -138,7 +176,7 @@ namespace Fungiiiii.UI
                 return;
             }
 
-            best = creature;
+            shown = creature;
             bestName = nameKey;
             bestAngle = angle;
         }
@@ -152,7 +190,7 @@ namespace Fungiiiii.UI
 
         private Vector3 TagPoint(Transform creature)
         {
-            return creature.position + Vector3.up * (HeightOf(creature) + aboveTop);
+            return creature.position + Vector3.up * (HeightOf(creature) + aboveTop + extraHeight);
         }
 
         /// <summary>Height of its model above its feet, worked out once.</summary>
