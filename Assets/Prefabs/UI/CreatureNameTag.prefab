@@ -110,7 +110,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7371b0028904b394c85cbbe22c8a0e7a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.LocalizedLabel
-  entryKey: item.spongeus
+  entryKey: item.champonge
 --- !u!225 &341392038067655992
 CanvasGroup:
   m_ObjectHideFlags: 0

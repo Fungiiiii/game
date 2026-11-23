@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 84dc227c3c754f6b886e199fc4a0908f, type: 3}
-  m_Name: Spongeus
+  m_Name: Champonge
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Capture.CreatureDefinition
   model: {fileID: 919132149155446097, guid: 7a0f4631898ffc54a8dcfe6f8d8470df, type: 3}
   profile: 0

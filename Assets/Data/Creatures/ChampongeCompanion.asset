@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1c48af79740a7344ba3aa9f1d8708957, type: 3}
-  m_Name: SpongeusCompanion
+  m_Name: ChampongeCompanion
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Companions.CompanionDefinition
   creature: {fileID: 11400000, guid: bf402ca1399e42a197ecead4d6f4bd22, type: 2}
   followDistance: 2.5

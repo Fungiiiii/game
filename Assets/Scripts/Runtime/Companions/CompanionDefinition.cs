@@ -7,7 +7,7 @@ namespace Fungiiiii.Companions
     /// <summary>
     /// A caught creature that can be taken out of the inventory to follow the player, as
     /// data: which creature, how it follows, what it soaks up and gives when squeezed, and
-    /// which part of its model darkens once full. The Spongeus carries water. A new
+    /// which part of its model darkens once full. The Champonge carries water. A new
     /// companion is an asset, not code.
     /// </summary>
     [CreateAssetMenu(fileName = "Companion", menuName = "Fungiiiii/Companion Definition")]
@@ -93,7 +93,7 @@ namespace Fungiiiii.Companions
         private float hopsPerMetre = 1.5f;
 
         [Header("Looking full")]
-        [Tooltip("The material of the model's part that darkens once full: the Spongeus's cap.")]
+        [Tooltip("The material of the model's part that darkens once full: the Champonge's cap.")]
         [SerializeField]
         private Material fullPartMaterial;
 

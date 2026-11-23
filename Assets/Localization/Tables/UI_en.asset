@@ -111,7 +111,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 372971087585280
-    m_Localized: Spongeus
+    m_Localized: Champonge
     m_Metadata:
       m_Items: []
   - m_Id: 372971087585281
@@ -131,7 +131,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448962
-    m_Localized: Needs a Spongeus
+    m_Localized: Needs a Champonge
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448963
@@ -319,7 +319,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041449010
-    m_Localized: A full Spongeus holds some. Sneak up behind it, crouched.
+    m_Localized: A full Champonge holds some. Sneak up behind it, crouched.
     m_Metadata:
       m_Items: []
   - m_Id: 391185041449011
@@ -371,7 +371,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041449023
-    m_Localized: "(optional) Catch a Spongeus with the net"
+    m_Localized: "(optional) Catch a Champonge with the net"
     m_Metadata:
       m_Items: []
   - m_Id: 391185041449024

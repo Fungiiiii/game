@@ -4,7 +4,7 @@ namespace Fungiiiii.Interaction
 {
     /// <summary>
     /// Something the interact control also acts on when held, besides a short press: the
-    /// Spongeus is squeezed with a short press and taken back when E is held. On such a
+    /// Champonge is squeezed with a short press and taken back when E is held. On such a
     /// target the short press is decided on the release; on any other, on the press.
     /// </summary>
     internal interface IHoldInteractable

@@ -75,7 +75,7 @@ namespace Fungiiiii.Capture
         [SerializeField, Min(0.1f)]
         private float squeezeReach = 1.8f;
 
-        [Tooltip("The material of the model's part that looks wet: the Spongeus's cap.")]
+        [Tooltip("The material of the model's part that looks wet: the Champonge's cap.")]
         [SerializeField]
         private Material wetPartMaterial;
 

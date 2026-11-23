@@ -51,7 +51,7 @@ namespace Fungiiiii.Tests.PlayMode
 
         private InventoryLayout Layout => Object.FindFirstObjectByType<PlayerMotor>().GetComponent<Backpack>().Layout;
 
-        private ItemDefinition Spongeus => game.Companions.HeldBehaviours.Select(held => held.Item).First();
+        private ItemDefinition Champonge => game.Companions.HeldBehaviours.Select(held => held.Item).First();
 
         [UnityTest]
         public IEnumerator AnotherItemInHand_ShowsItsNameAboveTheQuickBar_ThenFades()
@@ -61,14 +61,14 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(heldName, Is.Not.Null, "The quick bar has no name for the item in hand.");
             Assert.That(heldName.IsVisible, Is.False, "A name shows before anything changed in hand.");
 
-            game.Inventory.AddToSlot(Layout.QuickBarSlot(1), Spongeus, 1);
+            game.Inventory.AddToSlot(Layout.QuickBarSlot(1), Champonge, 1);
             yield return null;
             Assert.That(heldName.IsVisible, Is.False, "A name shows though the item in hand did not change.");
 
             game.Hotbar.Select(1);
             yield return null;
             Assert.That(heldName.IsVisible, Is.True, "The name of the item taken in hand does not show.");
-            Assert.That(heldName.NameKey, Is.EqualTo(Spongeus.NameKey));
+            Assert.That(heldName.NameKey, Is.EqualTo(Champonge.NameKey));
 
             yield return Wait(2.6f);
             Assert.That(heldName.IsVisible, Is.False, "The name does not fade out.");
@@ -125,7 +125,7 @@ namespace Fungiiiii.Tests.PlayMode
         public IEnumerator WhatIsCollected_ShowsLeftOfTheQuickBar_NotAboveIt()
         {
             yield return LoadGame();
-            game.Inventory.Collect(Spongeus, 1);
+            game.Inventory.Collect(Champonge, 1);
             yield return null;
             Canvas.ForceUpdateCanvases();
 

@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Fungiiiii.Companions
 {
     /// <summary>
-    /// The part of a model that looks wet as it soaks up water (the Spongeus's cap): every
+    /// The part of a model that looks wet as it soaks up water (the Champonge's cap): every
     /// material slot drawn with that part's material goes from its own colour to that colour
     /// multiplied by a tint, and takes a sheen, through property blocks, so that no material
     /// is copied. Soaked through, drops fall from it, as from a full fern.

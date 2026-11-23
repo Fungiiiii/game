@@ -90,7 +90,7 @@ namespace Fungiiiii.Game
         [SerializeField]
         private RefillingPlants refillingPlants;
 
-        [Tooltip("The caught creatures that can be taken out of the quick bar to follow the player: the Spongeus.")]
+        [Tooltip("The caught creatures that can be taken out of the quick bar to follow the player: the Champonge.")]
         [SerializeField]
         private CompanionKeeper companions;
 
@@ -361,7 +361,7 @@ namespace Fungiiiii.Game
             var seed = droppedItems.Place(moleHoles.Seed, 1, seedSpot.position);
             var playerStart = player.transform.position;
             Instantiate(seedGlow, seed.transform, false);
-            // The ferns first: the wild Spongeus go and drink at them.
+            // The ferns first: the wild Champonge go and drink at them.
             refillingPlants.Populate(forest, sessionTerrain, outlines, interactables, new System.Random(random.Next()));
             SpawnMushrooms();
             SetUpThrower();

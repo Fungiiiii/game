@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Fungiiiii.Capture
 {
     /// <summary>
-    /// A wild creature that soaks up what it finds, as the Spongeus drinks at the water
+    /// A wild creature that soaks up what it finds, as the Champonge drinks at the water
     /// ferns: calm and dry, it walks to the nearest full source within reach, soaks it up for
     /// a moment, and is wet from then on. Fleeing interrupts it. Without Unity: positions in,
     /// where to go out.

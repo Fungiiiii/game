@@ -197,7 +197,7 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator OnceGrownOnce_TheObjective_SuggestsCatchingASpongeusWithTheNet_UntilOneIsCaught()
+        public IEnumerator OnceGrownOnce_TheObjective_SuggestsCatchingAChampongeWithTheNet_UntilOneIsCaught()
         {
             yield return Load();
             var game = Bootstrap;
@@ -211,20 +211,20 @@ namespace Fungiiiii.Tests.PlayMode
             game.Inventory.Add(progress.Required(1).Item, progress.Required(1).Amount);
             champimaison.InteractHold(game.Inventory);
             yield return null;
-            Assert.That(hud.SuggestsCapture, Is.True, "Nothing says the net catches a Spongeus, for water.");
+            Assert.That(hud.SuggestsCapture, Is.True, "Nothing says the net catches a Champonge, for water.");
             Assert.That(hud.CaptureRow.TextKey, Is.EqualTo(UiText.ObjectiveOptionalCapture));
             Assert.That(hud.CaptureRow.SourceKey, Is.EqualTo(UiText.ObjectiveOptionalCaptureHint), "The line does not say it is for water.");
             Assert.That(hud.CaptureRow.CountText, Is.Empty, "The optional line has a count.");
             Assert.That(hud.CaptureRow.transform.GetSiblingIndex(), Is.Zero, "The optional line does not come first.");
 
             // Caught, then put down: the line is gone for good.
-            var spongeus = game.Companions.HeldBehaviours.First().Item;
-            game.Inventory.Add(spongeus, 1);
+            var champonge = game.Companions.HeldBehaviours.First().Item;
+            game.Inventory.Add(champonge, 1);
             yield return null;
-            Assert.That(hud.SuggestsCapture, Is.False, "The net is still suggested once a Spongeus is caught.");
-            game.Inventory.Remove(spongeus.Id, 1);
+            Assert.That(hud.SuggestsCapture, Is.False, "The net is still suggested once a Champonge is caught.");
+            game.Inventory.Remove(champonge.Id, 1);
             yield return null;
-            Assert.That(hud.SuggestsCapture, Is.False, "The suggestion came back once the Spongeus left the inventory.");
+            Assert.That(hud.SuggestsCapture, Is.False, "The suggestion came back once the Champonge left the inventory.");
         }
 
         [UnityTest]

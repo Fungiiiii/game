@@ -45,7 +45,7 @@
 - [ ] Un objet cueilli disparaît. Celui qui le remplace apparaît ailleurs, pas forcément au même endroit.
 - [ ] Les bâtons sont couchés au pied des arbres, entre 1 et 2,5 m d'un tronc, sur un sol sans herbe, et suivent la pente.
 - [ ] Les champignons apparaissent là où la forêt avait des champignons de décor, avec la même taille et la même orientation. Il ne reste aucun champignon qu'on ne peut pas cueillir.
-- [ ] Les Spongeus et les Champoule ne changent pas : 4, dans la clairière du spawn.
+- [ ] Les Champonge et les Champoule ne changent pas : 4, dans la clairière du spawn.
 - [ ] R remet la map dans un état de départ : les objets sont tirés de nouveau.
 
 **Contour**
@@ -82,7 +82,7 @@
 - Un écran ou un texte de chargement : l'écran reste noir quelques secondes pendant le chargement de la forêt.
 - Une sauvegarde : revenir à l'accueil perd la partie.
 - Des sons d'interface.
-- L'apparition par tick des Spongeus et des Champoule.
+- L'apparition par tick des Champonge et des Champoule.
 - Le vent sur l'herbe, qui garde son mouvement.
 - La traduction de l'inventaire de Pol-Mattis, dont les textes restent en dur.
 - Un modèle de filet ou une icône : la case montre un carré de couleur, comme l'inventaire.
@@ -295,7 +295,7 @@ Aucun de ces tests n'a encore été joué par un humain : à dérouler par Hugo,
 | 14 | Idem sur un champignon | Contour plus épais visé, E le cueille, un carré violet dans l'inventaire | ⬜ |
 | 15 | Rester près d'un objet cueilli 1 minute | Il ne revient pas à cet endroit | ⬜ |
 | 16 | Chercher l'anneau cyan et le trou de la Champimaison (47 m au nord-est du spawn) | Aucun anneau cyan nulle part. Pas de trou, pas d'anneau crème | ⬜ |
-| 17 | Capturer un Spongeus au filet (clic gauche) | Comme avant : il entre dans l'inventaire | ⬜ |
+| 17 | Capturer un Champonge au filet (clic gauche) | Comme avant : il entre dans l'inventaire | ⬜ |
 | 18 | Échap | La partie se fige, voile sombre, planches **Reprendre**, **Accueil**, **Quitter**, Reprendre mise en avant, souris libre. La souris ne fait plus tourner la vue | ⬜ |
 | 19 | En pause : clic gauche dans le vide, E, Tab, R | Rien ne se passe | ⬜ |
 | 20 | Reprendre, puis Échap, puis Échap | La partie reprend, se remet en pause (Reprendre de nouveau mise en avant), reprend | ⬜ |
@@ -308,7 +308,7 @@ Aucun de ces tests n'a encore été joué par un humain : à dérouler par Hugo,
 | 31 | `DemoLoopScene`, Play, regarder le bas de l'écran | Trois planches au centre ; la première, plus claire et plus haute, montre un carré beige (le filet). Le filet est en main, l'arc de visée se voit | ⬜ |
 | 32 | Molette vers le bas, un cran à la fois, quatre fois | La sélection passe à la 2, la 3, revient à la 1, puis la 2. Sur les cases 2 et 3 : plus de filet en main, ni arc ni cercle, le clic gauche ne lance rien | ⬜ |
 | 33 | Molette vers le haut ; puis touches 3, 1 ; puis LB et RB à la manette | Même chose dans l'autre sens ; 3 et 1 choisissent directement ; LB précédente, RB suivante | ⬜ |
-| 34 | Case 1, lancer le filet sur un Spongeus, puis tout de suite touche 2 | Le filet finit sa course et revient avec sa prise ; il ne réapparaît pas en main. Touche 1 : il est de nouveau en main | ⬜ |
+| 34 | Case 1, lancer le filet sur un Champonge, puis tout de suite touche 2 | Le filet finit sa course et revient avec sa prise ; il ne réapparaît pas en main. Touche 1 : il est de nouveau en main | ⬜ |
 | 35 | Cueillir trois bâtons | Ils vont dans la grille de l'inventaire, pas dans la barre | ⬜ |
 | 36 | Tab, déplacer les bâtons dans la case 2 de la barre, Tab | Inventaire ouvert, la barre du bas a disparu. Fermé : la case 2 montre un carré brun et « 3 » | ⬜ |
 | 37 | Tab, déplacer le filet dans la grille, Tab | Plus de filet en main, sur aucune case. Le remettre dans la barre le rend | ⬜ |
@@ -321,7 +321,7 @@ Aucun de ces tests n'a encore été joué par un humain : à dérouler par Hugo,
 |---|---|---|---|
 | 27 | Menu **Fungiiiii > Playtest > Build Windows Player** | La Console affiche « Playtest built ». `Builds/Playtest/Fungiiiii.exe` existe | ⬜ |
 | 28 | Lancer `Fungiiiii.exe` | L'écran d'accueil, en français sur un Windows français. Mêmes vérifications que #1 à #4 | ⬜ |
-| 29 | **Jouer**, puis rejouer #9, #13, #14, #17 et #18 | Comme dans l'Editor. Les disques sous les Spongeus et le filet sont bien dessinés (ni roses, ni absents) | ⬜ |
+| 29 | **Jouer**, puis rejouer #9, #13, #14, #17 et #18 | Comme dans l'Editor. Les disques sous les Champonge et le filet sont bien dessinés (ni roses, ni absents) | ⬜ |
 | 30 | Échap, **Quitter** | Le jeu se ferme | ⬜ |
 
 ## Limitations connues

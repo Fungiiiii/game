@@ -37,7 +37,7 @@ namespace Fungiiiii.Tests.PlayMode
         /// <summary>Flight, freeze and return of a net dropped from just above, with margin.</summary>
         private const float ThrowTimeoutSeconds = 5f;
 
-        /// <summary>A Spongeus caught by surprise has 60 %: 12 failures in a row are below 1 in 50 000.</summary>
+        /// <summary>A Champonge caught by surprise has 60 %: 12 failures in a row are below 1 in 50 000.</summary>
         private const int MaxCaptureAttempts = 12;
 
         [TearDown]

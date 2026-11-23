@@ -6,7 +6,7 @@
 // hard normals of a low poly model would split the rim at every edge.
 //
 // Only what lies outside the model's own silhouette is drawn. On a hollowed model (the
-// holes of the Spongeus' cap), the pushed back faces of a hole lie just under the surface
+// holes of the Champonge's cap), the pushed back faces of a hole lie just under the surface
 // and would show through it as thin lines. So, for each object, URP draws the passes in
 // the order of its forward tags: the mask marks the model's silhouette in the stencil
 // (SRPDefaultUnlit), the outline skips what is marked (UniversalForward), and the clear

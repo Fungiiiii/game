@@ -111,7 +111,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 372971087585280
-    m_Localized: Spongeus
+    m_Localized: Champonge
     m_Metadata:
       m_Items: []
   - m_Id: 372971087585281
@@ -131,7 +131,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448962
-    m_Localized: "Nécessite un Spongeus"
+    m_Localized: "Nécessite un Champonge"
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448963
@@ -319,7 +319,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041449010
-    m_Localized: Un Spongeus plein en garde. Approche-le accroupi, par derrière.
+    m_Localized: Un Champonge plein en garde. Approche-le accroupi, par derrière.
     m_Metadata:
       m_Items: []
   - m_Id: 391185041449011
@@ -371,7 +371,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041449023
-    m_Localized: "(optionnel) Capture un Spongeus avec le filet"
+    m_Localized: "(optionnel) Capture un Champonge avec le filet"
     m_Metadata:
       m_Items: []
   - m_Id: 391185041449024

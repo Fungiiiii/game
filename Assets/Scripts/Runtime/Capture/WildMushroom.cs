@@ -356,7 +356,7 @@ namespace Fungiiiii.Capture
                 threatPoint = null;
 
                 // It drinks under the player's eyes, not at the other end of the forest: the
-                // player learns that a Spongeus fills up by seeing one do it. It sets off only
+                // player learns that a Champonge fills up by seeing one do it. It sets off only
                 // while looked at, then carries on while the player stays close.
                 var near = NetImpact.HorizontalDistance(transform.position, player.position) <= soakWatchedWithin;
                 if (!near)

@@ -9,7 +9,7 @@ namespace Fungiiiii.UI
     /// (<see cref="Glyph"/>): a name, a PlayStation shape, a mouse. A cyan triangle laid over
     /// its top edge says a short press does something; a border around it says the key can
     /// be held, and fills while it is held. Where nothing can be done, a short text on a
-    /// small wooden panel takes the key's place instead (<c>label.needs_spongeus</c>). Right of
+    /// small wooden panel takes the key's place instead (<c>label.needs_champonge</c>). Right of
     /// the key, what a press does (<c>Presser</c>) and, under it, "Hold" and what holding does,
     /// so that the player reads them where they look rather than in a corner. It pops in when
     /// it appears, and can pulse to be noticed. Where it goes and what it shows is told by

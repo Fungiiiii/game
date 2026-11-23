@@ -11,7 +11,7 @@ namespace Fungiiiii.UI
 {
     /// <summary>
     /// The name of the creature the player looks towards, in small text over its head,
-    /// readable from afar and not only up close: the player learns what a Spongeus is before
+    /// readable from afar and not only up close: the player learns what a Champonge is before
     /// reaching it. Looking roughly its way is enough, the crosshair need not be on it. Just
     /// the name, without a panel, so that it never covers the creature; it fades in and out.
     /// A drop shows left of the name while the creature is full of water, as the drops

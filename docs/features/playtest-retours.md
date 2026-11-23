@@ -99,7 +99,7 @@
 - [ ] **Dans l'inventaire, une plaquette en bois donne le nom de l'objet de la case visée** (souris ou manette), juste en bas à droite de la case. Rien sur une case vide, ni quand un objet est en main (il cache la case). `ItemNamePlate`, dans le prefab `Inventory`.
 - [ ] **Le fil des objets ramassés passe en bas à gauche** (36 px des bords), lignes alignées à gauche : au-dessus de la barre rapide, c'est la place du nom de l'objet en main, et le bas droit est aux aides de touches. C'est le placement le plus courant dans les jeux.
 - [ ] **Le vent est moins fort** (Hugo, 21/11) : à l'accueil, la boucle de la lisière passe de 0,6 à 0,24 (−60 %) ; au spawn, le fond de lisière (`southVolume` de `Audio/Beds`, scène `MysticForest`) passe de 0,15 à 0,12 (−20 %). Les rafales ne changent pas.
-- [ ] **Le contour ne trace plus de traits sur le modèle** (Hugo, 21/11, sur le chapeau troué du Spongeus) : le contour est la face arrière du modèle poussée de quelques pixels, et celle des trous, juste sous la surface, passait au travers. Le shader `ItemOutline` marque d'abord la silhouette du modèle dans le stencil, ne dessine le contour qu'en dehors, puis efface sa marque : un objet contouré ne cache pas le contour du suivant.
+- [ ] **Le contour ne trace plus de traits sur le modèle** (Hugo, 21/11, sur le chapeau troué du Champonge) : le contour est la face arrière du modèle poussée de quelques pixels, et celle des trous, juste sous la surface, passait au travers. Le shader `ItemOutline` marque d'abord la silhouette du modèle dans le stencil, ne dessine le contour qu'en dehors, puis efface sa marque : un objet contouré ne cache pas le contour du suivant.
 
 **Nettoyage du 21/11 (refactor, aucun comportement ne change)**
 
@@ -141,7 +141,7 @@ Hugo : « tout ce qui est dans le playtest devrait être quelque chose de non ex
 - **Champignons** : `generate_forest_models.py`, `MushroomCluster_02` à `_04` (FBX, `.meta`, prefabs) ; leurs quatre modèles dans la fiche `Assets/Data/Gathering/Spore Mushrooms.asset`.
 - **Ressources** : `ResourceSpawner` réécrit (bulles par joueur, `ResourceViewer`) ; `GatherableField` (liste de joueurs `FieldPlayer`, variantes avec leur réserve, disparition) ; `ForestResourceSpots` (`FindTreeFootMushroomSpots`, `ScatterMushroomSpots`, `RemoveOverlaps`, `MushroomPose`) ; réglages dans les fiches de `Assets/Data/Gathering/`.
 - **Touche E** : `IInteractable.PromptPoint`, `PlayerInteractor` (cible, libellé du binding), `KeyPrompt`, `KeyCapGraphic`, `TriangleGlyphGraphic`, `Polygon` (partagé avec `PlankGraphic`).
-- **Filet** : `NetThrower` (actions `NetPrimary` / `NetSecondary`, `HoldAim`, zoom, `PreviewTarget`, `PreviewChance`), `NetPreviewDots`, `PrototypeFirstPersonCamera.LookScale`, `NetTargetOutline`, `ItemOutlineFactory.CreateChanceOutline`, `ItemOutline.SetVisible` ; `Spongeus.fbx` et `Champoule.fbx` en Read/Write.
+- **Filet** : `NetThrower` (actions `NetPrimary` / `NetSecondary`, `HoldAim`, zoom, `PreviewTarget`, `PreviewChance`), `NetPreviewDots`, `PrototypeFirstPersonCamera.LookScale`, `NetTargetOutline`, `ItemOutlineFactory.CreateChanceOutline`, `ItemOutline.SetVisible` ; `Champonge.fbx` et `Champoule.fbx` en Read/Write.
 - **Inventaire** : `InventoryHand` (logique des clics, C# pur), `InventoryScreen` (écran refait), `CutCornerGraphic` ; dix textes dans la table `UI` (`UiText`, `PlaytestLocalization`).
 - **Commandes** : toutes les actions du jeu dans `InputSystem_Actions` (cartes `Player`, `Screens`, `UI`), classe `GameControls` générée ; `ControlMaps` (cartes actives, schéma du dernier appareil, C# pur) et `PlayerControls` sur le prefab Player.
 - **Objets** : `ItemDefinition` (ScriptableObject) et `ItemCatalog`, dans `Assets/Data/` ; `PlayerInventory` stocke une fiche et une quantité ; `Backpack` sur le prefab Player porte l'inventaire, que l'écran reçoit par `Bind`.
@@ -252,7 +252,7 @@ Lancés en batch sur le PC de Hugo (Unity 6000.3.21f1) à chaque étape.
 | 7f | Molette jusqu'à une case vide, puis revenir au filet | Le filet disparaît de la main, puis revient | ⬜ |
 | 8 | Clic gauche sans viser | Le filet part, sans arc avant | ⬜ |
 | 9 | Clic droit maintenu, regarder en bas puis en haut | Zoom ; l'arc a peu de points vers le bas, beaucoup vers le haut | ⬜ |
-| 10 | En visant, placer le cercle sur un Spongeus | Le Spongeus a un contour de la couleur du cercle ; les autres non | ⬜ |
+| 10 | En visant, placer le cercle sur un Champonge | Le Champonge a un contour de la couleur du cercle ; les autres non | ⬜ |
 | 11 | Tab, cliquer une pile | Elle est en main tout de suite, penchée, avec une ombre | ⬜ |
 | 12 | Double clic sur une pile de spores | Toutes les spores viennent sur la souris, jusqu'à 16 | ⬜ |
 | 13 | Prendre une pile, Tab | Elle revient dans sa case | ⬜ |
@@ -272,7 +272,7 @@ Lancés en batch sur le PC de Hugo (Unity 6000.3.21f1) à chaque étape.
 | 27 | Ramasser deux bâtons, puis un champignon | « +2 Bâton » puis « +1 Champignon » au-dessus de la barre rapide, qui s'effacent | ⬜ |
 | 28 | Espace, puis A à la manette ; accroupi, Espace | Saut ; pas de saut accroupi | ⬜ |
 | 29 | Clic droit maintenu, Tab | La vue s'élargit en douceur, comme au relâchement | ⬜ |
-| 30 | Viser de près un Spongeus sauvage, puis deux objets l'un devant l'autre | Contour autour de la silhouette seulement, aucun trait ni anneau sur le chapeau ; chacun garde son contour | ⬜ |
+| 30 | Viser de près un Champonge sauvage, puis deux objets l'un devant l'autre | Contour autour de la silhouette seulement, aucun trait ni anneau sur le chapeau ; chacun garde son contour | ⬜ |
 
 ## Limitations connues
 

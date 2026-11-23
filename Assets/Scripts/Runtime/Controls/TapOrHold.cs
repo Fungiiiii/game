@@ -16,7 +16,7 @@ namespace Fungiiiii.Controls
 
     /// <summary>
     /// Tells a short press from a long one on the same control: E pressed briefly squeezes
-    /// the Spongeus, E held takes it back. A tap is decided on the release, under
+    /// the Champonge, E held takes it back. A tap is decided on the release, under
     /// <c>tapMaxSeconds</c>; a hold the moment it lasts <c>holdSeconds</c>. A press released
     /// between the two does nothing.
     /// </summary>

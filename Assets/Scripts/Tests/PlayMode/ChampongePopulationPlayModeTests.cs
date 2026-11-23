@@ -8,8 +8,8 @@ using static Fungiiiii.Tests.PlayMode.PlaytestLoopGame;
 
 namespace Fungiiiii.Tests.PlayMode
 {
-    /// <summary>Only the few wild Spongeus nearest the player are out; the far ones go away and come back.</summary>
-    public sealed class SpongeusPopulationPlayModeTests
+    /// <summary>Only the few wild Champonge nearest the player are out; the far ones go away and come back.</summary>
+    public sealed class ChampongePopulationPlayModeTests
     {
         private const int MaxShown = 6;
 
@@ -24,8 +24,8 @@ namespace Fungiiiii.Tests.PlayMode
 
             var player = game.Interactor.transform.position;
             var shown = game.Mushrooms.Where(mushroom => mushroom.gameObject.activeSelf).ToList();
-            Assert.That(game.Mushrooms.Count, Is.GreaterThan(MaxShown), "Too few Spongeus to check the limit.");
-            Assert.That(shown.Count, Is.InRange(1, MaxShown), "Not between one and six Spongeus out.");
+            Assert.That(game.Mushrooms.Count, Is.GreaterThan(MaxShown), "Too few Champonge to check the limit.");
+            Assert.That(shown.Count, Is.InRange(1, MaxShown), "Not between one and six Champonge out.");
             foreach (var mushroom in shown)
             {
                 Assert.That(Flat(mushroom.transform.position, player), Is.LessThanOrEqualTo(60f), $"{mushroom.name} is out far from the player.");
@@ -33,27 +33,27 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator ASpongeus_GoesAway_WhenThePlayerIsFar_AndComesBack()
+        public IEnumerator AChamponge_GoesAway_WhenThePlayerIsFar_AndComesBack()
         {
             yield return Load();
             var game = Bootstrap;
-            var spongeus = game.Mushrooms[0];
-            StandBefore(spongeus.transform.position, 20f);
+            var champonge = game.Mushrooms[0];
+            StandBefore(champonge.transform.position, 20f);
             yield return Wait(1f);
-            Assert.That(spongeus.gameObject.activeSelf, Is.True, "A Spongeus 20 m away is not out.");
-            var home = spongeus.transform.position;
+            Assert.That(champonge.gameObject.activeSelf, Is.True, "A Champonge 20 m away is not out.");
+            var home = champonge.transform.position;
 
             StandBefore(home, 90f);
             yield return Wait(1.2f);
-            Assert.That(spongeus.gameObject.activeSelf, Is.False, "A Spongeus 90 m away is still out.");
-            Assert.That(spongeus.IsAvailable, Is.False, "The net could still aim at a Spongeus gone away.");
-            var hiddenAt = spongeus.transform.position;
+            Assert.That(champonge.gameObject.activeSelf, Is.False, "A Champonge 90 m away is still out.");
+            Assert.That(champonge.IsAvailable, Is.False, "The net could still aim at a Champonge gone away.");
+            var hiddenAt = champonge.transform.position;
             yield return Wait(1f);
-            Assert.That(Flat(spongeus.transform.position, hiddenAt), Is.LessThan(0.01f), "Gone away, it still wanders.");
+            Assert.That(Flat(champonge.transform.position, hiddenAt), Is.LessThan(0.01f), "Gone away, it still wanders.");
 
             StandBefore(home, 20f);
             yield return Wait(1.2f);
-            Assert.That(spongeus.gameObject.activeSelf, Is.True, "The Spongeus did not come back with the player.");
+            Assert.That(champonge.gameObject.activeSelf, Is.True, "The Champonge did not come back with the player.");
         }
 
         private static float Flat(Vector3 a, Vector3 b)

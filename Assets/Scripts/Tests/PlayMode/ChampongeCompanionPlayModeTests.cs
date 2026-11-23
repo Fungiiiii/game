@@ -17,14 +17,14 @@ using UnityEditor.SceneManagement;
 
 namespace Fungiiiii.Tests.PlayMode
 {
-    /// <summary>The Spongeus taken out to follow the player, and the water ferns of the mist (docs/features/spongeus-fougere.md).</summary>
-    public sealed class SpongeusCompanionPlayModeTests
+    /// <summary>The Champonge taken out to follow the player, and the water ferns of the mist (docs/features/champonge-fougere.md).</summary>
+    public sealed class ChampongeCompanionPlayModeTests
     {
         private const string ScenePath = "Assets/Scenes/Game/Game.unity";
         private const float LoadTimeoutSeconds = 60f;
-        private const string SpongeusId = "spongeus";
+        private const string ChampongeId = "champonge";
         private const string WaterId = "water";
-        private const string NeedsSpongeus = "label.needs_spongeus";
+        private const string NeedsChamponge = "label.needs_champonge";
 
         /// <summary>The mist's zone, within the playable forest (x, z, width, depth).</summary>
         private static readonly Rect MistArea = new Rect(-290f, -60f, 580f, 180f);
@@ -92,15 +92,15 @@ namespace Fungiiiii.Tests.PlayMode
             return new Vector2(a.x - b.x, a.z - b.z).magnitude;
         }
 
-        /// <summary>Puts <paramref name="count"/> Spongeus in the second quick bar slot and selects it.</summary>
-        private IEnumerator HoldSpongeus(int count)
+        /// <summary>Puts <paramref name="count"/> Champonge in the second quick bar slot and selects it.</summary>
+        private IEnumerator HoldChamponge(int count)
         {
-            var catalogItem = FindItem(SpongeusId);
+            var catalogItem = FindItem(ChampongeId);
             var slot = Object.FindFirstObjectByType<PlayerMotor>().GetComponent<Backpack>().Layout.QuickBarSlot(1);
             Assert.That(game.Inventory.AddToSlot(slot, catalogItem, count), Is.EqualTo(count));
             game.Hotbar.Select(1);
             yield return null;
-            Assert.That(game.Hands.ItemInHand, Is.SameAs(catalogItem), "The Spongeus is not in hand.");
+            Assert.That(game.Hands.ItemInHand, Is.SameAs(catalogItem), "The Champonge is not in hand.");
         }
 
         private ItemDefinition FindItem(string id)
@@ -118,10 +118,10 @@ namespace Fungiiiii.Tests.PlayMode
 
         private IEnumerator TakeOut()
         {
-            yield return HoldSpongeus(1);
+            yield return HoldChamponge(1);
             game.Hands.Behaviour.UsePrimary();
             yield return null;
-            Assert.That(game.Companions.Active, Is.Not.Null, "The left click did not take the Spongeus out.");
+            Assert.That(game.Companions.Active, Is.Not.Null, "The left click did not take the Champonge out.");
         }
 
         /// <summary>
@@ -192,7 +192,7 @@ namespace Fungiiiii.Tests.PlayMode
             var prompt = game.Interactor.Prompt;
             Assert.That(game.Interactor.Targeted, Is.SameAs(plant), "A full fern in front of the player is not aimed at.");
             Assert.That(prompt.IsTextVisible, Is.True, "No text over the full fern.");
-            Assert.That(prompt.TextKey, Is.EqualTo(NeedsSpongeus));
+            Assert.That(prompt.TextKey, Is.EqualTo(NeedsChamponge));
             Assert.That(prompt.IsKeyVisible, Is.False, "A key is shown over the fern.");
             Assert.That(prompt.PressActionKey, Is.Empty, "The fern says what a key does.");
             Assert.That(plant.Interact(game.Inventory), Is.False);
@@ -218,30 +218,30 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator ALeftClick_TakesTheSpongeusOut_AndOnlyOneAtATime()
+        public IEnumerator ALeftClick_TakesTheChampongeOut_AndOnlyOneAtATime()
         {
             yield return LoadGame();
-            yield return HoldSpongeus(2);
+            yield return HoldChamponge(2);
             var hints = game.Hands.Hints.Select(hint => hint.LabelKey).ToArray();
-            Assert.That(hints, Does.Contain(UiText.HintRelease), "No take-out hint with the Spongeus in hand.");
+            Assert.That(hints, Does.Contain(UiText.HintRelease), "No take-out hint with the Champonge in hand.");
 
             game.Hands.Behaviour.UsePrimary();
             yield return null;
 
             var companion = game.Companions.Active;
             Assert.That(companion, Is.Not.Null);
-            Assert.That(game.Inventory.Count(SpongeusId), Is.EqualTo(1), "The Spongeus did not leave the inventory.");
+            Assert.That(game.Inventory.Count(ChampongeId), Is.EqualTo(1), "The Champonge did not leave the inventory.");
             Assert.That(Flat(companion.transform.position, Player.position), Is.LessThan(2.5f), "It is not put down in front of the player.");
-            Assert.That(game.Hands.Hints.Select(hint => hint.LabelKey), Does.Not.Contain(UiText.HintRelease), "The take-out hint is still shown with a Spongeus out.");
+            Assert.That(game.Hands.Hints.Select(hint => hint.LabelKey), Does.Not.Contain(UiText.HintRelease), "The take-out hint is still shown with a Champonge out.");
 
             game.Hands.Behaviour.UsePrimary();
             yield return null;
-            Assert.That(game.Inventory.Count(SpongeusId), Is.EqualTo(1), "A second Spongeus was taken out.");
+            Assert.That(game.Inventory.Count(ChampongeId), Is.EqualTo(1), "A second Champonge was taken out.");
             Assert.That(Object.FindObjectsByType<Companion>(FindObjectsSortMode.None), Has.Length.EqualTo(1));
         }
 
         [UnityTest]
-        public IEnumerator TheSpongeus_FollowsThePlayer_AndComesBackWhenLeftFarBehind()
+        public IEnumerator TheChamponge_FollowsThePlayer_AndComesBackWhenLeftFarBehind()
         {
             yield return LoadGame();
             yield return TakeOut();
@@ -258,7 +258,7 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator TheSpongeus_SoaksUpAFullFernNearThePlayer_ItsCapDarkens_AndASqueezeGivesWater()
+        public IEnumerator TheChamponge_SoaksUpAFullFernNearThePlayer_ItsCapDarkens_AndASqueezeGivesWater()
         {
             yield return LoadGame();
             yield return TakeOut();
@@ -266,7 +266,7 @@ namespace Fungiiiii.Tests.PlayMode
             var plant = PlantInView(full: true, distance: 5f);
 
             yield return WaitUntil(() => companion.Brain.IsFull, 5f);
-            Assert.That(companion.Brain.IsFull, Is.True, "The Spongeus did not soak up the fern near the player.");
+            Assert.That(companion.Brain.IsFull, Is.True, "The Champonge did not soak up the fern near the player.");
             Assert.That(plant.IsFull, Is.False, "The fern stayed full.");
             yield return null;
 
@@ -276,24 +276,24 @@ namespace Fungiiiii.Tests.PlayMode
             var dry = companion.Definition.FullPartMaterial.GetColor(BaseColorId);
             Assert.That(cap.g, Is.EqualTo(dry.g * companion.Definition.FullTint.g).Within(0.01f), "The cap is not darker.");
             Assert.That(cap.b, Is.EqualTo(dry.b * companion.Definition.FullTint.b).Within(0.01f), "The cap is not darker.");
-            Assert.That(companion.IsDripping, Is.True, "No drop falls from the full Spongeus.");
+            Assert.That(companion.IsDripping, Is.True, "No drop falls from the full Champonge.");
             Assert.That(companion.HintKey, Is.EqualTo(UiText.HintSqueeze));
 
             Assert.That(companion.Interact(game.Inventory), Is.True);
             Assert.That(game.Inventory.Count(WaterId), Is.EqualTo(1), "Squeezing gave no water.");
             Assert.That(companion.Brain.IsFull, Is.False);
-            Assert.That(companion.HintKey, Is.Null, "An empty Spongeus can still be squeezed.");
-            Assert.That(companion.Interact(game.Inventory), Is.False, "An empty Spongeus was squeezed.");
+            Assert.That(companion.HintKey, Is.Null, "An empty Champonge can still be squeezed.");
+            Assert.That(companion.Interact(game.Inventory), Is.False, "An empty Champonge was squeezed.");
             Assert.That(game.Pickups.Lines.Count, Is.GreaterThan(0), "The water was not shown as collected.");
 
             yield return Wait(1.3f);
             Assert.That(companion.ShownFullness, Is.Zero, "The cap did not go back to its colour.");
             Assert.That(CapTint(companion), Is.EqualTo(dry).Using(UnityEngine.TestTools.Utils.ColorEqualityComparer.Instance), "Dry, the cap is not the colour of its material.");
-            Assert.That(companion.IsDripping, Is.False, "A squeezed Spongeus still drips.");
+            Assert.That(companion.IsDripping, Is.False, "A squeezed Champonge still drips.");
         }
 
         [UnityTest]
-        public IEnumerator Aimed_AnEmptySpongeus_ShowsTheKeyWithItsEmptyBorder_AndTheHoldHint()
+        public IEnumerator Aimed_AnEmptyChamponge_ShowsTheKeyWithItsEmptyBorder_AndTheHoldHint()
         {
             yield return LoadGame();
             yield return TakeOut();
@@ -315,7 +315,7 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(prompt.HoldProgress, Is.Zero, "The border fills before E is held.");
             Assert.That(prompt.IsPressMarkVisible, Is.False, "A triangle over a key that a short press does nothing with.");
             // Since the playtest of 22/11, what the key does is written right of it, not in a corner.
-            Assert.That(prompt.PressActionKey, Is.Empty, "An empty Spongeus says a press squeezes it.");
+            Assert.That(prompt.PressActionKey, Is.Empty, "An empty Champonge says a press squeezes it.");
             Assert.That(prompt.HoldActionKey, Is.EqualTo(UiText.HintTakeBack));
         }
 
@@ -333,8 +333,8 @@ namespace Fungiiiii.Tests.PlayMode
             yield return null;
 
             Assert.That(game.Companions.Active, Is.Null);
-            Assert.That(companion == null, Is.True, "The Spongeus is still in the world.");
-            Assert.That(game.Inventory.Count(SpongeusId), Is.EqualTo(1), "The Spongeus did not come back.");
+            Assert.That(companion == null, Is.True, "The Champonge is still in the world.");
+            Assert.That(game.Inventory.Count(ChampongeId), Is.EqualTo(1), "The Champonge did not come back.");
             Assert.That(game.Inventory.Count(WaterId), Is.EqualTo(1), "Its water was lost.");
         }
 
@@ -361,7 +361,7 @@ namespace Fungiiiii.Tests.PlayMode
                 }
             }
 
-            Assert.Fail("The Spongeus has no cap drawn with its full part's material.");
+            Assert.Fail("The Champonge has no cap drawn with its full part's material.");
             return Color.white;
         }
     }

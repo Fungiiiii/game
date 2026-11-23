@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 12c0bb318ec044caa04ee4afd550a3f3, type: 3}
-  m_Name: Spongeus
+  m_Name: Champonge
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Inventory.ItemDefinition
-  id: spongeus
-  nameKey: item.spongeus
-  descriptionKey: item.spongeus.description
-  sourceKey: item.spongeus.source
+  id: champonge
+  nameKey: item.champonge
+  descriptionKey: item.champonge.description
+  sourceKey: item.champonge.source
   icon: {fileID: 21300000, guid: 47c72f5c797711c48b6b1e7cb461732b, type: 3}
   color: {r: 0.6117647, g: 0.7647059, b: 0.854902, a: 1}
   maxStackSize: 4

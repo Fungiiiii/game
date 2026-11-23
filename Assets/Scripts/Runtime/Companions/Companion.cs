@@ -11,9 +11,9 @@ using UnityEngine;
 namespace Fungiiiii.Companions
 {
     /// <summary>
-    /// A caught creature out of the inventory, following the player: the Spongeus. What it
+    /// A caught creature out of the inventory, following the player: the Champonge. What it
     /// does is its <see cref="CompanionBrain"/>; this puts it on the ground, turns it where
-    /// it walks, and makes the part of its model that shows it full (the Spongeus's cap) look
+    /// it walks, and makes the part of its model that shows it full (the Champonge's cap) look
     /// wet as it fills: darker, with a light sheen, as the water fern.
     /// A short press of E squeezes it for what it carries; holding E takes it back.
     /// </summary>

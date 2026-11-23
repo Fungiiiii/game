@@ -108,7 +108,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 372971087585280
-    m_Key: item.spongeus
+    m_Key: item.champonge
     m_Metadata:
       m_Items: []
   - m_Id: 372971087585281
@@ -128,7 +128,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448962
-    m_Key: label.needs_spongeus
+    m_Key: label.needs_champonge
     m_Metadata:
       m_Items: []
   - m_Id: 391185041448963
@@ -332,11 +332,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 391185041449014
-    m_Key: item.spongeus.description
+    m_Key: item.champonge.description
     m_Metadata:
       m_Items: []
   - m_Id: 391185041449015
-    m_Key: item.spongeus.source
+    m_Key: item.champonge.source
     m_Metadata:
       m_Items: []
   - m_Id: 391185041449016
