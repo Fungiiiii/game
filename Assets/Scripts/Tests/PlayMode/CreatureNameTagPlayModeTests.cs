@@ -41,6 +41,28 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator LookingTwentyDegreesBesideASpongeus_StillShowsItsName_WithoutADropWhileDry()
+        {
+            // Since the playtest of 23/11: the name had to be aimed at within 6 degrees, and hid.
+            yield return Load();
+            var game = Bootstrap;
+            var spongeus = game.Mushrooms[0];
+            StandBefore(spongeus.transform.position, 8f);
+            yield return Wait(0.6f);
+            spongeus.transform.position = Ground(spongeus.transform.position);
+            var look = game.ViewCamera.GetComponent<FirstPersonCamera>();
+            var toSpongeus = spongeus.transform.position + Vector3.up * 0.3f - game.ViewCamera.transform.position;
+            var yaw = Mathf.Atan2(toSpongeus.x, toSpongeus.z) * Mathf.Rad2Deg;
+            var pitch = -Mathf.Atan2(toSpongeus.y, new Vector2(toSpongeus.x, toSpongeus.z).magnitude) * Mathf.Rad2Deg;
+            look.SetView(yaw + 20f, pitch);
+            yield return null;
+            yield return null;
+
+            Assert.That(game.NameTag.IsShown, Is.True, "No name with the Spongeus 20 degrees off the middle of the view.");
+            Assert.That(game.NameTag.ShowsWater, Is.False, "A drop shows by a dry Spongeus.");
+        }
+
+        [UnityTest]
         public IEnumerator ASpongeusTooFar_ShowsNoName()
         {
             yield return Load();

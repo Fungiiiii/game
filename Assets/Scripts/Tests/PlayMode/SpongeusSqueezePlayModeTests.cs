@@ -108,6 +108,22 @@ namespace Fungiiiii.Tests.PlayMode
             Release(keyboard.leftCtrlKey);
         }
 
+        [UnityTest]
+        public IEnumerator AFullSpongeus_HasADropBesideItsName()
+        {
+            yield return Load();
+            var game = Bootstrap;
+            var wet = WetSpongeus(game);
+            yield return WaitUntil(() => wet.IsDripping, 15f);
+            Assert.That(wet.IsDripping, Is.True, "The Spongeus did not fill up.");
+
+            StandBehind(game, wet, 7f);
+            yield return null;
+            yield return null;
+            Assert.That(game.NameTag.IsShown, Is.True, "No name over the full Spongeus.");
+            Assert.That(game.NameTag.ShowsWater, Is.True, "Nothing by its name says it is full of water.");
+        }
+
         /// <summary>A wild Spongeus next to a full fern, the player looking at it from 8 m: it goes and drinks.</summary>
         private static WildMushroom WetSpongeus(Fungiiiii.Game.GameBootstrap game)
         {

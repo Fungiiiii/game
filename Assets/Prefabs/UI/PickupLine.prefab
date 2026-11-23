@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 4934788074250146632}
   - component: {fileID: 35911667239016295}
   - component: {fileID: 211274344019808803}
+  - component: {fileID: 7970971353683044408}
+  - component: {fileID: 7252330397917425520}
   m_Layer: 0
   m_Name: PickupLine
   m_TagString: Untagged
@@ -65,10 +67,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.HorizontalLayoutGroup
   m_Padding:
-    m_Left: 0
-    m_Right: 0
-    m_Top: 0
-    m_Bottom: 0
+    m_Left: 12
+    m_Right: 14
+    m_Top: 6
+    m_Bottom: 9
   m_ChildAlignment: 3
   m_Spacing: 8
   m_ChildForceExpandWidth: 0
@@ -104,7 +106,6 @@ GameObject:
   - component: {fileID: 7662890717855865926}
   - component: {fileID: 7199309435555593443}
   - component: {fileID: 1472283122216987285}
-  - component: {fileID: 6298266008542236219}
   - component: {fileID: 5499019402435945823}
   m_Layer: 0
   m_Name: Text
@@ -174,21 +175,6 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: 
---- !u!114 &6298266008542236219
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6211705213046593854}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Outline
-  m_EffectColor: {r: 0.16862746, g: 0.15294118, b: 0.13725491, a: 1}
-  m_EffectDistance: {x: 1.5, y: -1.5}
-  m_UseGraphicAlpha: 1
 --- !u!114 &5499019402435945823
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -313,3 +299,40 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb8b74f1404e46b7a5ded6846e8a25ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.ItemIcon
+--- !u!222 &7970971353683044408
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3445205993560695559}
+  m_CullTransparentMesh: 1
+--- !u!114 &7252330397917425520
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3445205993560695559}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c8535705dece8d48bc0f25a8e36a658, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.UI.CutCornerGraphic
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  corner: 10
+  face: {r: 0.30980393, g: 0.20392157, b: 0.14117648, a: 1}
+  topBand: {r: 0.65882355, g: 0.5647059, b: 0.47058824, a: 1}
+  topBandHeight: 4
+  bottomBand: {r: 0.16862746, g: 0.15294118, b: 0.13725491, a: 1}
+  bottomBandHeight: 6
+  facet: {r: 0.16862746, g: 0.15294118, b: 0.13725491, a: 0.28}
+  facetTopShare: 0.7
+  facetBottomShare: 0.64
