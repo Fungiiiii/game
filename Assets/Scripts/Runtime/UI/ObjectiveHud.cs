@@ -10,10 +10,11 @@ namespace Fungiiiii.UI
     /// <summary>
     /// Top right during play, as in Palworld: the objective; while it is to feed the
     /// Champimaison, what its stage still needs, each with how many the player has and,
-    /// while some are missing, where to find them; then the recipes the player tracks with
-    /// their ingredients. All kept up to date as the inventory changes. Once the
+    /// while some are missing, where to find them; then, under a dashed line and their own
+    /// heading, the recipes the player tracks with their ingredients: what the quest asks
+    /// and what the player chose to craft read as two blocks. All kept up to date as the inventory changes. Once the
     /// Champimaison has grown a first time, and until the player catches a companion, an
-    /// optional line comes first: catch a Spongeus with the net, for water. It says what
+    /// optional line comes first: catch a Champonge with the net, for water. It says what
     /// the net is for, which players did not guess.
     /// </summary>
     [RequireComponent(typeof(Canvas))]
@@ -35,6 +36,10 @@ namespace Fungiiiii.UI
 
         [SerializeField]
         private RectTransform tracked;
+
+        [Tooltip("The dashed line and the heading over the tracked recipes: shown while one is tracked.")]
+        [SerializeField]
+        private GameObject[] trackedHeader;
 
         private readonly List<TrackedRecipeView> views = new List<TrackedRecipeView>();
         private readonly List<IngredientRow> needRows = new List<IngredientRow>();
@@ -70,6 +75,9 @@ namespace Fungiiiii.UI
                 return shown;
             }
         }
+
+        /// <summary>Whether the line and the heading over the tracked recipes show.</summary>
+        public bool ShowsTrackedHeader => trackedHeader.Length > 0 && trackedHeader[0].activeSelf;
 
         /// <summary>The optional line to catch a companion with the net, when it has been made.</summary>
         public IngredientRow CaptureRow => captureRow;
@@ -211,6 +219,14 @@ namespace Fungiiiii.UI
         private void ShowTracked()
         {
             var recipes = tracker.Tracked;
+            foreach (var part in trackedHeader)
+            {
+                if (part.activeSelf != recipes.Count > 0)
+                {
+                    part.SetActive(recipes.Count > 0);
+                }
+            }
+
             while (views.Count < recipes.Count)
             {
                 views.Add(Instantiate(trackedPrefab, tracked));

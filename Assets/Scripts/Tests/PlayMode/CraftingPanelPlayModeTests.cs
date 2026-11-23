@@ -141,6 +141,8 @@ namespace Fungiiiii.Tests.PlayMode
             yield return null;
             var hud = game.ObjectiveHud;
             Assert.That(hud.TrackedViews.Count(view => view.isActiveAndEnabled), Is.EqualTo(1));
+            // Since the playtest of 23/11: a line and a heading set it apart from the quest.
+            Assert.That(hud.ShowsTrackedHeader, Is.True, "Nothing sets the tracked recipe apart from the quest.");
             Assert.That(hud.TrackedViews[0].Recipe, Is.SameAs(netRecipe));
             Assert.That(hud.TrackedViews[0].Lines[0].CountText, Is.EqualTo("0/3"));
 
@@ -159,6 +161,7 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(game.Inventory.Count("net"), Is.EqualTo(1));
             Assert.That(game.Tracker.Tracked, Is.Empty, "A crafted recipe is still tracked.");
             Assert.That(hud.TrackedViews.Any(view => view.isActiveAndEnabled), Is.False);
+            Assert.That(hud.ShowsTrackedHeader, Is.False, "The heading stays with no recipe tracked.");
         }
     }
 }
