@@ -117,6 +117,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Interaction.PlayerInteractor
   maxAimAngleDegrees: 25
+  crosshairMargin: 0.3
   tapMaxSeconds: 0.3
   holdSeconds: 0.8
 --- !u!114 &381707460519700226

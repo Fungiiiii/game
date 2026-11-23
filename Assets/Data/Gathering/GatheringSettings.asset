@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47d4f26c98424a82af5b6b4cc2e66531, type: 3}
   m_Name: GatheringSettings
   m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Gathering.GatheringSettings
-  reach: 2
+  reach: 3
   tickSeconds: 5
   bubbleRadius: 50
   minPlayerDistance: 20

@@ -43,8 +43,10 @@ namespace Fungiiiii.Interaction
     /// <summary>
     /// Picks what the player is aiming at, close by, among the enabled candidates within
     /// reach. What is right under the crosshair wins, the nearest first: the stick looked
-    /// at beats the mushroom at the player's feet. Otherwise it is the candidate whose
-    /// point is nearest the centre of the view, inside a cone around it.
+    /// at beats the mushroom at the player's feet. The box around each model is widened
+    /// by a margin, so that the crosshair need not be exactly on a small stick. Otherwise
+    /// it is the candidate whose point is nearest the centre of the view, inside a cone
+    /// around it.
     /// </summary>
     public static class InteractionTargeting
     {
@@ -53,12 +55,14 @@ namespace Fungiiiii.Interaction
         /// <param name="eye">Position of the view.</param>
         /// <param name="forward">Direction of the view.</param>
         /// <param name="maxAngleDegrees">Half angle of the cone around the view.</param>
+        /// <param name="crosshairMargin">How much wider each model's box is on every side, for the crosshair, in metres.</param>
         /// <returns>Index of the target in <paramref name="candidates"/>, or <see cref="None"/>.</returns>
         public static int Pick(
             Vector3 eye,
             Vector3 forward,
             IReadOnlyList<InteractionCandidate> candidates,
-            float maxAngleDegrees)
+            float maxAngleDegrees,
+            float crosshairMargin = 0f)
         {
             var crosshair = new Ray(eye, forward);
             var underCrosshair = None;
@@ -74,7 +78,7 @@ namespace Fungiiiii.Interaction
                     continue;
                 }
 
-                if (candidate.HasBounds && candidate.Bounds.IntersectRay(crosshair, out var hit) && hit < nearestHit)
+                if (candidate.HasBounds && Widened(candidate.Bounds, crosshairMargin).IntersectRay(crosshair, out var hit) && hit < nearestHit)
                 {
                     underCrosshair = index;
                     nearestHit = hit;
@@ -99,12 +103,21 @@ namespace Fungiiiii.Interaction
             return underCrosshair != None ? underCrosshair : best;
         }
 
-        // Reach is measured on the ground: looking down at your feet is not further away.
-        private static bool IsWithinReach(Vector3 eye, InteractionCandidate candidate)
+        /// <summary>
+        /// Whether the candidate can be used from <paramref name="eye"/>, as far as distance
+        /// goes. Reach is measured on the ground: looking down at your feet is not further away.
+        /// </summary>
+        public static bool IsWithinReach(Vector3 eye, InteractionCandidate candidate)
         {
             var flat = candidate.Point - eye;
             flat.y = 0f;
             return flat.magnitude <= candidate.Reach;
+        }
+
+        private static Bounds Widened(Bounds bounds, float margin)
+        {
+            bounds.Expand(margin * 2f);
+            return bounds;
         }
     }
 }

@@ -151,6 +151,22 @@ namespace Fungiiiii.Tests.EditMode
         }
 
         [Test]
+        public void Targeting_ASmallStickJustBesideTheCrosshair_IsTargeted_WithTheMargin()
+        {
+            // A 10 cm stick 25 cm right of the crosshair; the cone is kept narrow so that only the crosshair counts.
+            var eye = new Vector3(0f, 1.6f, 0f);
+            var stick = new Vector3(0.25f, 0.05f, 1.5f);
+            var candidates = new[]
+            {
+                new InteractionCandidate(stick, 2f, true, new Bounds(stick, Vector3.one * 0.1f)),
+            };
+            var besideTheStick = (new Vector3(0f, 0.05f, 1.5f) - eye).normalized;
+
+            Assert.That(InteractionTargeting.Pick(eye, besideTheStick, candidates, 1f), Is.EqualTo(InteractionTargeting.None), "Missed by the crosshair, without a margin.");
+            Assert.That(InteractionTargeting.Pick(eye, besideTheStick, candidates, 1f, 0.3f), Is.EqualTo(0), "The margin does not widen the stick for the crosshair.");
+        }
+
+        [Test]
         public void Targeting_OfTwoThingsUnderTheCrosshair_TheNearerWins()
         {
             var eye = new Vector3(0f, 1.6f, 0f);

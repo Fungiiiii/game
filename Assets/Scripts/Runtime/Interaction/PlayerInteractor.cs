@@ -32,6 +32,10 @@ namespace Fungiiiii.Interaction
         [SerializeField, Range(1f, 90f)]
         private float maxAimAngleDegrees = 25f;
 
+        [Tooltip("How much wider than its model a target is for the crosshair, on every side, in metres: a small stick need not be aimed at exactly.")]
+        [SerializeField, Min(0f)]
+        private float crosshairMargin = 0.3f;
+
         [Tooltip("On a target that can be held, a press released within this time is a short press, in seconds.")]
         [SerializeField, Min(0.05f)]
         private float tapMaxSeconds = 0.3f;
@@ -125,9 +129,21 @@ namespace Fungiiiii.Interaction
                 viewTransform.position,
                 viewTransform.forward,
                 candidates,
-                maxAimAngleDegrees);
+                maxAimAngleDegrees,
+                crosshairMargin);
 
-            SetTarget(index == InteractionTargeting.None ? null : interactables[index]);
+            var next = index == InteractionTargeting.None ? null : interactables[index];
+            if (next != targeted)
+            {
+                SetTarget(next);
+            }
+            else
+            {
+                // A target that moves by itself, as a companion walking: the key follows it
+                // even while the view stays still.
+                ShowPrompt();
+            }
+
             if (targeted == null)
             {
                 return;
