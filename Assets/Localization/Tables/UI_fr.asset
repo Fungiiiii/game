@@ -270,10 +270,6 @@ MonoBehaviour:
     m_Localized: Fais germer la graine
     m_Metadata:
       m_Items: []
-  - m_Id: 391185041448997
-    m_Localized: Fabrique un filet
-    m_Metadata:
-      m_Items: []
   - m_Id: 391185041448998
     m_Localized: "Am\xE9liore la Champimaison"
     m_Metadata:
@@ -372,6 +368,22 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 391185041449022
     m_Localized: S’approcher discrètement
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449023
+    m_Localized: "(optionnel) Capture un Spongeus avec le filet"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449024
+    m_Localized: "Pour l’eau : pose-le, il boit aux fougères"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449025
+    m_Localized: Prochain dans {0} s
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449026
+    m_Localized: "Plein : récupère-le pour relancer"
     m_Metadata:
       m_Items: []
   references:

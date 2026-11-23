@@ -8,7 +8,6 @@ namespace Fungiiiii.Game
         FindSeed,
         PlantSeed,
         AwakenSeed,
-        CraftNet,
         GrowChampimaison,
         EnterChampimaison,
     }
@@ -16,12 +15,11 @@ namespace Fungiiiii.Game
     /// <summary>Where the player stands in the loop, as the objective reads it.</summary>
     public readonly struct ObjectiveState
     {
-        public ObjectiveState(bool hasSeed, bool seedPlanted, int champimaisonStage, bool hasHadNet, bool canEnter)
+        public ObjectiveState(bool hasSeed, bool seedPlanted, int champimaisonStage, bool canEnter)
         {
             HasSeed = hasSeed;
             SeedPlanted = seedPlanted;
             ChampimaisonStage = champimaisonStage;
-            HasHadNet = hasHadNet;
             CanEnter = canEnter;
         }
 
@@ -31,13 +29,14 @@ namespace Fungiiiii.Game
 
         public int ChampimaisonStage { get; }
 
-        /// <summary>The net was in the inventory at least once: losing it later does not ask for it again.</summary>
-        public bool HasHadNet { get; }
-
         public bool CanEnter { get; }
     }
 
-    /// <summary>The objective shown top right, worked out from the state of the game rather than from the order of events.</summary>
+    /// <summary>
+    /// The objective shown top right, worked out from the state of the game rather than from
+    /// the order of events. Crafting the net is no objective: it is one way to get water for
+    /// the Champimaison, which the objective's optional line suggests.
+    /// </summary>
     public static class ObjectiveRules
     {
         public static Objective For(ObjectiveState state)
@@ -52,12 +51,7 @@ namespace Fungiiiii.Game
                 return Objective.EnterChampimaison;
             }
 
-            if (state.ChampimaisonStage == 0)
-            {
-                return Objective.AwakenSeed;
-            }
-
-            return state.HasHadNet ? Objective.GrowChampimaison : Objective.CraftNet;
+            return state.ChampimaisonStage == 0 ? Objective.AwakenSeed : Objective.GrowChampimaison;
         }
 
         /// <summary>The objective's text, a key of the UI string table.</summary>
@@ -68,7 +62,6 @@ namespace Fungiiiii.Game
                 case Objective.FindSeed: return UiText.ObjectiveFindSeed;
                 case Objective.PlantSeed: return UiText.ObjectivePlantSeed;
                 case Objective.AwakenSeed: return UiText.ObjectiveAwakenSeed;
-                case Objective.CraftNet: return UiText.ObjectiveCraftNet;
                 case Objective.GrowChampimaison: return UiText.ObjectiveGrow;
                 default: return UiText.ObjectiveEnter;
             }

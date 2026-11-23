@@ -11,7 +11,10 @@ namespace Fungiiiii.UI
     /// Top right during play, as in Palworld: the objective; while it is to feed the
     /// Champimaison, what its stage still needs, each with how many the player has and,
     /// while some are missing, where to find them; then the recipes the player tracks with
-    /// their ingredients. All kept up to date as the inventory changes.
+    /// their ingredients. All kept up to date as the inventory changes. Once the
+    /// Champimaison has grown a first time, and until the player catches a companion, an
+    /// optional line comes first: catch a Spongeus with the net, for water. It says what
+    /// the net is for, which players did not guess.
     /// </summary>
     [RequireComponent(typeof(Canvas))]
     internal sealed class ObjectiveHud : MonoBehaviour
@@ -35,12 +38,16 @@ namespace Fungiiiii.UI
 
         private readonly List<TrackedRecipeView> views = new List<TrackedRecipeView>();
         private readonly List<IngredientRow> needRows = new List<IngredientRow>();
+        private readonly List<ItemDefinition> companionItems = new List<ItemDefinition>();
 
         private Func<string> objectiveKey;
         private RecipeTracker tracker;
         private PlayerInventory inventory;
         private FungalNetwork network;
         private Canvas canvas;
+        private ItemDefinition captureTool;
+        private IngredientRow captureRow;
+        private bool hasCaught;
 
         public string ObjectiveKey => objective.EntryKey;
 
@@ -63,6 +70,12 @@ namespace Fungiiiii.UI
                 return shown;
             }
         }
+
+        /// <summary>The optional line to catch a companion with the net, when it has been made.</summary>
+        public IngredientRow CaptureRow => captureRow;
+
+        /// <summary>Whether the optional line to catch a companion with the net shows.</summary>
+        public bool SuggestsCapture => captureRow != null && captureRow.gameObject.activeSelf;
 
         /// <summary>Whether it is drawn. Hidden while the inventory is open, it keeps following the game.</summary>
         public bool IsVisible => Canvas.enabled;
@@ -96,6 +109,20 @@ namespace Fungiiiii.UI
             inventory.Changed += ShowNeeds;
             ShowObjective();
             ShowTracked();
+        }
+
+        /// <summary>
+        /// Lets the optional line to catch a companion show, from the Champimaison's second
+        /// stage on, until one of <paramref name="companions"/> has been in the inventory.
+        /// </summary>
+        /// <param name="net">What catches them; its icon starts the line.</param>
+        /// <param name="companions">The items the companions become once caught.</param>
+        public void SuggestCapture(ItemDefinition net, IEnumerable<ItemDefinition> companions)
+        {
+            captureTool = net;
+            companionItems.Clear();
+            companionItems.AddRange(companions);
+            ShowNeeds();
         }
 
         /// <summary>From the planting on: what the Champimaison's stage needs shows under the objective.</summary>
@@ -139,6 +166,7 @@ namespace Fungiiiii.UI
         /// <summary>What is still needed: deposited and carried both count, as the player sees it coming together.</summary>
         private void ShowNeeds()
         {
+            ShowCaptureSuggestion();
             var lineCount = network == null || network.IsComplete ? 0 : network.Progress.LineCount;
             while (needRows.Count < lineCount)
             {
@@ -155,6 +183,28 @@ namespace Fungiiiii.UI
                     var have = network.Progress.Deposited(line) + inventory.Count(required.Item.Id);
                     needRows[line].Show(required.Item, Mathf.Min(have, required.Amount), required.Amount);
                 }
+            }
+        }
+
+        private void ShowCaptureSuggestion()
+        {
+            foreach (var companion in companionItems)
+            {
+                hasCaught |= inventory != null && inventory.Count(companion.Id) > 0;
+            }
+
+            var suggest = captureTool != null && !hasCaught && network != null && network.Stage >= 1 && !network.IsComplete;
+            if (suggest && captureRow == null)
+            {
+                captureRow = Instantiate(needPrefab, needs);
+                captureRow.name = "Optional Capture";
+                captureRow.transform.SetAsFirstSibling();
+                captureRow.ShowGoal(captureTool, UiText.ObjectiveOptionalCapture, UiText.ObjectiveOptionalCaptureHint);
+            }
+
+            if (captureRow != null && captureRow.gameObject.activeSelf != suggest)
+            {
+                captureRow.gameObject.SetActive(suggest);
             }
         }
 

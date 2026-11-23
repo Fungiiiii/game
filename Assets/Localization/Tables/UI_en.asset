@@ -270,10 +270,6 @@ MonoBehaviour:
     m_Localized: Sprout the seed
     m_Metadata:
       m_Items: []
-  - m_Id: 391185041448997
-    m_Localized: Craft a net
-    m_Metadata:
-      m_Items: []
   - m_Id: 391185041448998
     m_Localized: Upgrade the Champimaison
     m_Metadata:
@@ -372,6 +368,22 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 391185041449022
     m_Localized: Sneak up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449023
+    m_Localized: "(optional) Catch a Spongeus with the net"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449024
+    m_Localized: "For water: set it down, it drinks at the ferns"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449025
+    m_Localized: Next in {0} s
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449026
+    m_Localized: "Full: collect it to resume"
     m_Metadata:
       m_Items: []
   references:

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Fungiiiii.Champimaison;
-using Fungiiiii.Crafting;
 using Fungiiiii.Gathering;
 using Fungiiiii.Inventory;
 using UnityEngine;
@@ -11,8 +10,8 @@ namespace Fungiiiii.Game
     /// <summary>
     /// Where the compass's mark points for the objective now, as in other games: the seed at
     /// the foot of the giant tree; the nearest mole hole to plant it in; the Champimaison
-    /// while it waits for what the player carries, or for its thread before the net; the
-    /// nearest full fern while water is missing. Nothing when there is nowhere in
+    /// while it waits for what the player carries; the nearest full fern while water is
+    /// missing. Nothing when there is nowhere in
     /// particular to go: sticks and mushrooms are all around.
     /// </summary>
     internal sealed class ObjectiveTarget
@@ -23,18 +22,15 @@ namespace Fungiiiii.Game
         private readonly MoleHoles moleHoles;
         private readonly IReadOnlyList<RefillingPlant> ferns;
         private readonly PlayerInventory inventory;
-        private readonly CraftingRecipe net;
 
         /// <param name="seedOnTheGround">The seed lying where it fell; gone once picked up.</param>
-        /// <param name="netRecipe">The net's recipe: before it, the Champimaison's thread is missing.</param>
         public ObjectiveTarget(
             GameObjectives gameObjectives,
             Transform playerTransform,
             Transform seedOnTheGround,
             MoleHoles holes,
             IReadOnlyList<RefillingPlant> waterFerns,
-            PlayerInventory playerInventory,
-            CraftingRecipe netRecipe)
+            PlayerInventory playerInventory)
         {
             objectives = gameObjectives ?? throw new ArgumentNullException(nameof(gameObjectives));
             player = playerTransform != null ? playerTransform : throw new ArgumentNullException(nameof(playerTransform));
@@ -42,7 +38,6 @@ namespace Fungiiiii.Game
             moleHoles = holes != null ? holes : throw new ArgumentNullException(nameof(holes));
             ferns = waterFerns ?? throw new ArgumentNullException(nameof(waterFerns));
             inventory = playerInventory ?? throw new ArgumentNullException(nameof(playerInventory));
-            net = netRecipe != null ? netRecipe : throw new ArgumentNullException(nameof(netRecipe));
         }
 
         /// <summary>Where to go now, or null when nowhere in particular.</summary>
@@ -58,8 +53,6 @@ namespace Fungiiiii.Game
                 case Objective.AwakenSeed:
                 case Objective.GrowChampimaison:
                     return IsWaterMissing(champimaison) ? NearestFern() : champimaison.transform.position;
-                case Objective.CraftNet:
-                    return Crafter.CanCraft(inventory, net) ? (Vector3?)null : champimaison.transform.position;
                 case Objective.EnterChampimaison:
                     return champimaison.transform.position;
                 default:

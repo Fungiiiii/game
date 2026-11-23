@@ -36,6 +36,27 @@ namespace Fungiiiii.Tests.EditMode
         }
 
         [Test]
+        public void TheNextThread_IsMeasured_AsProgressAndSecondsLeft()
+        {
+            var production = new ThreadProduction(20f, 3);
+            Assert.That(production.NextProgress, Is.Zero, "Not running, it shows progress.");
+            Assert.That(production.SecondsToNext, Is.Zero);
+
+            production.Start();
+            production.Tick(5f);
+            Assert.That(production.NextProgress, Is.EqualTo(0.25f).Within(0.001f));
+            Assert.That(production.SecondsToNext, Is.EqualTo(15));
+
+            production.Tick(7.5f);
+            Assert.That(production.SecondsToNext, Is.EqualTo(8), "Seconds left are not rounded up.");
+
+            production.Tick(1000f);
+            Assert.That(production.Stored, Is.EqualTo(3));
+            Assert.That(production.NextProgress, Is.Zero, "A full stock still shows progress.");
+            Assert.That(production.SecondsToNext, Is.Zero);
+        }
+
+        [Test]
         public void AFullStock_Waits()
         {
             var production = new ThreadProduction(10f, 2);

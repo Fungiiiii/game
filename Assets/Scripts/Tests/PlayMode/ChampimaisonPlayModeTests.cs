@@ -115,7 +115,7 @@ namespace Fungiiiii.Tests.PlayMode
 
             Assert.That(champimaison.Network.Stage, Is.EqualTo(1), "The seed did not wake up.");
             Assert.That(panel.TitleKey, Is.EqualTo(UiText.PanelGrowTitle));
-            Assert.That(game.CurrentObjective, Is.EqualTo(Objective.CraftNet));
+            Assert.That(game.CurrentObjective, Is.EqualTo(Objective.GrowChampimaison), "Awake, the objective is not to grow the Champimaison.");
         }
 
         [UnityTest]
@@ -134,13 +134,33 @@ namespace Fungiiiii.Tests.PlayMode
             var panel = Object.FindFirstObjectByType<RequirementPanel>();
             Assert.That(panel.HoldKey, Is.EqualTo(UiText.HintDeposit), "The panel does not show the key to hold.");
             Assert.That(panel.PressKey, Is.Empty, "A key to press is shown while a short press does nothing.");
+        }
 
-            StandBefore(champimaison.transform.position, 7f);
+        [UnityTest]
+        public IEnumerator ThePanel_ShowsOnlyWhereItsKeysWork_AndReadingItAimsAtTheChampimaison()
+        {
+            // Since the playtest of 23/11: the panel showed from 8 m, its keys worked from 3.
+            yield return Load();
+            var game = Bootstrap;
+            var champimaison = Plant(game);
+            game.Inventory.Add(champimaison.Network.Progress.Required(1).Item, 2);
+            var look = game.ViewCamera.GetComponent<Fungiiiii.Runtime.Player.FirstPersonCamera>();
+            var panel = Object.FindFirstObjectByType<RequirementPanel>();
+
+            StandBefore(champimaison.transform.position, 4.5f);
+            look.LookAt(champimaison.PanelPoint + Vector3.up * 0.3f);
             yield return null;
             yield return null;
+            Assert.That(panel.IsVisible, Is.True, "The panel is hidden within reach.");
+            Assert.That(game.Interactor.Targeted, Is.SameAs(champimaison), "Reading the panel from 4.5 m does not aim at the Champimaison.");
+            Assert.That(panel.HoldKey, Is.EqualTo(UiText.HintDeposit), "The panel read from 4.5 m has no key.");
 
-            Assert.That(panel.IsVisible, Is.True, "The panel is hidden within its distance.");
-            Assert.That(panel.HoldKey, Is.Empty, "The keys show while the Champimaison is not aimed at.");
+            StandBefore(champimaison.transform.position, 6.5f);
+            look.LookAt(champimaison.PanelPoint);
+            yield return null;
+            yield return null;
+            Assert.That(panel.IsVisible, Is.False, "The panel shows from where its keys do nothing.");
+            Assert.That(game.Interactor.Targeted, Is.Not.SameAs(champimaison), "The Champimaison is used from 6.5 m.");
         }
 
         [UnityTest]
@@ -177,6 +197,74 @@ namespace Fungiiiii.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator OnceGrownOnce_TheObjective_SuggestsCatchingASpongeusWithTheNet_UntilOneIsCaught()
+        {
+            yield return Load();
+            var game = Bootstrap;
+            var hud = game.ObjectiveHud;
+            var champimaison = Plant(game);
+            yield return null;
+            Assert.That(hud.SuggestsCapture, Is.False, "The net is suggested before the seed is awake.");
+
+            var progress = champimaison.Network.Progress;
+            game.Inventory.Add(progress.Required(0).Item, progress.Required(0).Amount);
+            game.Inventory.Add(progress.Required(1).Item, progress.Required(1).Amount);
+            champimaison.InteractHold(game.Inventory);
+            yield return null;
+            Assert.That(hud.SuggestsCapture, Is.True, "Nothing says the net catches a Spongeus, for water.");
+            Assert.That(hud.CaptureRow.TextKey, Is.EqualTo(UiText.ObjectiveOptionalCapture));
+            Assert.That(hud.CaptureRow.SourceKey, Is.EqualTo(UiText.ObjectiveOptionalCaptureHint), "The line does not say it is for water.");
+            Assert.That(hud.CaptureRow.CountText, Is.Empty, "The optional line has a count.");
+            Assert.That(hud.CaptureRow.transform.GetSiblingIndex(), Is.Zero, "The optional line does not come first.");
+
+            // Caught, then put down: the line is gone for good.
+            var spongeus = game.Companions.HeldBehaviours.First().Item;
+            game.Inventory.Add(spongeus, 1);
+            yield return null;
+            Assert.That(hud.SuggestsCapture, Is.False, "The net is still suggested once a Spongeus is caught.");
+            game.Inventory.Remove(spongeus.Id, 1);
+            yield return null;
+            Assert.That(hud.SuggestsCapture, Is.False, "The suggestion came back once the Spongeus left the inventory.");
+        }
+
+        [UnityTest]
+        public IEnumerator OnceAwake_ThePanel_ShowsTheThreadComing_WithItsKeyGreyedUntilOneWaits()
+        {
+            // Since the playtest of 23/11: when the next thread comes, and that E collects it.
+            yield return Load();
+            var game = Bootstrap;
+            var champimaison = Plant(game);
+            var panel = Object.FindFirstObjectByType<RequirementPanel>();
+            StandBefore(champimaison.transform.position, 3f);
+            game.ViewCamera.GetComponent<Fungiiiii.Runtime.Player.FirstPersonCamera>().LookAt(champimaison.PanelPoint + Vector3.up * 0.3f);
+            yield return null;
+            yield return null;
+            Assert.That(panel.IsVisible, Is.True);
+            Assert.That(panel.ShowsProduction, Is.False, "The thread shows before the seed is awake.");
+
+            var progress = champimaison.Network.Progress;
+            game.Inventory.Add(progress.Required(0).Item, progress.Required(0).Amount);
+            game.Inventory.Add(progress.Required(1).Item, progress.Required(1).Amount);
+            champimaison.InteractHold(game.Inventory);
+            champimaison.Thread.Tick(5f);
+            yield return null;
+            var row = panel.Production;
+            Assert.That(panel.ShowsProduction, Is.True, "Nothing says thread is produced.");
+            Assert.That(row.CanCollect, Is.False, "The key is lit with no thread to collect.");
+            Assert.That(row.CountText, Is.EqualTo($"0/{champimaison.Thread.MaxStored}"));
+            Assert.That(row.ShowsBar, Is.True);
+            Assert.That(row.Progress, Is.GreaterThan(0f), "The bar to the next thread is empty.");
+            Assert.That(row.NextKey, Is.EqualTo(UiText.PanelThreadNext));
+
+            champimaison.Thread.Tick(1000f);
+            yield return null;
+            Assert.That(row.CanCollect, Is.True, "The key stays greyed with thread waiting.");
+            Assert.That(row.CountText, Is.EqualTo($"{champimaison.Thread.MaxStored}/{champimaison.Thread.MaxStored}"));
+            Assert.That(row.ShowsBar, Is.False, "A full stock still shows a bar.");
+            Assert.That(row.NextKey, Is.EqualTo(UiText.PanelThreadFull));
+        }
+
+        [UnityTest]
         public IEnumerator AnAwakeChampimaison_ProducesThread_ThatAShortPressCollects()
         {
             yield return Load();
@@ -192,19 +280,19 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(champimaison.HintKey, Is.EqualTo(UiText.HintCollectThread));
             var stored = champimaison.Thread.Stored;
 
-            // Since the playtest of 22/11, on a line of its own under the panel, pulsing.
-            StandBefore(champimaison.transform.position, 5f);
+            // Since the playtest of 23/11, its key is on its production line, in the panel.
+            StandBefore(champimaison.transform.position, 4f);
             yield return null;
             yield return null;
-            Assert.That(game.ThreadTag.IsShown, Is.True, "Nothing says thread waits.");
-            Assert.That(game.ThreadTag.ActionKey, Is.EqualTo(UiText.HintCollectThread));
-            Assert.That(game.ThreadTag.IsPulsing, Is.True, "The thread's line does not pulse.");
-            Assert.That(Object.FindFirstObjectByType<RequirementPanel>().PressKey, Is.Not.EqualTo(UiText.HintCollectThread), "Collecting the thread is still in the panel.");
+            var panel = Object.FindFirstObjectByType<RequirementPanel>();
+            Assert.That(panel.ShowsProduction, Is.True, "Nothing says thread waits.");
+            Assert.That(panel.Production.CanCollect, Is.True, "The key to collect the thread is greyed.");
+            Assert.That(panel.PressKey, Is.Not.EqualTo(UiText.HintCollectThread), "Collecting the thread is also in the panel's foot.");
 
             Assert.That(champimaison.Interact(game.Inventory), Is.True);
             Assert.That(game.Inventory.Count(Thread(game).Id), Is.EqualTo(stored));
             yield return null;
-            Assert.That(game.ThreadTag.IsShown, Is.False, "The thread's line stays once collected.");
+            Assert.That(panel.Production.CanCollect, Is.False, "The key stays lit once the thread is collected.");
         }
 
         [UnityTest]

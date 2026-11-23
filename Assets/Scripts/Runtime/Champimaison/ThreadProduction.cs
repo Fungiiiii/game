@@ -39,6 +39,14 @@ namespace Fungiiiii.Champimaison
 
         public int MaxStored => maxStored;
 
+        /// <summary>How far the next thread is, from 0 to 1; 0 while it does not run or the stock is full.</summary>
+        public float NextProgress => IsProducing ? elapsed / secondsPerThread : 0f;
+
+        /// <summary>Whole seconds until the next thread, rounded up; 0 while it does not run or the stock is full.</summary>
+        public int SecondsToNext => IsProducing ? (int)Math.Ceiling(secondsPerThread - elapsed) : 0;
+
+        private bool IsProducing => IsRunning && Stored < maxStored;
+
         public void Start()
         {
             IsRunning = true;

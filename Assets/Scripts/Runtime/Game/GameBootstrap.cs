@@ -114,10 +114,6 @@ namespace Fungiiiii.Game
         [SerializeField]
         private CreatureNameTag nameTag;
 
-        [Tooltip("The thread waiting in the Champimaison, on a line of its own under its panel.")]
-        [SerializeField]
-        private ThreadTag threadTag;
-
         [Tooltip("The crouch key by a full creature looked at, until the first squeeze.")]
         [SerializeField]
         private SneakHint sneakHint;
@@ -279,8 +275,6 @@ namespace Fungiiiii.Game
 
         public SneakHint SneakHint => sneakHint;
 
-        public ThreadTag ThreadTag => threadTag;
-
         public Fungiiiii.UI.Compass Compass => compass;
 
         /// <summary>Where the compass's mark points now, or null.</summary>
@@ -376,10 +370,9 @@ namespace Fungiiiii.Game
             moleHoles.Populate(forest, GroundHeight, outlines, interactables, hotbar, Inventory, new System.Random(random.Next()));
             moleHoles.Planted += HandlePlanted;
             screens.Inventory.Crafting.Bind(Inventory, Tracker, controls, screens.Inventory);
-            objectives = new GameObjectives(Inventory, moleHoles, netItem);
+            objectives = new GameObjectives(Inventory, moleHoles);
             objectiveHud.Bind(() => ObjectiveRules.KeyFor(objectives.Current), Tracker, Inventory);
-            var netRecipe = System.Linq.Enumerable.First(screens.Inventory.Crafting.Book.Recipes, recipe => recipe.Result == netItem);
-            objectiveTarget = new ObjectiveTarget(objectives, player.transform, seed.transform, moleHoles, refillingPlants.Plants, Inventory, netRecipe);
+            objectiveTarget = new ObjectiveTarget(objectives, player.transform, seed.transform, moleHoles, refillingPlants.Plants, Inventory);
             compass.Bind(firstPersonCamera, objectiveTarget.Current);
             objectives.Changed += objectiveHud.ShowObjective;
 
@@ -416,9 +409,9 @@ namespace Fungiiiii.Game
                 return "the screens, the quick bar, the key prompt, the vital gauges, the pickup feed, the dropped items, the requirement panel or the objective are missing.";
             }
 
-            if (nameTag == null || threadTag == null || compass == null || sneakHint == null)
+            if (nameTag == null || compass == null || sneakHint == null)
             {
-                return "the creature name tag, the thread tag, the compass or the sneak hint is missing.";
+                return "the creature name tag, the compass or the sneak hint is missing.";
             }
 
             if (screens.Inventory == null || screens.Inventory.Crafting == null)
@@ -449,7 +442,6 @@ namespace Fungiiiii.Game
                 ?? intro.FindProblem()
                 ?? droppedItems.FindProblem()
                 ?? nameTag.FindProblem()
-                ?? threadTag.FindProblem()
                 ?? compass.FindProblem()
                 ?? sneakHint.FindProblem()
                 ?? companions.FindProblem()
@@ -627,8 +619,8 @@ namespace Fungiiiii.Game
         private void HandlePlanted(FungalHole champimaison)
         {
             requirementPanel.Bind(champimaison, Inventory, firstPersonCamera.Camera, controls, interactor);
-            threadTag.Bind(champimaison, firstPersonCamera, interactor);
             objectiveHud.ShowNeedsOf(champimaison.Network);
+            objectiveHud.SuggestCapture(netItem, System.Linq.Enumerable.Select(companions.HeldBehaviours, held => held.Item));
             champimaison.Entered += EnterChampimaison;
         }
 

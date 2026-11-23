@@ -42,9 +42,37 @@ namespace Fungiiiii.UI
 
         public string CountText => count.text;
 
+        /// <summary>The name shown, an entry of the UI string table.</summary>
+        public string TextKey => itemName.EntryKey;
+
+        /// <summary>The line under the name, an entry of the UI string table; empty when hidden.</summary>
+        public string SourceKey => ShowsSource ? source.EntryKey : string.Empty;
+
         public bool IsMissing { get; private set; }
 
         public bool ShowsSource => source != null && source.gameObject.activeSelf;
+
+        /// <summary>
+        /// A line that is no ingredient, something to do: the icon of what it is done with,
+        /// what to do and a hint under it, without a count.
+        /// </summary>
+        public void ShowGoal(ItemDefinition doneWith, string textKey, string hintKey)
+        {
+            icon.Show(doneWith);
+            itemName.Show(textKey);
+            IsMissing = true;
+            count.text = string.Empty;
+            if (tick != null)
+            {
+                tick.SetActive(false);
+            }
+
+            if (source != null)
+            {
+                source.gameObject.SetActive(true);
+                source.Show(hintKey);
+            }
+        }
 
         public void Show(ItemDefinition item, int owned, int needed)
         {

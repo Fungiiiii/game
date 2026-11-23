@@ -5,9 +5,9 @@ namespace Fungiiiii.Tests.EditMode
 {
     public sealed class ObjectiveRulesTests
     {
-        private static Objective For(bool hasSeed = false, bool planted = false, int stage = 0, bool hadNet = false, bool canEnter = false)
+        private static Objective For(bool hasSeed = false, bool planted = false, int stage = 0, bool canEnter = false)
         {
-            return ObjectiveRules.For(new ObjectiveState(hasSeed, planted, stage, hadNet, canEnter));
+            return ObjectiveRules.For(new ObjectiveState(hasSeed, planted, stage, canEnter));
         }
 
         [Test]
@@ -29,16 +29,16 @@ namespace Fungiiiii.Tests.EditMode
         }
 
         [Test]
-        public void OnceAwake_TheNetIsToBeCrafted_ThenTheChampimaisonGrown()
+        public void OnceAwake_TheChampimaisonIsToBeGrown_WithoutAnObjectiveForTheNet()
         {
-            Assert.That(For(planted: true, stage: 1), Is.EqualTo(Objective.CraftNet));
-            Assert.That(For(planted: true, stage: 1, hadNet: true), Is.EqualTo(Objective.GrowChampimaison));
+            // Since the playtest of 23/11: the net is a way to get water, not an objective.
+            Assert.That(For(planted: true, stage: 1), Is.EqualTo(Objective.GrowChampimaison));
         }
 
         [Test]
         public void OnceOpen_TheChampimaisonIsToBeEntered()
         {
-            Assert.That(For(planted: true, stage: 2, hadNet: true, canEnter: true), Is.EqualTo(Objective.EnterChampimaison));
+            Assert.That(For(planted: true, stage: 2, canEnter: true), Is.EqualTo(Objective.EnterChampimaison));
         }
 
         [Test]

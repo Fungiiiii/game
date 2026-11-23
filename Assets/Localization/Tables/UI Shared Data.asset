@@ -267,10 +267,6 @@ MonoBehaviour:
     m_Key: objective.awaken_seed
     m_Metadata:
       m_Items: []
-  - m_Id: 391185041448997
-    m_Key: objective.craft_net
-    m_Metadata:
-      m_Items: []
   - m_Id: 391185041448998
     m_Key: objective.grow
     m_Metadata:
@@ -369,6 +365,22 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 391185041449022
     m_Key: hint.sneak
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449023
+    m_Key: objective.optional_capture
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449024
+    m_Key: objective.optional_capture.hint
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449025
+    m_Key: panel.thread_next
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449026
+    m_Key: panel.thread_full
     m_Metadata:
       m_Items: []
   m_Metadata:

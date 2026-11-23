@@ -54,6 +54,8 @@ namespace Fungiiiii.UI
         public const string PanelGrowTitle = "panel.grow_title";
         public const string PanelInBackpack = "panel.in_backpack";
         public const string PanelHold = "panel.hold";
+        public const string PanelThreadNext = "panel.thread_next";
+        public const string PanelThreadFull = "panel.thread_full";
         public const string PickupLine = "pickup.line";
 
         /// <summary>Shown after a first press during the opening shot: a second one skips it.</summary>
@@ -74,9 +76,10 @@ namespace Fungiiiii.UI
         public const string ObjectiveFindSeed = "objective.find_seed";
         public const string ObjectivePlantSeed = "objective.plant_seed";
         public const string ObjectiveAwakenSeed = "objective.awaken_seed";
-        public const string ObjectiveCraftNet = "objective.craft_net";
         public const string ObjectiveGrow = "objective.grow";
         public const string ObjectiveEnter = "objective.enter";
+        public const string ObjectiveOptionalCapture = "objective.optional_capture";
+        public const string ObjectiveOptionalCaptureHint = "objective.optional_capture.hint";
 
         // The slingshot in hand.
         public const string HintShoot = "hint.shoot";

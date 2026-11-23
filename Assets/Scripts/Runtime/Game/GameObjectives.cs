@@ -6,22 +6,19 @@ namespace Fungiiiii.Game
 {
     /// <summary>
     /// Follows the game to tell the objective (<see cref="ObjectiveRules"/>): the seed in
-    /// the inventory, the planted Champimaison and its stage, the net. Raised again only
-    /// when the objective changes.
+    /// the inventory, the planted Champimaison and its stage. Raised again only when the
+    /// objective changes.
     /// </summary>
     internal sealed class GameObjectives : IDisposable
     {
         private readonly PlayerInventory inventory;
         private readonly MoleHoles moleHoles;
-        private readonly ItemDefinition net;
         private FungalHole champimaison;
-        private bool hasHadNet;
 
-        public GameObjectives(PlayerInventory playerInventory, MoleHoles holes, ItemDefinition netItem)
+        public GameObjectives(PlayerInventory playerInventory, MoleHoles holes)
         {
             inventory = playerInventory ?? throw new ArgumentNullException(nameof(playerInventory));
             moleHoles = holes != null ? holes : throw new ArgumentNullException(nameof(holes));
-            net = netItem != null ? netItem : throw new ArgumentNullException(nameof(netItem));
             inventory.Changed += Evaluate;
             moleHoles.Planted += OnPlanted;
             Current = Work();
@@ -60,14 +57,12 @@ namespace Fungiiiii.Game
 
         private Objective Work()
         {
-            hasHadNet |= inventory.Count(net.Id) > 0;
             var stage = champimaison != null ? champimaison.Network.Stage : 0;
             var canEnter = champimaison != null && champimaison.CanBeEntered;
             return ObjectiveRules.For(new ObjectiveState(
                 inventory.Count(moleHoles.Seed.Id) > 0,
                 moleHoles.IsPlanted,
                 stage,
-                hasHadNet,
                 canEnter));
         }
     }

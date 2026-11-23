@@ -24,11 +24,17 @@ namespace Fungiiiii.Champimaison
         private const int FilamentPointCount = 10;
         private const int FilamentSeed = 20716;
 
-        /// <summary>The point aimed at, this high above the centre of the hole: no key floats there, its panel shows the keys.</summary>
+        /// <summary>Where a key over it would float, this high above the centre of the hole: none does, its panel shows the keys.</summary>
         private const float PromptHeight = 0.9f;
 
         /// <summary>The bottom of the wooden panel, its pointer, floats this high above the centre of the hole.</summary>
         private const float PanelHeight = 1.2f;
+
+        /// <summary>
+        /// Top of the box the crosshair targets it in, above the centre of the hole: over the
+        /// hole and up through its panel, so that looking at the panel aims at it.
+        /// </summary>
+        private const float AimBoxHeight = 2.5f;
 
         private static readonly int[] FilamentsPerStage = { 7, 12 };
         private static readonly float[] StageReach = { 3f, 6f };
@@ -50,6 +56,9 @@ namespace Fungiiiii.Champimaison
         public FungalNetwork Network => network;
 
         public ThreadProduction Thread => thread;
+
+        /// <summary>What its thread production gives.</summary>
+        public ItemDefinition ThreadItem => threadItem;
 
         public bool CanBeEntered => network.HasUnlocked(TierUnlock.Entrance);
 
@@ -82,7 +91,14 @@ namespace Fungiiiii.Champimaison
             }
         }
 
-        public InteractionCandidate Candidate => new InteractionCandidate(transform.position, reach, true);
+        /// <summary>Aimed at through its panel: whoever reads the panel can use its keys.</summary>
+        public InteractionCandidate Candidate => new InteractionCandidate(
+            PanelPoint,
+            reach,
+            true,
+            new Bounds(
+                transform.position + Vector3.up * (AimBoxHeight * 0.5f),
+                new Vector3(HoleRadius * 2f, AimBoxHeight, HoleRadius * 2f)));
 
         public void Initialize(
             FungalNetwork fungalNetwork,

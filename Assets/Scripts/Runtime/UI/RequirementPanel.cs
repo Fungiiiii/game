@@ -13,8 +13,11 @@ namespace Fungiiiii.UI
     /// heading with the stage, one line per item the next stage costs
     /// (<see cref="RequirementRow"/>), then, while the Champimaison is aimed at, its keys
     /// with what each does (<see cref="ActionLine"/>): a short press, and a hold. Once the
-    /// last stage is reached, only the key to enter it is left. Shown while the player is
-    /// near and no menu is open.
+    /// last stage is reached, only the key to enter it is left. Once the seed is awake, a
+    /// line of its own shows the thread it produces (<see cref="ProductionRow"/>): the key
+    /// that collects it, how much waits, and a bar to the next one. Shown while the player is
+    /// within the Champimaison's reach, and only then: whoever sees the panel can use its
+    /// keys. Hidden while a menu is open.
     /// </summary>
     internal sealed class RequirementPanel : MonoBehaviour
     {
@@ -51,9 +54,13 @@ namespace Fungiiiii.UI
         [SerializeField]
         private ActionLine holdLine;
 
-        [Tooltip("Shown only within this distance of the Champimaison, in metres.")]
-        [SerializeField, Min(1f)]
-        private float showDistance = 8f;
+        [Tooltip("The thread produced, how much waits and when the next comes, with the key that collects it.")]
+        [SerializeField]
+        private ProductionRow production;
+
+        [Tooltip("The line over the production and the production: shown while thread is produced.")]
+        [SerializeField]
+        private GameObject[] productionParts;
 
         private readonly List<RequirementRow> shownRows = new List<RequirementRow>();
 
@@ -75,6 +82,12 @@ namespace Fungiiiii.UI
 
         /// <summary>The entry shown for what a short press does; empty when it is hidden.</summary>
         public string PressKey => IsFooterLineShown(pressLine) ? pressLine.ActionKey : string.Empty;
+
+        /// <summary>The line of the thread produced, shown or not.</summary>
+        public ProductionRow Production => production;
+
+        /// <summary>Whether the line of the thread produced shows.</summary>
+        public bool ShowsProduction => productionParts.Length > 0 && productionParts[0].activeSelf;
 
         /// <summary>The entry shown for what holding does; empty when it is hidden.</summary>
         public string HoldKey => IsFooterLineShown(holdLine) ? holdLine.ActionKey : string.Empty;
@@ -133,7 +146,7 @@ namespace Fungiiiii.UI
             var screenPoint = Vector3.zero;
             var show = hole != null
                 && !menus.IsMenuOpen
-                && Vector3.Distance(view.transform.position, hole.transform.position) <= showDistance
+                && InteractionTargeting.IsWithinReach(view.transform.position, hole.Candidate)
                 && (screenPoint = view.WorldToScreenPoint(hole.PanelPoint)).z > 0f;
 
             if (panel.gameObject.activeSelf != show)
@@ -152,8 +165,21 @@ namespace Fungiiiii.UI
                 RefreshCost();
             }
 
-            // Every frame: the border of the key to hold fills while it is held.
+            // Every frame: the border of the key to hold fills while it is held, the bar of
+            // the next thread fills as it comes.
             RefreshFooter();
+            RefreshProduction();
+        }
+
+        private void RefreshProduction()
+        {
+            var thread = hole.Thread;
+            var shown = thread.IsRunning && !hole.CanBeEntered;
+            SetActive(productionParts, shown);
+            if (shown)
+            {
+                production.Show(interactor.InteractGlyph, hole.ThreadItem, thread.Stored, thread.MaxStored, thread.NextProgress, thread.SecondsToNext);
+            }
         }
 
         private void RefreshCost()
@@ -193,7 +219,7 @@ namespace Fungiiiii.UI
         private void RefreshFooter()
         {
             var aimed = ReferenceEquals(interactor.Targeted, hole);
-            // Collecting the thread has a line of its own, under the panel (ThreadTag).
+            // The thread is collected from its production line, with its own key.
             var pressKey = aimed && hole.CanBeEntered ? hole.HintKey : null;
             var holdKey = aimed ? hole.HoldHintKey : null;
             SetActive(footerParts, pressKey != null || holdKey != null);
