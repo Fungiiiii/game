@@ -1,4 +1,5 @@
 using System.Collections;
+using Fungiiiii.Prototypes;
 using Fungiiiii.Runtime.Player;
 using NUnit.Framework;
 using Unity.Netcode;

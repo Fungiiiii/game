@@ -42,6 +42,19 @@ No abstraction, generic system or extension point for a hypothetical future need
 
 ---
 
+## Scenes, prefabs and data
+
+What can be authored in the Editor is authored there, not built by code at runtime.
+
+- **The interface is prefabs** (`Assets/Prefabs/UI/`): canvases, panels, buttons, labels, their fonts, colours and layout. A component holds serialized references to its parts; what repeats per slot or per line is a prefab it instantiates.
+- **The world is scene objects and prefabs**, their references set in the Inspector. The player's components live on its prefab — a prefab variant when only one scene needs them.
+- **Tuning and content are ScriptableObjects** (`Assets/Data/`): item, creature and resource definitions, settings. A new creature or resource is an asset, not code.
+- **A scene's entry point stays small**: it loads what must be loaded, spawns the player and hands it to the scene's components, which do their own work. It holds neither their settings nor their objects.
+- **Prefabs and scenes are the source of truth.** A script that writes prefabs or scene wiring is a one-off: run it, review its output, delete it. Editor tools that generate content procedurally — terrain, scatter — stay.
+- Code creates at runtime only what exists at runtime: prefab instances, objects whose number depends on game state, meshes and materials made from data.
+
+---
+
 ## Root cause before fix
 
 A quick fix is a signal, not a solution. If the patch is a null check that silences a crash, a frame delay that makes a race go away, a magic offset that makes a collision look right, a `try/catch` around a symptom, or a `[DefaultExecutionOrder]` that reorders the problem away — **the real defect is almost certainly somewhere else**. A workaround that works is evidence the cause has not been found yet, not evidence the task is done.
@@ -111,6 +124,14 @@ Every `feat/` branch ships `docs/features/<id>-<description>.md` — the branch 
 **Documentation for the team is written in French** — `docs/` and PR descriptions. The team is French; nobody reads these in English. The instructions for Claude (`CLAUDE.md`, `.claude/skills/`) stay in English.
 
 **No player-facing string is ever hardcoded.** Everything the player reads or hears goes through the localization system — UI, dialogue, item names, player-facing errors. Log and exception messages are engineering artifacts and stay English. See the `unity-localization` skill; adopting the Localization package is a decision to validate through a design note, because it also adopts Addressables.
+
+---
+
+## UI text sizes
+
+The interface targets 16:9 PC screens, 1920×1080 or 1280×720, and every canvas follows the screen's height (`Match` = 1). **Text uses four sizes only**, at 1080p: **60** a screen's title, **36** a block's title, **26** body text (names, hints, counts), **22** small text (descriptions, sources, labels). In the inventory's 720-unit canvas they are 40, 24, 17 and 15. Nothing smaller: at 720p, 22 is already about 15 px.
+
+A new text picks one of the four; a text that does not fit is reworded, wrapped or given room, never shrunk to an in-between size. The only exceptions are display text (the home screen's and the end's titles, the planks) and the letters drawn on a key. `UiTextSizeTests` enforces it: a new UI prefab without its own canvas is declared there with the canvas that shows it.
 
 ---
 

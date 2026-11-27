@@ -1,0 +1,391 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: UI_fr
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.StringTable
+  m_LocaleId:
+    m_Code: fr
+  m_SharedData: {fileID: 11400000, guid: 1a342a7ebec9cce47ab26ab594c31542, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 892329984
+    m_Localized: Fungiiiii
+    m_Metadata:
+      m_Items: []
+  - m_Id: 942661632
+    m_Localized: Jouer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 942661633
+    m_Localized: Quitter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 942661634
+    m_Localized: Reprendre
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946855936
+    m_Localized: Menu principal
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946855937
+    m_Localized: Quitter le jeu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 141727196241920
+    m_Localized: Inventaire
+    m_Metadata:
+      m_Items: []
+  - m_Id: 141727229796352
+    m_Localized: Barre rapide
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545630007296
+    m_Localized: Lancer le filet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545655173120
+    m_Localized: Viser
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367424
+    m_Localized: Lancer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367426
+    m_Localized: "Changer d\u2019objet"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367427
+    m_Localized: Inventaire
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367428
+    m_Localized: Ramasser
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367429
+    m_Localized: "D\xE9poser"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367430
+    m_Localized: Prendre ou poser
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367431
+    m_Localized: Diviser
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367432
+    m_Localized: Tout ramasser
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367433
+    m_Localized: Fermer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971049836544
+    m_Localized: Jeter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971083390976
+    m_Localized: "B\xE2ton"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971083390977
+    m_Localized: "Champignon à spores"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971083390978
+    m_Localized: Filet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971087585280
+    m_Localized: Champonge
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971087585281
+    m_Localized: Champoule
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391184999505920
+    m_Localized: Poser
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448960
+    m_Localized: Presser
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448961
+    m_Localized: Reprendre
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448962
+    m_Localized: "Nécessite un Champonge"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448963
+    m_Localized: Eau
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448964
+    m_Localized: Graine de Champimaison
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448965
+    m_Localized: Caillou
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448966
+    m_Localized: "Fil de myc\xE9lium"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448967
+    m_Localized: "Lance-pierre"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448968
+    m_Localized: Capture un champignon vivant.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448969
+    m_Localized: Tire des cailloux sur les champignons.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448970
+    m_Localized: Au pied des arbres
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448971
+    m_Localized: "Dans la forêt, à cueillir"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448972
+    m_Localized: Sur des plantes, dans la brume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448973
+    m_Localized: "Au sol, dans la for\xEAt"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448974
+    m_Localized: "Tissé par la Champimaison"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448975
+    m_Localized: Faire germer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448976
+    m_Localized: "Am\xE9liorer"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448977
+    m_Localized: "R\xE9cup\xE9rer le fil"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448978
+    m_Localized: Entrer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448979
+    m_Localized: Planter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448980
+    m_Localized: "Nécessite une graine"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448981
+    m_Localized: Prends la graine en main
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448982
+    m_Localized: Faire germer la graine
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448983
+    m_Localized: "Améliorer la Champimaison"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448984
+    m_Localized: "{0} dans l’inventaire"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448985
+    m_Localized: Fabrication
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448986
+    m_Localized: "Prête"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448987
+    m_Localized: "À compléter"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448988
+    m_Localized: Choisis une recette
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448989
+    m_Localized: Suivie
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448990
+    m_Localized: Fabriquer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448991
+    m_Localized: Suivre
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448992
+    m_Localized: Ne plus suivre
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448993
+    m_Localized: Objectif
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448994
+    m_Localized: Découvre le secret du grand arbre
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448995
+    m_Localized: Plante la graine
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448996
+    m_Localized: Fais germer la graine
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448998
+    m_Localized: "Am\xE9liore la Champimaison"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448999
+    m_Localized: Entre dans la Champimaison
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449000
+    m_Localized: Tirer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449001
+    m_Localized: Aucun caillou
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449002
+    m_Localized: "Fin de la d\xE9mo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449003
+    m_Localized: "Merci d’avoir joué !"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449004
+    m_Localized: Maintenir
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449005
+    m_Localized: '+{0} {1}'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449006
+    m_Localized: Appuie encore pour passer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449007
+    m_Localized: Du bois sec, pour fabriquer.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449008
+    m_Localized: Ses spores nourrissent la Champimaison.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449009
+    m_Localized: Se tire au lance-pierre.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449010
+    m_Localized: Un Champonge plein en garde. Approche-le accroupi, par derrière.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449011
+    m_Localized: Un fil solide, pour fabriquer un filet.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449012
+    m_Localized: "Plante-la dans un trou de terre : elle deviendra ta maison."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449013
+    m_Localized: Au pied du grand arbre
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449014
+    m_Localized: "Pose-le : il boit aux fougères, puis presse-le."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449015
+    m_Localized: Près des fougères, dans la brume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449016
+    m_Localized: Un champignon rare et farouche.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449017
+    m_Localized: "N"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449018
+    m_Localized: "E"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449019
+    m_Localized: "S"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449020
+    m_Localized: "O"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449021
+    m_Localized: "!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449022
+    m_Localized: S’approcher discrètement
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449023
+    m_Localized: "(optionnel) Capture un Champonge avec le filet"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449024
+    m_Localized: "Pour l’eau : pose-le, il boit aux fougères"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449025
+    m_Localized: Prochain dans {0} s
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449026
+    m_Localized: "Plein : récupère-le pour relancer"
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

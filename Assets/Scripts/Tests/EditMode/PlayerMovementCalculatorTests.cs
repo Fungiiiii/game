@@ -6,6 +6,22 @@ namespace Fungiiiii.Tests.EditMode
 {
     public sealed class PlayerMovementCalculatorTests
     {
+        [Test]
+        public void JumpSpeed_RisesExactlyToTheJumpHeight()
+        {
+            const float gravity = -19.62f;
+            var speed = PlayerMovementCalculator.JumpSpeed(1.2f, gravity);
+
+            // Highest point of a throw at speed v under gravity g: v² / 2|g|.
+            Assert.That(speed * speed / (2f * -gravity), Is.EqualTo(1.2f).Within(0.0001f));
+        }
+
+        [Test]
+        public void JumpSpeed_IsZero_ForNoHeight()
+        {
+            Assert.That(PlayerMovementCalculator.JumpSpeed(0f, -19.62f), Is.Zero);
+        }
+
         private const float Tolerance = 0.0001f;
 
         [Test]

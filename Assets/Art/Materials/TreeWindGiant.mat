@@ -40,10 +40,11 @@ Material:
     - _Parallax: 0.005
     - _Smoothness: 0
     - _Surface: 0
-    - _TreeFlutter: 0.015
-    - _TreeGustLean: 0.2
-    - _TreeRipple: 0.05
-    - _TreeSway: 0.08
+    - _TreeCrownRadius: 12
+    - _TreeGustLean: 0.6
+    - _TreeHeight: 29
+    - _TreeRipple: 0.12
+    - _TreeSway: 0.4
     - _TreeWindSpeed: 0.5
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}

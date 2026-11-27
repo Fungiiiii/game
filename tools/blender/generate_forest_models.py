@@ -13,7 +13,16 @@
 #   GrassTuft.fbx    a tuft of blades, ~0.5 m, drawn as Terrain detail
 #   Bush.fbx         low bush, ~1.3 m
 #   Fern.fbx         arching fern, ~0.5 m
+#   WaterFern.fbx    the water fern of the mist: six wide open fronds, lighter
+#                    than the decor fern, ~0.4 m high and ~1.2 m across. Full of
+#                    water, the game darkens it and makes drops fall from it.
 #   MushroomCluster.fbx  four mushrooms, red and violet caps, ~0.6 m
+#   MushroomCluster_02.fbx  three red caps, one tall and two small, ~0.7 m
+#   MushroomCluster_03.fbx  five low violet caps spread wide, ~0.35 m
+#   MushroomCluster_04.fbx  one large red cap with a small violet one, ~0.85 m
+#
+# Pass model names after "--" to export only those, for instance:
+#   blender -b -P tools/blender/generate_forest_models.py -- MushroomCluster_02
 #
 # Every model follows what was measured on Tree.fbx: origin at the foot, Z up in
 # Blender, 1 unit = 1 m, one material named M_Fungi_Palette (remapped to
@@ -26,6 +35,7 @@
 import math
 import os
 import random
+import sys
 
 import bmesh
 import bpy
@@ -385,38 +395,113 @@ def fern():
     return m.build("Fern")
 
 
+def water_fronds():
+    """The water fern's six fronds, as (direction, side, reach, rise, width)."""
+    rng = random.Random(6311)
+    fronds = []
+    for k in range(6):
+        a = 2 * math.pi * k / 6 + rng.uniform(-0.15, 0.15)
+        direction = Vector((math.cos(a), math.sin(a), 0.0))
+        side = Vector((-direction.y, direction.x, 0.0))
+        fronds.append((direction, side, rng.uniform(1.0, 1.2), rng.uniform(0.3, 0.36), 0.24))
+    return fronds
+
+
+def frond_corners(frond):
+    """The five corners of a water frond: foot, left and right edges at its middle,
+    raised rib over its middle, and tip. The rib makes the upper face a shallow
+    ridge, like the decor fern's."""
+    direction, side, reach, rise, width = frond
+    mid = direction * (reach * 0.5) + Vector((0.0, 0.0, 0.05 + rise))
+    return {
+        "base": Vector((0.0, 0.0, 0.05)),
+        "left": mid + side * width,
+        "right": mid - side * width,
+        "mid": mid,
+        "rib": mid + Vector((0.0, 0.0, 0.04)),
+        # The tip droops back to a little over half the height of the middle.
+        "tip": direction * reach + Vector((0.0, 0.0, 0.05 + rise * 0.55)),
+    }
+
+
+def water_fern():
+    """Six wide fronds opened flat like a cup, in light green with a dark
+    underside: it reads apart from the decor fern, closed and dark."""
+    m = MeshBuilder()
+    for frond in water_fronds():
+        c = frond_corners(frond)
+        base, left, right, tip = (m.vert(c[k]) for k in ("base", "left", "right", "tip"))
+        rib = m.vert(c["rib"])
+        keel = m.vert(c["mid"] - Vector((0.0, 0.0, 0.035)))
+        for a_, b_ in ((base, left), (left, tip), (tip, right), (right, base)):
+            m.outward_face([a_, b_, rib], GREEN, c["mid"])
+            m.outward_face([a_, b_, keel], GREEN_DARK, c["mid"])
+    return m.build("WaterFern")
+
+
 def mushroom(m, rng, x, y, height, cap_radius, cap_cell):
     stem = m.ring((x, y, 0.0), cap_radius * 0.28, 6)
     top = m.ring((x, y, height), cap_radius * 0.22, 6)
     m.bridge(stem, top, BODY_LIGHT)
-    # A rounded cap: rim, shoulder, crown, then the pale gills underneath.
-    rim = m.ring((x, y, height - cap_radius * 0.1), cap_radius, 8, rng, 0.05)
-    shoulder = m.ring((x, y, height + cap_radius * 0.35), cap_radius * 0.82, 8, rng, 0.04, math.pi / 8)
+    # A rounded cap: rim, shoulder, crown, then the pale gills underneath. Larger caps
+    # get more sides, so their rim still reads as a circle.
+    sides = 10 if cap_radius > 0.25 else 8
+    rim = m.ring((x, y, height - cap_radius * 0.1), cap_radius, sides, rng, 0.02)
+    shoulder = m.ring((x, y, height + cap_radius * 0.35), cap_radius * 0.82, sides, rng, 0.02, math.pi / sides)
     crown = m.vert((x + rng.uniform(-0.02, 0.02), y + rng.uniform(-0.02, 0.02), height + cap_radius * 0.62))
-    m.bridge(rim, shoulder, cap_cell)
-    for i in range(8):
-        j = (i + 1) % 8
+    # The shoulder is turned half a side from the rim: the band between them is made of
+    # triangles, never of twisted quads, which fold and open a notch in the silhouette.
+    for i in range(sides):
+        j = (i + 1) % sides
+        m.face([rim[i], rim[j], shoulder[i]], cap_cell)
+        m.face([shoulder[i], rim[j], shoulder[j]], cap_cell)
+    for i in range(sides):
+        j = (i + 1) % sides
         m.face([shoulder[i], shoulder[j], crown], cap_cell)
     m.cap(rim, (x, y, height - cap_radius * 0.02), BODY_BASE, up=False)
-    # Pale spots on the cap, the Fungiiiii signature.
-    for k in (1, 4, 6):
-        a, b = m.verts[shoulder[k]], m.verts[crown]
-        centre = a.lerp(b, 0.3)
-        normal = (centre - Vector((x, y, height - cap_radius * 0.3))).normalized()
-        side = normal.cross(Vector((0, 0, 1))).normalized() * cap_radius * 0.2
-        up = side.cross(normal).normalized() * cap_radius * 0.2
-        lift = normal * cap_radius * 0.04
-        spot = [m.vert(centre + lift + offset) for offset in (side, up, -side, -up)]
+    # Pale spots on the cap, the Fungiiiii signature. Each one is a small square drawn
+    # in the plane of one face of the crown and lifted a hair off it: it lies on the
+    # cap, never sticks out of it nor sinks into it.
+    for k in (1, sides // 2, sides - 2):
+        a, b, c = m.verts[shoulder[k]], m.verts[shoulder[(k + 1) % sides]], m.verts[crown]
+        normal = (b - a).cross(c - a).normalized()
+        across = (b - a).normalized()
+        up = normal.cross(across)
+        centre = a.lerp(b, 0.5).lerp(c, 0.2) + normal * cap_radius * 0.015
+        half = cap_radius * 0.12
+        spot = [m.vert(centre + across * du * half + up * dv * half) for du, dv in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
         m.face(spot, SPOTS)
 
 
-def mushroom_cluster():
-    rng = random.Random(6409)
+def cluster(name, seed, caps):
+    """A group of mushrooms, one (x, y, height, cap radius, cap cell) per cap."""
+    rng = random.Random(seed)
     m = MeshBuilder()
-    for x, y, height, radius, cell in ((0.0, 0.0, 0.55, 0.26, MUSHROOM_RED), (0.32, 0.12, 0.32, 0.17, MUSHROOM_VIOLET),
-                                       (-0.22, 0.24, 0.26, 0.13, MUSHROOM_RED), (-0.1, -0.3, 0.4, 0.2, MUSHROOM_VIOLET)):
+    for x, y, height, radius, cell in caps:
         mushroom(m, rng, x, y, height, radius, cell)
-    return m.build("MushroomCluster")
+    return m.build(name)
+
+
+def mushroom_cluster():
+    return cluster("MushroomCluster", 6409, ((0.0, 0.0, 0.55, 0.26, MUSHROOM_RED), (0.32, 0.12, 0.32, 0.17, MUSHROOM_VIOLET),
+                                             (-0.22, 0.24, 0.26, 0.13, MUSHROOM_RED), (-0.1, -0.3, 0.4, 0.2, MUSHROOM_VIOLET)))
+
+
+# Variants of the gatherable mushrooms, so that a grove of them does not look stamped.
+# Each fits in the same footprint as MushroomCluster, about 1 m across.
+def mushroom_cluster_02():
+    return cluster("MushroomCluster_02", 6410, ((0.0, 0.0, 0.6, 0.3, MUSHROOM_RED), (0.3, -0.12, 0.3, 0.16, MUSHROOM_RED),
+                                                (-0.24, 0.16, 0.22, 0.12, MUSHROOM_RED)))
+
+
+def mushroom_cluster_03():
+    return cluster("MushroomCluster_03", 6411, ((0.0, 0.0, 0.3, 0.17, MUSHROOM_VIOLET), (0.26, 0.1, 0.22, 0.13, MUSHROOM_VIOLET),
+                                                (-0.22, 0.14, 0.2, 0.12, MUSHROOM_VIOLET), (0.08, -0.28, 0.24, 0.14, MUSHROOM_VIOLET),
+                                                (-0.18, -0.2, 0.16, 0.1, MUSHROOM_VIOLET)))
+
+
+def mushroom_cluster_04():
+    return cluster("MushroomCluster_04", 6412, ((0.0, 0.0, 0.72, 0.34, MUSHROOM_RED), (0.26, 0.18, 0.18, 0.1, MUSHROOM_VIOLET)))
 
 
 # Terrain details draw the raw mesh with position, yaw and scale only, ignoring
@@ -459,13 +544,36 @@ def export(obj):
     print(f"exported {obj.name}: {tris} triangles -> {path}")
 
 
+BUILDS = {
+    "TreeBroad": tree_broad,
+    "TreePine": tree_pine,
+    "TreeGiant": tree_giant,
+    "Rock_Boulder": rock_boulder,
+    "Rock_Spire": rock_spire,
+    "GrassTuft": grass_tuft,
+    "Bush": bush,
+    "Fern": fern,
+    "WaterFern": water_fern,
+    "MushroomCluster": mushroom_cluster,
+    "MushroomCluster_02": mushroom_cluster_02,
+    "MushroomCluster_03": mushroom_cluster_03,
+    "MushroomCluster_04": mushroom_cluster_04,
+}
+
+
 def main():
+    # Blender keeps its own arguments before "--"; the script's come after it.
+    argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
+    unknown = [name for name in argv if name not in BUILDS]
+    if unknown:
+        raise SystemExit(f"unknown models: {', '.join(unknown)}")
+
     bpy.ops.wm.read_factory_settings(use_empty=True)
     scene = bpy.context.scene
     scene.unit_settings.system = "METRIC"
     scene.unit_settings.scale_length = 1.0
-    for build in (tree_broad, tree_pine, tree_giant, rock_boulder, rock_spire, grass_tuft, bush, fern, mushroom_cluster):
-        export(build())
+    for name in argv or BUILDS:
+        export(BUILDS[name]())
 
 
 main()

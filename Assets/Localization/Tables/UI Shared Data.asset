@@ -1,0 +1,396 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: UI Shared Data
+  m_EditorClassIdentifier: Unity.Localization::UnityEngine.Localization.Tables.SharedTableData
+  m_TableCollectionName: UI
+  m_TableCollectionNameGuidString: 1a342a7ebec9cce47ab26ab594c31542
+  m_Entries:
+  - m_Id: 892329984
+    m_Key: game.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 942661632
+    m_Key: menu.play
+    m_Metadata:
+      m_Items: []
+  - m_Id: 942661633
+    m_Key: menu.quit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 942661634
+    m_Key: pause.resume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946855936
+    m_Key: pause.home
+    m_Metadata:
+      m_Items: []
+  - m_Id: 946855937
+    m_Key: pause.quit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 141727196241920
+    m_Key: inventory.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 141727229796352
+    m_Key: inventory.hotbar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545630007296
+    m_Key: hint.throw_net
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545655173120
+    m_Key: hint.aim
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367424
+    m_Key: hint.throw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367426
+    m_Key: hint.switch_item
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367427
+    m_Key: hint.inventory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367428
+    m_Key: hint.gather
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367429
+    m_Key: hint.deposit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367430
+    m_Key: hint.take_or_place
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367431
+    m_Key: hint.half_or_one
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367432
+    m_Key: hint.gather_all
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315545659367433
+    m_Key: hint.close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971049836544
+    m_Key: hint.drop
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971083390976
+    m_Key: item.wood
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971083390977
+    m_Key: item.spore
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971083390978
+    m_Key: item.net
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971087585280
+    m_Key: item.champonge
+    m_Metadata:
+      m_Items: []
+  - m_Id: 372971087585281
+    m_Key: item.champoule
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391184999505920
+    m_Key: hint.release
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448960
+    m_Key: hint.squeeze
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448961
+    m_Key: hint.take_back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448962
+    m_Key: label.needs_champonge
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448963
+    m_Key: item.water
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448964
+    m_Key: item.seed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448965
+    m_Key: item.pebble
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448966
+    m_Key: item.mycelium_thread
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448967
+    m_Key: item.slingshot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448968
+    m_Key: item.net.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448969
+    m_Key: item.slingshot.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448970
+    m_Key: item.wood.source
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448971
+    m_Key: item.spore.source
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448972
+    m_Key: item.water.source
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448973
+    m_Key: item.pebble.source
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448974
+    m_Key: item.mycelium_thread.source
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448975
+    m_Key: hint.awaken
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448976
+    m_Key: hint.upgrade
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448977
+    m_Key: hint.collect_thread
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448978
+    m_Key: hint.enter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448979
+    m_Key: hint.plant
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448980
+    m_Key: label.needs_seed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448981
+    m_Key: label.hold_seed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448982
+    m_Key: panel.awaken_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448983
+    m_Key: panel.grow_title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448984
+    m_Key: panel.in_backpack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448985
+    m_Key: craft.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448986
+    m_Key: craft.possible
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448987
+    m_Key: craft.missing
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448988
+    m_Key: craft.choose
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448989
+    m_Key: craft.tracked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448990
+    m_Key: hint.craft
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448991
+    m_Key: hint.track
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448992
+    m_Key: hint.untrack
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448993
+    m_Key: objective.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448994
+    m_Key: objective.find_seed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448995
+    m_Key: objective.plant_seed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448996
+    m_Key: objective.awaken_seed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448998
+    m_Key: objective.grow
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041448999
+    m_Key: objective.enter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449000
+    m_Key: hint.shoot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449001
+    m_Key: hint.no_pebble
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449002
+    m_Key: demo_end.title
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449003
+    m_Key: demo_end.thanks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449004
+    m_Key: panel.hold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449005
+    m_Key: pickup.line
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449006
+    m_Key: intro.skip_again
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449007
+    m_Key: item.wood.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449008
+    m_Key: item.spore.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449009
+    m_Key: item.pebble.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449010
+    m_Key: item.water.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449011
+    m_Key: item.mycelium_thread.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449012
+    m_Key: item.seed.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449013
+    m_Key: item.seed.source
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449014
+    m_Key: item.champonge.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449015
+    m_Key: item.champonge.source
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449016
+    m_Key: item.champoule.description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449017
+    m_Key: compass.north
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449018
+    m_Key: compass.east
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449019
+    m_Key: compass.south
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449020
+    m_Key: compass.west
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449021
+    m_Key: compass.objective
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449022
+    m_Key: hint.sneak
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449023
+    m_Key: objective.optional_capture
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449024
+    m_Key: objective.optional_capture.hint
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449025
+    m_Key: panel.thread_next
+    m_Metadata:
+      m_Items: []
+  - m_Id: 391185041449026
+    m_Key: panel.thread_full
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 4072107752291041304
+  references:
+    version: 2
+    RefIds:
+    - rid: 4072107752291041304
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1795190557234

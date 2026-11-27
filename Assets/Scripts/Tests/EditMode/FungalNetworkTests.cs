@@ -7,133 +7,99 @@ namespace Fungiiiii.Tests.EditMode
 {
     public sealed class FungalNetworkTests
     {
-        private const string WoodId = "wood";
-        private const string SporeId = "spore";
-
-        private static readonly InventoryItemDefinition Wood = new InventoryItemDefinition(WoodId, Color.yellow, 20);
-        private static readonly InventoryItemDefinition Spore = new InventoryItemDefinition(SporeId, Color.cyan, 20);
+        private static readonly ItemDefinition Water = ItemDefinition.Create("water", Color.blue, 16);
+        private static readonly ItemDefinition Spore = ItemDefinition.Create("spore", Color.magenta, 16);
+        private static readonly ItemDefinition Wood = ItemDefinition.Create("wood", Color.yellow, 16);
 
         private static FungalNetwork NewNetwork()
         {
-            return new FungalNetwork(
-                new[] { new NetworkStageCost(wood: 2, spores: 2), new NetworkStageCost(wood: 4, spores: 4) },
-                WoodId,
-                SporeId);
+            return new FungalNetwork(new[]
+            {
+                new ChampimaisonTier(new[] { new ItemAmount(Water, 1), new ItemAmount(Spore, 3) }, TierUnlock.MyceliumThread),
+                new ChampimaisonTier(new[] { new ItemAmount(Water, 5), new ItemAmount(Spore, 5), new ItemAmount(Wood, 5) }, TierUnlock.Entrance),
+            });
         }
 
-        private static PlayerInventory InventoryWith(int wood, int spores)
+        private static PlayerInventory InventoryWith(int water, int spores, int wood)
         {
             var inventory = new PlayerInventory(15);
-            if (wood > 0)
-            {
-                inventory.Add(Wood, wood);
-            }
-
-            if (spores > 0)
-            {
-                inventory.Add(Spore, spores);
-            }
-
+            if (water > 0) inventory.Add(Water, water);
+            if (spores > 0) inventory.Add(Spore, spores);
+            if (wood > 0) inventory.Add(Wood, wood);
             return inventory;
         }
 
         [Test]
-        public void ANewNetwork_IsAnEmptyHole()
+        public void ANewNetwork_IsASeedThatHasNotWokenUp()
         {
             var network = NewNetwork();
 
-            Assert.That(network.Stage, Is.EqualTo(0));
+            Assert.That(network.Stage, Is.Zero);
             Assert.That(network.IsComplete, Is.False);
-            Assert.That(network.NextCost.Wood, Is.EqualTo(2));
-            Assert.That(network.NextCost.Spores, Is.EqualTo(2));
+            Assert.That(network.Progress.Required(0).Item, Is.SameAs(Water));
+            Assert.That(network.Progress.Required(1).Amount, Is.EqualTo(3));
+            Assert.That(network.HasUnlocked(TierUnlock.MyceliumThread), Is.False);
         }
 
         [Test]
-        public void StageOne_TakesTwoWoodAndTwoSpores()
+        public void APartialDeposit_DoesNotGrowTheNetwork()
         {
             var network = NewNetwork();
-            var inventory = InventoryWith(wood: 3, spores: 5);
+            var grew = false;
+            network.Grew += _ => grew = true;
+
+            Assert.That(network.Deposit(InventoryWith(water: 0, spores: 2, wood: 0)), Is.EqualTo(2));
+
+            Assert.That(network.Stage, Is.Zero);
+            Assert.That(grew, Is.False);
+            Assert.That(network.Progress.Deposited(1), Is.EqualTo(2));
+        }
+
+        [Test]
+        public void TheLastDeposit_GrowsTheNetwork_AndStartsTheNextStageEmpty()
+        {
+            var network = NewNetwork();
             var grewTo = 0;
             network.Grew += stage => grewTo = stage;
+            network.Deposit(InventoryWith(water: 0, spores: 3, wood: 0));
 
-            Assert.That(network.TryGrow(inventory), Is.True);
-            Assert.That(network.Stage, Is.EqualTo(1));
+            var inventory = InventoryWith(water: 4, spores: 0, wood: 2);
+            network.Deposit(inventory);
+
             Assert.That(grewTo, Is.EqualTo(1));
-            Assert.That(inventory.Count(WoodId), Is.EqualTo(1));
-            Assert.That(inventory.Count(SporeId), Is.EqualTo(3));
-        }
-
-        [Test]
-        public void WithoutEnoughOfEither_ItIsRefused_AndTakesNothing()
-        {
-            var network = NewNetwork();
-            var inventory = InventoryWith(wood: 5, spores: 1);
-
-            Assert.That(network.TryGrow(inventory), Is.False);
-            Assert.That(network.Stage, Is.EqualTo(0));
-            Assert.That(inventory.Count(WoodId), Is.EqualTo(5));
-            Assert.That(inventory.Count(SporeId), Is.EqualTo(1));
-        }
-
-        [Test]
-        public void WithAnEmptyInventory_ItIsRefused()
-        {
-            var network = NewNetwork();
-
-            Assert.That(network.TryGrow(new PlayerInventory(15)), Is.False);
-            Assert.That(network.Stage, Is.EqualTo(0));
-        }
-
-        [Test]
-        public void StageTwo_TakesFourWoodAndFourSpores_OnTopOfStageOne()
-        {
-            var network = NewNetwork();
-            var inventory = InventoryWith(wood: 6, spores: 6);
-
-            Assert.That(network.TryGrow(inventory), Is.True);
-            Assert.That(network.TryGrow(inventory), Is.True);
-
-            Assert.That(network.Stage, Is.EqualTo(2));
-            Assert.That(network.IsComplete, Is.True);
-            Assert.That(inventory.Count(WoodId), Is.EqualTo(0));
-            Assert.That(inventory.Count(SporeId), Is.EqualTo(0));
-        }
-
-        [Test]
-        public void StageTwo_WithOnlyStageOneResourcesLeft_IsRefused()
-        {
-            var network = NewNetwork();
-            var inventory = InventoryWith(wood: 4, spores: 4);
-            network.TryGrow(inventory);
-
-            Assert.That(network.TryGrow(inventory), Is.False);
             Assert.That(network.Stage, Is.EqualTo(1));
-            Assert.That(inventory.Count(WoodId), Is.EqualTo(2));
-            Assert.That(inventory.Count(SporeId), Is.EqualTo(2));
+            Assert.That(network.HasUnlocked(TierUnlock.MyceliumThread), Is.True);
+            Assert.That(inventory.Count("water"), Is.EqualTo(3), "The rest of the water went into the next stage at once.");
+            Assert.That(network.Progress.Deposited(0), Is.Zero);
+            Assert.That(network.Progress.Missing(2), Is.EqualTo(5));
         }
 
         [Test]
-        public void ACompleteNetwork_TakesNothingMore()
+        public void TheLastStage_OpensTheEntrance_AndCompletesTheNetwork()
         {
             var network = NewNetwork();
-            var inventory = InventoryWith(wood: 10, spores: 10);
-            network.TryGrow(inventory);
-            network.TryGrow(inventory);
+            network.Deposit(InventoryWith(water: 1, spores: 3, wood: 0));
 
-            Assert.That(network.TryGrow(inventory), Is.False);
-            Assert.That(inventory.Count(WoodId), Is.EqualTo(4));
-            Assert.That(inventory.Count(SporeId), Is.EqualTo(4));
+            network.Deposit(InventoryWith(water: 5, spores: 5, wood: 5));
+
+            Assert.That(network.IsComplete, Is.True);
+            Assert.That(network.Progress, Is.Null);
+            Assert.That(network.HasUnlocked(TierUnlock.Entrance), Is.True);
+            Assert.That(network.Deposit(InventoryWith(water: 9, spores: 9, wood: 9)), Is.Zero);
         }
 
         [Test]
-        public void Reset_EmptiesTheHole()
+        public void Changed_IsRaisedOnEveryDepositThatTakesSomething()
         {
             var network = NewNetwork();
-            network.TryGrow(InventoryWith(wood: 2, spores: 2));
+            var changes = 0;
+            network.Changed += () => changes++;
 
-            network.Reset();
+            network.Deposit(InventoryWith(water: 0, spores: 0, wood: 3));
+            Assert.That(changes, Is.Zero, "Wood is not wanted for the first stage.");
 
-            Assert.That(network.Stage, Is.EqualTo(0));
+            network.Deposit(InventoryWith(water: 1, spores: 0, wood: 0));
+            Assert.That(changes, Is.EqualTo(1));
         }
     }
 }

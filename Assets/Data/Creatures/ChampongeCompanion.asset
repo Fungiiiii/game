@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c48af79740a7344ba3aa9f1d8708957, type: 3}
+  m_Name: ChampongeCompanion
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Companions.CompanionDefinition
+  creature: {fileID: 11400000, guid: bf402ca1399e42a197ecead4d6f4bd22, type: 2}
+  followDistance: 2.5
+  stopDistance: 3
+  sideOffset: 1
+  startDistance: 5
+  walkSpeed: 3.5
+  runSpeed: 8
+  catchUpGain: 1
+  acceleration: 12
+  catchUpDistance: 25
+  reach: 2.5
+  carriedItem: {fileID: 11400000, guid: ea8aab103615bc74d905d1dd1190e5eb, type: 2}
+  carriedQuantity: 1
+  seekRadius: 10
+  soakSeconds: 1
+  arrivalDistance: 0.6
+  turnSpeed: 540
+  hopHeight: 0.07
+  hopsPerMetre: 1.5
+  fullPartMaterial: {fileID: 2100000, guid: 5a832d89a2094b06ac6dd3781fcf6d21, type: 2}
+  fullTint: {r: 0.79, g: 0.68, b: 0.33, a: 1}
+  fullSmoothness: 0.4
+  drySeconds: 1

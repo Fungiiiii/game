@@ -13,6 +13,8 @@
 #   3. Asset names describe the asset, not its state or its version.
 #   4. Prefabs are named PF_<Name>: a prefab always carries the name of the
 #      model it wraps, and without the prefix the two look identical in pickers.
+#      Interface prefabs (Assets/Prefabs/UI/) are exempt from 2 and 4: they wrap no
+#      model and are named after their component.
 #
 # Naming is checked on the file name only. The object name *inside* the .blend
 # matters just as much — it becomes the GameObject name — but no script in this
@@ -82,10 +84,14 @@ for f in "${candidates[@]}"; do
         fail "$f — models live in Assets/Art/Models/<${domains//|/ | }>/"
       ;;
     prefab)
-      [[ "$path" =~ $prefab_re ]] ||
-        fail "$f — prefabs live in Assets/Prefabs/<${domains//|/ | }>/"
-      [[ "$stem" == PF_* ]] ||
-        fail "$f — prefabs are named PF_<Name>, e.g. PF_Tree"
+      # Interface prefabs are not art: they stay in Assets/Prefabs/UI/, named after
+      # their component, as Unity lays them out (docs/features/boucle-playtest.md).
+      if [[ "$path" != Assets/Prefabs/UI/* ]]; then
+        [[ "$path" =~ $prefab_re ]] ||
+          fail "$f — prefabs live in Assets/Prefabs/<${domains//|/ | }>/"
+        [[ "$stem" == PF_* ]] ||
+          fail "$f — prefabs are named PF_<Name>, e.g. PF_Tree"
+      fi
       ;;
   esac
 
@@ -114,6 +120,7 @@ Art assets must follow ADR-0005.
   Location   Assets/Art/Models/<Domain>/<Name>.fbx
              Assets/Prefabs/<Domain>/PF_<Name>.prefab
              Domain is Characters, Environment or Props.
+             Interface prefabs: Assets/Prefabs/UI/<Name>.prefab
 
   Names      English, ASCII, PascalCase: <Name>[_<Variant>][_NN].
              Rock_Small_01, MushroomCap_Large, TreePine_01.

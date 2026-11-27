@@ -1,6 +1,8 @@
 using System.Collections;
 using Fungiiiii.Capture;
 using Fungiiiii.Champimaison;
+using Fungiiiii.Prototypes;
+using ChampimaisonTier = Fungiiiii.Prototypes.ChampimaisonTier;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;

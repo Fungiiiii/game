@@ -1,5 +1,7 @@
 using System.Collections;
 using Fungiiiii.Capture;
+using Fungiiiii.Prototypes;
+using Fungiiiii.Runtime.Player;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -40,7 +42,22 @@ namespace Fungiiiii.Tests.PlayMode
             Assert.That(demo.Thrower, Is.Not.Null, "The net thrower was not set up.");
             Assert.That(demo.Thrower.Cycle.Phase, Is.EqualTo(NetPhase.Ready));
             Assert.That(demo.Mushrooms.Count, Is.EqualTo(3));
-            Assert.That(Object.FindFirstObjectByType<PrototypeFirstPersonCamera>(), Is.Not.Null);
+            Assert.That(Object.FindFirstObjectByType<FirstPersonCamera>(), Is.Not.Null);
+        }
+
+        [UnityTest]
+        public IEnumerator TheArc_ShowsOnlyWhileAiming()
+        {
+            yield return LoadNetScene();
+            var thrower = Object.FindFirstObjectByType<NetThrowDemo>().Thrower;
+
+            yield return null;
+            Assert.That(thrower.VisibleDotCount, Is.Zero, "The arc shows without aiming.");
+
+            thrower.HoldAim = true;
+            yield return null;
+            yield return null;
+            Assert.That(thrower.VisibleDotCount, Is.InRange(1, 24));
         }
 
         [UnityTest]

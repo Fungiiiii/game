@@ -67,7 +67,7 @@ namespace Fungiiiii.Gathering
             return true;
         }
 
-        /// <summary>Back at once, for a demo reset.</summary>
+        /// <summary>Back at once, for a reset.</summary>
         public void Reset()
         {
             IsAvailable = true;

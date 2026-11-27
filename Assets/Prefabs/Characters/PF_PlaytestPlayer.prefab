@@ -1,0 +1,158 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &3421359151749422502
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3378215888684738756, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
+      propertyPath: m_Name
+      value: PF_PlaytestPlayer
+      objectReference: {fileID: 0}
+    - target: {fileID: 7610924191254579495, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7610924191254579495, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7610924191254579495, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7610924191254579495, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7610924191254579495, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7610924191254579495, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7610924191254579495, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7610924191254579495, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7610924191254579495, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7610924191254579495, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3378215888684738756, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4402809092764502763}
+    - targetCorrespondingSourceObject: {fileID: 3378215888684738756, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5016890492705991272}
+    - targetCorrespondingSourceObject: {fileID: 3378215888684738756, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 9003123922357455142}
+    - targetCorrespondingSourceObject: {fileID: 3378215888684738756, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 381707460519700226}
+    - targetCorrespondingSourceObject: {fileID: 3378215888684738756, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5244969544342862084}
+    - targetCorrespondingSourceObject: {fileID: 3378215888684738756, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3164112285261546788}
+  m_SourcePrefab: {fileID: 100100000, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
+--- !u!1 &115626252226540898 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3378215888684738756, guid: b62b4e7b8014735439d70f4be56e7552, type: 3}
+  m_PrefabInstance: {fileID: 3421359151749422502}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4402809092764502763
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115626252226540898}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bdf6f30a2cc368b448a09fe2d636ae1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Survival.StaminaDriver
+--- !u!114 &5016890492705991272
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115626252226540898}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2244ef448d84cfa962c81d03810a14b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Items.PlayerHands
+--- !u!114 &9003123922357455142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115626252226540898}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6baf0c6f51d56c948bcd6064a3b5f750, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Interaction.PlayerInteractor
+  maxAimAngleDegrees: 25
+  crosshairMargin: 0.3
+  tapMaxSeconds: 0.3
+  holdSeconds: 0.8
+--- !u!114 &381707460519700226
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115626252226540898}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63f07e4502a54e7e9332c99831ea0242, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Capture.NetThrower
+--- !u!114 &5244969544342862084
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115626252226540898}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b26c15c5d826784e88752ffe1499d34, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Capture.NetTargetOutline
+--- !u!114 &3164112285261546788
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115626252226540898}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfbcdf202d7f410fb252686e4a3fc1f2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Combat.Slingshot

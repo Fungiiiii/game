@@ -343,7 +343,7 @@ Transform:
   m_GameObject: {fileID: 50206426}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -28, y: 0, z: -80}
+  m_LocalPosition: {x: -2, y: 0, z: -168}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -657,6 +657,54 @@ MonoBehaviour:
   groveSize: 45
   groveCoverage: 0.55
   heightVariation: 0.15
+  fadeSouth: 0
+  fadeNorth: 50
+--- !u!1 &198512057
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 198512058}
+  - component: {fileID: 198512059}
+  m_Layer: 0
+  m_Name: Clearing
+  m_TagString: EditorOnly
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &198512058
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 198512057}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 358754571}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &198512059
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 198512057}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7128411768049b43b166bcb8e38dc2d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Runtime.World.ScatterExclusionZone
+  radius: 7
+  flattenGround: 1
 --- !u!1 &199805981
 GameObject:
   m_ObjectHideFlags: 0
@@ -698,6 +746,8 @@ MonoBehaviour:
   groveSize: 0
   groveCoverage: 0
   heightVariation: 0.15
+  fadeSouth: 50
+  fadeNorth: 40
 --- !u!4 &199805983
 Transform:
   m_ObjectHideFlags: 0
@@ -1060,7 +1110,7 @@ Transform:
   m_GameObject: {fileID: 234255551}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -168, y: 0, z: -68}
+  m_LocalPosition: {x: 12, y: 0, z: -82}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1121,6 +1171,8 @@ MonoBehaviour:
   groveSize: 0
   groveCoverage: 0
   heightVariation: 0
+  fadeSouth: 0
+  fadeNorth: 0
 --- !u!4 &267572759
 Transform:
   m_ObjectHideFlags: 0
@@ -1192,6 +1244,8 @@ MonoBehaviour:
   groveSize: 28
   groveCoverage: 0.3
   heightVariation: 0
+  fadeSouth: 0
+  fadeNorth: 0
 --- !u!1 &320765991
 GameObject:
   m_ObjectHideFlags: 0
@@ -1248,6 +1302,54 @@ MonoBehaviour:
   groveSize: 0
   groveCoverage: 0
   heightVariation: 0
+  fadeSouth: 0
+  fadeNorth: 0
+--- !u!1 &358754570
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 358754571}
+  - component: {fileID: 358754572}
+  m_Layer: 0
+  m_Name: ChampimaisonSite_05
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &358754571
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 358754570}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -125, y: 0, z: -85}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 198512058}
+  m_Father: {fileID: 1648492833}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &358754572
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 358754570}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 730333b6410e69847aa2b97f50b107bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Runtime.Champimaison.ChampimaisonSite
+  radius: 5
 --- !u!1001 &364797473
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1668,6 +1770,8 @@ MonoBehaviour:
   groveSize: 0
   groveCoverage: 0
   heightVariation: 0
+  fadeSouth: 0
+  fadeNorth: 0
 --- !u!4 &502172139
 Transform:
   m_ObjectHideFlags: 0
@@ -1813,6 +1917,8 @@ MonoBehaviour:
   groveSize: 0
   groveCoverage: 0
   heightVariation: 0.15
+  fadeSouth: 0
+  fadeNorth: 0
 --- !u!1001 &583796672
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2035,6 +2141,52 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 339502336359269703, guid: 3fffdca6260724f4d8ef792c07676c82, type: 3}
   m_PrefabInstance: {fileID: 600022527}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &610341869
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 610341870}
+  - component: {fileID: 610341871}
+  m_Layer: 0
+  m_Name: Clearing
+  m_TagString: EditorOnly
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &610341870
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 610341869}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1413011104}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &610341871
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 610341869}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7128411768049b43b166bcb8e38dc2d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Runtime.World.ScatterExclusionZone
+  radius: 7
+  flattenGround: 1
 --- !u!1 &635586952
 GameObject:
   m_ObjectHideFlags: 0
@@ -2085,6 +2237,52 @@ MonoBehaviour:
   coverage: 0.68
   maxDensity: 12
   maxSlope: 30
+--- !u!1 &655872140
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 655872141}
+  - component: {fileID: 655872142}
+  m_Layer: 0
+  m_Name: ChampimaisonSite_09
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &655872141
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 655872140}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -170, y: 0, z: 72}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1294755815}
+  m_Father: {fileID: 1648492833}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &655872142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 655872140}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 730333b6410e69847aa2b97f50b107bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Runtime.Champimaison.ChampimaisonSite
+  radius: 5
 --- !u!1 &670788677
 GameObject:
   m_ObjectHideFlags: 0
@@ -2157,7 +2355,7 @@ Transform:
   m_GameObject: {fileID: 676441662}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 110, y: 0, z: 152}
+  m_LocalPosition: {x: -80, y: 0, z: -152}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2233,6 +2431,8 @@ MonoBehaviour:
   groveSize: 30
   groveCoverage: 0.4
   heightVariation: 0
+  fadeSouth: 40
+  fadeNorth: 0
 --- !u!1 &720471836
 GameObject:
   m_ObjectHideFlags: 0
@@ -2692,9 +2892,9 @@ Transform:
   - {fileID: 887371078}
   - {fileID: 199805983}
   - {fileID: 1826257250}
+  - {fileID: 320765992}
   - {fileID: 538809356}
   - {fileID: 1179555990}
-  - {fileID: 320765992}
   - {fileID: 958847021}
   - {fileID: 988076732}
   - {fileID: 285538782}
@@ -2917,6 +3117,8 @@ MonoBehaviour:
   groveSize: 0
   groveCoverage: 0
   heightVariation: 0.15
+  fadeSouth: 0
+  fadeNorth: 50
 --- !u!1 &899622274
 GameObject:
   m_ObjectHideFlags: 0
@@ -3102,6 +3304,8 @@ MonoBehaviour:
   groveSize: 25
   groveCoverage: 0.5
   heightVariation: 0
+  fadeSouth: 0
+  fadeNorth: 50
 --- !u!1 &961739749
 GameObject:
   m_ObjectHideFlags: 0
@@ -3267,7 +3471,7 @@ Transform:
   m_GameObject: {fileID: 978420943}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 36, y: 0, z: -214}
+  m_LocalPosition: {x: 18, y: 0, z: -226}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3343,6 +3547,8 @@ MonoBehaviour:
   groveSize: 35
   groveCoverage: 0.4
   heightVariation: 0
+  fadeSouth: 40
+  fadeNorth: 0
 --- !u!1001 &1041843605
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3971,6 +4177,8 @@ MonoBehaviour:
   groveSize: 0
   groveCoverage: 0
   heightVariation: 0.15
+  fadeSouth: 0
+  fadeNorth: 0
 --- !u!1 &1197866672
 GameObject:
   m_ObjectHideFlags: 0
@@ -9084,6 +9292,8 @@ MonoBehaviour:
   groveSize: 60
   groveCoverage: 0.55
   heightVariation: 0.15
+  fadeSouth: 40
+  fadeNorth: 0
 --- !u!1001 &1283145416
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9158,6 +9368,52 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3123722006388196998, guid: 3267c7122758f8446bd742a16584f547, type: 3}
   m_PrefabInstance: {fileID: 1283145416}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1294755814
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1294755815}
+  - component: {fileID: 1294755816}
+  m_Layer: 0
+  m_Name: Clearing
+  m_TagString: EditorOnly
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1294755815
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1294755814}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 655872141}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1294755816
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1294755814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7128411768049b43b166bcb8e38dc2d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Runtime.World.ScatterExclusionZone
+  radius: 7
+  flattenGround: 1
 --- !u!1 &1301063833
 GameObject:
   m_ObjectHideFlags: 0
@@ -9206,6 +9462,52 @@ MonoBehaviour:
   - {x: 0, y: 0, z: -235}
   - {x: 25, y: 0, z: -105}
   radius: 7
+--- !u!1 &1339895090
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1339895091}
+  - component: {fileID: 1339895092}
+  m_Layer: 0
+  m_Name: Clearing
+  m_TagString: EditorOnly
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1339895091
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1339895090}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1564706425}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1339895092
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1339895090}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7128411768049b43b166bcb8e38dc2d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Runtime.World.ScatterExclusionZone
+  radius: 7
+  flattenGround: 1
 --- !u!1 &1355008212
 GameObject:
   m_ObjectHideFlags: 0
@@ -9375,6 +9677,52 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 205828921049175709, guid: e27606cd8d7d8d0459eaae41bc1ef239, type: 3}
   m_PrefabInstance: {fileID: 1387187749}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1413011103
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1413011104}
+  - component: {fileID: 1413011105}
+  m_Layer: 0
+  m_Name: ChampimaisonSite_08
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1413011104
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1413011103}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 36, y: 0, z: 204}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 610341870}
+  m_Father: {fileID: 1648492833}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1413011105
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1413011103}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 730333b6410e69847aa2b97f50b107bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Runtime.Champimaison.ChampimaisonSite
+  radius: 5
 --- !u!1 &1451241704
 GameObject:
   m_ObjectHideFlags: 0
@@ -9550,7 +9898,7 @@ MonoBehaviour:
   southFadeEnd: -70
   northFadeStart: 130
   northFadeEnd: 170
-  southVolume: 0.15
+  southVolume: 0.12
   middleVolume: 0.3
   northVolume: 0.3
 --- !u!1 &1529394623
@@ -9790,6 +10138,52 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2409184355006349708, guid: 4b227b0ae5ec40240aaf80a230df8574, type: 3}
   m_PrefabInstance: {fileID: 1557678467}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1564706424
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1564706425}
+  - component: {fileID: 1564706426}
+  m_Layer: 0
+  m_Name: ChampimaisonSite_06
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1564706425
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1564706424}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 82, y: 0, z: -54}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1339895091}
+  m_Father: {fileID: 1648492833}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1564706426
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1564706424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 730333b6410e69847aa2b97f50b107bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Runtime.Champimaison.ChampimaisonSite
+  radius: 5
 --- !u!1 &1573995264
 GameObject:
   m_ObjectHideFlags: 0
@@ -10078,8 +10472,59 @@ Transform:
   - {fileID: 50206427}
   - {fileID: 234255552}
   - {fileID: 676441663}
+  - {fileID: 358754571}
+  - {fileID: 1564706425}
+  - {fileID: 1670362326}
+  - {fileID: 1413011104}
+  - {fileID: 655872141}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1670362325
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1670362326}
+  - component: {fileID: 1670362327}
+  m_Layer: 0
+  m_Name: ChampimaisonSite_07
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1670362326
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1670362325}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 166, y: 0, z: 86}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2047183018}
+  m_Father: {fileID: 1648492833}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1670362327
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1670362325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 730333b6410e69847aa2b97f50b107bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Runtime.Champimaison.ChampimaisonSite
+  radius: 5
 --- !u!1 &1682848597
 GameObject:
   m_ObjectHideFlags: 0
@@ -10185,6 +10630,8 @@ MonoBehaviour:
   groveSize: 22
   groveCoverage: 0.55
   heightVariation: 0
+  fadeSouth: 50
+  fadeNorth: 40
 --- !u!1001 &1714852385
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10315,6 +10762,8 @@ MonoBehaviour:
   groveSize: 0
   groveCoverage: 0
   heightVariation: 0.15
+  fadeSouth: 40
+  fadeNorth: 0
 --- !u!1 &1830140212
 GameObject:
   m_ObjectHideFlags: 0
@@ -10405,6 +10854,8 @@ MonoBehaviour:
   groveSize: 0
   groveCoverage: 0
   heightVariation: 0
+  fadeSouth: 0
+  fadeNorth: 0
 --- !u!4 &1893068245
 Transform:
   m_ObjectHideFlags: 0
@@ -10550,6 +11001,8 @@ MonoBehaviour:
   groveSize: 32
   groveCoverage: 0.7
   heightVariation: 0.15
+  fadeSouth: 50
+  fadeNorth: 40
 --- !u!1001 &2017221429
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10747,6 +11200,52 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2409184355006349708, guid: 4b227b0ae5ec40240aaf80a230df8574, type: 3}
   m_PrefabInstance: {fileID: 2042674549}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2047183017
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2047183018}
+  - component: {fileID: 2047183019}
+  m_Layer: 0
+  m_Name: Clearing
+  m_TagString: EditorOnly
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2047183018
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2047183017}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1670362326}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2047183019
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2047183017}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7128411768049b43b166bcb8e38dc2d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungiiiii.Runtime::Fungiiiii.Runtime.World.ScatterExclusionZone
+  radius: 7
+  flattenGround: 1
 --- !u!1001 &2073511664
 PrefabInstance:
   m_ObjectHideFlags: 0

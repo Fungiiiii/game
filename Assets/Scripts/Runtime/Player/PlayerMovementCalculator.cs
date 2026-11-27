@@ -70,6 +70,15 @@ namespace Fungiiiii.Runtime.Player
         /// zero: a <see cref="CharacterController"/> only reports itself grounded as
         /// long as it keeps being pushed into the floor.
         /// </summary>
+        /// <summary>
+        /// The upward speed that rises exactly <paramref name="height"/> metres under
+        /// <paramref name="gravity"/>, which is negative: v² = 2gh.
+        /// </summary>
+        public static float JumpSpeed(float height, float gravity)
+        {
+            return height <= 0f ? 0f : Mathf.Sqrt(2f * height * Mathf.Abs(gravity));
+        }
+
         public static float ApplyGravity(
             float verticalVelocity,
             bool isGrounded,

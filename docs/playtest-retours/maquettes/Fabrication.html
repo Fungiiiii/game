@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liste de craft</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&display=swap">
+<style>
+:root{
+  --bg:#1E2630; --page:#141A21;
+  --wood:#4F3424; --wood-mid:#8A5F42; --wood-light:#A89078; --wood-dark:#2B2723;
+  --cream:#F2E6CC; --sand:#E0CBA4; --cyan:#6FD6EA; --miss:#F0846B;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--cream);font-family:'Fredoka',sans-serif}
+.page{max-width:1312px;margin:0 auto;padding:24px 16px 56px}
+.page-title{margin:0 0 4px;font-size:30px;font-weight:600}
+.page-sub{margin:0 0 20px;color:var(--sand);font-size:17px;font-weight:500;line-height:1.45}
+.frame{width:100%;overflow:hidden;border-radius:6px;outline:none}
+.frame:focus-visible{box-shadow:0 0 0 3px var(--cyan)}
+.board{width:1280px;height:720px;position:relative;overflow:hidden;background:var(--bg);transform-origin:0 0;user-select:none}
+.notes{margin:14px 0 0;padding-left:20px;color:var(--sand);font-size:16px;font-weight:500;line-height:1.5}
+.notes b{color:var(--cream);font-weight:600}
+
+.scene{position:absolute;inset:0}
+.veil{position:absolute;inset:0;background:rgba(30,38,48,.66)}
+
+.panel{position:absolute;display:flex;flex-direction:column;align-items:center;gap:14px;padding:26px 30px 24px;
+  background:linear-gradient(100deg,rgba(43,39,35,0) 0 68%,rgba(43,39,35,.28) 68% 100%),
+             linear-gradient(180deg,#A89078 0 8px,#4F3424 8px calc(100% - 12px),#2B2723 calc(100% - 12px) 100%);
+  clip-path:polygon(20px 0,calc(100% - 20px) 0,100% 20px,100% calc(100% - 20px),calc(100% - 20px) 100%,20px 100%,0 calc(100% - 20px),0 20px)}
+.panel h1{margin:0;font-size:40px;line-height:1.1;font-weight:600;color:var(--cream);text-shadow:0 3px 0 var(--wood-dark)}
+.cut10{clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px),0 10px)}
+.cut6{clip-path:polygon(6px 0,calc(100% - 6px) 0,100% 6px,100% calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,0 calc(100% - 6px),0 6px)}
+
+.grid{display:grid;grid-template-columns:repeat(3,80px);gap:10px}
+.slot{position:relative;width:80px;height:80px;display:flex;align-items:center;justify-content:center;background:var(--wood-dark);
+  box-shadow:inset 0 5px 0 rgba(0,0,0,.4),inset 0 -3px 0 rgba(168,144,120,.22)}
+.slot.hot{box-shadow:inset 0 5px 0 rgba(0,0,0,.4),inset 0 -3px 0 rgba(168,144,120,.5)}
+.slot.new{animation:pop .5s ease-out}
+@keyframes pop{0%{filter:brightness(2.2)}100%{filter:none}}
+.count{position:absolute;right:8px;bottom:3px;font-size:22px;font-weight:600;color:var(--cream);text-shadow:0 2px 0 var(--bg)}
+.sep{width:260px;border-top:2px dashed rgba(168,144,120,.45);margin-top:4px}
+.label{margin:0;font-size:20px;font-weight:500;color:var(--sand)}
+
+/* recipe list: top of the panel, full width */
+.recipes{display:flex;flex-direction:column;gap:8px;width:100%}
+.recipe{display:flex;align-items:center;gap:12px;width:100%;height:58px;padding:0 12px 0 6px;border:0;cursor:pointer;font-family:inherit;text-align:left;
+  background:var(--wood-dark);color:var(--cream);transition:filter .12s}
+.recipe:hover{filter:brightness(1.35)}
+.recipe.on{background:#6B4A35;box-shadow:inset 4px 0 0 var(--cream)}
+.recipe .ico{width:46px;height:46px;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.25)}
+.recipe .name{flex:1;font-size:20px;font-weight:600}
+.recipe.no .name{color:rgba(224,203,164,.6)}
+.recipe .state{font-size:15px;font-weight:500}
+.recipe .state.ok{color:var(--cyan)}
+.recipe .state.ko{color:rgba(224,203,164,.55)}
+.recipe .pin{font-size:13px;font-weight:600;color:var(--bg);background:var(--cyan);padding:1px 7px 2px}
+
+/* details: bottom of the panel */
+.detail{width:100%;margin-top:auto;display:flex;flex-direction:column;gap:8px;padding-top:12px;border-top:2px dashed rgba(168,144,120,.45)}
+.detail-head{display:flex;align-items:center;gap:12px}
+.detail-head .big{width:60px;height:60px;display:flex;align-items:center;justify-content:center;background:var(--wood-dark);box-shadow:inset 0 4px 0 rgba(0,0,0,.4)}
+.detail-head h2{margin:0;font-size:24px;font-weight:600}
+.detail-head p{margin:2px 0 0;font-size:15px;font-weight:500;color:var(--sand)}
+.need{display:flex;align-items:center;gap:10px;padding:4px 10px 4px 4px;background:rgba(0,0,0,.2)}
+.need .ico{width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:var(--wood-dark)}
+.need .txt{flex:1;min-width:0}
+.need .nm{font-size:18px;font-weight:600}
+.need .src{font-size:14px;font-weight:500;color:var(--miss);line-height:1.2}
+.need .qty{font-size:20px;font-weight:600}
+.need .qty.ok{color:var(--cream)}
+.need .qty.ko{color:var(--miss)}
+.empty{width:100%;margin-top:auto;padding:22px 0;border-top:2px dashed rgba(168,144,120,.45);text-align:center;font-size:17px;font-weight:500;color:rgba(224,203,164,.6)}
+
+/* actions at the bottom of the panel: key + text, as the in-game hints */
+.actions{width:100%;display:flex;justify-content:center;gap:26px;padding-top:4px}
+.act{display:flex;align-items:center;gap:8px;border:0;background:none;padding:2px;cursor:pointer;font-family:inherit;font-size:19px;font-weight:600;color:var(--cream)}
+.act:disabled{cursor:default;color:rgba(224,203,164,.4)}
+.act:disabled .key{background:var(--wood-dark);color:rgba(224,203,164,.4)}
+.act:hover:not(:disabled) .key{background:var(--wood-mid)}
+
+.key{min-width:34px;height:32px;padding:0 9px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:var(--cream);background:var(--wood);box-shadow:inset 0 -3px 0 var(--wood-dark)}
+
+/* control hints, bottom right, no background */
+.hints{position:absolute;right:36px;bottom:30px;display:flex;flex-direction:column;align-items:flex-end;gap:8px;font-size:18px;font-weight:500;color:rgba(242,230,204,.9);text-shadow:0 2px 0 rgba(30,38,48,.7)}
+.hint{display:flex;align-items:center;gap:8px}
+
+/* HUD, top right: objective, then tracked recipes */
+.hud{position:absolute;right:28px;top:28px;width:210px;display:flex;flex-direction:column;gap:12px;text-shadow:0 2px 0 rgba(30,38,48,.8)}
+.hud .goal-k{font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--cyan)}
+.hud .goal{font-size:18px;font-weight:600;color:var(--cream);line-height:1.25}
+.track{display:flex;flex-direction:column;gap:3px;animation:slide .3s ease-out}
+@keyframes slide{0%{opacity:0;transform:translateX(12px)}100%{opacity:1;transform:none}}
+.track .t{display:flex;align-items:center;gap:6px;font-size:17px;font-weight:600;color:var(--cream)}
+.track .r{display:flex;align-items:center;gap:6px;padding-left:4px;font-size:15px;font-weight:500;color:var(--sand)}
+.track .r .q{margin-left:auto;font-weight:600}
+.track .r .q.ok{color:var(--cream)}
+.track .r .q.ko{color:var(--miss)}
+
+.feed{position:absolute;left:36px;bottom:36px;display:flex;flex-direction:column;gap:4px;font-size:22px;font-weight:600;color:var(--cream);text-shadow:0 2px 0 rgba(30,38,48,.8)}
+.feed div{animation:fade 2.4s forwards}
+@keyframes fade{0%,80%{opacity:1}100%{opacity:0}}
+
+.reset{position:absolute;left:20px;top:44px;padding:4px;border:0;background:none;cursor:pointer;font-family:inherit;font-size:15px;font-weight:500;color:rgba(242,230,204,.55);text-decoration:underline}
+.reset:hover{color:var(--cream)}
+.tag{position:absolute;left:24px;top:20px;font-size:15px;font-weight:500;color:rgba(242,230,204,.55)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1 class="page-title">Liste de craft : inventaire et colonne « Fabrication »</h1>
+  <p class="page-sub">Exemple : 3 bâtons, 4 cailloux, 5 spores, la graine dans la barre rapide. Cliquer une recette ouvre ses détails en bas du panneau ; un deuxième clic, ou <b>E</b>, la fabrique (A à la manette). <b>R</b> traque (Y à la manette). Les touches du panneau se cliquent aussi. Icônes provisoires, pour la maquette seulement.</p>
+
+  <div class="frame" data-frame><div class="board" id="board"></div></div>
+
+  <ul class="notes">
+    <li><b>Deux panneaux côte à côte</b> : l'inventaire actuel, inchangé, et « Fabrication » à droite. Tab ouvre les deux.</li>
+    <li><b>Liste en haut</b>, sur toute la largeur du panneau. Aucune recette ouverte à l'ouverture de l'inventaire.</li>
+    <li><b>Détails en bas</b> : icône, nom, description, ingrédients « possédé / requis ». Un ingrédient qui manque est en rouge, avec sa provenance.</li>
+    <li><b>Touches en bas du panneau</b> : E Fabriquer (grisé s'il manque un ingrédient), R Traquer / Ne plus traquer.</li>
+    <li><b>Traquer</b> : la recette s'affiche en haut à droite, sous l'objectif, avec ses ingrédients à jour pendant le jeu. Plusieurs recettes peuvent être traquées. Une recette fabriquée n'est plus traquée.</li>
+    <li>« Fabriquer » prend tous les ingrédients d'un coup ; l'objet va d'abord dans la barre rapide et s'affiche dans le fil des objets ramassés.</li>
+  </ul>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#748093"/><stop offset="0.62" stop-color="#344758"/><stop offset="1" stop-color="#1E2630"/></linearGradient>
+    <g id="tree">
+      <polygon points="-9,0 9,0 6,-124 -5,-124" fill="#4F3424"/>
+      <polygon points="0,0 9,0 6,-124 1,-124" fill="#8A5F42"/>
+      <polygon points="-70,-160 -45,-210 0,-232 48,-212 74,-165 50,-128 0,-116 -48,-126" fill="#6E8A3E"/>
+      <polygon points="-45,-210 0,-232 48,-212 10,-180 -30,-176" fill="#9CB955"/>
+      <polygon points="-48,-126 0,-116 50,-128 74,-165 20,-150 -40,-150" fill="#3E6438"/>
+    </g>
+    <g id="i-stick"><polygon points="8,38 12,42 40,12 36,8" fill="#4F3424"/><polygon points="8,38 10,40 38,10 36,8" fill="#8A5F42"/><polygon points="9,37 10,38 37,9 36,8" fill="#A89078"/><polygon points="26,16 31,14 33,17 28,20" fill="#4F3424"/><polygon points="14,12 18,10 42,36 38,40" fill="#4F3424"/><polygon points="14,12 16,11 40,37 38,39" fill="#8A5F42"/></g>
+    <g id="i-spore"><polygon points="20,42 26,42 25,22 21,22" fill="#E0CBA4"/><polygon points="8,24 23,8 38,24" fill="#D94F3D"/><polygon points="23,8 38,24 23,24" fill="#B8402F"/><circle cx="18" cy="19" r="2" fill="#fff"/><polygon points="33,42 37,42 36,32 34,32" fill="#E0CBA4"/><polygon points="27,33 35,24 44,33" fill="#8E6CB8"/><polygon points="35,24 44,33 35,33" fill="#6F5394"/><polygon points="9,42 13,42 12,35 10,35" fill="#E0CBA4"/><polygon points="4,36 11,29 18,36" fill="#8E6CB8"/></g>
+    <g id="i-pebble"><polygon points="7,34 12,21 24,14 37,19 42,31 33,40 15,40" fill="#7D838B"/><polygon points="12,21 24,14 37,19 27,26 16,27" fill="#AEB4BC"/><polygon points="15,40 33,40 42,31 30,33" fill="#5A6068"/></g>
+    <g id="i-thread"><ellipse cx="24" cy="25" rx="15" ry="11" fill="#E0CBA4"/><path d="M10 22 Q24 12 38 22 M9 27 Q24 17 39 27 M11 32 Q24 22 37 32" stroke="#F2E6CC" stroke-width="2" fill="none"/><path d="M36 30 Q42 38 34 43" stroke="#F2E6CC" stroke-width="2.4" fill="none" stroke-linecap="round"/></g>
+    <g id="i-seed"><polygon points="24,9 34,20 32,35 24,42 16,35 14,20" fill="#8A5F42"/><polygon points="24,9 34,20 32,35 24,26" fill="#A89078"/><polygon points="24,9 22,4 18,2 20,7" fill="#9CB955"/><polygon points="24,9 27,3 32,2 28,8" fill="#6E8A3E"/></g>
+    <g id="i-slingshot"><polygon points="21,44 27,44 26,27 22,27" fill="#4F3424"/><polygon points="24,44 27,44 26,27 24,27" fill="#8A5F42"/><polygon points="22,29 9,10 13,8 25,26" fill="#8A5F42"/><polygon points="26,29 39,10 35,8 23,26" fill="#8A5F42"/><polyline points="11,9 24,19 37,9" stroke="#E0CBA4" stroke-width="2" fill="none"/><polygon points="21,17 27,17 26,22 22,22" fill="#2B2723"/></g>
+    <g id="i-net"><polygon points="24,6 37,11 42,24 37,37 24,42 11,37 6,24 11,11" fill="none" stroke="#E0CBA4" stroke-width="2.4"/><polygon points="24,14 31,17 34,24 31,31 24,34 17,31 14,24 17,17" fill="none" stroke="#E0CBA4" stroke-width="1.6"/><path d="M24 6V42M6 24H42M11 11L37 37M37 11L11 37" stroke="#E0CBA4" stroke-width="1.4"/></g>
+  </defs>
+</svg>
+
+<script>
+var ITEMS = {
+  stick:     { name: 'Bâton',           max: 16, source: 'Au pied des arbres' },
+  pebble:    { name: 'Caillou',         max: 16, source: 'Au sol, dans la forêt' },
+  spore:     { name: 'Spore',           max: 16, source: 'Champignons à cueillir' },
+  thread:    { name: 'Fil de mycélium', max: 16, source: 'Produit par la Champimaison réveillée' },
+  seed:      { name: 'Graine',          max: 1 },
+  slingshot: { name: 'Lance-pierre',    max: 1, blurb: 'Tire des cailloux. Clic droit pour viser.' },
+  net:       { name: 'Filet',           max: 1, blurb: 'Capture un champignon vivant.' }
+};
+var RECIPES = [
+  { id: 'slingshot', cost: [['stick', 2], ['pebble', 1]] },
+  { id: 'net',       cost: [['thread', 3], ['stick', 2]] }
+];
+
+function icon(id, size) {
+  return '<svg viewBox="0 0 48 48" width="' + size + '" height="' + size + '" aria-hidden="true"><use href="#i-' + id + '"/></svg>';
+}
+function scene() {
+  return '<svg class="scene" viewBox="0 0 1280 720" width="1280" height="720" aria-hidden="true">' +
+    '<rect width="1280" height="720" fill="url(#sky)"/>' +
+    '<polygon points="0,300 200,260 420,310 640,280 860,320 1080,270 1280,310 1280,720 0,720" fill="#2D4150"/>' +
+    '<polygon points="0,470 400,450 800,470 1280,450 1280,720 0,720" fill="#46562F"/>' +
+    '<polygon points="520,720 760,720 700,560 660,470 620,470 600,560" fill="#8C7A55"/>' +
+    '<g opacity="0.8"><use href="#tree" transform="translate(300 480)"/><use href="#tree" transform="translate(520 470) scale(0.8)"/>' +
+    '<use href="#tree" transform="translate(800 474) scale(0.9)"/><use href="#tree" transform="translate(1000 484) scale(1.1)"/></g>' +
+    '<use href="#tree" transform="translate(120 620) scale(2)"/><use href="#tree" transform="translate(1180 640) scale(2.2)"/></svg>' +
+    '<div class="veil"></div>';
+}
+
+var root = document.getElementById('board');
+var st;
+
+function example() {
+  var grid = [];
+  for (var i = 0; i < 12; i++) grid.push(null);
+  grid[0] = { id: 'stick', n: 3 };
+  grid[1] = { id: 'pebble', n: 4 };
+  grid[2] = { id: 'spore', n: 5 };
+  st = { grid: grid, hotbar: [{ id: 'seed', n: 1 }, null, null], sel: -1, tracked: [], fresh: null, feed: [] };
+}
+function all() { return st.hotbar.concat(st.grid); }
+function count(id) { return all().reduce(function (n, s) { return n + (s && s.id === id ? s.n : 0); }, 0); }
+function canMake(r) { return r.cost.every(function (c) { return count(c[0]) >= c[1]; }); }
+function isTracked(i) { return st.tracked.indexOf(i) >= 0; }
+
+function take(id, n) {
+  // From the bag first, smallest stacks first; the quick bar last.
+  [st.grid, st.hotbar].forEach(function (list) {
+    list.map(function (s, i) { return i; })
+      .filter(function (i) { return list[i] && list[i].id === id; })
+      .sort(function (a, b) { return list[a].n - list[b].n; })
+      .forEach(function (i) {
+        if (n <= 0) return;
+        var k = Math.min(n, list[i].n);
+        list[i].n -= k; n -= k;
+        if (list[i].n === 0) list[i] = null;
+      });
+  });
+}
+function give(id) {
+  // As a pickup: a stack of the same item, then a free quick bar slot, then the bag.
+  var spots = [];
+  st.hotbar.forEach(function (s, i) { spots.push(['hotbar', i]); });
+  st.grid.forEach(function (s, i) { spots.push(['grid', i]); });
+  var max = ITEMS[id].max, a, s;
+  for (a = 0; a < spots.length; a++) {
+    s = st[spots[a][0]][spots[a][1]];
+    if (s && s.id === id && s.n < max) { s.n++; return spots[a]; }
+  }
+  for (a = 0; a < spots.length; a++) {
+    if (!st[spots[a][0]][spots[a][1]]) { st[spots[a][0]][spots[a][1]] = { id: id, n: 1 }; return spots[a]; }
+  }
+  return null;
+}
+function make() {
+  if (st.sel < 0) return;
+  var r = RECIPES[st.sel];
+  if (!canMake(r)) return;
+  r.cost.forEach(function (c) { take(c[0], c[1]); });
+  st.fresh = give(r.id);
+  st.tracked = st.tracked.filter(function (i) { return i !== st.sel; });
+  st.feed = ['+1 ' + ITEMS[r.id].name];
+  render();
+  st.fresh = null;
+}
+function track() {
+  if (st.sel < 0) return;
+  st.tracked = isTracked(st.sel) ? st.tracked.filter(function (i) { return i !== st.sel; }) : st.tracked.concat([st.sel]);
+  render();
+}
+
+function slotHtml(s, cls, where, i) {
+  var isNew = st.fresh && st.fresh[0] === where && st.fresh[1] === i;
+  return '<div class="slot cut10 ' + cls + (isNew ? ' new' : '') + '">' + (s ? icon(s.id, 52) : '') +
+    (s && s.n > 1 ? '<span class="count">' + s.n + '</span>' : '') + '</div>';
+}
+function inventoryHtml() {
+  return '<div class="panel" style="left:180px;top:36px;width:340px;height:640px"><h1>Inventaire</h1>' +
+    '<div class="grid">' + st.grid.map(function (s, i) { return slotHtml(s, '', 'grid', i); }).join('') + '</div>' +
+    '<div class="sep"></div><p class="label">Barre rapide</p>' +
+    '<div class="grid">' + st.hotbar.map(function (s, i) { return slotHtml(s, 'hot', 'hotbar', i); }).join('') + '</div></div>';
+}
+function craftHtml() {
+  var list = RECIPES.map(function (r, i) {
+    var ok = canMake(r);
+    return '<button type="button" class="recipe cut10' + (i === st.sel ? ' on' : '') + (ok ? '' : ' no') + '" data-r="' + i + '">' +
+      '<span class="ico cut6">' + icon(r.id, 40) + '</span><span class="name">' + ITEMS[r.id].name + '</span>' +
+      (isTracked(i) ? '<span class="pin cut6">Traqué</span>' : '') +
+      '<span class="state ' + (ok ? 'ok">Possible' : 'ko">Il manque') + '</span></button>';
+  }).join('');
+  var bottom;
+  if (st.sel < 0) {
+    bottom = '<div class="empty">Choisis une recette</div>';
+  } else {
+    var r = RECIPES[st.sel];
+    var needs = r.cost.map(function (c) {
+      var have = count(c[0]), enough = have >= c[1];
+      return '<div class="need cut6"><span class="ico cut6">' + icon(c[0], 34) + '</span>' +
+        '<span class="txt"><div class="nm">' + ITEMS[c[0]].name + '</div>' +
+        (enough ? '' : '<div class="src">' + ITEMS[c[0]].source + '</div>') + '</span>' +
+        '<span class="qty ' + (enough ? 'ok' : 'ko') + '">' + have + '/' + c[1] + '</span></div>';
+    }).join('');
+    bottom = '<div class="detail"><div class="detail-head"><span class="big cut10">' + icon(r.id, 50) + '</span>' +
+      '<div><h2>' + ITEMS[r.id].name + '</h2><p>' + ITEMS[r.id].blurb + '</p></div></div>' + needs + '</div>';
+  }
+  var ok = st.sel >= 0 && canMake(RECIPES[st.sel]);
+  var actions = '<div class="actions">' +
+    '<button type="button" class="act" data-make' + (ok ? '' : ' disabled') + '><span class="key cut6">E</span>Fabriquer</button>' +
+    '<button type="button" class="act" data-track' + (st.sel >= 0 ? '' : ' disabled') + '><span class="key cut6">R</span>' +
+    (st.sel >= 0 && isTracked(st.sel) ? 'Ne plus traquer' : 'Traquer') + '</button></div>';
+  return '<div class="panel" style="left:540px;top:36px;width:420px;height:640px;gap:12px"><h1>Fabrication</h1>' +
+    '<div class="recipes">' + list + '</div>' + bottom + actions + '</div>';
+}
+function hudHtml() {
+  var tracks = st.tracked.map(function (i) {
+    var r = RECIPES[i];
+    return '<div class="track"><div class="t">' + icon(r.id, 22) + ITEMS[r.id].name + '</div>' +
+      r.cost.map(function (c) {
+        var have = count(c[0]), enough = have >= c[1];
+        return '<div class="r">' + icon(c[0], 18) + ITEMS[c[0]].name + '<span class="q ' + (enough ? 'ok' : 'ko') + '">' + have + '/' + c[1] + '</span></div>';
+      }).join('') + '</div>';
+  }).join('');
+  return '<div class="hud"><div><div class="goal-k">Objectif</div><div class="goal">Réveille la graine</div></div>' + tracks + '</div>';
+}
+function hintsHtml() {
+  var rows = [['Clic', 'Prendre ou poser'], ['Clic droit', 'La moitié, ou un seul'], ['Q', 'Jeter'], ['Tab', 'Fermer']];
+  return '<div class="hints">' + rows.map(function (h) {
+    return '<div class="hint"><span class="key cut6">' + h[0] + '</span>' + h[1] + '</div>';
+  }).join('') + '</div>';
+}
+function render() {
+  root.innerHTML = scene() + inventoryHtml() + craftHtml() + hudHtml() + hintsHtml() +
+    '<div class="feed">' + st.feed.map(function (f) { return '<div>' + f + '</div>'; }).join('') + '</div>' +
+    '<span class="tag">Maquette</span><button type="button" class="reset" data-reset>Remettre l\'exemple</button>';
+  st.feed = [];
+}
+
+root.addEventListener('click', function (e) {
+  var t = e.target.closest('button');
+  if (!t) return;
+  if (t.hasAttribute('data-r')) {
+    var i = +t.getAttribute('data-r');
+    if (i === st.sel) { make(); } else { st.sel = i; render(); }
+  }
+  else if (t.hasAttribute('data-make')) { make(); }
+  else if (t.hasAttribute('data-track')) { track(); }
+  else if (t.hasAttribute('data-reset')) { example(); render(); }
+});
+document.addEventListener('keydown', function (e) {
+  if (e.target.closest && e.target.closest('input, textarea')) return;
+  if (e.key === 'e' || e.key === 'E') { make(); e.preventDefault(); }
+  else if (e.key === 'r' || e.key === 'R') { track(); e.preventDefault(); }
+});
+
+example();
+render();
+
+function fit() {
+  document.querySelectorAll('[data-frame]').forEach(function (f) {
+    var k = Math.min(1, f.clientWidth / 1280);
+    f.firstElementChild.style.transform = 'scale(' + k + ')';
+    f.style.height = (720 * k) + 'px';
+  });
+}
+window.addEventListener('resize', fit);
+fit();
+</script>
+</body>
+</html>

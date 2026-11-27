@@ -1,0 +1,212 @@
+using System;
+using System.Collections.Generic;
+using Fungiiiii.Companions;
+using Fungiiiii.Gathering;
+using Fungiiiii.Interaction;
+using Fungiiiii.Inventory;
+using Fungiiiii.Outlines;
+using Fungiiiii.UI;
+using UnityEngine;
+
+namespace Fungiiiii.Companions
+{
+    /// <summary>
+    /// A caught creature out of the inventory, following the player: the Champonge. What it
+    /// does is its <see cref="CompanionBrain"/>; this puts it on the ground, turns it where
+    /// it walks, and makes the part of its model that shows it full (the Champonge's cap) look
+    /// wet as it fills: darker, with a light sheen, as the water fern.
+    /// A short press of E squeezes it for what it carries; holding E takes it back.
+    /// </summary>
+    internal sealed class Companion : MonoBehaviour, IInteractable, IHoldInteractable
+    {
+        private const float AimHeight = 0.3f;
+
+        /// <summary>The key to press floats this far above the top of the model.</summary>
+        private const float PromptAboveTop = 0.25f;
+
+        private CompanionDefinition definition;
+        private CompanionBrain brain;
+        private Transform player;
+        private Transform view;
+        private Func<Vector3, float> groundHeight;
+        private IReadOnlyList<IAbsorbable> sources;
+        private ItemOutline outline;
+        private Renderer[] renderers;
+        private WetLook wetLook;
+        private Transform model;
+        private float hopPhase;
+
+        /// <summary>Raised once it went back into the inventory.</summary>
+        public event Action<Companion> TakenBack;
+
+        public CompanionDefinition Definition => definition;
+
+        /// <summary>What it is busy with, and whether it is full.</summary>
+        public CompanionBrain Brain => brain;
+
+        /// <summary>How dark its full part is drawn, from 0 (its colour) to 1 (full).</summary>
+        public float ShownFullness => wetLook.Shown;
+
+        /// <summary>Full, drops fall from it.</summary>
+        public bool IsDripping => wetLook.IsDripping;
+
+        public InteractionCandidate Candidate =>
+            new InteractionCandidate(transform.position + Vector3.up * AimHeight, definition.Reach, true, ModelBounds());
+
+        public Vector3 PromptPoint
+        {
+            get
+            {
+                var point = transform.position;
+                point.y = Mathf.Max(point.y, ModelBounds().max.y) + PromptAboveTop;
+                return point;
+            }
+        }
+
+        /// <summary>A short press squeezes it, once it is full.</summary>
+        public string HintKey => brain.IsFull ? UiText.HintSqueeze : null;
+
+        public string HoldHintKey => UiText.HintTakeBack;
+
+        /// <param name="followed">The player it follows.</param>
+        /// <param name="viewPoint">The player's view: catching up puts it behind it, out of sight.</param>
+        /// <param name="ground">Height of the ground under a point.</param>
+        /// <param name="absorbable">What it could soak up.</param>
+        /// <param name="body">Its model, a child: it hops while walking.</param>
+        public void Initialize(
+            CompanionDefinition companion,
+            Transform followed,
+            Transform viewPoint,
+            Func<Vector3, float> ground,
+            IReadOnlyList<IAbsorbable> absorbable,
+            ItemOutline itemOutline,
+            Transform body)
+        {
+            definition = companion;
+            model = body;
+            brain = new CompanionBrain(companion.ToTuning(), companion.CarriedItem);
+            player = followed;
+            view = viewPoint;
+            groundHeight = ground;
+            sources = absorbable;
+            outline = itemOutline;
+            renderers = GetComponentsInChildren<Renderer>(true);
+            wetLook = new WetLook(body, renderers, companion.FullPartMaterial, companion.FullTint, companion.FullSmoothness, companion.Creature.WetDrip);
+            if (!wetLook.HasParts)
+            {
+                Debug.LogWarning($"No part of {name} uses {(companion.FullPartMaterial != null ? companion.FullPartMaterial.name : "its full part's material")}: it will not look full.", this);
+            }
+
+            wetLook.Show(0f);
+        }
+
+        private void Update()
+        {
+            var deltaTime = Time.deltaTime;
+            var position = transform.position;
+            var step = brain.Step(position, player.position, view.forward, sources, deltaTime);
+            var next = step.Position;
+            next.y = groundHeight(next);
+            transform.position = next;
+
+            Turn(step, deltaTime);
+            Hop(step.Velocity.magnitude, deltaTime);
+            UpdateFullness();
+        }
+
+        /// <summary>Turns, never at once: towards where it goes, or, resting, towards the player.</summary>
+        private void Turn(CompanionStep step, float deltaTime)
+        {
+            var facing = step.Moved ? step.Velocity : player.position - transform.position;
+            facing.y = 0f;
+            if (facing.sqrMagnitude < 0.0001f)
+            {
+                return;
+            }
+
+            transform.rotation = Quaternion.RotateTowards(
+                transform.rotation,
+                Quaternion.LookRotation(facing),
+                definition.TurnSpeed * deltaTime);
+        }
+
+        /// <summary>Little hops while it walks, as many per metre whatever its speed; it lands when it stops.</summary>
+        private void Hop(float speed, float deltaTime)
+        {
+            if (speed > 0.05f)
+            {
+                hopPhase += speed * deltaTime * definition.HopsPerMetre * Mathf.PI;
+            }
+            else
+            {
+                // Finish the hop under way, then stay on the ground.
+                var landed = Mathf.Ceil(hopPhase / Mathf.PI) * Mathf.PI;
+                hopPhase = Mathf.MoveTowards(hopPhase, landed, Mathf.PI * 3f * deltaTime);
+            }
+
+            hopPhase %= Mathf.PI * 2f;
+            model.localPosition = Vector3.up * (Mathf.Abs(Mathf.Sin(hopPhase)) * definition.HopHeight);
+        }
+
+        public void SetTargeted(bool targeted)
+        {
+            outline.SetTargeted(targeted);
+        }
+
+        /// <summary>Squeezes it: what it carries goes into the inventory. Refused while empty, or when nothing fits.</summary>
+        public bool Interact(PlayerInventory inventory)
+        {
+            if (!brain.IsFull || inventory.Collect(definition.CarriedItem, definition.CarriedQuantity) == 0)
+            {
+                return false;
+            }
+
+            brain.TryEmpty();
+            return true;
+        }
+
+        /// <summary>
+        /// Takes it back into the inventory, squeezed first when full so that nothing is
+        /// lost. Refused when what it carries or itself does not fit.
+        /// </summary>
+        public bool InteractHold(PlayerInventory inventory)
+        {
+            if (brain.IsFull && !Interact(inventory))
+            {
+                return false;
+            }
+
+            if (inventory.Collect(definition.Item, 1) == 0)
+            {
+                return false;
+            }
+
+            TakenBack?.Invoke(this);
+            return true;
+        }
+
+        /// <summary>Full, its part darkens as it soaks up; squeezed, it fades back to its colour.</summary>
+        private void UpdateFullness()
+        {
+            var target = brain.Fullness;
+            var shownFullness = wetLook.Shown;
+            var shown = target >= shownFullness
+                ? target
+                : definition.DrySeconds > 0f
+                    ? Mathf.Max(target, shownFullness - Time.deltaTime / definition.DrySeconds)
+                    : target;
+            wetLook.Show(shown);
+        }
+
+        private Bounds ModelBounds()
+        {
+            var bounds = new Bounds(transform.position, Vector3.zero);
+            foreach (var modelRenderer in renderers)
+            {
+                bounds.Encapsulate(modelRenderer.bounds);
+            }
+
+            return bounds;
+        }
+    }
+}

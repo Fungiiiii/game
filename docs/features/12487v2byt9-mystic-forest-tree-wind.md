@@ -109,3 +109,5 @@ Aucun test automatisé ne vérifie ce qu'on voit : le mouvement est un réglage 
 - Les normales ne suivent pas le mouvement : l'éclairage des facettes ne change pas quand le feuillage se déplace. Avec quelques centimètres de mouvement, ça ne se voit pas.
 
 ## Modifié par
+
+- [playtest-base](./playtest-base.md) — nouveau vent : tout l'arbre penche depuis le pied, rien ne tremble, le vent traverse la forêt. La décision « seul le feuillage bouge » est remplacée.

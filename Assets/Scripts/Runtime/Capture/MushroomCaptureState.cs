@@ -1,7 +1,7 @@
 namespace Fungiiiii.Capture
 {
     /// <summary>
-    /// Player-visible phases of the placeholder mushroom capture prototype.
+    /// Player-visible phases of a wild mushroom facing the net.
     /// </summary>
     public enum MushroomCaptureState
     {

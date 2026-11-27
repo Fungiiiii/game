@@ -1,4 +1,4 @@
-using Fungiiiii.Champimaison;
+using Fungiiiii.Prototypes;
 using NUnit.Framework;
 
 namespace Fungiiiii.Tests.EditMode

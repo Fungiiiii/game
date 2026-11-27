@@ -1,99 +1,47 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
+using System.Linq;
 
 namespace Fungiiiii.Inventory
 {
-    /// <summary>
-    /// Runtime data needed to add one item type to an inventory.
-    /// The identifier is a stable gameplay key, not a player-facing label.
-    /// </summary>
-    public readonly struct InventoryItemDefinition : IEquatable<InventoryItemDefinition>
-    {
-        public InventoryItemDefinition(string id, Color color, int maxStackSize)
-        {
-            if (string.IsNullOrWhiteSpace(id))
-            {
-                throw new ArgumentException("An inventory item id is required.", nameof(id));
-            }
-
-            if (maxStackSize <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(maxStackSize), "The maximum stack size must be positive.");
-            }
-
-            Id = id;
-            Color = color;
-            MaxStackSize = maxStackSize;
-        }
-
-        public string Id { get; }
-
-        public Color Color { get; }
-
-        public int MaxStackSize { get; }
-
-        public bool Equals(InventoryItemDefinition other)
-        {
-            return Id == other.Id && MaxStackSize == other.MaxStackSize && Color == other.Color;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is InventoryItemDefinition other && Equals(other);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Id, Color, MaxStackSize);
-        }
-
-        public static bool operator ==(InventoryItemDefinition left, InventoryItemDefinition right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(InventoryItemDefinition left, InventoryItemDefinition right)
-        {
-            return !left.Equals(right);
-        }
-    }
-
     /// <summary>
     /// Immutable view of one inventory slot.
     /// </summary>
     public readonly struct InventorySlot
     {
-        internal InventorySlot(int index, string itemId, Color color, int quantity, int maxStackSize)
+        internal InventorySlot(int index, ItemDefinition item, int quantity)
         {
             Index = index;
-            ItemId = itemId;
-            Color = color;
+            Item = item;
             Quantity = quantity;
-            MaxStackSize = maxStackSize;
         }
 
         public int Index { get; }
 
-        public string ItemId { get; }
-
-        public Color Color { get; }
+        /// <summary>The item in the slot, null when it is empty.</summary>
+        public ItemDefinition Item { get; }
 
         public int Quantity { get; }
 
-        public int MaxStackSize { get; }
+        /// <summary>Id of the item in the slot, null when it is empty.</summary>
+        public string ItemId => Item != null ? Item.Id : null;
 
-        public bool IsEmpty => Quantity <= 0 || string.IsNullOrEmpty(ItemId);
+        public bool IsEmpty => Item == null || Quantity <= 0;
     }
 
     /// <summary>
-    /// Small, scene-independent inventory implementation for the player POC.
+    /// The player's inventory, without Unity: a row of slots, each holding a definition
+    /// and a quantity. Two stacks are the same item when they point to the same
+    /// <see cref="ItemDefinition"/>. Items added fill the slots in its fill order: the
+    /// player's quick bar first, so that what they pick up is in hand at once.
     /// </summary>
     public sealed class PlayerInventory
     {
         private readonly SlotData[] slots;
+        private readonly int[] fillOrder;
 
-        public PlayerInventory(int slotCount)
+        /// <param name="order">The order in which added items fill the slots, every slot once; null for the slots' own order.</param>
+        public PlayerInventory(int slotCount, IReadOnlyList<int> order = null)
         {
             if (slotCount <= 0)
             {
@@ -101,21 +49,38 @@ namespace Fungiiiii.Inventory
             }
 
             slots = new SlotData[slotCount];
+            fillOrder = new int[slotCount];
+            for (var position = 0; position < slotCount; position++)
+            {
+                fillOrder[position] = order != null ? order[position] : position;
+            }
+
+            if (order != null && (order.Count != slotCount || fillOrder.Distinct().Count() != slotCount || fillOrder.Any(slot => slot < 0 || slot >= slotCount)))
+            {
+                throw new ArgumentException("The fill order must name every slot once.", nameof(order));
+            }
         }
 
         public event Action Changed;
 
+        /// <summary>Raised when items taken from the world are added, with how many were.</summary>
+        public event Action<ItemDefinition, int> Collected;
+
         public int SlotCount => slots.Length;
+
+        /// <summary>A copy of the slots and of the fill order, without listeners: to try a change before making it.</summary>
+        public PlayerInventory Copy()
+        {
+            var copy = new PlayerInventory(slots.Length, fillOrder);
+            Array.Copy(slots, copy.slots, slots.Length);
+            return copy;
+        }
 
         public InventorySlot GetSlot(int index)
         {
-            if (index < 0 || index >= slots.Length)
-            {
-                throw new ArgumentOutOfRangeException(nameof(index));
-            }
-
-            SlotData slot = slots[index];
-            return new InventorySlot(index, slot.ItemId, slot.Color, slot.Quantity, slot.MaxStackSize);
+            ValidateIndex(index);
+            var slot = slots[index];
+            return slot.IsEmpty ? new InventorySlot(index, null, 0) : new InventorySlot(index, slot.Item, slot.Quantity);
         }
 
         public int Count(string itemId)
@@ -125,7 +90,7 @@ namespace Fungiiiii.Inventory
             int total = 0;
             for (int i = 0; i < slots.Length; i++)
             {
-                if (slots[i].ItemId == itemId)
+                if (!slots[i].IsEmpty && slots[i].Item.Id == itemId)
                 {
                     total += slots[i].Quantity;
                 }
@@ -136,36 +101,31 @@ namespace Fungiiiii.Inventory
 
         /// <summary>
         /// Adds as many items as fit and returns the number that was added.
-        /// Existing compatible stacks are filled before empty slots are used.
+        /// Existing stacks of the item are filled before empty slots are used, each in the fill order.
         /// </summary>
-        public int Add(InventoryItemDefinition item, int quantity)
+        public int Add(ItemDefinition item, int quantity)
         {
+            ValidateItem(item);
             if (quantity <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(quantity), "The quantity must be positive.");
             }
 
             int remaining = quantity;
-            for (int i = 0; i < slots.Length && remaining > 0; i++)
+            foreach (var i in fillOrder)
             {
-                if (slots[i].ItemId != item.Id)
+                if (remaining > 0 && slots[i].Item == item)
                 {
-                    continue;
+                    remaining -= Fill(i, item, remaining);
                 }
-
-                int added = AddToSlot(i, item, remaining, slots[i].MaxStackSize);
-                remaining -= added;
             }
 
-            for (int i = 0; i < slots.Length && remaining > 0; i++)
+            foreach (var i in fillOrder)
             {
-                if (!slots[i].IsEmpty)
+                if (remaining > 0 && slots[i].IsEmpty)
                 {
-                    continue;
+                    remaining -= Fill(i, item, remaining);
                 }
-
-                int added = AddToSlot(i, item, remaining, item.MaxStackSize);
-                remaining -= added;
             }
 
             int addedTotal = quantity - remaining;
@@ -175,6 +135,22 @@ namespace Fungiiiii.Inventory
             }
 
             return addedTotal;
+        }
+
+        /// <summary>
+        /// Adds items taken from the world (gathered, caught, picked up) as <see cref="Add"/>
+        /// does, and tells whoever shows the player what they collect. Moving items inside
+        /// the inventory goes through <see cref="Add"/>, which tells nothing.
+        /// </summary>
+        public int Collect(ItemDefinition item, int quantity)
+        {
+            var added = Add(item, quantity);
+            if (added > 0)
+            {
+                Collected?.Invoke(item, added);
+            }
+
+            return added;
         }
 
         /// <summary>
@@ -192,7 +168,7 @@ namespace Fungiiiii.Inventory
             int remaining = quantity;
             for (int i = slots.Length - 1; i >= 0 && remaining > 0; i--)
             {
-                if (slots[i].ItemId != itemId)
+                if (slots[i].IsEmpty || slots[i].Item.Id != itemId)
                 {
                     continue;
                 }
@@ -216,10 +192,10 @@ namespace Fungiiiii.Inventory
         }
 
         /// <summary>
-        /// Takes up to the requested amount from one slot and returns the item definition.
+        /// Takes up to the requested amount from one slot and returns the item it held.
         /// This is used by cursor-style inventory interactions such as split stacks.
         /// </summary>
-        public int TakeFromSlot(int index, int quantity, out InventoryItemDefinition item)
+        public int TakeFromSlot(int index, int quantity, out ItemDefinition item)
         {
             ValidateIndex(index);
             if (quantity <= 0)
@@ -230,11 +206,11 @@ namespace Fungiiiii.Inventory
             SlotData slot = slots[index];
             if (slot.IsEmpty)
             {
-                item = default;
+                item = null;
                 return 0;
             }
 
-            item = new InventoryItemDefinition(slot.ItemId, slot.Color, slot.MaxStackSize);
+            item = slot.Item;
             int taken = Math.Min(quantity, slot.Quantity);
             slot.Quantity -= taken;
             slots[index] = slot.Quantity > 0 ? slot : default;
@@ -245,15 +221,16 @@ namespace Fungiiiii.Inventory
         /// <summary>
         /// Places as many items as fit in one slot and returns the amount placed.
         /// </summary>
-        public int AddToSlot(int index, InventoryItemDefinition item, int quantity)
+        public int AddToSlot(int index, ItemDefinition item, int quantity)
         {
             ValidateIndex(index);
+            ValidateItem(item);
             if (quantity <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(quantity), "The quantity must be positive.");
             }
 
-            int added = AddToSlot(index, item, quantity, item.MaxStackSize);
+            int added = Fill(index, item, quantity);
             if (added > 0)
             {
                 Changed?.Invoke();
@@ -263,7 +240,7 @@ namespace Fungiiiii.Inventory
         }
 
         /// <summary>
-        /// Consolidates compatible stacks of one item into the fewest possible slots,
+        /// Consolidates the stacks of one item into the fewest possible slots,
         /// preferring the slot that was double-clicked.
         /// </summary>
         public bool StackAll(string itemId, int preferredSlot)
@@ -272,31 +249,24 @@ namespace Fungiiiii.Inventory
             ValidateIndex(preferredSlot);
 
             var matchingIndexes = new List<int>();
-            var hasDefinition = false;
-            InventoryItemDefinition definition = default;
+            ItemDefinition item = null;
             int totalQuantity = 0;
 
             for (int i = 0; i < slots.Length; i++)
             {
-                SlotData slot = slots[i];
-                if (slot.IsEmpty || slot.ItemId != itemId)
+                if (slots[i].IsEmpty || slots[i].Item.Id != itemId)
                 {
                     continue;
                 }
 
-                if (!hasDefinition)
+                // Not ??=: it would bypass Unity's null check on the asset (UNT0023).
+                if (item == null)
                 {
-                    definition = new InventoryItemDefinition(slot.ItemId, slot.Color, slot.MaxStackSize);
-                    hasDefinition = true;
-                }
-
-                if (!AreCompatible(slot, definition))
-                {
-                    continue;
+                    item = slots[i].Item;
                 }
 
                 matchingIndexes.Add(i);
-                totalQuantity += slot.Quantity;
+                totalQuantity += slots[i].Quantity;
             }
 
             if (matchingIndexes.Count <= 1)
@@ -317,11 +287,8 @@ namespace Fungiiiii.Inventory
             int remaining = totalQuantity;
             foreach (int index in matchingIndexes)
             {
-                int quantity = Math.Min(remaining, definition.MaxStackSize);
-                slots[index].ItemId = definition.Id;
-                slots[index].Color = definition.Color;
-                slots[index].MaxStackSize = definition.MaxStackSize;
-                slots[index].Quantity = quantity;
+                int quantity = Math.Min(remaining, item.MaxStackSize);
+                slots[index] = quantity > 0 ? new SlotData { Item = item, Quantity = quantity } : default;
                 remaining -= quantity;
             }
 
@@ -330,7 +297,7 @@ namespace Fungiiiii.Inventory
         }
 
         /// <summary>
-        /// Moves an item to an empty slot, merges compatible stacks, or swaps two slots.
+        /// Moves an item to an empty slot, merges stacks of the same item, or swaps two slots.
         /// Returns false when the source is empty or both indexes are identical.
         /// </summary>
         public bool MoveOrSwap(int fromIndex, int toIndex)
@@ -354,9 +321,9 @@ namespace Fungiiiii.Inventory
                 return true;
             }
 
-            if (AreCompatible(source, destination))
+            if (source.Item == destination.Item)
             {
-                int availableCapacity = destination.MaxStackSize - destination.Quantity;
+                int availableCapacity = destination.Item.MaxStackSize - destination.Quantity;
                 if (availableCapacity > 0)
                 {
                     int transferred = Math.Min(source.Quantity, availableCapacity);
@@ -375,29 +342,30 @@ namespace Fungiiiii.Inventory
             return true;
         }
 
-        private int AddToSlot(int index, InventoryItemDefinition item, int quantity, int maxStackSize)
+        private int Fill(int index, ItemDefinition item, int quantity)
         {
-            if (!slots[index].IsEmpty && !AreCompatible(slots[index], item))
+            if (!slots[index].IsEmpty && slots[index].Item != item)
             {
                 return 0;
             }
 
-            int capacity = maxStackSize - slots[index].Quantity;
-            int added = Math.Min(quantity, capacity);
+            int added = Math.Min(quantity, item.MaxStackSize - slots[index].Quantity);
             if (added <= 0)
             {
                 return 0;
             }
 
-            if (slots[index].IsEmpty)
-            {
-                slots[index].ItemId = item.Id;
-                slots[index].Color = item.Color;
-                slots[index].MaxStackSize = item.MaxStackSize;
-            }
-
+            slots[index].Item = item;
             slots[index].Quantity += added;
             return added;
+        }
+
+        private static void ValidateItem(ItemDefinition item)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
         }
 
         private static void ValidateItemId(string itemId)
@@ -416,28 +384,12 @@ namespace Fungiiiii.Inventory
             }
         }
 
-        private static bool AreCompatible(SlotData left, SlotData right)
-        {
-            return left.ItemId == right.ItemId &&
-                   left.MaxStackSize == right.MaxStackSize &&
-                   left.Color == right.Color;
-        }
-
-        private static bool AreCompatible(SlotData slot, InventoryItemDefinition item)
-        {
-            return slot.ItemId == item.Id &&
-                   slot.MaxStackSize == item.MaxStackSize &&
-                   slot.Color == item.Color;
-        }
-
         private struct SlotData
         {
-            public string ItemId;
-            public Color Color;
+            public ItemDefinition Item;
             public int Quantity;
-            public int MaxStackSize;
 
-            public bool IsEmpty => Quantity <= 0 || string.IsNullOrEmpty(ItemId);
+            public bool IsEmpty => Item == null || Quantity <= 0;
         }
     }
 }

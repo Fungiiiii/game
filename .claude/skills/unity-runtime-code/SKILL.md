@@ -113,7 +113,7 @@ Do not over-couple to the Animator without reason.
 
 ## UI
 
-Follow the project's existing UI technology — do not mix UI Toolkit and uGUI arbitrarily. Keep gameplay state separate from UI representation: UI must never be the source of truth for gameplay state, and domain logic must not be coupled to buttons, labels or specific GameObjects.
+Follow the project's existing UI technology — do not mix UI Toolkit and uGUI arbitrarily. The game's UI is uGUI, authored as prefabs (see *Scenes, prefabs and data* in `CLAUDE.md`), never assembled in code. Keep gameplay state separate from UI representation: UI must never be the source of truth for gameplay state, and domain logic must not be coupled to buttons, labels or specific GameObjects.
 
 ## Naming, namespaces, magic values
 

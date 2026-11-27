@@ -1,5 +1,6 @@
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
 using System.Collections;
+using Fungiiiii.Prototypes;
 using Fungiiiii.Survival;
 using Fungiiiii.UI;
 using NUnit.Framework;
@@ -148,15 +149,25 @@ namespace Fungiiiii.Tests.PlayMode
             }
             Assert.That(controller, Is.Not.Null);
             Assert.That(controller.GetComponent<PoisonPrototypeView>(), Is.Not.Null);
-            Assert.That(controller.GetComponent<VitalsHud>(), Is.Not.Null);
+            Assert.That(controller.Gauges, Is.Not.Null);
             Assert.That(controller.IsPoisonVisible, Is.False);
         }
 #endif
 
         private PoisonTestBenchController CreateController()
         {
+            // Inactive until its gauges are set, as the scene sets them, so Awake finds them.
             root = new GameObject("PoisonTest");
+            root.SetActive(false);
             PoisonTestBenchController controller = root.AddComponent<PoisonTestBenchController>();
+#if UNITY_EDITOR
+            var gauges = UiPrefabs.Instantiate<VitalGauges>("VitalGauges");
+            gauges.transform.SetParent(root.transform, false);
+            var serialized = new UnityEditor.SerializedObject(controller);
+            serialized.FindProperty("gauges").objectReferenceValue = gauges;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+#endif
+            root.SetActive(true);
             controller.enabled = false;
             return controller;
         }
